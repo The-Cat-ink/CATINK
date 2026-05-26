@@ -102,10 +102,16 @@ document.addEventListener('DOMContentLoaded', function() {
     startProgress(0);
   }
 });
-const carousel = document.querySelector(".video-carousel");
-document.querySelector(".next-slide").addEventListener("click", () => {
-    carousel.scrollBy({ left: carousel.offsetWidth, behavior: "smooth" });
-});
-document.querySelector(".prev-slide").addEventListener("click", () => {
-    carousel.scrollBy({ left: -carousel.offsetWidth, behavior: "smooth" });
-});
+const videoCarousel = document.querySelector(".video-carousel");
+const nextBtn = document.querySelector(".next-slide");
+const prevBtn = document.querySelector(".prev-slide");
+if (videoCarousel && nextBtn) {
+    nextBtn.addEventListener("click", () => {
+        videoCarousel.scrollBy({ left: videoCarousel.offsetWidth, behavior: "smooth" });
+    });
+}
+if (videoCarousel && prevBtn) {
+    prevBtn.addEventListener("click", () => {
+        videoCarousel.scrollBy({ left: -videoCarousel.offsetWidth, behavior: "smooth" });
+    });
+}

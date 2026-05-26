@@ -99,7 +99,7 @@ $recientes = $stmtRecientes->get_result();
         <?php foreach($slider as $i => $row): ?>
             <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="<?= $i ?>" class="<?= $i==0?'active':'' ?>">
                 <div class="indicator-avatar">
-                    <img src="./<?= htmlspecialchars($row['crop1'] ?? 'img/placeholder.jpg') ?>" alt="<?= htmlspecialchars($row['titulo']) ?>">
+                    <img src="<?= htmlspecialchars($row['crop1'] ?? 'img/placeholder.jpg') ?>" alt="<?= htmlspecialchars($row['titulo']) ?>">
                     <svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="16"></circle></svg>
                 </div>
             </button>
@@ -112,10 +112,10 @@ $recientes = $stmtRecientes->get_result();
                     <!-- MÓVIL usa crop2 -->
                     <source 
                         media="(max-width:768px)" 
-                        srcset="./<?= htmlspecialchars($row['crop1'] ?? $row['crop2'] ?? 'img/placeholder.jpg') ?>">
+                        srcset="<?= htmlspecialchars($row['crop1'] ?? $row['crop2'] ?? 'img/placeholder.jpg') ?>">
                     <!-- DESKTOP usa crop1 -->
                     <img 
-                        src="./<?= htmlspecialchars($row['crop2'] ?? 'img/placeholder.jpg') ?>" 
+                        src="<?= htmlspecialchars($row['crop2'] ?? 'img/placeholder.jpg') ?>" 
                         class="carousel-img"
                         alt="<?= htmlspecialchars($row['titulo']) ?>">
                 </picture>
@@ -123,7 +123,7 @@ $recientes = $stmtRecientes->get_result();
                     <?php foreach(array_filter(array_map('trim', explode(',', $row['categorias'] ?? ''))) as $cat): ?>
                         <a href="<?= categoryUrl($cat) ?>" class="carousel-tag"><?= htmlspecialchars($cat) ?></a>
                     <?php endforeach; ?>
-                    <h5><a href="./<?= newsUrl($row['id']) ?>" class="carousel-link"><?= htmlspecialchars($row['titulo']) ?></a></h5>
+                    <h5><a href="<?= newsUrl($row['id']) ?>" class="carousel-link"><?= htmlspecialchars($row['titulo']) ?></a></h5>
                     <p><?= htmlspecialchars($row['descripcion']) ?></p>
                 </div>
             </div>
@@ -139,7 +139,7 @@ $recientes = $stmtRecientes->get_result();
         <div class="row">
             <!-- Primeras 2 noticias principales -->
             <div class="col-md-8">
-                <div class="news-card" data-url="./<?= newsUrl($ultimasNoticias[0]['id']) ?>">
+                <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[0]['id']) ?>">
                     <img src="<?= htmlspecialchars($ultimasNoticias[0]['crop2'] ?? $ultimasNoticias[0]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
@@ -148,7 +148,7 @@ $recientes = $stmtRecientes->get_result();
                             <?php endforeach; ?>
                         </div>
                         <div class="news-content">
-                            <a href="./<?= newsUrl($ultimasNoticias[0]['id']) ?>" class="news-link-card">
+                            <a href="<?= newsUrl($ultimasNoticias[0]['id']) ?>" class="news-link-card">
                                 <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[0]['titulo']) ?></h3>
                             </a>
                             <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[0]['descripcion']) ?></p>
@@ -158,7 +158,7 @@ $recientes = $stmtRecientes->get_result();
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="news-card" data-url="./<?= newsUrl($ultimasNoticias[1]['id']) ?>">
+                <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[1]['id']) ?>">
                     <img src="<?= htmlspecialchars($ultimasNoticias[1]['crop3'] ?? $ultimasNoticias[1]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
@@ -167,7 +167,7 @@ $recientes = $stmtRecientes->get_result();
                             <?php endforeach; ?>
                         </div>
                         <div class="news-content">
-                            <a href="./<?= newsUrl($ultimasNoticias[1]['id']) ?>" class="news-link-card">
+                            <a href="<?= newsUrl($ultimasNoticias[1]['id']) ?>" class="news-link-card">
                                 <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[1]['titulo']) ?></h3>
                             </a>
                             <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[1]['descripcion']) ?></p>
@@ -178,7 +178,7 @@ $recientes = $stmtRecientes->get_result();
         </div>
         <div class="row">
             <div class="col">
-                <div class="news-card" data-url="./<?= newsUrl($ultimasNoticias[2]['id']) ?>">
+                <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[2]['id']) ?>">
                     <img src="<?= htmlspecialchars($ultimasNoticias[2]['crop3'] ?? $ultimasNoticias[2]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
@@ -187,7 +187,7 @@ $recientes = $stmtRecientes->get_result();
                             <?php endforeach; ?>
                         </div>
                         <div class="news-content">
-                            <a href="./<?= newsUrl($ultimasNoticias[2]['id']) ?>" class="news-link-card">
+                            <a href="<?= newsUrl($ultimasNoticias[2]['id']) ?>" class="news-link-card">
                                 <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[2]['titulo']) ?></h3>
                             </a>
                             <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[2]['descripcion']) ?></p>
@@ -196,7 +196,7 @@ $recientes = $stmtRecientes->get_result();
                 </div>
             </div>
             <div class="col">
-                <div class="news-card" data-url="./<?= newsUrl($ultimasNoticias[3]['id']) ?>">
+                <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[3]['id']) ?>">
                     <img src="<?= htmlspecialchars($ultimasNoticias[3]['crop3'] ?? $ultimasNoticias[3]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
@@ -205,7 +205,7 @@ $recientes = $stmtRecientes->get_result();
                             <?php endforeach; ?>
                         </div>
                         <div class="news-content">
-                            <a href="./<?= newsUrl($ultimasNoticias[3]['id']) ?>" class="news-link-card">
+                            <a href="<?= newsUrl($ultimasNoticias[3]['id']) ?>" class="news-link-card">
                                 <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[3]['titulo']) ?></h3>
                             </a>
                             <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[3]['descripcion']) ?></p>
@@ -214,7 +214,7 @@ $recientes = $stmtRecientes->get_result();
                 </div>
             </div>
             <div class="col">
-                <div class="news-card" data-url="./<?= newsUrl($ultimasNoticias[4]['id']) ?>">
+                <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[4]['id']) ?>">
                     <img src="<?= htmlspecialchars($ultimasNoticias[4]['crop3'] ?? $ultimasNoticias[4]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
@@ -223,7 +223,7 @@ $recientes = $stmtRecientes->get_result();
                             <?php endforeach; ?>
                         </div>
                         <div class="news-content">
-                            <a href="./<?= newsUrl($ultimasNoticias[4]['id']) ?>" class="news-link-card">
+                            <a href="<?= newsUrl($ultimasNoticias[4]['id']) ?>" class="news-link-card">
                                 <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[4]['titulo']) ?></h3>
                             </a>
                             <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[4]['descripcion']) ?></p>
@@ -234,7 +234,7 @@ $recientes = $stmtRecientes->get_result();
         </div>
         <div class="row">
             <div class="col-md-4">
-                <div class="news-card" data-url="./<?= newsUrl($ultimasNoticias[5]['id']) ?>">
+                <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[5]['id']) ?>">
                     <img src="<?= htmlspecialchars($ultimasNoticias[5]['crop3'] ?? $ultimasNoticias[5]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
@@ -243,7 +243,7 @@ $recientes = $stmtRecientes->get_result();
                             <?php endforeach; ?>
                         </div>
                         <div class="news-content">
-                            <a href="./<?= newsUrl($ultimasNoticias[5]['id']) ?>" class="news-link-card">
+                            <a href="<?= newsUrl($ultimasNoticias[5]['id']) ?>" class="news-link-card">
                                 <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[5]['titulo']) ?></h3>
                             </a>
                             <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[5]['descripcion']) ?></p>
@@ -252,7 +252,7 @@ $recientes = $stmtRecientes->get_result();
                 </div>
             </div>
             <div class="col-md-8">
-                <div class="news-card" data-url="./<?= newsUrl($ultimasNoticias[6]['id']) ?>">
+                <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[6]['id']) ?>">
                     <img src="<?= htmlspecialchars($ultimasNoticias[6]['crop2'] ?? $ultimasNoticias[6]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
@@ -261,7 +261,7 @@ $recientes = $stmtRecientes->get_result();
                             <?php endforeach; ?>
                         </div>
                         <div class="news-content">
-                            <a href="./<?= newsUrl($ultimasNoticias[6]['id']) ?>" class="news-link-card">
+                            <a href="<?= newsUrl($ultimasNoticias[6]['id']) ?>" class="news-link-card">
                                 <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[6]['titulo']) ?></h3>
                             </a>
                             <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[6]['descripcion']) ?></p>
@@ -276,7 +276,7 @@ $recientes = $stmtRecientes->get_result();
         <h2><i class="bi bi-newspaper"></i>  Lo más recientes</h2>
         <div class="row mt-5">
             <div class="col-md-9">
-                <?php if($secciones['publicidad']['estado'] == 1) : ?>
+                <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidad) : ?>
                     <div class="ad-container">
                         <a href="<?php echo htmlspecialchars($publicidad['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidad['id_pub']); ?>">
                             <img src="<?php echo htmlspecialchars($publicidad['imagen']); ?>" alt="" class="banner">
@@ -285,7 +285,7 @@ $recientes = $stmtRecientes->get_result();
                     </div>
                 <?php endif; ?>
                 <?php foreach($noticiasMasRecientes as $row): ?>
-                    <div class="card mb-3" data-url="./<?= newsUrl($row['id']) ?>">
+                    <div class="card mb-3" data-url="<?= newsUrl($row['id']) ?>">
                         <div class="row row-no-gap">
                             <div class="col-md-4">
                                 <img src="<?= htmlspecialchars($row['crop3']  ?? 'img/placeholder.jpg') ?>" alt="" class="card-img-left">
@@ -296,7 +296,7 @@ $recientes = $stmtRecientes->get_result();
                                         <a href="<?= categoryUrl($cat) ?>" class="tag-news"><?= htmlspecialchars($cat) ?></a>
                                     <?php endforeach; ?>
                                     <h4 class="card-title">
-                                        <a href="./<?= newsUrl($row['id']) ?>" class="news-link"><?= htmlspecialchars($row['titulo']) ?></a>
+                                        <a href="<?= newsUrl($row['id']) ?>" class="news-link"><?= htmlspecialchars($row['titulo']) ?></a>
                                     </h4>
                                     <p class="card-text"><?= htmlspecialchars($row['descripcion']) ?></p>
                                     <span class="text-muted"> 
@@ -334,7 +334,7 @@ $recientes = $stmtRecientes->get_result();
                 <?php endif; ?>
                 <br>
                 <?php foreach($noticiasMasRecientes2 as $row): ?>
-                    <div class="card mb-3" data-url="./<?= newsUrl($row['id']) ?>">
+                    <div class="card mb-3" data-url="<?= newsUrl($row['id']) ?>">
                         <div class="row row-no-gap">
                             <div class="col-md-4">
                                 <img src="<?= htmlspecialchars($row['crop3']  ?? 'img/placeholder.jpg') ?>" alt="" class="card-img-left">
@@ -345,7 +345,7 @@ $recientes = $stmtRecientes->get_result();
                                         <a href="<?= categoryUrl($cat) ?>" class="tag-news"><?= htmlspecialchars($cat) ?></a>
                                     <?php endforeach; ?>
                                     <h4 class="card-title">
-                                        <a href="./<?= newsUrl($row['id']) ?>" class="news-link"><?= htmlspecialchars($row['titulo']) ?></a>
+                                        <a href="<?= newsUrl($row['id']) ?>" class="news-link"><?= htmlspecialchars($row['titulo']) ?></a>
                                     </h4>
                                     <p class="card-text"><?= htmlspecialchars($row['descripcion']) ?></p>
                                     <span class="text-muted"> 
@@ -374,7 +374,7 @@ $recientes = $stmtRecientes->get_result();
                 <div class="news-carousel">
                     <?php foreach($noticiasMasRecientes3 as $row): ?>
                         <div class="news-slide">
-                            <div class="news-card" data-url="./<?= newsUrl($row['id']) ?>">
+                            <div class="news-card" data-url="<?= newsUrl($row['id']) ?>">
                                 <img src="<?= htmlspecialchars($row['crop3']  ?? 'img/placeholder.jpg') ?>" alt="">
                                 <div class="news-overlay">
                                     <div class="news-tags">
@@ -383,7 +383,7 @@ $recientes = $stmtRecientes->get_result();
                                         <?php endforeach; ?>
                                     </div>
                                     <div class="news-content">
-                                        <a href="./<?= newsUrl($row['id']) ?>" class="news-link-card"><?= htmlspecialchars($row['titulo']) ?></a>
+                                        <a href="<?= newsUrl($row['id']) ?>" class="news-link-card"><?= htmlspecialchars($row['titulo']) ?></a>
                                         <span class="text-muted">
                                             <?php
                                                 $fecha_pub = strtotime($row['fecha']); // convierte la fecha de la BD a timestamp
@@ -410,7 +410,7 @@ $recientes = $stmtRecientes->get_result();
                     <?php endforeach; ?>
                 </div>
                 <br>
-                <?php if($secciones['publicidad']['estado'] == 1) : ?>
+                <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidadInferior) : ?>
                     <div class="ad-container">
                         <a href="<?php echo htmlspecialchars($publicidadInferior['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadInferior['id_pub']); ?>">
                             <img src="<?php echo htmlspecialchars($publicidadInferior['imagen']); ?>" alt="" class="banner">
@@ -423,7 +423,7 @@ $recientes = $stmtRecientes->get_result();
                 <div class="sidebar-wrapper">
                     <div class="card sidebar-card">
                         <div class="card-h">
-                            <?php if($secciones['publicidad']['estado'] == 1) : ?>
+                            <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidadCuadro) : ?>
                                 <div class="ad-container">
                                     <a href="<?php echo htmlspecialchars($publicidadCuadro['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadCuadro['id_pub']); ?>">
                                         <img src="<?php echo htmlspecialchars($publicidadCuadro['imagen']); ?>" class="banner-card-img-top">
@@ -439,11 +439,11 @@ $recientes = $stmtRecientes->get_result();
                                 <?php foreach($ultimasNoticiasSidebar as $row): ?>
                                         <div class="cardSpecial row row-no-gap">
                                             <div class="col-md-4">
-                                                <img src="./<?= htmlspecialchars($row['crop3'] ?? 'img/placeholder.jpg') ?>" alt="" class="imgCard card-img-left-rounded">
+                                                <img src="<?= htmlspecialchars($row['crop3'] ?? 'img/placeholder.jpg') ?>" alt="" class="imgCard card-img-left-rounded">
                                             </div>
                                             <div class="col-md-8">
                                                 <div class="card-body">
-                                                    <a href="./<?= newsUrl($row['id']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
+                                                    <a href="<?= newsUrl($row['id']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
                                                 </div>
                                             </div>
                                         </div>
@@ -456,11 +456,11 @@ $recientes = $stmtRecientes->get_result();
                                 <?php foreach($popularesNoticiasSidebar as $row): ?>
                                         <div class="cardSpecial row row-no-gap">
                                             <div class="col-md-4">
-                                                <img src="./<?= htmlspecialchars($row['crop3'] ?? 'img/placeholder.jpg') ?>" alt="" class="imgCard card-img-left-rounded">
+                                                <img src="<?= htmlspecialchars($row['crop3'] ?? 'img/placeholder.jpg') ?>" alt="" class="imgCard card-img-left-rounded">
                                             </div>
                                             <div class="col-md-8">
                                                 <div class="card-body">
-                                                    <a href="./<?= newsUrl($row['id']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
+                                                    <a href="<?= newsUrl($row['id']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
                                                 </div>
                                             </div>
                                         </div>
@@ -491,10 +491,10 @@ $recientes = $stmtRecientes->get_result();
               <br>
               <div class="row">
                 <?php while($r = $recomendadas->fetch_assoc()): 
-                    $img = !empty($r['crop3']) ? "./../".$r['crop3'] : "./../img/placeholder.jpg";
+                    $img = !empty($r['crop3']) ? $r['crop3'] : "img/placeholder.jpg";
                 ?>
                   <div class="col">
-                      <div class="card h-100" data-url="./<?= newsUrl($r['id']) ?>">
+                      <div class="card h-100" data-url="<?= newsUrl($r['id']) ?>">
                           <img src="<?= htmlspecialchars($img) ?>" class="card-img-top">
                           <div class="card-body">
                               <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-1">
@@ -521,10 +521,10 @@ $recientes = $stmtRecientes->get_result();
               <br>
               <div class="row">
                 <?php while($r = $recientes->fetch_assoc()): 
-                    $img = !empty($r['crop3']) ? "./../".$r['crop3'] : "./../img/placeholder.jpg";
+                    $img = !empty($r['crop3']) ? $r['crop3'] : "img/placeholder.jpg";
                 ?>
                   <div class="col">
-                      <div class="card h-100"  data-url="./<?= newsUrl($r['id']) ?>">
+                      <div class="card h-100"  data-url="<?= newsUrl($r['id']) ?>">
                           <img src="<?= htmlspecialchars($img) ?>" class="card-img-top">
                           <div class="card-body">
                               <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-1">
