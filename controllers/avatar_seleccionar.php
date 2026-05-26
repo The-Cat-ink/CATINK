@@ -25,12 +25,23 @@ if($stmt->get_result()->num_rows === 0){
 
 // Actualizar avatar según tipo de usuario
 $tipo = $_SESSION['tipo'] ?? 'lector';
+$usuario = $_SESSION['usuario'];
+
 if($tipo === 'admin'){
     $stmt = $con->prepare("UPDATE usuarios SET avatar_id = ? WHERE usuario = ?");
+    $stmt->bind_param("is", $avatar_id, $usuario);
+    $stmt->execute();
 } else {
+    // Intentar en lectores primero
     $stmt = $con->prepare("UPDATE lectores SET avatar_id = ? WHERE usuario = ?");
+    $stmt->bind_param("is", $avatar_id, $usuario);
+    $stmt->execute();
+    // Fallback: si no se actualizó ninguna fila, buscar en usuarios (sesión legacy)
+    if($stmt->affected_rows === 0){
+        $stmt = $con->prepare("UPDATE usuarios SET avatar_id = ? WHERE usuario = ?");
+        $stmt->bind_param("is", $avatar_id, $usuario);
+        $stmt->execute();
+    }
 }
-$stmt->bind_param("is", $avatar_id, $_SESSION['usuario']);
-$stmt->execute();
 
 echo json_encode(['ok'=>true]);

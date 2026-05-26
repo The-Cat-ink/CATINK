@@ -43,7 +43,7 @@ html,body { height: 100%; font-family: system-ui, -apple-system, 'Segoe UI', Rob
   --messenger: #0084ff;
 }
 [data-bs-theme="dark"] #logo{
-  content: url('/CATINK/img/logo_alt.png');
+  content: url('../img/logo_alt.png');
 }
 /* Layout general: cuerpo como columna flex para sticky footer */
 body { display:flex; flex-direction:column; min-height:100vh; background: var(--bg); color: var(--text); overflow-x: hidden; }
@@ -92,7 +92,7 @@ h2 {
   margin-right: 0;
 }
 #logo {
-  content: url('/CATINK/img/logo.png');
+  content: url('../img/logo.png');
   max-height: 50px;
   width: auto;
   object-fit: contain;
