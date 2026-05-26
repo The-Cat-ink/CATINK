@@ -299,6 +299,7 @@ h4 {
   max-width: 75%;
   height: auto;
   border-radius: 0 !important;
+  object-fit: contain;
 }
 #user {
   padding: 6px 8px;
@@ -392,7 +393,8 @@ input:focus, textarea:focus {
     outline: none;
     border-color: #007bff;
 }
-span {
+.site-main span.text-muted,
+.sidebar span {
     font-size: 10px;
     color: var(--muted);
 }
