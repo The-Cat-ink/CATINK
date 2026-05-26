@@ -13,15 +13,15 @@ CREATE TABLE IF NOT EXISTS `avatares_perfil` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 1b. Fix: si la tabla ya existe con columna 'id', renombrarla a 'id_avatar'
--- (Ejecutar SOLO si la tabla ya fue creada con 'id')
-ALTER TABLE `avatares_perfil` CHANGE COLUMN `id` `id_avatar` int(11) NOT NULL AUTO_INCREMENT;
+-- (Ejecutar manualmente SOLO si la tabla ya fue creada con 'id')
+-- ALTER TABLE `avatares_perfil` CHANGE COLUMN `id` `id_avatar` int(11) NOT NULL AUTO_INCREMENT;
 
 -- 2. Columnas nuevas en usuarios (si no existen)
+-- sexo (debe ir primero porque fecha_nacimiento lo referencia con AFTER)
+ALTER TABLE `usuarios` ADD COLUMN IF NOT EXISTS `sexo` enum('masculino','femenino','otro') DEFAULT NULL AFTER `correo`;
+
 -- fecha_nacimiento
 ALTER TABLE `usuarios` ADD COLUMN IF NOT EXISTS `fecha_nacimiento` date DEFAULT NULL AFTER `sexo`;
-
--- sexo
-ALTER TABLE `usuarios` ADD COLUMN IF NOT EXISTS `sexo` enum('masculino','femenino','otro') DEFAULT NULL AFTER `correo`;
 
 -- entidad (ubicación)
 ALTER TABLE `usuarios` ADD COLUMN IF NOT EXISTS `entidad` varchar(3) DEFAULT NULL AFTER `fecha_nacimiento`;
