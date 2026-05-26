@@ -90,6 +90,14 @@ $stmtRecientes = $con->prepare("
 ");
 $stmtRecientes->execute();
 $recientes = $stmtRecientes->get_result();
+
+// Helper: devuelve la primera imagen no vacía, o placeholder
+function img($fields, $placeholder = 'img/placeholder.jpg') {
+    foreach ($fields as $f) {
+        if (!empty($f)) return htmlspecialchars($f);
+    }
+    return $placeholder;
+}
 ?>
 <!-- ===================== -->
 <!-- SLIDER PRINCIPAL -->
@@ -99,7 +107,7 @@ $recientes = $stmtRecientes->get_result();
         <?php foreach($slider as $i => $row): ?>
             <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="<?= $i ?>" class="<?= $i==0?'active':'' ?>">
                 <div class="indicator-avatar">
-                    <img src="<?= htmlspecialchars($row['crop1'] ?? 'img/placeholder.jpg') ?>" alt="<?= htmlspecialchars($row['titulo']) ?>">
+                    <img src="<?= img([$row['crop1']]) ?>" alt="<?= htmlspecialchars($row['titulo']) ?>">
                     <svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="16"></circle></svg>
                 </div>
             </button>
@@ -112,10 +120,10 @@ $recientes = $stmtRecientes->get_result();
                     <!-- MÓVIL usa crop2 -->
                     <source 
                         media="(max-width:768px)" 
-                        srcset="<?= htmlspecialchars($row['crop1'] ?? $row['crop2'] ?? 'img/placeholder.jpg') ?>">
+                        srcset="<?= img([$row['crop1'], $row['crop2']]) ?>">
                     <!-- DESKTOP usa crop1 -->
                     <img 
-                        src="<?= htmlspecialchars($row['crop2'] ?? 'img/placeholder.jpg') ?>" 
+                        src="<?= img([$row['crop2'], $row['crop1']]) ?>" 
                         class="carousel-img"
                         alt="<?= htmlspecialchars($row['titulo']) ?>">
                 </picture>
@@ -140,7 +148,7 @@ $recientes = $stmtRecientes->get_result();
             <!-- Primeras 2 noticias principales -->
             <div class="col-md-8">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[0]['id']) ?>">
-                    <img src="<?= htmlspecialchars($ultimasNoticias[0]['crop2'] ?? $ultimasNoticias[0]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[0]['crop2'], $ultimasNoticias[0]['crop1']]) ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[0]['categorias'] ?? ''))) as $cat): ?>
@@ -159,7 +167,7 @@ $recientes = $stmtRecientes->get_result();
             </div>
             <div class="col-md-4">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[1]['id']) ?>">
-                    <img src="<?= htmlspecialchars($ultimasNoticias[1]['crop3'] ?? $ultimasNoticias[1]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[1]['crop3'], $ultimasNoticias[1]['crop1']]) ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[1]['categorias'] ?? ''))) as $cat): ?>
@@ -179,7 +187,7 @@ $recientes = $stmtRecientes->get_result();
         <div class="row">
             <div class="col">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[2]['id']) ?>">
-                    <img src="<?= htmlspecialchars($ultimasNoticias[2]['crop3'] ?? $ultimasNoticias[2]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[2]['crop3'], $ultimasNoticias[2]['crop1']]) ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[2]['categorias'] ?? ''))) as $cat): ?>
@@ -197,7 +205,7 @@ $recientes = $stmtRecientes->get_result();
             </div>
             <div class="col">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[3]['id']) ?>">
-                    <img src="<?= htmlspecialchars($ultimasNoticias[3]['crop3'] ?? $ultimasNoticias[3]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[3]['crop3'], $ultimasNoticias[3]['crop1']]) ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[3]['categorias'] ?? ''))) as $cat): ?>
@@ -215,7 +223,7 @@ $recientes = $stmtRecientes->get_result();
             </div>
             <div class="col">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[4]['id']) ?>">
-                    <img src="<?= htmlspecialchars($ultimasNoticias[4]['crop3'] ?? $ultimasNoticias[4]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[4]['crop3'], $ultimasNoticias[4]['crop1']]) ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[4]['categorias'] ?? ''))) as $cat): ?>
@@ -235,7 +243,7 @@ $recientes = $stmtRecientes->get_result();
         <div class="row">
             <div class="col-md-4">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[5]['id']) ?>">
-                    <img src="<?= htmlspecialchars($ultimasNoticias[5]['crop3'] ?? $ultimasNoticias[5]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[5]['crop3'], $ultimasNoticias[5]['crop1']]) ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[5]['categorias'] ?? ''))) as $cat): ?>
@@ -253,7 +261,7 @@ $recientes = $stmtRecientes->get_result();
             </div>
             <div class="col-md-8">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[6]['id']) ?>">
-                    <img src="<?= htmlspecialchars($ultimasNoticias[6]['crop2'] ?? $ultimasNoticias[6]['crop1'] ?? 'img/placeholder.jpg') ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[6]['crop2'], $ultimasNoticias[6]['crop1']]) ?>" alt="">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[6]['categorias'] ?? ''))) as $cat): ?>
@@ -288,7 +296,7 @@ $recientes = $stmtRecientes->get_result();
                     <div class="card mb-3" data-url="<?= newsUrl($row['id']) ?>">
                         <div class="row row-no-gap">
                             <div class="col-md-4">
-                                <img src="<?= htmlspecialchars($row['crop3']  ?? 'img/placeholder.jpg') ?>" alt="" class="card-img-left">
+                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="card-img-left">
                             </div>
                             <div class="col-md-8">
                                 <div class="card-body">
@@ -337,7 +345,7 @@ $recientes = $stmtRecientes->get_result();
                     <div class="card mb-3" data-url="<?= newsUrl($row['id']) ?>">
                         <div class="row row-no-gap">
                             <div class="col-md-4">
-                                <img src="<?= htmlspecialchars($row['crop3']  ?? 'img/placeholder.jpg') ?>" alt="" class="card-img-left">
+                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="card-img-left">
                             </div>
                             <div class="col-md-8">
                                 <div class="card-body">
@@ -375,7 +383,7 @@ $recientes = $stmtRecientes->get_result();
                     <?php foreach($noticiasMasRecientes3 as $row): ?>
                         <div class="news-slide">
                             <div class="news-card" data-url="<?= newsUrl($row['id']) ?>">
-                                <img src="<?= htmlspecialchars($row['crop3']  ?? 'img/placeholder.jpg') ?>" alt="">
+                                <img src="<?= img([$row['crop3']]) ?>" alt="">
                                 <div class="news-overlay">
                                     <div class="news-tags">
                                         <?php foreach(array_filter(array_map('trim', explode(',', $row['categorias'] ?? ''))) as $cat): ?>
@@ -439,7 +447,7 @@ $recientes = $stmtRecientes->get_result();
                                 <?php foreach($ultimasNoticiasSidebar as $row): ?>
                                         <div class="cardSpecial row row-no-gap">
                                             <div class="col-md-4">
-                                                <img src="<?= htmlspecialchars($row['crop3'] ?? 'img/placeholder.jpg') ?>" alt="" class="imgCard card-img-left-rounded">
+                                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="imgCard card-img-left-rounded">
                                             </div>
                                             <div class="col-md-8">
                                                 <div class="card-body">
@@ -456,7 +464,7 @@ $recientes = $stmtRecientes->get_result();
                                 <?php foreach($popularesNoticiasSidebar as $row): ?>
                                         <div class="cardSpecial row row-no-gap">
                                             <div class="col-md-4">
-                                                <img src="<?= htmlspecialchars($row['crop3'] ?? 'img/placeholder.jpg') ?>" alt="" class="imgCard card-img-left-rounded">
+                                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="imgCard card-img-left-rounded">
                                             </div>
                                             <div class="col-md-8">
                                                 <div class="card-body">
