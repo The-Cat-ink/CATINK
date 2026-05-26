@@ -4,7 +4,12 @@
  */
 function loadEnv($path = null) {
     if ($path === null) {
+        // 1. Raíz del proyecto (local dev)
         $path = __DIR__ . '/../.env';
+        // 2. Un nivel arriba de public_html (producción Hostinger)
+        if (!file_exists($path)) {
+            $path = $_SERVER['DOCUMENT_ROOT'] . '/../.env';
+        }
     }
     if (!file_exists($path)) {
         return;
