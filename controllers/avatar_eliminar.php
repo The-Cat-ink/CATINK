@@ -29,9 +29,13 @@ if($row){
     $stmt->bind_param("i", $id);
     $stmt->execute();
 
-    $stmt = $con->prepare("UPDATE lectores SET avatar_id = NULL WHERE avatar_id = ?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
+    // Lectores (safe: tabla puede no existir aún)
+    $check = $con->query("SHOW TABLES LIKE 'lectores'");
+    if($check && $check->num_rows > 0){
+        $stmt = $con->prepare("UPDATE lectores SET avatar_id = NULL WHERE avatar_id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+    }
 }
 
 echo json_encode(['ok'=>true]);
