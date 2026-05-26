@@ -1,6 +1,6 @@
 <?php require_once(__DIR__ . "/../views/helpers/urlhelper.php"); ?>
 <!-- Modal de cookies -->
-<div id="cookie-modal" class="cookie-modal">
+<div id="cookie-modal" class="cookie-modal" style="display:none;">
   <div class="cookie-content">
     <h2>Uso de Cookies</h2>
     <p>Utilizamos cookies para publicidad, análisis y contenido embebido. 
@@ -15,7 +15,7 @@
 <!-- Fin del contenido principal -->
 </main>
 <!-- Script local: reemplaza comportamientos de Bootstrap (colapso, tema, carrusel) -->
-<script src="https://www.catink.com.mx/CSS/scripts.js"></script>
+<script src="<?= basePath() ?>/CSS/scripts.js"></script>
 <script async src="https://platform.twitter.com/widgets.js"></script>
 <script>
   const input = document.getElementById('searchInput');

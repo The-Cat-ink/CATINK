@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 - CatInk News</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI', sans-serif;
+}
+body{
+    min-height:100vh;
+    background:#0a0a0f;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    padding:20px;
+    overflow:hidden;
+}
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(239,51,99,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 30%, rgba(93,0,113,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 80%, rgba(239,51,99,0.08) 0%, transparent 50%);
+    z-index:0;
+}
+
+.container{
+    text-align:center;
+    z-index:2;
+    max-width:520px;
+    width:100%;
+    animation: fadeUp 0.8s ease-out;
+}
+@keyframes fadeUp{
+    from{ opacity:0; transform:translateY(30px); }
+    to{ opacity:1; transform:translateY(0); }
+}
+
+.error{
+    font-size:clamp(80px, 15vw, 150px);
+    font-weight:800;
+    background: linear-gradient(135deg, #EF3363, #ff6b9d, #EF3363);
+    background-size:200% 200%;
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    animation: gradientShift 3s ease-in-out infinite;
+    line-height:1;
+    margin-bottom:8px;
+    letter-spacing:-4px;
+}
+@keyframes gradientShift{
+    0%,100%{ background-position:0% 50%; }
+    50%{ background-position:100% 50%; }
+}
+
+.subtitle{
+    font-size:clamp(14px, 2.5vw, 18px);
+    color:rgba(255,255,255,0.4);
+    text-transform:uppercase;
+    letter-spacing:4px;
+    font-weight:600;
+    margin-bottom:20px;
+}
+
+.message{
+    font-size:clamp(16px, 3vw, 20px);
+    margin-bottom:10px;
+    color:rgba(255,255,255,0.7);
+    line-height:1.5;
+}
+
+/* Mancha tinta */
+.ink-bg{
+    position:fixed;
+    width:0;
+    height:0;
+    background:radial-gradient(circle, rgba(93,0,113,0.4), transparent 70%);
+    border-radius:50%;
+    animation:spread 2.5s ease-out forwards;
+    z-index:1;
+    top:50%; left:50%;
+}
+@keyframes spread{
+    to{
+        width:1200px;
+        height:1200px;
+        margin-left:-600px;
+        margin-top:-600px;
+        opacity:0.5;
+    }
+}
+
+/* ===== GATO SVG ===== */
+.cat-wrapper{
+    width:clamp(180px, 45vw, 280px);
+    margin:20px auto 10px;
+    filter: drop-shadow(0 0 30px rgba(239,51,99,0.3));
+}
+
+.cat-svg{
+    width:100%;
+    animation:floatCat 4s ease-in-out infinite;
+}
+
+@keyframes floatCat{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-14px);}
+}
+
+.cat-fill{
+    fill:#5a0071;
+    stroke:#1a1a2e;
+    stroke-width:5;
+}
+.cat-fill-dark{
+    fill:#1a0025;
+    stroke-width:5;
+}
+.eye{
+    fill:#0a0a0f;
+    stroke:#1a1a2e;
+    stroke-width:4;
+}
+
+.pupil{
+    fill:white;
+    transition:transform 0.08s linear;
+    stroke:#000;
+    stroke-width:2;
+}
+
+.mouth{
+    fill:#0a0a0f;
+}
+
+.logo-letter{
+    font-size:120px;
+    font-weight:bold;
+    fill:#FFD54F;
+    font-family:Arial, sans-serif;
+}
+
+.tail-ink{
+    fill:none;
+    stroke:#5a0071;
+    stroke-width:22;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    transform-origin:380px 450px;
+    animation:inkWag 3s ease-in-out infinite;
+}
+@keyframes inkWag{
+    0%{transform:rotate(5deg);}
+    50%{transform:rotate(-8deg);}
+    100%{transform:rotate(5deg);}
+}
+
+/* BOTONES */
+.btn-group{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    margin-top:28px;
+    opacity:0;
+    transform:translateY(15px);
+    transition: opacity 0.5s, transform 0.5s;
+}
+.btn-group.show{
+    opacity:1;
+    transform:translateY(0);
+}
+
+.btn-back{
+    padding:12px 28px;
+    border:none;
+    border-radius:12px;
+    background:#EF3363;
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+    font-size:clamp(13px,2.5vw,15px);
+    transition:all 0.3s cubic-bezier(0.25,0.8,0.25,1);
+    box-shadow:0 4px 20px rgba(239,51,99,0.35);
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+}
+.btn-back:hover{
+    transform:translateY(-3px);
+    box-shadow:0 8px 30px rgba(239,51,99,0.5);
+    background:#d42a55;
+}
+
+.btn-ghost{
+    padding:12px 28px;
+    border:1.5px solid rgba(255,255,255,0.15);
+    border-radius:12px;
+    background:rgba(255,255,255,0.03);
+    color:rgba(255,255,255,0.7);
+    font-weight:600;
+    cursor:pointer;
+    font-size:clamp(13px,2.5vw,15px);
+    transition:all 0.3s;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    backdrop-filter:blur(8px);
+}
+.btn-ghost:hover{
+    border-color:rgba(255,255,255,0.3);
+    color:white;
+    background:rgba(255,255,255,0.06);
+    transform:translateY(-2px);
+}
+
+/* SPLASH */
+.splash{
+    position:fixed;
+    width:12px;
+    height:12px;
+    background:#EF3363;
+    border-radius:50%;
+    pointer-events:none;
+    animation:splashAnim 700ms ease-out forwards;
+    z-index:10;
+}
+@keyframes splashAnim{
+    to{
+        transform:translate(var(--x), var(--y)) scale(0.2);
+        opacity:0;
+    }
+}
+
+/* Partículas */
+.particle{
+    position:fixed;
+    width:2px;
+    height:2px;
+    background:rgba(239,51,99,0.5);
+    border-radius:50%;
+    animation:floatParticle 8s linear infinite;
+    z-index:0;
+}
+.particle:nth-child(odd){
+    background:rgba(93,0,113,0.5);
+    width:3px;
+    height:3px;
+}
+@keyframes floatParticle{
+    from{transform:translateY(0); opacity:0.6;}
+    to{transform:translateY(-100vh); opacity:0;}
+}
+</style>
+</head>
+<body>
+
+<div class="ink-bg"></div>
+<div class="container">
+    <div class="cat-wrapper">
+        <svg class="cat-svg" viewBox="0 0 500 600">
+            <g transform="translate(12.5, 15) scale(0.85)">
+                <!-- Cola -->
+                <path class="tail-ink"
+                    d="M380 450 
+                        C400 400, 420 320, 380 260
+                        C360 230, 390 200, 420 220"/>
+                <!-- Patas traseras (atrás) -->
+                <ellipse cx="150" cy="530" rx="60" ry="40" class="cat-fill"/>
+                <ellipse cx="350" cy="530" rx="60" ry="40" class="cat-fill"/>
+                <!-- Dedos patas traseras -->
+                <line x1="100" y1="520" x2="100" y2="550" stroke="#1a1a2e" stroke-width="4"/>
+                <line x1="125" y1="510" x2="125" y2="570" stroke="#1a1a2e" stroke-width="4"/>
+                <line x1="375" y1="510" x2="375" y2="570" stroke="#1a1a2e" stroke-width="4"/>
+                <line x1="400" y1="520" x2="400" y2="550" stroke="#1a1a2e" stroke-width="4"/>
+                <!-- Orejas -->
+                <polygon points="95,180 90,20 180,85" class="cat-fill"/>
+                <polygon points="320,85 410,20 405,180" class="cat-fill"/>
+                <polygon points="118,150 110,65 157,105" class="cat-fill-dark"/>
+                <polygon points="343,105 390,65 382,150" class="cat-fill-dark"/>
+                <!-- Cuerpo (delante de patas traseras) -->
+                <ellipse cx="250" cy="420" rx="120" ry="150" class="cat-fill"/>
+                <text x="250" y="450" text-anchor="middle" class="logo-letter">C</text>
+                <circle cx="250" cy="230" r="160" class="cat-fill"/>
+                <!-- Ojos -->
+                <ellipse cx="200" cy="220" rx="50" ry="65" class="eye"/>
+                <ellipse cx="300" cy="220" rx="50" ry="65" class="eye"/>
+                <!-- Pupilas que se mueven -->
+                <circle cx="200" cy="220" r="35" class="pupil" id="pupilLeft"/>
+                <circle cx="300" cy="220" r="35" class="pupil" id="pupilRight"/>
+                <!-- Boca estilo :3 -->
+                <path d="
+                M150 280           
+                Q200 340 250 300 
+                Q300 340 350 280 
+                Q250 465 150 280
+                Z" class="mouth"/>
+                <ellipse cx="250" cy="290" rx="20" ry="10" fill="#ffdce0"/>
+                <ellipse cx="250" cy="358" rx="20" ry="10" fill="#dc2a74"/>
+                <!-- Patas delanteras (delante del cuerpo) -->
+                <ellipse cx="190" cy="560" rx="60" ry="40" class="cat-fill"/>
+                <ellipse cx="310" cy="560" rx="60" ry="40" class="cat-fill"/>
+                <!-- Dedos patas delanteras -->
+                <line x1="165" y1="560" x2="165" y2="600" stroke="#1a1a2e" stroke-width="4"/>
+                <line x1="190" y1="535" x2="190" y2="600" stroke="#1a1a2e" stroke-width="4"/>
+                <line x1="215" y1="560" x2="215" y2="600" stroke="#1a1a2e" stroke-width="4"/>
+                <line x1="285" y1="560" x2="285" y2="600" stroke="#1a1a2e" stroke-width="4"/>
+                <line x1="310" y1="535" x2="310" y2="600" stroke="#1a1a2e" stroke-width="4"/>
+                <line x1="335" y1="560" x2="335" y2="600" stroke="#1a1a2e" stroke-width="4"/>
+            </g>
+        </svg>
+    </div>
+    <div class="error">404</div>
+    <div class="subtitle">Pagina no encontrada</div>
+    <div class="message">Parece que esta pagina se perdio en la tinta <i class="bi bi-droplet-fill" style="color:#EF3363;"></i></div>
+    <div class="btn-group" id="btnGroup">
+        <a href="/" class="btn-back" id="homeBtn"><i class="bi bi-house-fill"></i> Ir al inicio</a>
+        <button class="btn-ghost" id="backBtn"><i class="bi bi-arrow-left"></i> Volver</button>
+    </div>
+</div>
+
+<script>
+const btnGroup = document.getElementById("btnGroup");
+const backBtn = document.getElementById("backBtn");
+const homeBtn = document.getElementById("homeBtn");
+const pupils = [
+    document.getElementById("pupilLeft"),
+    document.getElementById("pupilRight")
+];
+const eyeCenters = [
+    {x:200,y:220},
+    {x:300,y:220}
+];
+
+document.addEventListener("mousemove", e => {
+    pupils.forEach((pupil,index)=>{
+        const rect = document.querySelector(".cat-svg").getBoundingClientRect();
+        const scale = rect.width / 500;
+        const mouseX = (e.clientX - rect.left) / scale;
+        const mouseY = (e.clientY - rect.top) / scale;
+
+        const dx = mouseX - eyeCenters[index].x;
+        const dy = mouseY - eyeCenters[index].y;
+        const angle = Math.atan2(dy,dx);
+        const radius = 12;
+
+        pupil.style.transform = `translate(${Math.cos(angle)*radius}px, ${Math.sin(angle)*radius}px)`;
+    });
+});
+
+setTimeout(()=> btnGroup.classList.add("show"), 1000);
+
+function doSplash(e){
+    for(let i=0;i<15;i++){
+        let splash=document.createElement("div");
+        splash.className="splash";
+        splash.style.left=e.clientX+"px";
+        splash.style.top=e.clientY+"px";
+        splash.style.setProperty("--x",(Math.random()-0.5)*180+"px");
+        splash.style.setProperty("--y",(Math.random()-0.5)*180+"px");
+        document.body.appendChild(splash);
+        setTimeout(()=> splash.remove(),700);
+    }
+}
+
+backBtn.addEventListener("click",(e)=>{
+    doSplash(e);
+    setTimeout(()=>{
+        if(window.history.length > 1) window.history.back();
+        else window.location.href = "/";
+    }, 350);
+});
+
+homeBtn.addEventListener("click",(e)=>{
+    doSplash(e);
+});
+
+for(let i=0;i<25;i++){
+    let p=document.createElement("div");
+    p.className="particle";
+    p.style.left=Math.random()*100+"vw";
+    p.style.top=(100+Math.random()*20)+"vh";
+    p.style.animationDuration=(5+Math.random()*6)+"s";
+    p.style.animationDelay=(Math.random()*5)+"s";
+    document.body.appendChild(p);
+}
+</script>
+
+</body>
+</html>

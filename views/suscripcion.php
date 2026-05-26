@@ -32,7 +32,7 @@ include("./../layout/header.php");
                             </select>
                         </div>
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-success">Suscribirse</button>
+                            <button type="submit" class="btn btn-accent">Suscribirse</button>
                         </div>
                     </div>
                 </form>

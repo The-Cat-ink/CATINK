@@ -44,7 +44,7 @@ while ($row = $result->fetch_assoc()) {
         <h1>Gestión de Contenidos</h1>
     </div>
     <?php if (!empty($ACL['crear'])): ?>
-        <a href="crear.php" class="btn btn-success"><i class="bi bi-plus-lg"></i> Nueva Noticia</a>
+        <a href="crear.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Nueva Noticia</a>
     <?php endif; ?>
     <?php if (isset($_GET['msg']) && $_GET['msg'] == 'eliminado'): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">

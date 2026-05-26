@@ -21,6 +21,9 @@ $secciones = [];
 while($row = $result->fetch_assoc()) {
     $secciones[$row['nombre']] = $row;
 }
+// Defaults para secciones no configuradas
+if(!isset($secciones['publicidad'])) $secciones['publicidad'] = ['estado' => 0];
+if(!isset($secciones['videos'])) $secciones['videos'] = ['estado' => 0];
 // =========================
 // Generar JSON-LD del menú
 // =========================
@@ -69,13 +72,13 @@ $menuJson = [
   <!-- Canonical -->
   <link rel="canonical" href="<?= $canonical ?? 'https://www.catink.com.mx/' ?>">
   <!-- Favicon -->
-  <link rel="icon" href="https://www.catink.com.mx/catink-icon.ico" type="image/x-icon">
+  <link rel="icon" href="<?= basePath() ?>/catink-icon.ico" type="image/x-icon">
   <!-- JSON-LD: Menú -->
   <script type="application/ld+json">
     <?= json_encode($menuJson, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT) ?>
   </script>
   <!-- CSS / JS -->
-  <link rel="stylesheet" href="https://www.catink.com.mx/CSS/styles.css">
+  <link rel="stylesheet" href="<?= basePath() ?>/CSS/styles.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
   <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
@@ -88,6 +91,8 @@ $menuJson = [
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NT5RHZXX"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
+<?php $__pag = basename($_SERVER['PHP_SELF'], '.php'); ?>
+<?php if($__pag !== 'login' && $__pag !== 'registro'): ?>
 <nav class="navbar">
   <div class="container-fluid">
     <a class="navbar-brand" href="<?= basePath() . '/' ?>">
@@ -99,7 +104,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav nav-left">
-        <li class="nav-item"><a class="nav-link" href="<?= basePath() . '/' ?>">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= basePath() . '/' ?>">Inicio</a></li>
         <?php foreach ($categorias as $cat): ?>
           <li class="nav-item">
             <a class="nav-link" href="<?= categoryUrl($cat['nombre']) ?>">
@@ -110,16 +115,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <li class="nav-item d-flex gap-2 align-items-center">
             <!-- BOTÓN MODO OSCURO -->
             <button id="themeToggle" class="btn btn-outline-secondary">🌙</button>
-            <a href="<?= basePath() . '/login' ?>" class="btn btn-outline-secondary">
+            <a href="<?= basePath() . (isset($_SESSION['usuario']) ? '/perfil' : '/login') ?>" class="btn btn-outline-secondary">
               <?php
                 if(isset($_SESSION['usuario'])){
-                  echo "<i class='bi bi-person-fill-check'></i>";
-                  echo $_SESSION['usuario'];
+                  echo "<i class='bi bi-person-fill-check'></i> ";
+                  echo htmlspecialchars($_SESSION['usuario']);
                 }else{
                   echo "<span class='bi bi-person-fill'></span>";
                 }
               ?>
             </a>
+            <?php if(isset($_SESSION['usuario'])): ?>
+              <?php if($_SESSION['superadmin'] ?? false): ?>
+                <a href="<?= basePath() ?>/views/admin.php" class="btn btn-outline-secondary" title="Panel Admin">
+                  <i class="bi bi-speedometer2"></i>
+                </a>
+              <?php endif; ?>
+              <a href="<?= basePath() ?>/controllers/logoutcontroller.php" class="btn btn-outline-secondary" title="Cerrar sesión">
+                <i class="bi bi-box-arrow-right"></i>
+              </a>
+            <?php endif; ?>
         </li>
       </ul>
       <form class="nav-search" onsubmit="return false;">
@@ -141,5 +156,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </nav>
+<?php endif; ?>
 <!-- Inicio del contenido principal de la página -->
 <main class="site-main">

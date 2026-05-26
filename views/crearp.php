@@ -78,7 +78,7 @@
                 <input type="datetime-local" id="fechaFin" name="fechaFin" required>
             </div>
             <div class="form-actions">
-                <button type="submit" class="btn btn-success" name="guardarPublicidad">
+                <button type="submit" class="btn btn-accent" name="guardarPublicidad">
                     Guardar publicidad
                 </button>
             </div>

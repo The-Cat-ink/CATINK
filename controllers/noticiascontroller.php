@@ -30,11 +30,11 @@ include("../data/conexion.php");
 // ============================
 // DATOS FORMULARIO
 // ============================
-$titulo = $_POST['titulo'];
-$descripcion = $_POST['descripcion'];
-$categorias = $_POST['categoria'] ?? []; // ahora IDs
-$autor = $_POST['autor'];
-$contenido = $_POST['contenido'];
+$titulo = $_POST['titulo'] ?? '';
+$descripcion = $_POST['descripcion'] ?? '';
+$categorias = $_POST['categoria'] ?? [];
+$autor = $_POST['autor'] ?? '';
+$contenido = $_POST['contenido'] ?? '';
 // limpiar posibles scripts y conservar solo el placeholder
 $contenido = preg_replace('/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/i', '', $contenido);
 // convertir posibles embed html a div.social-embed (blockquote generados por Quill/JS)

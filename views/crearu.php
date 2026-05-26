@@ -17,6 +17,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Crear Usuario</h1>
+        <a href="usuarios.php" class="btn btn-accent"><i class="bi bi-arrow-left"></i> Volver</a>
     </div>
     <form id="formUsuario" action="./../controllers/altausuarios.php" method="POST">
         <div class="form-card card">
@@ -171,7 +172,7 @@
             </div>
             <div class="form-actions">
                 <?php if($ACL['crear']): ?>
-                    <button type="submit" class="btn btn-success">Crear Usuario</button>
+                    <button type="submit" class="btn btn-accent">Crear Usuario</button>
                 <?php endif; ?>
             </div>
         </div>

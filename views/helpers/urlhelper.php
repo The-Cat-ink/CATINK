@@ -3,7 +3,7 @@ function basePath(){
     $host = $_SERVER['HTTP_HOST'];
     // entorno local
     if(strpos($host, 'localhost') !== false){
-        return "/CatInk_Proyecto";
+        return "/CATINK";
     }
     // producción
     return "";

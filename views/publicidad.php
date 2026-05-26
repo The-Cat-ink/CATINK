@@ -23,7 +23,7 @@
     </div>
     <?php if($ACL['crear']): ?>
         <div class="col">
-            <a href="crearp.php" class="btn btn-success"><i class="bi bi-plus-lg"></i>Agregar Publicidad</a>
+            <a href="crearp.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i>Agregar Publicidad</a>
         </div>
     <?php endif; ?>
     <div class="row">

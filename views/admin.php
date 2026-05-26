@@ -97,12 +97,12 @@ function formatNumberShort($num){
     </div>
     <!-- BOTÓN NUEVA NOTICIA -->
     <?php if($ACLNoticias['crear']): ?>
-        <a href="crear.php" class="btn btn-success"><i class="bi bi-plus-lg"></i> Nueva Noticia</a>
+        <a href="crear.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Nueva Noticia</a>
     <?php endif; ?> 
     <!-- Botón para abrir el modal -->
      <?php if($superadmin): ?>
-        <a href="paginas.php" class="btn btn-success"><i class="bi bi-card-text"></i> Editar Páginas Informativas</a>
-        <button id="btnAbrirModal" class="btn btn-success">
+        <a href="paginas.php" class="btn btn-accent"><i class="bi bi-card-text"></i> Editar Páginas Informativas</a>
+        <button id="btnAbrirModal" class="btn btn-accent">
             <i class="bi bi-gear"></i> Gestionar Estado de Secciones
         </button>
     <?php endif; ?>
@@ -147,7 +147,7 @@ function formatNumberShort($num){
                             <input type="date" id="filterFechaFin" class="form-control" value="<?= date('Y-m-d') ?>">
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
-                            <button class="btn btn-secondary w-100" onclick="loadGlobalStats(); loadLikesStats();">
+                            <button class="btn btn-accent w-100" style="margin-top:0;" onclick="loadGlobalStats(); loadLikesStats();">
                                 <i class="bi bi-funnel"></i> Aplicar
                             </button>
                         </div>
@@ -242,8 +242,8 @@ function formatNumberShort($num){
                         </div>
                     <?php endforeach; ?>
                     <div class="mt-3" style="text-align:right;">
-                        <button type="button" id="btnCancelarModal" class="btn btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn btn-success" name="actualizarEstado">Actualizar</button>
+                        <button type="button" id="btnCancelarModal" class="btn btn-accent" style="background:#6c757d;">Cancelar</button>
+                        <button type="submit" class="btn btn-accent" name="actualizarEstado">Actualizar</button>
                     </div>
                 </form>
             </div>
@@ -436,7 +436,7 @@ function formatNumberShort($num){
         min-height: 42px;
     }
     #btnAbrirModal,
-    a.btn.btn-success{
+    a.btn.btn-accent{
         width: 100%;
         margin-bottom: 0.5rem;
     }

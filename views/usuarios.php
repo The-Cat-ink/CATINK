@@ -25,7 +25,7 @@ $usuarios = $stmt->get_result();
         <h1>Gestión de Usuarios</h1>
     </div>
     <?php if($ACL['crear']): ?>
-        <a href="./crearu.php" class="btn btn-success"><i class="bi bi-plus-lg"></i>Crear Usuario</a>
+        <a href="./crearu.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear Usuario</a>
     <?php endif; ?>
     <div class="card">
         <div class="card-body">

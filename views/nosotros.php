@@ -13,7 +13,7 @@ if ($result->num_rows > 0) {
     <h1>Sobre nosotros</h1>
     <div class="post-content">
         <div class="ql-editor">
-            <?php echo $row['contenido_pag']; ?>
+            <?php echo $row['contenido_pag'] ?? ''; ?>
         </div>
     </div>
 </div>

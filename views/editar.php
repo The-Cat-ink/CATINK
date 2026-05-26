@@ -221,7 +221,7 @@ while($row = $resCat->fetch_assoc()){
             <!-- ACCIONES -->
             <div class="form-actions">
                 <?php if (!empty($ACL['editar'])): ?>
-                    <button type="submit" class="btn-success">
+                    <button type="submit" class="btn-accent">
                         Guardar cambios
                     </button>
                 <?php endif; ?>
@@ -234,7 +234,7 @@ while($row = $resCat->fetch_assoc()){
             <h3 id="modalTitle">Hora no válida</h3>
             <p>La fecha y hora seleccionadas es menor a la actual.<br><br>¿Qué deseas hacer?</p>
             <div class="modal-actions">
-                <button class="btn-success" id="autoAdjustBtn" type="button">Ajustar automáticamente y guardar</button>
+                <button class="btn-accent" id="autoAdjustBtn" type="button">Ajustar automáticamente y guardar</button>
                 <button class="btn-secondary" id="manualAdjustBtn" type="button">Volver a ajustar la hora</button>
             </div>
         </div>

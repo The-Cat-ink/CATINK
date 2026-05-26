@@ -33,7 +33,7 @@ include("./../layout/header.php");
                                 <input type="file" class="form-control-file" id="cv" name="cv" required accept=".pdf,.doc,.docx">
                             </div>
                             <div class="form-actions">
-                                <button type="submit" class="btn btn-success">Enviar solicitud</button>
+                                <button type="submit" class="btn btn-accent">Enviar solicitud</button>
                             </div>
                         </div>
                     </form>
