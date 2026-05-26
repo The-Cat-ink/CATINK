@@ -115,7 +115,7 @@
                 <input type="hidden" name="contenido" id="contenido">
             </div>
             <div class="form-actions">
-                <button type="submit" class="btn btn-success">Guardar</button>
+                <button type="submit" class="btn btn-accent">Guardar</button>
             </div>
         </div>
     </form>

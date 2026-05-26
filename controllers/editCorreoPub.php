@@ -4,10 +4,10 @@ include("./aclcontroller.php");
 proteger('correos','editar');
 include("../data/conexion.php");
 include("../views/helpers/img.php");
-$id= $_POST['id'];
-$titulo     = $_POST['titulo'];
-$contenido  = $_POST['contenido'];
-$url        = $_POST['url'];
+$id= $_POST['id'] ?? 0;
+$titulo     = $_POST['titulo'] ?? '';
+$contenido  = $_POST['contenido'] ?? '';
+$url        = $_POST['url'] ?? '';
 $envio = !empty($_POST['envio'])
     ? str_replace('T', ' ', $_POST['envio'])
     : null;

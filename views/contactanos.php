@@ -22,7 +22,7 @@ include("./../layout/header.php");
                     <textarea id="message" name="message" class="form-control" rows="5" required></textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-success">Enviar</button>
+                    <button type="submit" class="btn btn-accent">Enviar</button>
                 </div>
             </div>
         </form>

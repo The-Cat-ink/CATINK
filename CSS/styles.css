@@ -43,7 +43,7 @@ html,body { height: 100%; font-family: system-ui, -apple-system, 'Segoe UI', Rob
   --messenger: #0084ff;
 }
 [data-bs-theme="dark"] #logo{
-  content: url('https://www.catink.com.mx//img/logo_alt.png');
+  content: url('/CATINK/img/logo_alt.png');
 }
 /* Layout general: cuerpo como columna flex para sticky footer */
 body { display:flex; flex-direction:column; min-height:100vh; background: var(--bg); color: var(--text); overflow-x: hidden; }
@@ -92,7 +92,7 @@ h2 {
   margin-right: 0;
 }
 #logo {
-  content: url('https://www.catink.com.mx/img/logo.png');
+  content: url('/CATINK/img/logo.png');
   max-height: 50px;
   width: auto;
   object-fit: contain;
@@ -181,13 +181,13 @@ h2 {
   border: none;
   background: transparent;
   outline: none;
-  color: var(--accent);
+  color: var(--text);
   width: 100%;
   font-size: 14px;
   font-family: inherit;
 }
 .nav-search .search-input::placeholder {
-  color: var(--text);
+  color: #000;
 }
 .nav-search .search-input:focus {
   outline: none;
@@ -227,10 +227,10 @@ h2 {
   border-color: var(--accent);
 }
 [data-bs-theme="light"] .nav-search .search-input {
-  color: var(--accent);
+  color: var(--text);
 }
 [data-bs-theme="light"] .nav-search .search-input::placeholder {
-  color: rgba(255, 107, 44, 0.5);
+  color: #f60361;
 }
 [data-bs-theme="light"] .search-btn:hover {
   background: rgba(255, 107, 44, 0.1);
@@ -1599,4 +1599,152 @@ hr{
 .img-search {
     width: 50px;
     height: auto;
+}
+/* ===============================
+   PERFIL DE USUARIO
+   =============================== */
+.perfil-wrapper {
+  display: flex;
+  gap: 40px;
+  max-width: 860px;
+  margin: 0 auto 40px;
+  padding: 30px 20px;
+}
+.perfil-sidebar {
+  flex: 0 0 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.perfil-avatar-wrap {
+  position: relative;
+  margin-bottom: 16px;
+}
+.perfil-avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--muted);
+  overflow: hidden;
+}
+.perfil-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.perfil-camera {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  border: 3px solid var(--bg);
+  transition: opacity 0.2s;
+}
+.perfil-camera:hover {
+  opacity: 0.85;
+}
+.perfil-nombre {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 4px 0 2px;
+  color: var(--text);
+}
+.perfil-username {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.perfil-meta-info {
+  width: 100%;
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.perfil-meta-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+.perfil-meta-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.perfil-meta-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.perfil-form {
+  flex: 1;
+  min-width: 0;
+}
+.perfil-row {
+  display: flex;
+  gap: 16px;
+}
+.perfil-half {
+  flex: 1;
+  min-width: 0;
+}
+.perfil-form .input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+.perfil-form select.input {
+  appearance: auto;
+  cursor: pointer;
+}
+.btn-perfil-save {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: opacity 0.2s;
+}
+.btn-perfil-save:hover {
+  opacity: 0.9;
+}
+/* Perfil responsive */
+@media (max-width: 768px) {
+  .perfil-wrapper {
+    flex-direction: column;
+    gap: 24px;
+    padding: 20px 10px;
+  }
+  .perfil-sidebar {
+    flex: none;
+    width: 100%;
+  }
+  .perfil-row {
+    flex-direction: column;
+    gap: 0;
+  }
 }

@@ -16,7 +16,7 @@ $result = $con->query($sql);
         <h1>Gestión de Categorias</h1>
     </div>
     <?php if($ACL['crear']): ?>
-        <button id="btnCrear" class="btn btn-success"><i class="bi bi-plus-lg"></i> Crear categoría</button>
+        <button id="btnCrear" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear categoría</button>
     <?php endif; ?>
     <div class="card">
         <div class="card-body">
@@ -72,7 +72,7 @@ $result = $con->query($sql);
                 <label for="modalNombre">Nombre</label>
                 <input type="text" id="modalNombre" name="nombre" required>
             </div>
-            <button type="submit" id="modalSubmit" class="btn btn-success"></button>
+            <button type="submit" id="modalSubmit" class="btn btn-accent"></button>
         </form>
     </div>
 </div>

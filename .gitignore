@@ -1,0 +1,16 @@
+# Entorno local
+.env
+
+# Carpeta de uploads (opcional, si no quieres subir imágenes de prueba)
+# img/avatares/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

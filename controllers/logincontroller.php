@@ -8,7 +8,7 @@ include("../views/helpers/urlhelper.php");
 $usuario = $_POST['usuario'] ?? '';
 $pass = $_POST['pass'] ?? '';
 if (empty($usuario) || empty($pass)) {
-    header('Location: ' . basePath() . '/index.php?error=1');
+    header('Location: ' . basePath() . '/login?error=1');
     exit();
 }
 // ============================
@@ -49,13 +49,19 @@ if ($result && $result->num_rows > 0) {
             header('Location: ' . basePath() . '/' . $modulo);
             exit();
         }
+        // usuario público sin permisos admin → perfil
+        $_SESSION['superadmin'] = false;
+        $_SESSION['id_usuario'] = $fila['id_u'];
+        $_SESSION['nombre_completo'] = $fila['nombre'];
+        header('Location: ' . basePath() . '/');
+        exit();
     } else {
-        header('Location: ' . basePath() . '/index.php?error=1');
+        header('Location: ' . basePath() . '/login?error=2');
         exit();
     }
 } else {
     // Usuario no encontrado
-    header('Location: ' . basePath() . '/index.php?error=1');
+    header('Location: ' . basePath() . '/login?error=2');
     exit();
 }
 ?>

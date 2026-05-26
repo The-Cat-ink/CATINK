@@ -19,7 +19,7 @@ $mapVistaModulo = [
     'correos' => 'correos',
     'videos' => 'videos'
 ];
-$superadmin = $_SESSION['superadmin'];
+$superadmin = $_SESSION['superadmin'] ?? false;
 // cargar acl globalmente
 $ACL = null;
 if(isset($mapVistaModulo[$archivoActual])){
@@ -62,9 +62,9 @@ if (!$fila) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CatInk News - Admin</title>
-  <link rel="stylesheet" href="https://www.catink.com.mx/CSS/styles.css">
-  <link rel="stylesheet" href="https://www.catink.com.mx/CSS/admin.css">
-  <link rel="icon" type="image/png" href="https://www.catink.com.mx/img/catink-icon.png">
+  <link rel="stylesheet" href="./../CSS/styles.css">
+  <link rel="stylesheet" href="./../CSS/admin.css">
+  <link rel="icon" type="image/png" href="./../img/catink-icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css">
   <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
@@ -86,14 +86,15 @@ if (!$fila) {
 <body class="has-sidebar">
 <div class="sidebar">
     <div class="logotipo">
-        <img id="icon" src="./../img/logo_alt_alt.jpg" alt="Logo">
+        <a href="./../index.php">
+            <img id="icon" src="./../img/logo.png" alt="Logo">
+        </a>
     </div>
     <div id="user">
         <h4><?= htmlspecialchars($fila['usuario']) ?></h4>
     </div>
     <ul class="sidebar-menu">
         <li class="sidebar-menu-item">
-            <a href="./../index.php" class="sidebar-menu-link"><i class="bi bi-house-fill"></i> Home</a>
         </li>
         <?php if ($superadmin): ?>
             <li class="sidebar-menu-item">
@@ -133,6 +134,11 @@ if (!$fila) {
         <?php if (($_SESSION['ACL']['videos']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
                 <a href="./videos.php" class="sidebar-menu-link">Videos</a>
+            </li>
+        <?php endif; ?>
+        <?php if ($superadmin || ($_SESSION['ACL']['usuarios']['leer']?? false)): ?>
+            <li class="sidebar-menu-item">
+                <a href="./avatares.php" class="sidebar-menu-link"><i class="bi bi-person-circle"></i> Fotos de Perfil</a>
             </li>
         <?php endif; ?>
     </ul>

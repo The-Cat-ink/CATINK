@@ -136,7 +136,7 @@
             </div>
             <div class="form-actions">
                 <?php if ($ACL['editar']): ?>
-                    <button type="submit" class="btn btn-success" name="actualizarPublicidad">
+                    <button type="submit" class="btn btn-accent" name="actualizarPublicidad">
                         Actualizar publicidad
                     </button>
                 <?php endif; ?>

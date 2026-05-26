@@ -195,7 +195,7 @@ while($row = $categoriasResult->fetch_assoc()){
             <!-- ACCIONES -->
             <div class="form-actions">
                 <?php if (!empty($ACL['crear'])): ?>
-                    <button type="submit" class="btn btn-success" name="guardarNoticia">
+                    <button type="submit" class="btn btn-accent" name="guardarNoticia">
                         Guardar noticia
                     </button>
                 <?php endif; ?>
@@ -213,7 +213,7 @@ while($row = $categoriasResult->fetch_assoc()){
             ¿Qué deseas hacer?
         </p>
         <div class="modal-actions">
-            <button class="btn-success" id="autoAdjustBtn" type="button">
+            <button class="btn-accent" id="autoAdjustBtn" type="button">
                 Ajustar automáticamente y guardar
             </button>
             <button class="btn-secondary" id="manualAdjustBtn" type="button">

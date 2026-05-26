@@ -174,7 +174,7 @@ $user = $stmt->get_result()->fetch_assoc();
             </div>
             <div class="form-actions">
                 <?php if($ACL['editar']): ?>
-                    <button type="submit" class="btn btn-success">Actualizar Usuario</button>
+                    <button type="submit" class="btn btn-accent">Actualizar Usuario</button>
                 <?php endif; ?>
             </div>
         </div>

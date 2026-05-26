@@ -17,6 +17,7 @@ $suscripciones = mysqli_fetch_all($resultado, MYSQLI_ASSOC);
 $sql2= "SELECT * FROM programacion_correos";
 $resultado2 = mysqli_query($con, $sql2);
 $programacion = mysqli_fetch_all($resultado2, MYSQLI_ASSOC);
+$prog = $programacion[0] ?? ['id_programacion' => '', 'hora' => '', 'estado' => 'inactivo'];
 ?>
 <div class="container-fluid">
     <?php if($superadmin): ?>
@@ -25,26 +26,26 @@ $programacion = mysqli_fetch_all($resultado2, MYSQLI_ASSOC);
         </div>
         <form action="./../controllers/actualizarcorreos.php" method="POST">
             <div class="form-card card">
-                <input type="hidden" name="id" value="<?php echo $programacion[0]['id_programacion']; ?>">
+                <input type="hidden" name="id" value="<?php echo $prog['id_programacion']; ?>">
                 <div class="row">
                     <div class="col">
                         <div class="form-group">
                             <label for="hora">Hora de envio:</label>
-                            <input type="time" name="hora" value="<?php echo $programacion[0]['hora']; ?>" required>
+                            <input type="time" name="hora" value="<?php echo $prog['hora']; ?>" required>
                         </div>
                     </div>
                     <div class="col">
                         <div class="form-group">
                             <label for="estado">Estado:</label>
-                            <select name="estado" id="estado" value="<?php echo $programacion[0]['estado']; ?>" required>
-                                <option value="activo" <?php if($programacion[0]['estado'] == 'activo') echo 'selected'; ?>>Activo</option>
-                                <option value="inactivo" <?php if($programacion[0]['estado'] == 'inactivo') echo 'selected'; ?>>Inactivo</option>
+                            <select name="estado" id="estado" required>
+                                <option value="activo" <?php if($prog['estado'] == 'activo') echo 'selected'; ?>>Activo</option>
+                                <option value="inactivo" <?php if($prog['estado'] == 'inactivo') echo 'selected'; ?>>Inactivo</option>
                             </select>
                         </div>
                     </div>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-success" name="actualizarProgramacion">
+                    <button type="submit" class="btn btn-accent" name="actualizarProgramacion">
                         Actualizar programación
                     </button>
                 </div>

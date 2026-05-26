@@ -40,7 +40,7 @@ proteger('publicidad','crear');
             </div>
             <div class="form-actions">
                 <?php if($ACl['crear']): ?>
-                    <button type="submit" class="btn btn-success">Guardar</button>
+                    <button type="submit" class="btn btn-accent">Guardar</button>
                 <?php endif; ?>
             </div>
         </div>

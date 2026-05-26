@@ -26,7 +26,7 @@ $videos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         <h1>Gestión de Videos</h1>
     </div>
     <?php if($ACL['crear']): ?>
-        <button id="btnCrear" class="btn btn-success">
+        <button id="btnCrear" class="btn btn-accent">
             <i class="bi bi-plus-lg"></i> Crear Video
         </button>
     <?php endif; ?>
@@ -91,7 +91,7 @@ $videos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                     <option value="0">Inactivo</option>
                 </select>
             </div>
-            <button type="submit" id="modalSubmit" class="btn btn-success"></button>
+            <button type="submit" id="modalSubmit" class="btn btn-accent"></button>
         </form>
     </div>
 </div>

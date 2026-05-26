@@ -29,6 +29,11 @@ $stmt = $con->prepare("
 $stmt->execute();
 $result = $stmt->get_result();
 $noticias = $result->fetch_all(MYSQLI_ASSOC);
+if(empty($noticias)){
+    echo '<div class="container mt-5 text-center"><h2>No hay noticias publicadas aún.</h2><p style="color:var(--muted);">Crea tu primera noticia desde el panel de administración.</p></div>';
+    include(__DIR__ . "/layout/footer.php");
+    exit;
+}
 // Últimas 3 noticias para sidebar
 $ultimasNoticiasSidebar = array_slice($noticias, 0, 3);
 // Noticias más populares (por likes)

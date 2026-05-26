@@ -18,7 +18,8 @@ $staticPages = [
 ];
 $urls = array_merge($urls, $staticPages);
 mysqli_report(MYSQLI_REPORT_OFF);
-$con = @new mysqli('localhost', 'u780114275_catink_news', '3N@KIrckPDm#', 'u780114275_cat_ink');
+require_once(__DIR__ . '/../data/env.php');
+$con = @new mysqli(env('DB_HOST','localhost'), env('DB_USER','root'), env('DB_PASS',''), env('DB_NAME','u780114275_cat_ink'));
 if (!$con->connect_error) {
     $con->set_charset('utf8mb4');
     $newsQuery = $con->prepare('SELECT id, fecha_publicacion FROM noticias WHERE fecha_publicacion <= NOW() ORDER BY fecha_publicacion DESC');

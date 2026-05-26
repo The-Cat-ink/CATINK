@@ -57,7 +57,7 @@ if($id){
             </div>
             <div class="form-actions">
                 <?php if($ACl['editar']): ?>
-                    <button type="submit" class="btn btn-success">Guardar</button>
+                    <button type="submit" class="btn btn-accent">Guardar</button>
                 <?php endif; ?>
             </div>
         </div>
