@@ -5,12 +5,16 @@
 
 -- 1. Tabla de avatares (si no existe)
 CREATE TABLE IF NOT EXISTS `avatares_perfil` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_avatar` int(11) NOT NULL AUTO_INCREMENT,
   `imagen` varchar(255) NOT NULL,
   `activo` tinyint(1) NOT NULL DEFAULT 1,
   `creado` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id_avatar`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 1b. Fix: si la tabla ya existe con columna 'id', renombrarla a 'id_avatar'
+-- (Ejecutar SOLO si la tabla ya fue creada con 'id')
+ALTER TABLE `avatares_perfil` CHANGE COLUMN `id` `id_avatar` int(11) NOT NULL AUTO_INCREMENT;
 
 -- 2. Columnas nuevas en usuarios (si no existen)
 -- fecha_nacimiento
