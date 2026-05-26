@@ -15,7 +15,7 @@
 <!-- Fin del contenido principal -->
 </main>
 <!-- Script local: reemplaza comportamientos de Bootstrap (colapso, tema, carrusel) -->
-<script src="<?= basePath() ?>/CSS/scripts.js?v=2.1"></script>
+<script src="<?= basePath() ?>/CSS/scripts.js?v=2.2"></script>
 <script async src="https://platform.twitter.com/widgets.js"></script>
 <script>
   const input = document.getElementById('searchInput');
