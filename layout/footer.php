@@ -106,7 +106,7 @@
 
     // Ocultar si haces click fuera
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('.nav-search')) {
+      if (resultsBox && !e.target.closest('.nav-search')) {
         resultsBox.style.display = 'none';
       }
     });
