@@ -24,9 +24,9 @@ if ($pass !== $pass2) {
 }
 
 // ============================
-// VERIFICAR DUPLICADOS
+// VERIFICAR DUPLICADOS EN LECTORES
 // ============================
-$stmt = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ?");
+$stmt = $con->prepare("SELECT id FROM lectores WHERE usuario = ?");
 $stmt->bind_param("s", $usuario);
 $stmt->execute();
 if ($stmt->get_result()->num_rows > 0) {
@@ -34,7 +34,7 @@ if ($stmt->get_result()->num_rows > 0) {
     exit;
 }
 
-$stmt = $con->prepare("SELECT id_u FROM usuarios WHERE correo = ?");
+$stmt = $con->prepare("SELECT id FROM lectores WHERE correo = ?");
 $stmt->bind_param("s", $correo);
 $stmt->execute();
 if ($stmt->get_result()->num_rows > 0) {
@@ -43,14 +43,14 @@ if ($stmt->get_result()->num_rows > 0) {
 }
 
 // ============================
-// INSERTAR USUARIO PÚBLICO (perm_* = 0)
+// INSERTAR LECTOR (tabla lectores)
 // ============================
 $passHash = password_hash($pass, PASSWORD_BCRYPT);
 
 $stmt = $con->prepare("
-    INSERT INTO usuarios 
-    (nombre, usuario, correo, pass, fecha_nacimiento, sexo, entidad, perm_categorias, perm_noticias, perm_publicidad, perm_suscripciones, perm_usuarios, perm_correos, perm_videos)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0, 0)
+    INSERT INTO lectores 
+    (nombre, usuario, correo, password_hash, fecha_nacimiento, sexo, entidad)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
 ");
 $stmt->bind_param("sssssss", $nombre, $usuario, $correo, $passHash, $fecha_nacimiento, $sexo, $entidad);
 

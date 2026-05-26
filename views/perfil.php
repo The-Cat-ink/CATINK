@@ -5,8 +5,13 @@ if(!isset($_SESSION['usuario'])){
     header('Location: ' . basePath() . '/login');
     exit;
 }
-// Obtener datos reales del usuario
-$stmtUser = $con->prepare("SELECT * FROM usuarios WHERE usuario = ?");
+// Obtener datos reales del usuario según su tipo
+$tipoUsuario = $_SESSION['tipo'] ?? 'lector';
+if($tipoUsuario === 'admin'){
+    $stmtUser = $con->prepare("SELECT *, registro AS creado FROM usuarios WHERE usuario = ?");
+} else {
+    $stmtUser = $con->prepare("SELECT * FROM lectores WHERE usuario = ?");
+}
 $stmtUser->bind_param("s", $_SESSION['usuario']);
 $stmtUser->execute();
 $user = $stmtUser->get_result()->fetch_assoc();
@@ -14,7 +19,7 @@ $user = $stmtUser->get_result()->fetch_assoc();
 $palabras = explode(' ', $user['nombre']);
 $iniciales = strtoupper(substr($palabras[0],0,1) . (isset($palabras[1]) ? substr($palabras[1],0,1) : ''));
 // Fecha de registro
-$fechaRegistro = $user['registro'] ? date('M Y', strtotime($user['registro'])) : 'N/A';
+$fechaRegistro = ($user['creado'] ?? $user['registro'] ?? null) ? date('M Y', strtotime($user['creado'] ?? $user['registro'])) : 'N/A';
 // Obtener avatar actual
 $avatarActual = null;
 if($user['avatar_id'] ?? null){

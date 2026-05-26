@@ -6,7 +6,7 @@ if (!isset($_GET['usuario'])) {
     exit;
 }
 $usuario = trim($_GET['usuario']);
-$stmt = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ?");
+$stmt = $con->prepare("SELECT id FROM lectores WHERE usuario = ?");
 $stmt->bind_param("s", $usuario);
 $stmt->execute();
 $result = $stmt->get_result();

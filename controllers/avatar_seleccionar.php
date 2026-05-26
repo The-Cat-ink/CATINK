@@ -23,8 +23,13 @@ if($stmt->get_result()->num_rows === 0){
     exit;
 }
 
-// Actualizar usuario
-$stmt = $con->prepare("UPDATE usuarios SET avatar_id = ? WHERE usuario = ?");
+// Actualizar avatar según tipo de usuario
+$tipo = $_SESSION['tipo'] ?? 'lector';
+if($tipo === 'admin'){
+    $stmt = $con->prepare("UPDATE usuarios SET avatar_id = ? WHERE usuario = ?");
+} else {
+    $stmt = $con->prepare("UPDATE lectores SET avatar_id = ? WHERE usuario = ?");
+}
 $stmt->bind_param("is", $avatar_id, $_SESSION['usuario']);
 $stmt->execute();
 

@@ -9,6 +9,7 @@ if(!isset($_SESSION['usuario'])){
 }
 
 $usuario = $_SESSION['usuario'];
+$tipo = $_SESSION['tipo'] ?? 'lector';
 $correo = trim($_POST['correo'] ?? '');
 $pass_actual = $_POST['pass_actual'] ?? '';
 $pass_nueva = $_POST['pass_nueva'] ?? '';
@@ -20,7 +21,11 @@ $entidad = $_POST['entidad'] ?? null;
 // VERIFICAR CONTRASEÑA ACTUAL
 // ============================
 if(!empty($pass_actual)){
-    $stmt = $con->prepare("SELECT pass FROM usuarios WHERE usuario = ?");
+    if($tipo === 'admin'){
+        $stmt = $con->prepare("SELECT pass FROM usuarios WHERE usuario = ?");
+    } else {
+        $stmt = $con->prepare("SELECT password_hash AS pass FROM lectores WHERE usuario = ?");
+    }
     $stmt->bind_param("s", $usuario);
     $stmt->execute();
     $row = $stmt->get_result()->fetch_assoc();
@@ -35,21 +40,33 @@ if(!empty($pass_actual)){
 // ============================
 // CONSTRUIR UPDATE DINÁMICO
 // ============================
-$campos = "correo=?, sexo=?, fecha_nacimiento=?, entidad=?";
-$tipos = "ssss";
-$valores = [$correo, $sexo ?: null, $nacimiento ?: null, $entidad ?: null];
-
-// Si quiere cambiar contraseña
-if(!empty($pass_nueva) && !empty($pass_actual)){
-    $campos .= ", pass=?";
+if($tipo === 'admin'){
+    // Admin → tabla usuarios
+    $campos = "correo=?, sexo=?, fecha_nacimiento=?, entidad=?";
+    $tipos = "ssss";
+    $valores = [$correo, $sexo ?: null, $nacimiento ?: null, $entidad ?: null];
+    if(!empty($pass_nueva) && !empty($pass_actual)){
+        $campos .= ", pass=?";
+        $tipos .= "s";
+        $valores[] = password_hash($pass_nueva, PASSWORD_BCRYPT);
+    }
     $tipos .= "s";
-    $valores[] = password_hash($pass_nueva, PASSWORD_BCRYPT);
+    $valores[] = $usuario;
+    $stmt = $con->prepare("UPDATE usuarios SET $campos WHERE usuario=?");
+} else {
+    // Lector → tabla lectores
+    $campos = "correo=?, sexo=?, fecha_nacimiento=?, entidad=?";
+    $tipos = "ssss";
+    $valores = [$correo, $sexo ?: null, $nacimiento ?: null, $entidad ?: null];
+    if(!empty($pass_nueva) && !empty($pass_actual)){
+        $campos .= ", password_hash=?";
+        $tipos .= "s";
+        $valores[] = password_hash($pass_nueva, PASSWORD_BCRYPT);
+    }
+    $tipos .= "s";
+    $valores[] = $usuario;
+    $stmt = $con->prepare("UPDATE lectores SET $campos WHERE usuario=?");
 }
-
-$tipos .= "s";
-$valores[] = $usuario;
-
-$stmt = $con->prepare("UPDATE usuarios SET $campos WHERE usuario=?");
 $stmt->bind_param($tipos, ...$valores);
 
 if($stmt->execute()){

@@ -24,8 +24,12 @@ if($row){
     $stmt->bind_param("i", $id);
     $stmt->execute();
 
-    // Resetear usuarios que tenían este avatar
+    // Resetear avatar en ambas tablas
     $stmt = $con->prepare("UPDATE usuarios SET avatar_id = NULL WHERE avatar_id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    $stmt = $con->prepare("UPDATE lectores SET avatar_id = NULL WHERE avatar_id = ?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
 }
