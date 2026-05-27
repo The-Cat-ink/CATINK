@@ -147,6 +147,7 @@
       num: 1,
       name: 'Original',
       ratio: NaN, // Sin ratio fijo
+      minWidth: 1600,
       inputId: 'imageInputCrop1',
       imgId: 'cropperImage1',
       previewId: 'preview1',
@@ -157,6 +158,7 @@
       num: 2,
       name: 'Banner',
       ratio: 21 / 6,
+      minWidth: 1200,
       inputId: 'imageInputCrop2',
       imgId: 'cropperImage2',
       previewId: 'preview2',
@@ -167,6 +169,7 @@
       num: 3,
       name: 'Miniatura',
       ratio: 16 / 9,
+      minWidth: 800,
       inputId: 'imageInputCrop3',
       imgId: 'cropperImage3',
       previewId: 'preview3',
@@ -242,7 +245,9 @@
       }
 
       const canvas = cropper.getCroppedCanvas({
-        imageSmoothingQuality: 'high'
+        imageSmoothingQuality: 'high',
+        minWidth: config.minWidth || 800,
+        minHeight: config.minWidth ? Math.round(config.minWidth / (config.ratio || 16/9)) : 450
       });
       const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
 
