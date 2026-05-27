@@ -17,13 +17,25 @@ const ACL = <?= json_encode($ACL) ?>;
 <?php
 include(__DIR__ . "/helpers/videoEmbed.php");
 include(__DIR__ . "/../data/conexion.php");
-$stmt = $con->prepare("SELECT * FROM videos order by id_v desc");
+$q = trim($_GET['q'] ?? '');
+if($q !== ''){
+    $like = "%$q%";
+    $stmt = $con->prepare("SELECT * FROM videos WHERE url_v LIKE ? ORDER BY id_v desc");
+    $stmt->bind_param("s", $like);
+} else {
+    $stmt = $con->prepare("SELECT * FROM videos order by id_v desc");
+}
 $stmt->execute();
 $videos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 ?>
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Gestión de Videos</h1>
+        <form method="GET" class="admin-search-form">
+            <i class="bi bi-search admin-search-icon"></i>
+            <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar por URL..." class="admin-search-input">
+            <?php if($q): ?><a href="./videos.php" class="admin-search-clear">&times;</a><?php endif; ?>
+        </form>
     </div>
     <?php if($ACL['crear']): ?>
         <button id="btnCrear" class="btn btn-accent">
