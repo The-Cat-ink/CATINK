@@ -244,7 +244,7 @@
       const canvas = cropper.getCroppedCanvas({
         imageSmoothingQuality: 'high'
       });
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
 
       // Guardar en input hidden
       if (hiddenInput) {
@@ -637,7 +637,7 @@ document.addEventListener("DOMContentLoaded", () => {
           height: 600,
       });
 
-      const croppedImage = canvas.toDataURL("image/jpeg", 0.9);
+      const croppedImage = canvas.toDataURL("image/jpeg", 0.95);
       resultPreview.src = croppedImage;
       inputCrop.value = croppedImage; // enviar al backend
   });

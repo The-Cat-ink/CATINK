@@ -75,7 +75,7 @@ $resultNoticias = $con->query("
 $ultimasNoticias = [];
 while($row = $resultNoticias->fetch_assoc()){
     $ultimasNoticias[] = $row;
-}
+}       
 $configResult = $con->query("SELECT * FROM secciones");
 $config = [];
 while($row = $configResult->fetch_assoc()){
