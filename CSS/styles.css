@@ -278,6 +278,8 @@ h2 {
     align-items: center;
     justify-content: space-between;
     position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
   }
   .navbar-toggler {
     display: none;
