@@ -80,7 +80,7 @@ $menuJson = [
     <?= json_encode($menuJson, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT) ?>
   </script>
   <!-- CSS / JS -->
-  <link rel="stylesheet" href="<?= basePath() ?>/CSS/styles.css?v=2.2">
+  <link rel="stylesheet" href="<?= basePath() ?>/CSS/styles.css?v=2.3">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
   <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>

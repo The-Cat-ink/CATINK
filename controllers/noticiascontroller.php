@@ -6,7 +6,7 @@ date_default_timezone_set('America/Mexico_City');
 // ============================
 // GUARDAR IMAGEN BASE64
 // ============================
-function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 80) {
+function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 92) {
   if (empty($base64)) return null;
   if (!preg_match('/^data:image\/(jpeg|jpg|png);base64,/', $base64)) {
     return null;

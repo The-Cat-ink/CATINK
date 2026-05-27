@@ -45,3 +45,6 @@ function searchUrlLong($termino){
     // Formato largo: /noticias/buscar/{termino}
     return basePath() . "/noticias/buscar/" . urlencode($termino);
 }
+function authorUrl($id){
+    return basePath() . "/autor/" . intval($id);
+}

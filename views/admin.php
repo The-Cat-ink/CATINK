@@ -75,7 +75,7 @@ $resultNoticias = $con->query("
 $ultimasNoticias = [];
 while($row = $resultNoticias->fetch_assoc()){
     $ultimasNoticias[] = $row;
-}
+}       
 $configResult = $con->query("SELECT * FROM secciones");
 $config = [];
 while($row = $configResult->fetch_assoc()){
@@ -102,7 +102,7 @@ function formatNumberShort($num){
     <!-- Botón para abrir el modal -->
      <?php if($superadmin): ?>
         <a href="paginas.php" class="btn btn-accent"><i class="bi bi-card-text"></i> Editar Páginas Informativas</a>
-        <button id="btnAbrirModal" class="btn btn-accent">
+        <button id="btnAbrirModal" class="btn btn-accent" style="font-weight: 525;">
             <i class="bi bi-gear"></i> Gestionar Estado de Secciones
         </button>
     <?php endif; ?>

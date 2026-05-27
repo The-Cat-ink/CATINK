@@ -5,7 +5,7 @@ proteger('publicidad','editar');
 // ============================
 // FUNCION GUARDAR IMAGEN BASE64 WEBP
 // ============================
-function guardarPublicidadBase64Webp($base64, $publicidadId, $calidad = 80) {
+function guardarPublicidadBase64Webp($base64, $publicidadId, $calidad = 90) {
     if (empty($base64)) return null;
 
     if (!preg_match('/^data:image\/(jpeg|jpg|png|webp);base64,/', $base64)) {

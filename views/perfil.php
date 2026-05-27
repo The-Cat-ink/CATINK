@@ -50,7 +50,9 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
     <div class="perfil-sidebar">
       <div class="perfil-avatar-wrap">
         <div class="perfil-avatar" id="perfilAvatar">
-          <?php if($avatarActual): ?>
+          <?php if($tipoUsuario === 'admin' && !empty($user['foto_personal'])): ?>
+            <img src="<?= basePath() ?>/<?= htmlspecialchars($user['foto_personal']) ?>" alt="Foto personal">
+          <?php elseif($avatarActual): ?>
             <img src="<?= basePath() ?>/img/avatares/<?= htmlspecialchars($avatarActual) ?>" alt="Avatar">
           <?php else: ?>
             <span id="perfilInitials"><?= htmlspecialchars($iniciales) ?></span>
@@ -71,7 +73,7 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
     </div>
     <!-- COLUMNA DERECHA: Formulario -->
     <div class="perfil-form">
-      <form id="perfilForm" action="<?= basePath() ?>/controllers/perfilcontroller.php" method="POST">
+      <form id="perfilForm" action="<?= basePath() ?>/controllers/perfilcontroller.php" method="POST" enctype="multipart/form-data">
         <div class="form-group">
           <label for="correo">Correo Electrónico</label>
           <input type="email" id="correo" name="correo" class="input" value="<?= htmlspecialchars($user['correo']) ?>" required>
@@ -145,6 +147,44 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
             <option value="ZAC" <?= $ent=='ZAC'?'selected':'' ?>>Zacatecas</option>
           </select>
         </div>
+        <?php if($tipoUsuario === 'admin'): ?>
+        <!-- PERFIL PÚBLICO (solo editores) -->
+        <hr style="margin: 24px 0; border-color: var(--border);">
+        <h3 style="margin-bottom: 16px; font-size: 1.1rem;"><i class="bi bi-person-badge"></i> Perfil Público</h3>
+        <div class="form-group">
+          <label>Foto Personal</label>
+          <label class="perfil-drop-zone" id="fotoDropZone">
+            <input type="file" name="foto_personal" id="fotoFileInput" accept="image/jpeg,image/png,image/webp" hidden>
+            <?php if(!empty($user['foto_personal'])): ?>
+              <img id="fotoPreview" src="<?= basePath() ?>/<?= htmlspecialchars($user['foto_personal']) ?>" style="max-width:100%; max-height:150px; border-radius:8px; object-fit:cover;">
+              <div class="perfil-drop-icon" style="display:none;"><i class="bi bi-cloud-arrow-up"></i></div>
+              <div class="perfil-drop-text" style="display:none;">Arrastra una imagen o <span>haz clic aquí</span></div>
+            <?php else: ?>
+              <img id="fotoPreview" style="display:none; max-width:100%; max-height:150px; border-radius:8px; object-fit:cover;">
+              <div class="perfil-drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+              <div class="perfil-drop-text">Arrastra una imagen o <span>haz clic aquí</span></div>
+            <?php endif; ?>
+            <div class="perfil-drop-hint">JPG, PNG o WEBP</div>
+          </label>
+        </div>
+        <div class="form-group">
+          <label for="biografia">Biografía</label>
+          <textarea id="biografia" name="biografia" class="input" rows="4" style="resize:vertical;" placeholder="Cuéntale al mundo sobre ti..."><?= htmlspecialchars($user['biografia'] ?? '') ?></textarea>
+        </div>
+        <div class="perfil-row">
+          <div class="form-group perfil-half">
+            <label for="link_twitter"><i class="bi bi-twitter-x"></i> Twitter / X</label>
+            <input type="url" id="link_twitter" name="link_twitter" class="input" value="<?= htmlspecialchars($user['link_twitter'] ?? '') ?>" placeholder="https://x.com/tu_usuario">
+          </div>
+          <div class="form-group perfil-half">
+            <label for="link_instagram"><i class="bi bi-instagram"></i> Instagram</label>
+            <input type="url" id="link_instagram" name="link_instagram" class="input" value="<?= htmlspecialchars($user['link_instagram'] ?? '') ?>" placeholder="https://instagram.com/tu_usuario">
+          </div>
+        </div>
+        <a href="<?= basePath() ?>/autor/<?= $user['id_u'] ?>" target="_blank" style="display:inline-block; margin-bottom: 16px; color: var(--accent); font-size: 0.9rem; text-decoration: none;">
+          <i class="bi bi-eye"></i> Ver mi perfil público
+        </a>
+        <?php endif; ?>
         <button type="submit" class="btn-perfil-save">Guardar Cambios</button>
       </form>
     </div>
@@ -173,6 +213,27 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
 <style>
 .avatar-option:hover { border-color: var(--accent) !important; }
 .avatar-option.avatar-selected { border-color: var(--accent) !important; }
+.perfil-drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  text-align: center;
+}
+.perfil-drop-zone:hover,
+.perfil-drop-zone.dragover {
+  border-color: var(--accent);
+  background: rgba(239, 51, 99, 0.04);
+}
+.perfil-drop-icon { font-size: 2.5rem; color: var(--accent); margin-bottom: 8px; }
+.perfil-drop-text { font-size: 0.95rem; color: var(--muted); }
+.perfil-drop-text span { color: var(--accent); font-weight: 600; text-decoration: underline; }
+.perfil-drop-hint { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
 </style>
 
 <script>
@@ -215,5 +276,44 @@ document.querySelectorAll('.avatar-option').forEach(el => {
     if(data.ok) location.reload();
   });
 });
+
+// Drop zone foto personal
+(() => {
+  const zone = document.getElementById('fotoDropZone');
+  const input = document.getElementById('fotoFileInput');
+  if (!zone || !input) return;
+  const preview = document.getElementById('fotoPreview');
+  const icon = zone.querySelector('.perfil-drop-icon');
+  const text = zone.querySelector('.perfil-drop-text');
+
+  function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      if (icon) icon.style.display = 'none';
+      if (text) text.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  input.addEventListener('change', () => {
+    if (input.files[0]) showPreview(input.files[0]);
+  });
+
+  zone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    zone.classList.add('dragover');
+  });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) {
+      input.files = e.dataTransfer.files;
+      showPreview(e.dataTransfer.files[0]);
+    }
+  });
+})();
 </script>
 <?php include("./../layout/footer.php"); ?>

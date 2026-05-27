@@ -59,7 +59,13 @@ WHERE `perm_categorias` = 0
   AND `perm_correos` = 0
   AND `perm_videos` = 0;
 
--- 5. (OPCIONAL) Eliminar lectores migrados de la tabla usuarios
+-- 5. Perfiles públicos de editores
+ALTER TABLE `usuarios` ADD COLUMN IF NOT EXISTS `biografia` TEXT DEFAULT NULL AFTER `avatar_id`;
+ALTER TABLE `usuarios` ADD COLUMN IF NOT EXISTS `foto_personal` VARCHAR(255) DEFAULT NULL AFTER `biografia`;
+ALTER TABLE `usuarios` ADD COLUMN IF NOT EXISTS `link_twitter` VARCHAR(255) DEFAULT NULL AFTER `foto_personal`;
+ALTER TABLE `usuarios` ADD COLUMN IF NOT EXISTS `link_instagram` VARCHAR(255) DEFAULT NULL AFTER `link_twitter`;
+
+-- 6. (OPCIONAL) Eliminar lectores migrados de la tabla usuarios
 --    Descomenta SOLO después de verificar que la migración fue correcta
 -- DELETE FROM `usuarios`
 -- WHERE `perm_categorias` = 0

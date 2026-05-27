@@ -19,7 +19,7 @@ if(isset($_GET['hash'])){
 // Obtener noticia con autor y categorías
 // ==============================
 $sql = "
-    SELECT n.*, u.nombre AS autor_nombre,
+    SELECT n.*, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto,
            GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
     FROM noticias n
     LEFT JOIN usuarios u ON n.autor = u.id_u
@@ -135,7 +135,7 @@ $publicidadCuadro = $stmt->get_result()->fetch_assoc();
             <h1><?= htmlspecialchars($noticia['titulo']) ?></h1>
             <p class="descripcion"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
             <p class="meta">
-              Por <strong><?= htmlspecialchars($noticia['autor_nombre'] ?? 'Desconocido') ?></strong> —
+              Por <a href="<?= authorUrl($noticia['autor_id'] ?? 0) ?>" style="color: var(--accent); text-decoration: none; font-weight: 700;"><?= htmlspecialchars($noticia['autor_nombre'] ?? 'Desconocido') ?></a> —
               <?= date("d/m/Y H:i", strtotime($noticia['fecha_publicacion'])) ?>
             </p>
             <button id="likeBtn" class="like-btn" data-id="<?= $id ?>">

@@ -16,6 +16,9 @@ $pass_nueva = $_POST['pass_nueva'] ?? '';
 $sexo = $_POST['sexo'] ?? null;
 $nacimiento = $_POST['nacimiento'] ?? null;
 $entidad = $_POST['entidad'] ?? null;
+$biografia = trim($_POST['biografia'] ?? '');
+$link_twitter = trim($_POST['link_twitter'] ?? '');
+$link_instagram = trim($_POST['link_instagram'] ?? '');
 
 // ============================
 // VERIFICAR CONTRASEÑA ACTUAL
@@ -40,11 +43,46 @@ if(!empty($pass_actual)){
 // ============================
 // CONSTRUIR UPDATE DINÁMICO
 // ============================
+// ============================
+// FOTO PERSONAL (solo admin/editor)
+// ============================
+$foto_personal = null;
+if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_personal']['error'] === UPLOAD_ERR_OK){
+    $file = $_FILES['foto_personal'];
+    $mime = mime_content_type($file['tmp_name']);
+    $permitidos = ['image/jpeg', 'image/png', 'image/webp'];
+    if(in_array($mime, $permitidos)){
+        $imagen = imagecreatefromstring(file_get_contents($file['tmp_name']));
+        if($imagen){
+            $dir = __DIR__ . '/../img/editores/';
+            if(!is_dir($dir)) mkdir($dir, 0755, true);
+            // Obtener id_u para nombre de archivo
+            $stmtId = $con->prepare("SELECT id_u, foto_personal FROM usuarios WHERE usuario = ?");
+            $stmtId->bind_param("s", $usuario);
+            $stmtId->execute();
+            $rowId = $stmtId->get_result()->fetch_assoc();
+            // Borrar foto anterior
+            if(!empty($rowId['foto_personal']) && file_exists(__DIR__ . '/../' . $rowId['foto_personal'])){
+                unlink(__DIR__ . '/../' . $rowId['foto_personal']);
+            }
+            $nombreArchivo = 'editor_' . $rowId['id_u'] . '_' . time() . '.webp';
+            imagewebp($imagen, $dir . $nombreArchivo, 92);
+            imagedestroy($imagen);
+            $foto_personal = 'img/editores/' . $nombreArchivo;
+        }
+    }
+}
+
 if($tipo === 'admin'){
     // Admin → tabla usuarios
-    $campos = "correo=?, sexo=?, fecha_nacimiento=?, entidad=?";
-    $tipos = "ssss";
-    $valores = [$correo, $sexo ?: null, $nacimiento ?: null, $entidad ?: null];
+    $campos = "correo=?, sexo=?, fecha_nacimiento=?, entidad=?, biografia=?, link_twitter=?, link_instagram=?";
+    $tipos = "sssssss";
+    $valores = [$correo, $sexo ?: null, $nacimiento ?: null, $entidad ?: null, $biografia ?: null, $link_twitter ?: null, $link_instagram ?: null];
+    if($foto_personal){
+        $campos .= ", foto_personal=?";
+        $tipos .= "s";
+        $valores[] = $foto_personal;
+    }
     if(!empty($pass_nueva) && !empty($pass_actual)){
         $campos .= ", pass=?";
         $tipos .= "s";

@@ -6,7 +6,7 @@ include("./../data/conexion.php");
 // ========================
 // DATOS
 // ========================
-$id      = $_POST['id'];
+$id      = intval($_POST['id']);
 $nombre  = $_POST['nombre'];
 $usuario = $_POST['usuario'];
 $email   = $_POST['email'];
@@ -63,7 +63,7 @@ if(empty($password)){
         WHERE id_u=?
     ");
     $stmt->bind_param(
-        "sssssiiiiiii",
+        "ssssiiiiiiii",
         $nombre, $usuario, $email, $passHash,
         $perm_publicidad, $perm_noticias, $perm_categorias, $perm_suscripciones, $perm_usuarios, $perm_correos, $perm_videos,
         $id
