@@ -115,30 +115,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </li>
         <?php endforeach; ?>
       </ul>
-      <div class="nav-actions d-flex gap-2 align-items-center">
-        <!-- BOTÓN MODO OSCURO -->
-        <button id="themeToggle" class="btn btn-outline-secondary">🌙</button>
-        <a href="<?= basePath() . (isset($_SESSION['usuario']) ? '/perfil' : '/login') ?>" class="btn btn-outline-secondary">
-          <?php
-            if(isset($_SESSION['usuario'])){
-              echo "<i class='bi bi-person-fill-check'></i> ";
-              echo htmlspecialchars($_SESSION['usuario']);
-            }else{
-              echo "<span class='bi bi-person-fill'></span>";
-            }
-          ?>
-        </a>
-        <?php if(isset($_SESSION['usuario'])): ?>
-          <?php if($_SESSION['superadmin'] ?? false): ?>
-            <a href="<?= basePath() ?>/views/admin.php" class="btn btn-outline-secondary" title="Panel Admin">
-              <i class="bi bi-speedometer2"></i>
-            </a>
-          <?php endif; ?>
-          <a href="<?= basePath() ?>/controllers/logoutcontroller.php" class="btn btn-outline-secondary" title="Cerrar sesión">
-            <i class="bi bi-box-arrow-right"></i>
+    </div>
+    <div class="nav-actions d-flex gap-2 align-items-center">
+      <!-- BOTÓN MODO OSCURO -->
+      <button id="themeToggle" class="btn btn-outline-secondary">🌙</button>
+      <a href="<?= basePath() . (isset($_SESSION['usuario']) ? '/perfil' : '/login') ?>" class="btn btn-outline-secondary">
+        <?php
+          if(isset($_SESSION['usuario'])){
+            echo "<i class='bi bi-person-fill-check'></i> ";
+            echo htmlspecialchars($_SESSION['usuario']);
+          }else{
+            echo "<span class='bi bi-person-fill'></span>";
+          }
+        ?>
+      </a>
+      <?php if(isset($_SESSION['usuario'])): ?>
+        <?php if($_SESSION['superadmin'] ?? false): ?>
+          <a href="<?= basePath() ?>/views/admin.php" class="btn btn-outline-secondary" title="Panel Admin">
+            <i class="bi bi-speedometer2"></i>
           </a>
         <?php endif; ?>
-        <form class="nav-search buscador-desplegable" onsubmit="return false;">
+        <a href="<?= basePath() ?>/controllers/logoutcontroller.php" class="btn btn-outline-secondary" title="Cerrar sesión">
+          <i class="bi bi-box-arrow-right"></i>
+        </a>
+      <?php endif; ?>
+      <form class="nav-search buscador-desplegable" onsubmit="return false;">
         <input 
           type="text" 
           id="searchInput" 
@@ -147,11 +148,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           class="search-input input-desplegable"
         >
         <div id="searchResults" class="search-results"></div>
-        
         <button type="button" id="clearBtn" class="search-btn clear-btn btn-oculto" title="Limpiar búsqueda">
           <i class="bi bi-x-lg"></i>
         </button>
-        
         <button type="button" id="searchBtn" class="search-btn btn-lupa" title="Buscar">
           <i class="bi bi-search"></i>
         </button>
