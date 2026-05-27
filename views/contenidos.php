@@ -27,12 +27,23 @@ foreach ($period as $day) {
     $newsByDate[$day->format('Y-m-d')] = [];
 }
 // Obtener noticias de la semana
-$sql = "SELECT id, titulo, descripcion, fecha_publicacion, vistas, likes, crop3 
-        FROM noticias 
-        WHERE fecha_publicacion BETWEEN ? AND ?
-        ORDER BY fecha_publicacion ASC";
-$stmt = $con->prepare($sql);
-$stmt->bind_param("ss", $fechaInicio, $fechaFin);
+$q = trim($_GET['q'] ?? '');
+if($q !== ''){
+    $like = "%$q%";
+    $sql = "SELECT id, titulo, descripcion, fecha_publicacion, vistas, likes, crop3 
+            FROM noticias 
+            WHERE fecha_publicacion BETWEEN ? AND ? AND titulo LIKE ?
+            ORDER BY fecha_publicacion ASC";
+    $stmt = $con->prepare($sql);
+    $stmt->bind_param("sss", $fechaInicio, $fechaFin, $like);
+} else {
+    $sql = "SELECT id, titulo, descripcion, fecha_publicacion, vistas, likes, crop3 
+            FROM noticias 
+            WHERE fecha_publicacion BETWEEN ? AND ?
+            ORDER BY fecha_publicacion ASC";
+    $stmt = $con->prepare($sql);
+    $stmt->bind_param("ss", $fechaInicio, $fechaFin);
+}
 $stmt->execute();
 $result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
@@ -42,6 +53,12 @@ while ($row = $result->fetch_assoc()) {
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Gestión de Contenidos</h1>
+        <form method="GET" class="admin-search-form" style="margin-left:auto;">
+            <i class="bi bi-search admin-search-icon"></i>
+            <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar por título..." class="admin-search-input">
+            <?php if($q): ?><a href="?week=<?= $weekOffset ?>" class="admin-search-clear">&times;</a><?php endif; ?>
+            <input type="hidden" name="week" value="<?= $weekOffset ?>">
+        </form>
     </div>
     <?php if (!empty($ACL['crear'])): ?>
         <a href="crear.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Nueva Noticia</a>

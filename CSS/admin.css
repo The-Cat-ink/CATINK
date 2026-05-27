@@ -1499,3 +1499,48 @@ body.sidebar-open {
     height: 200px;
   }
 }
+
+/* ===========================
+   Admin Search Bar
+   =========================== */
+.admin-search-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 320px;
+  width: 100%;
+}
+.admin-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+.admin-search-input {
+  width: 100%;
+  padding: 8px 32px 8px 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.admin-search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(239, 51, 99, 0.1);
+}
+.admin-search-clear {
+  position: absolute;
+  right: 10px;
+  color: var(--muted);
+  font-size: 1.2rem;
+  text-decoration: none;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.admin-search-clear:hover {
+  color: var(--accent);
+}

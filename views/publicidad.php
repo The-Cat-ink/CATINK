@@ -12,14 +12,27 @@
     const ACL = <?= json_encode($ACL) ?>;
 </script>
 <?php
-    $sql = "SELECT * FROM publicidad";
-    $result = $con->prepare($sql);
+    $q = trim($_GET['q'] ?? '');
+    if($q !== ''){
+        $like = "%$q%";
+        $sql = "SELECT * FROM publicidad WHERE titulo LIKE ? ORDER BY fecha_inicio DESC";
+        $result = $con->prepare($sql);
+        $result->bind_param("s", $like);
+    } else {
+        $sql = "SELECT * FROM publicidad ORDER BY fecha_inicio DESC";
+        $result = $con->prepare($sql);
+    }
     $result->execute();
     $publicidades = $result->get_result();
 ?>
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Gestión de Publicidad</h1>
+        <form method="GET" class="admin-search-form">
+            <i class="bi bi-search admin-search-icon"></i>
+            <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar publicidad..." class="admin-search-input">
+            <?php if($q): ?><a href="./publicidad.php" class="admin-search-clear">&times;</a><?php endif; ?>
+        </form>
     </div>
     <?php if($ACL['crear']): ?>
         <div class="col">

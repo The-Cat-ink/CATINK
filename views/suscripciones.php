@@ -11,9 +11,19 @@ if (!$ACL['leer']) {
     header("Location: admin.php");
     exit();
 }
-$sql = "SELECT * FROM suscripciones";
-$resultado = mysqli_query($con, $sql);
-$suscripciones = mysqli_fetch_all($resultado, MYSQLI_ASSOC);
+$q = trim($_GET['q'] ?? '');
+if($q !== ''){
+    $like = "%$q%";
+    $sql = "SELECT * FROM suscripciones WHERE nombre_completo LIKE ? OR correo LIKE ? ORDER BY fecha DESC";
+    $stmt = $con->prepare($sql);
+    $stmt->bind_param("ss", $like, $like);
+    $stmt->execute();
+    $suscripciones = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+} else {
+    $sql = "SELECT * FROM suscripciones ORDER BY fecha DESC";
+    $resultado = mysqli_query($con, $sql);
+    $suscripciones = mysqli_fetch_all($resultado, MYSQLI_ASSOC);
+}
 $sql2= "SELECT * FROM programacion_correos";
 $resultado2 = mysqli_query($con, $sql2);
 $programacion = mysqli_fetch_all($resultado2, MYSQLI_ASSOC);
@@ -55,6 +65,11 @@ $prog = $programacion[0] ?? ['id_programacion' => '', 'hora' => '', 'estado' => 
     <?php endif; ?>
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Gestión de Suscripciones</h1>
+        <form method="GET" class="admin-search-form">
+            <i class="bi bi-search admin-search-icon"></i>
+            <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar por nombre o email..." class="admin-search-input">
+            <?php if($q): ?><a href="./suscripciones.php" class="admin-search-clear">&times;</a><?php endif; ?>
+        </form>
     </div>
     <div class="table-responsive">
         <table class="table table-striped">

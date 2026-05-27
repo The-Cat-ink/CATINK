@@ -16,14 +16,26 @@
     const ACL = <?= json_encode($ACL) ?>;
 </script>
 <?php
-    $sql= $con -> prepare("SELECT * FROM correos_publicitarios ORDER BY creado DESC");
+    $q = trim($_GET['q'] ?? '');
+    if($q !== ''){
+        $like = "%$q%";
+        $sql = $con->prepare("SELECT * FROM correos_publicitarios WHERE titulo LIKE ? OR contenido LIKE ? ORDER BY creado DESC");
+        $sql->bind_param("ss", $like, $like);
+    } else {
+        $sql = $con->prepare("SELECT * FROM correos_publicitarios ORDER BY creado DESC");
+    }
     $sql->execute();
     $result = $sql->get_result();
-    $correos = $result -> fetch_all(MYSQLI_ASSOC);
+    $correos = $result->fetch_all(MYSQLI_ASSOC);
 ?>
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Gestión de correos publicitarios</h1>
+        <form method="GET" class="admin-search-form">
+            <i class="bi bi-search admin-search-icon"></i>
+            <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar por título o contenido..." class="admin-search-input">
+            <?php if($q): ?><a href="./correos.php" class="admin-search-clear">&times;</a><?php endif; ?>
+        </form>
     </div>
     <?php if ($ACL['crear']): ?>
         <div class="col">

@@ -16,13 +16,25 @@ if (!$ACL['leer']) {
 </script>
 <?php
 include("./../data/conexion.php");
-$stmt = $con->prepare("SELECT * FROM usuarios");
+$q = trim($_GET['q'] ?? '');
+if($q !== ''){
+    $like = "%$q%";
+    $stmt = $con->prepare("SELECT * FROM usuarios WHERE nombre LIKE ? OR usuario LIKE ? OR correo LIKE ? ORDER BY registro DESC");
+    $stmt->bind_param("sss", $like, $like, $like);
+} else {
+    $stmt = $con->prepare("SELECT * FROM usuarios ORDER BY registro DESC");
+}
 $stmt->execute();
 $usuarios = $stmt->get_result();
 ?>
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Gestión de Usuarios</h1>
+        <form method="GET" class="admin-search-form">
+            <i class="bi bi-search admin-search-icon"></i>
+            <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar por nombre, usuario o email..." class="admin-search-input">
+            <?php if($q): ?><a href="./usuarios.php" class="admin-search-clear">&times;</a><?php endif; ?>
+        </form>
     </div>
     <?php if($ACL['crear']): ?>
         <a href="./crearu.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear Usuario</a>

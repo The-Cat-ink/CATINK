@@ -2,18 +2,36 @@
 include("./../layout/headerAdmin.php");
 include("./../data/conexion.php");
 // Obtener todas las categorías y conteo de noticias
-$sql = "
-SELECT c.id_c, c.nombre, COUNT(DISTINCT nc.noticia_id) AS total_noticias
-FROM categorias c
-LEFT JOIN noticia_categoria nc ON c.id_c = nc.categoria_id
-GROUP BY c.id_c, c.nombre
-ORDER BY c.nombre
-";
+$q = trim($_GET['q'] ?? '');
+if($q !== ''){
+    $like = $con->real_escape_string("%$q%");
+    $sql = "
+    SELECT c.id_c, c.nombre, COUNT(DISTINCT nc.noticia_id) AS total_noticias
+    FROM categorias c
+    LEFT JOIN noticia_categoria nc ON c.id_c = nc.categoria_id
+    WHERE c.nombre LIKE '$like'
+    GROUP BY c.id_c, c.nombre
+    ORDER BY c.nombre
+    ";
+} else {
+    $sql = "
+    SELECT c.id_c, c.nombre, COUNT(DISTINCT nc.noticia_id) AS total_noticias
+    FROM categorias c
+    LEFT JOIN noticia_categoria nc ON c.id_c = nc.categoria_id
+    GROUP BY c.id_c, c.nombre
+    ORDER BY c.nombre
+    ";
+}
 $result = $con->query($sql);
 ?>
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Gestión de Categorias</h1>
+        <form method="GET" class="admin-search-form">
+            <i class="bi bi-search admin-search-icon"></i>
+            <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar categoría..." class="admin-search-input">
+            <?php if($q): ?><a href="./cats.php" class="admin-search-clear">&times;</a><?php endif; ?>
+        </form>
     </div>
     <?php if($ACL['crear']): ?>
         <button id="btnCrear" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear categoría</button>
