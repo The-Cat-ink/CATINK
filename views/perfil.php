@@ -50,7 +50,9 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
     <div class="perfil-sidebar">
       <div class="perfil-avatar-wrap">
         <div class="perfil-avatar" id="perfilAvatar">
-          <?php if($avatarActual): ?>
+          <?php if($tipoUsuario === 'admin' && !empty($user['foto_personal'])): ?>
+            <img src="<?= basePath() ?>/<?= htmlspecialchars($user['foto_personal']) ?>" alt="Foto personal">
+          <?php elseif($avatarActual): ?>
             <img src="<?= basePath() ?>/img/avatares/<?= htmlspecialchars($avatarActual) ?>" alt="Avatar">
           <?php else: ?>
             <span id="perfilInitials"><?= htmlspecialchars($iniciales) ?></span>
