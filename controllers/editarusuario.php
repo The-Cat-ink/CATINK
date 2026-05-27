@@ -6,11 +6,43 @@ include("./../data/conexion.php");
 // ========================
 // DATOS
 // ========================
-$id      = $_POST['id'];
+$id      = intval($_POST['id']);
 $nombre  = $_POST['nombre'];
 $usuario = $_POST['usuario'];
 $email   = $_POST['email'];
 $password = $_POST['password'] ?? "";
+$biografia = trim($_POST['biografia'] ?? '');
+$link_twitter = trim($_POST['link_twitter'] ?? '');
+$link_instagram = trim($_POST['link_instagram'] ?? '');
+
+// ========================
+// FOTO PERSONAL (WebP)
+// ========================
+$foto_personal = null;
+if (isset($_FILES['foto_personal']) && $_FILES['foto_personal']['error'] === UPLOAD_ERR_OK) {
+    $file = $_FILES['foto_personal'];
+    $mime = mime_content_type($file['tmp_name']);
+    $permitidos = ['image/jpeg', 'image/png', 'image/webp'];
+    if (in_array($mime, $permitidos)) {
+        $imagen = imagecreatefromstring(file_get_contents($file['tmp_name']));
+        if ($imagen) {
+            $dir = __DIR__ . '/../img/editores/';
+            if (!is_dir($dir)) mkdir($dir, 0755, true);
+            // Borrar foto anterior si existe
+            $stmtFoto = $con->prepare("SELECT foto_personal FROM usuarios WHERE id_u = ?");
+            $stmtFoto->bind_param("i", $id);
+            $stmtFoto->execute();
+            $fotoAnterior = $stmtFoto->get_result()->fetch_assoc();
+            if (!empty($fotoAnterior['foto_personal']) && file_exists(__DIR__ . '/../' . $fotoAnterior['foto_personal'])) {
+                unlink(__DIR__ . '/../' . $fotoAnterior['foto_personal']);
+            }
+            $nombreArchivo = 'editor_' . $id . '_' . time() . '.webp';
+            imagewebp($imagen, $dir . $nombreArchivo, 92);
+            imagedestroy($imagen);
+            $foto_personal = 'img/editores/' . $nombreArchivo;
+        }
+    }
+}
 
 // ========================
 // FUNCIÓN PERMISOS BITMASK
@@ -31,6 +63,18 @@ $perm_suscripciones = calcPerm($_POST['suscripciones'] ?? []);
 $perm_usuarios      = calcPerm($_POST['usuarios'] ?? []);
 $perm_correos       = calcPerm($_POST['correos'] ?? []);
 $perm_videos       = calcPerm($_POST['videos'] ?? []);
+// ========================
+// ACTUALIZAR PERFIL PÚBLICO
+// ========================
+$stmtPerfil = $con->prepare("UPDATE usuarios SET biografia=?, link_twitter=?, link_instagram=? WHERE id_u=?");
+$stmtPerfil->bind_param("sssi", $biografia, $link_twitter, $link_instagram, $id);
+$stmtPerfil->execute();
+
+if ($foto_personal) {
+    $stmtFotoUp = $con->prepare("UPDATE usuarios SET foto_personal=? WHERE id_u=?");
+    $stmtFotoUp->bind_param("si", $foto_personal, $id);
+    $stmtFotoUp->execute();
+}
 // ========================
 // SI NO CAMBIA CONTRASEÑA
 // ========================
@@ -63,7 +107,7 @@ if(empty($password)){
         WHERE id_u=?
     ");
     $stmt->bind_param(
-        "sssssiiiiiii",
+        "ssssiiiiiiii",
         $nombre, $usuario, $email, $passHash,
         $perm_publicidad, $perm_noticias, $perm_categorias, $perm_suscripciones, $perm_usuarios, $perm_correos, $perm_videos,
         $id

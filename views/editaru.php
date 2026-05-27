@@ -24,7 +24,7 @@ $user = $stmt->get_result()->fetch_assoc();
         <h1>Editar Usuario</h1>
     </div>
     <a href="./../views/usuarios.php" class="btn btn-secondary"><i class="bi bi-arrow-return-left"></i> Regresar</a>
-    <form id="editUserForm" action="./../controllers/editarusuario.php?id=<?= $id ?>" method="POST">
+    <form id="editUserForm" action="./../controllers/editarusuario.php?id=<?= $id ?>" method="POST" enctype="multipart/form-data">
         <div class="form-card card">
             <input type="hidden" name="id" value="<?= $id ?>">
             <div class="form-group">
@@ -46,6 +46,32 @@ $user = $stmt->get_result()->fetch_assoc();
                 <label>Confirmar Contraseña</label>
                 <input type="text" name="confirm_password">
             </div>
+            <!-- PERFIL PÚBLICO -->
+            <hr style="margin: 24px 0;">
+            <h3 style="margin-bottom: 16px;"><i class="bi bi-person-badge"></i> Perfil Público</h3>
+            <div class="form-group">
+                <label>Foto Personal</label>
+                <?php if(!empty($user['foto_personal'])): ?>
+                    <div style="margin-bottom: 10px;">
+                        <img src="./../<?= htmlspecialchars($user['foto_personal']) ?>" alt="Foto actual" style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 3px solid var(--accent);">
+                    </div>
+                <?php endif; ?>
+                <input type="file" name="foto_personal" accept="image/jpeg,image/png,image/webp">
+                <small style="color: var(--muted); display: block; margin-top: 4px;">JPG, PNG o WEBP. Se convertirá a WebP automáticamente.</small>
+            </div>
+            <div class="form-group">
+                <label>Biografía</label>
+                <textarea name="biografia" rows="4" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--card-bg); color:var(--text); resize:vertical;"><?= htmlspecialchars($user['biografia'] ?? '') ?></textarea>
+            </div>
+            <div class="form-group">
+                <label><i class="bi bi-twitter-x"></i> Link Twitter / X</label>
+                <input type="url" name="link_twitter" value="<?= htmlspecialchars($user['link_twitter'] ?? '') ?>" placeholder="https://x.com/tu_usuario">
+            </div>
+            <div class="form-group">
+                <label><i class="bi bi-instagram"></i> Link Instagram</label>
+                <input type="url" name="link_instagram" value="<?= htmlspecialchars($user['link_instagram'] ?? '') ?>" placeholder="https://instagram.com/tu_usuario">
+            </div>
+            <hr style="margin: 24px 0;">
             <div class="form-group">
                 <?php
                     function check($perm,$bit){ return ($perm & $bit) ? "checked" : ""; }

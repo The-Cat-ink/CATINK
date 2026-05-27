@@ -61,10 +61,11 @@ RewriteRule ^noticias/buscar/(.+)/?$ views/categoria.php?q=$1 [L,QSA]
 RewriteRule ^search/(.+)/?$ views/categoria.php?q=$1 [L,QSA]
 
 # =========================
-# PERFIL Y REGISTRO
+# PERFIL, REGISTRO Y AUTORES
 # =========================
 RewriteRule ^perfil/?$ views/perfil.php [L,QSA]
 RewriteRule ^registro/?$ views/registro.php [L,QSA]
+RewriteRule ^autor/([0-9]+)/?$ views/autor.php?id=$1 [L,QSA]
 
 # =========================
 # PAGINAS ESTATICAS

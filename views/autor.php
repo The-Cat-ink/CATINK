@@ -1,0 +1,138 @@
+<?php
+include("./../layout/header.php");
+require_once("./../data/conexion.php");
+require_once("./helpers/urlhelper.php");
+
+// ==============================
+// Obtener ID del editor
+// ==============================
+$id = intval($_GET['id'] ?? 0);
+if ($id <= 0) {
+    header("Location: " . basePath() . "/");
+    exit;
+}
+
+// ==============================
+// Obtener datos del editor
+// ==============================
+$stmt = $con->prepare("
+    SELECT id_u, nombre, usuario, biografia, foto_personal, link_twitter, link_instagram, registro
+    FROM usuarios
+    WHERE id_u = ?
+");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$editor = $stmt->get_result()->fetch_assoc();
+
+if (!$editor) {
+    echo '<div class="container" style="text-align:center; padding:80px 20px;"><h1>Editor no encontrado</h1><p style="color:var(--muted);">El perfil que buscas no existe.</p><a href="' . basePath() . '/" class="btn btn-accent" style="margin-top:20px;">Volver al inicio</a></div>';
+    include("./../layout/footer.php");
+    exit;
+}
+
+// ==============================
+// Obtener artículos del editor
+// ==============================
+$stmtNews = $con->prepare("
+    SELECT n.id, n.titulo, n.descripcion, n.crop1, n.crop3, n.fecha_publicacion,
+           GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+    FROM noticias n
+    LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
+    LEFT JOIN categorias c ON nc.categoria_id = c.id_c
+    WHERE n.autor = ? AND n.fecha_publicacion <= NOW()
+    GROUP BY n.id
+    ORDER BY n.fecha_publicacion DESC
+    LIMIT 20
+");
+$stmtNews->bind_param("i", $id);
+$stmtNews->execute();
+$articulos = $stmtNews->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// ==============================
+// Contadores
+// ==============================
+$stmtCount = $con->prepare("SELECT COUNT(*) as total FROM noticias WHERE autor = ? AND fecha_publicacion <= NOW()");
+$stmtCount->bind_param("i", $id);
+$stmtCount->execute();
+$totalArticulos = $stmtCount->get_result()->fetch_assoc()['total'];
+
+$fechaRegistro = date('d M Y', strtotime($editor['registro']));
+
+// Foto con fallback
+$fotoEditor = !empty($editor['foto_personal'])
+    ? basePath() . '/' . htmlspecialchars($editor['foto_personal'])
+    : null;
+
+// Iniciales para fallback
+$palabras = explode(' ', $editor['nombre']);
+$iniciales = strtoupper(substr($palabras[0], 0, 1) . (isset($palabras[1]) ? substr($palabras[1], 0, 1) : ''));
+?>
+
+<div class="container" style="max-width: 900px; margin: 0 auto; padding: 30px 16px;">
+
+    <!-- PERFIL DEL EDITOR -->
+    <div class="autor-header">
+        <div class="autor-foto-wrap">
+            <?php if ($fotoEditor): ?>
+                <img src="<?= $fotoEditor ?>" alt="<?= htmlspecialchars($editor['nombre']) ?>" class="autor-foto">
+            <?php else: ?>
+                <div class="autor-foto-fallback"><?= $iniciales ?></div>
+            <?php endif; ?>
+        </div>
+        <div class="autor-info">
+            <h1 class="autor-nombre"><?= htmlspecialchars($editor['nombre']) ?></h1>
+            <p class="autor-username">@<?= htmlspecialchars($editor['usuario']) ?></p>
+            <div class="autor-stats">
+                <span><strong><?= $totalArticulos ?></strong> artículos</span>
+                <span>Miembro desde <?= $fechaRegistro ?></span>
+            </div>
+            <?php if (!empty($editor['biografia'])): ?>
+                <p class="autor-bio"><?= nl2br(htmlspecialchars($editor['biografia'])) ?></p>
+            <?php endif; ?>
+            <div class="autor-social">
+                <?php if (!empty($editor['link_twitter'])): ?>
+                    <a href="<?= htmlspecialchars($editor['link_twitter']) ?>" target="_blank" rel="noopener noreferrer" class="autor-social-link autor-social-twitter">
+                        <i class="bi bi-twitter-x"></i> Twitter / X
+                    </a>
+                <?php endif; ?>
+                <?php if (!empty($editor['link_instagram'])): ?>
+                    <a href="<?= htmlspecialchars($editor['link_instagram']) ?>" target="_blank" rel="noopener noreferrer" class="autor-social-link autor-social-instagram">
+                        <i class="bi bi-instagram"></i> Instagram
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- ARTÍCULOS DEL EDITOR -->
+    <div class="autor-articles">
+        <h2 style="margin-bottom: 20px;"><i class="bi bi-newspaper"></i> Artículos de <?= htmlspecialchars($editor['nombre']) ?></h2>
+        <?php if (empty($articulos)): ?>
+            <p style="color: var(--muted); text-align: center; padding: 40px 0;">Este editor aún no tiene artículos publicados.</p>
+        <?php else: ?>
+            <div class="autor-articles-grid">
+                <?php foreach ($articulos as $art): ?>
+                    <?php
+                        $imgArt = !empty($art['crop3']) ? $art['crop3'] : (!empty($art['crop1']) ? $art['crop1'] : 'img/placeholder.jpg');
+                        $cats = !empty($art['categorias']) ? array_map('trim', explode(',', $art['categorias'])) : [];
+                    ?>
+                    <a href="<?= newsUrl($art['id']) ?>" class="autor-article-card">
+                        <img src="<?= basePath() . '/' . htmlspecialchars($imgArt) ?>" alt="" class="autor-article-img">
+                        <div class="autor-article-body">
+                            <div class="autor-article-tags">
+                                <?php foreach (array_slice($cats, 0, 2) as $cat): ?>
+                                    <span class="tag-news"><?= htmlspecialchars($cat) ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                            <h3 class="autor-article-title"><?= htmlspecialchars($art['titulo']) ?></h3>
+                            <p class="autor-article-desc"><?= htmlspecialchars($art['descripcion']) ?></p>
+                            <span class="autor-article-date"><?= date('d M Y', strtotime($art['fecha_publicacion'])) ?></span>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<?php include("./../layout/footer.php"); ?>
