@@ -273,22 +273,24 @@ h2 {
    ========================= */
 @media (min-width: 1025px) {
   .navbar .container-fluid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    display: flex;
+    flex-wrap: nowrap;
     align-items: center;
-    gap: 16px;
-  }
-  .navbar-brand {
-    justify-self: start;
+    justify-content: space-between;
+    position: relative;
   }
   .navbar-toggler {
     display: none;
   }
   .navbar-collapse {
-    display: inline-flex !important;
-    flex-basis: auto;
+    display: flex !important;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     margin-top: 0;
-    justify-self: center;
+    z-index: 2001;
+    width: max-content;
   }
   .navbar-nav {
     flex-direction: row;
@@ -298,7 +300,6 @@ h2 {
     gap: 16px;
   }
   .nav-actions {
-    justify-self: end;
     display: flex;
     align-items: center;
     gap: 8px;

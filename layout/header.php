@@ -80,7 +80,7 @@ $menuJson = [
     <?= json_encode($menuJson, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT) ?>
   </script>
   <!-- CSS / JS -->
-  <link rel="stylesheet" href="<?= basePath() ?>/CSS/styles.css?v=2.4">
+  <link rel="stylesheet" href="<?= basePath() ?>/CSS/styles.css?v=2.5">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
   <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
@@ -105,7 +105,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav mx-auto align-items-center">
+      <ul class="navbar-nav align-items-center">
         <li class="nav-item"><a class="nav-link" href="<?= basePath() . '/' ?>">Inicio</a></li>
         <?php foreach ($categorias as $cat): ?>
           <li class="nav-item">
