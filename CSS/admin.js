@@ -220,10 +220,10 @@
 
         // Crear nuevo cropper
         croppers[config.num] = new Cropper(img, {
-          viewMode: 1,
-          autoCropArea: 1,
+          viewMode: 0,          // permite mover la imagen libremente
+          autoCropArea: 0.9,    // el recuadro no ocupa el 100% para poder ver qué hay alrededor
           aspectRatio: config.ratio,
-          cropBoxResizable: false,
+          cropBoxResizable: true,  // también puede redimensionarse
           dragMode: 'move',
           responsive: true,
           guides: true,
