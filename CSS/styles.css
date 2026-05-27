@@ -285,6 +285,8 @@ h2 {
   .navbar-collapse {
     display: flex !important;
     margin-top: 0;
+    flex-grow: 0;
+    flex-basis: auto;
   }
   .navbar-nav {
     flex-direction: row;
