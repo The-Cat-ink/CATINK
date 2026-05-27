@@ -276,23 +276,15 @@ h2 {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    justify-content: space-between;
-    position: relative;
-    max-width: 1200px;
-    margin: 0 auto;
+    justify-content: center;
+    gap: 24px;
   }
   .navbar-toggler {
     display: none;
   }
   .navbar-collapse {
     display: flex !important;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
     margin-top: 0;
-    z-index: 2001;
-    width: max-content;
   }
   .navbar-nav {
     flex-direction: row;
