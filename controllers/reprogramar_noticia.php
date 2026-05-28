@@ -1,16 +1,10 @@
 <?php
 session_start();
-require_once __DIR__ . '/../data/conexion.php';
-require_once __DIR__ . '/../views/helpers/helper.php';
-require_once __DIR__ . '/../views/helpers/acl.php';
+include("./aclcontroller.php");
+proteger('noticias','editar');
+include("../data/conexion.php");
 
 header('Content-Type: application/json');
-
-if (empty($ACL['editar'])) {
-    http_response_code(403);
-    echo json_encode(['error' => 'Sin permisos']);
-    exit;
-}
 
 $id = (int)($_POST['id'] ?? 0);
 $nuevaFecha = $_POST['fecha'] ?? '';
