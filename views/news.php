@@ -442,6 +442,20 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
 </div>
 <!-- Scripts de interacción -->
 <script>
+  // Toast notifications
+  function showToast(msg, type = '') {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'toast-msg' + (type ? ' toast-' + type : '');
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
   // Sumar vistas
   fetch("./../controllers/sumarvistas.php", {
     method: "POST",
@@ -480,7 +494,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
       count.textContent = parseInt(count.textContent) + 1;
       this.disabled = true;
     } else {
-      alert(data.msg);
+      showToast(data.msg, 'error');
       this.disabled = true;
     }
   });
@@ -581,7 +595,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
             icon.className = 'bi bi-heart';
           }
         } else {
-          alert(data.msg);
+          showToast(data.msg, 'error');
         }
       } catch (e) { console.error(e); }
     }
@@ -606,7 +620,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
             countEl.textContent = `(${num})`;
           }
         }
-        alert(data.msg);
+        showToast(data.msg, data.ok ? 'success' : 'error');
       } catch (e) { console.error(e); }
     }
 
@@ -640,7 +654,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
         if (data.ok) {
           item.querySelector('.comentario-texto').innerHTML = data.contenido.replace(/\n/g, '<br>');
         } else {
-          alert(data.msg);
+          showToast(data.msg, 'error');
         }
       } catch (e) { console.error(e); }
     }
@@ -666,7 +680,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
       const modal = document.getElementById('modalReporte');
       const motivo = document.getElementById('reporteMotivo').value;
       const cid = modal.dataset.comentarioId;
-      if (!motivo) { alert('Selecciona un motivo.'); return; }
+      if (!motivo) { showToast('Selecciona un motivo.', 'error'); return; }
       try {
         const res = await fetch(comBase + 'reportar_comentario.php', {
           method: 'POST',
@@ -674,7 +688,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           body: `comentario_id=${cid}&motivo=${encodeURIComponent(motivo)}`
         });
         const data = await res.json();
-        alert(data.msg);
+        showToast(data.msg, data.ok ? 'success' : 'error');
         modal.style.display = 'none';
       } catch (e) { console.error(e); }
     }
