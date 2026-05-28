@@ -1588,20 +1588,15 @@ body.sidebar-open {
   }
   .sidebar.collapsed {
     width: 64px;
-    overflow: visible;
-  }
-  .sidebar.collapsed .sidebar-menu {
-    overflow: visible;
-  }
-  .sidebar.collapsed .sidebar-menu-item {
-    overflow: visible;
+    overflow: hidden;   /* evita que items desborden los 100dvh */
+    overflow-y: auto;   /* scroll interno si el contenido no cabe */
   }
   .sidebar.collapsed .logo-full { display: none; }
   .sidebar.collapsed .logo-icon { display: block; }
   .sidebar.collapsed .logotipo a { flex: none; }
   .sidebar.collapsed #user { display: none; }
   .sidebar.collapsed .sb-label { display: none; }
-  /* Logotipo en columna al colapsar → flecha queda centrada bajo el icono */
+  /* Logotipo en columna → flecha centrada bajo el icono */
   .sidebar.collapsed .logotipo {
     flex-direction: column;
     padding: 8px 4px;
@@ -1615,9 +1610,8 @@ body.sidebar-open {
     justify-content: center;
     padding: 10px;
     gap: 0;
-    position: relative;
   }
-  /* Iconos más grandes y centrados al colapsar */
+  /* Iconos más grandes y centrados */
   .sidebar.collapsed .sidebar-menu-link i,
   .sidebar.collapsed .sidebar-footer a i {
     font-size: 22px;
@@ -1626,34 +1620,6 @@ body.sidebar-open {
     flex-direction: column;
     align-items: center;
     gap: 6px;
-  }
-  .sidebar.collapsed .sidebar-footer a {
-    position: relative;
-  }
-  /* Tooltips al colapsar */
-  .sidebar.collapsed .sidebar-menu-link[data-tooltip]::after,
-  .sidebar.collapsed .sidebar-footer a[data-tooltip]::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    left: calc(100% + 10px);
-    top: 50%;
-    transform: translateY(-50%);
-    background: var(--card-bg);
-    color: var(--text);
-    padding: 5px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    white-space: nowrap;
-    border: 1px solid var(--border);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.15s;
-    z-index: 300;
-    box-shadow: 0 4px 12px rgba(0,0,0,.15);
-  }
-  .sidebar.collapsed .sidebar-menu-link[data-tooltip]:hover::after,
-  .sidebar.collapsed .sidebar-footer a[data-tooltip]:hover::after {
-    opacity: 1;
   }
   /* Ajustar margen del contenido principal */
   body.sidebar-collapsed .site-main,
