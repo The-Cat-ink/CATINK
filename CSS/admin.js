@@ -544,14 +544,15 @@ if (document.readyState === "loading") {
 } else {
     initDeleteModals();
 }
-// modal validacion
+// modal validacion (solo editar.php — crear.php maneja su propio submit)
 document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById("formPublicacion")) return;
     const modalTime = document.getElementById("timeModalOverlay");
     const autoAdjustBtn = document.getElementById("autoAdjustBtn");
     const manualAdjustBtn = document.getElementById("manualAdjustBtn");
     const fechaInput = document.getElementsByName("fecha_publicacion")[0];
     const guardarNoticiaBtns = document.getElementsByName("guardarNoticia");
-    const modalForm = document.getElementById("formPublicacion");
+    const modalForm = document.getElementById("formEdicion");
     function getLocalDatetimeString(date = new Date()) {
       const offset = date.getTimezoneOffset();
       const local = new Date(date.getTime() - offset * 60000);

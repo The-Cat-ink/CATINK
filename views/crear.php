@@ -762,7 +762,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const hiddenFecha  = document.getElementById('fecha_publicacion_hidden');
   const contenidoHid = document.getElementById('contenido');
 
+  let _submitting = false;
+
   form?.addEventListener('submit', e => {
+    if (_submitting) { e.preventDefault(); return; }
+    _submitting = true;
+    const publishBtn = document.querySelector('.cn-publish-btn');
+    if (publishBtn) { publishBtn.disabled = true; publishBtn.style.opacity = '0.6'; }
     if (window.quill) {
       let html = quill.root.innerHTML;
       html = html.replace(/<div class="social-embed"[^>]*data-url="([^"]+)"[^>]*>.*?<\/div>/gi,
@@ -781,6 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementsByName('guardarNoticia')[0]?.addEventListener('click', e => {
     e.preventDefault();
+    if (_submitting) return;
     if (!schedToggle?.checked) { form.requestSubmit(); return; }
     const selected = schedDate.value + ' ' + schedTime.value;
     if (selected < nowLocal().replace('T',' ')) { modalTime.style.display = 'flex'; }
@@ -788,6 +795,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   autoAdjustBtn?.addEventListener('click', () => {
+    if (_submitting) return;
+    autoAdjustBtn.disabled = true;
     const l = nowLocal();
     schedDate.value = l.slice(0,10); schedTime.value = l.slice(11,16);
     modalTime.style.display = 'none'; form.requestSubmit();
