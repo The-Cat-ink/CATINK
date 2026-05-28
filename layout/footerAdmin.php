@@ -1,7 +1,7 @@
 <!-- Fin del contenido principal (admin) -->
 </main>
 <!-- Script local para comportamientos generales en admin -->
-<script src="../CSS/admin.js?v=3"></script>
+<script src="../CSS/admin.js?v=4"></script>
 <!-- Pie de página de administración -->
 <footer class="site-footer mt-5">
   <div class="footer-bottom">

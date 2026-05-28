@@ -63,7 +63,7 @@ if (!$fila) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CatInk News - Admin</title>
   <link rel="stylesheet" href="./../CSS/styles.css?v=2.3">
-  <link rel="stylesheet" href="./../CSS/admin.css?v=2.3">
+  <link rel="stylesheet" href="./../CSS/admin.css?v=2.4">
   <link rel="icon" type="image/png" href="./../img/catink-icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css">
@@ -87,64 +87,87 @@ if (!$fila) {
 <div class="sidebar">
     <div class="logotipo">
         <a href="./../index.php">
-            <img id="icon" src="./../img/logo.png" alt="Logo">
+            <img class="logo-full" src="./../img/logo.png" alt="Logo">
+            <img class="logo-icon" src="./../img/catink-icon.png" alt="Catink">
         </a>
+        <button id="sidebarCollapseBtn" class="btn-icon sidebar-collapse-btn" title="Colapsar menú">
+            <i class="bi bi-chevron-left"></i>
+        </button>
     </div>
     <div id="user">
         <h4><?= htmlspecialchars($fila['usuario']) ?></h4>
     </div>
     <ul class="sidebar-menu">
-        <li class="sidebar-menu-item">
-        </li>
+        <li class="sidebar-menu-item"></li>
         <?php if ($superadmin): ?>
             <li class="sidebar-menu-item">
-                <a href="./admin.php" class="sidebar-menu-link"><i class="bi bi-house"></i> Inicio</a>
+                <a href="./admin.php" class="sidebar-menu-link" data-tooltip="Inicio">
+                    <i class="bi bi-house"></i> <span class="sb-label">Inicio</span>
+                </a>
             </li>
         <?php endif; ?>
         <?php if (($_SESSION['ACL']['categorias']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
-                <a href="./cats.php" class="sidebar-menu-link">Categorias</a>
+                <a href="./cats.php" class="sidebar-menu-link" data-tooltip="Categorías">
+                    <i class="bi bi-tag"></i> <span class="sb-label">Categorias</span>
+                </a>
             </li>
         <?php endif; ?>
         <?php if (($_SESSION['ACL']['noticias']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
-                <a href="./contenidos.php" class="sidebar-menu-link">Contenido</a>
+                <a href="./contenidos.php" class="sidebar-menu-link" data-tooltip="Contenido">
+                    <i class="bi bi-newspaper"></i> <span class="sb-label">Contenido</span>
+                </a>
             </li>
         <?php endif; ?>
         <?php if (($_SESSION['ACL']['publicidad']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
-                <a href="./publicidad.php" class="sidebar-menu-link">Publicidad</a>
+                <a href="./publicidad.php" class="sidebar-menu-link" data-tooltip="Publicidad">
+                    <i class="bi bi-megaphone"></i> <span class="sb-label">Publicidad</span>
+                </a>
             </li>
         <?php endif; ?>
         <?php if (($_SESSION['ACL']['correos']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
-                <a href="./correos.php" class="sidebar-menu-link">Correos</a>
+                <a href="./correos.php" class="sidebar-menu-link" data-tooltip="Correos">
+                    <i class="bi bi-envelope"></i> <span class="sb-label">Correos</span>
+                </a>
             </li>
         <?php endif; ?>
         <?php if (($_SESSION['ACL']['suscripciones']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
-                <a href="./suscripciones.php" class="sidebar-menu-link">Suscripciones</a>
+                <a href="./suscripciones.php" class="sidebar-menu-link" data-tooltip="Suscripciones">
+                    <i class="bi bi-people"></i> <span class="sb-label">Suscripciones</span>
+                </a>
             </li>
         <?php endif; ?>
         <?php if (($_SESSION['ACL']['usuarios']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
-                <a href="./usuarios.php" class="sidebar-menu-link">Usuarios</a>
+                <a href="./usuarios.php" class="sidebar-menu-link" data-tooltip="Usuarios">
+                    <i class="bi bi-person"></i> <span class="sb-label">Usuarios</span>
+                </a>
             </li>
         <?php endif; ?>
         <?php if (($_SESSION['ACL']['videos']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
-                <a href="./videos.php" class="sidebar-menu-link">Videos</a>
+                <a href="./videos.php" class="sidebar-menu-link" data-tooltip="Videos">
+                    <i class="bi bi-play-circle"></i> <span class="sb-label">Videos</span>
+                </a>
             </li>
         <?php endif; ?>
         <?php if ($superadmin || ($_SESSION['ACL']['usuarios']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
-                <a href="./avatares.php" class="sidebar-menu-link"><i class="bi bi-person-circle"></i> Fotos de Perfil</a>
+                <a href="./avatares.php" class="sidebar-menu-link" data-tooltip="Fotos de Perfil">
+                    <i class="bi bi-person-circle"></i> <span class="sb-label">Fotos de Perfil</span>
+                </a>
             </li>
         <?php endif; ?>
     </ul>
     <div class="sidebar-footer">
       <button id="themeToggle" class="btn btn-icon" title="Cambiar tema">🌙</button>
-      <a href="./../controllers/logoutcontroller.php" class="sidebar-menu-link"><i class="bi bi-box-arrow-right"></i> Salir</a>
+      <a href="./../controllers/logoutcontroller.php" class="sidebar-menu-link" data-tooltip="Salir">
+          <i class="bi bi-box-arrow-right"></i> <span class="sb-label">Salir</span>
+      </a>
     </div>
 </div>
 <div id="sidebarBackdrop" class="sidebar-backdrop"></div>

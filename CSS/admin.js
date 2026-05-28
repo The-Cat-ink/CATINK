@@ -586,6 +586,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const resetBtn = document.getElementById("resetBtn");
   const tipoPublicidad = document.getElementById("tipo");
   const inputCrop = document.getElementById("imagenCrop");
+  if (!inputImage || !cropBtn || !resetBtn || !tipoPublicidad) return;
 
   // Tamaños según tipo
   function getAspectRatio() {
@@ -647,5 +648,37 @@ document.addEventListener("DOMContentLoaded", () => {
       if (cropper) cropper.reset();
       resultPreview.src = "";
       inputCrop.value = "";
+  });
+})();
+
+/* ─────────────────────────────────────────
+   SIDEBAR PLEGABLE — DESKTOP
+───────────────────────────────────────── */
+(function () {
+  const collapseBtn = document.getElementById('sidebarCollapseBtn');
+  const sidebarEl   = document.querySelector('.sidebar');
+  if (!collapseBtn || !sidebarEl) return;
+
+  function applyCollapse(collapsed) {
+    sidebarEl.classList.toggle('collapsed', collapsed);
+    document.body.classList.toggle('sidebar-collapsed', collapsed);
+    collapseBtn.title = collapsed ? 'Expandir menú' : 'Colapsar menú';
+  }
+
+  applyCollapse(localStorage.getItem('sidebarCollapsed') === 'true');
+
+  collapseBtn.addEventListener('click', () => {
+    const next = !sidebarEl.classList.contains('collapsed');
+    applyCollapse(next);
+    localStorage.setItem('sidebarCollapsed', next);
+  });
+
+  // Al pasar a mobile, limpiar estado collapsed del body para no afectar márgenes
+  window.addEventListener('resize', () => {
+    if (window.innerWidth < 769) {
+      document.body.classList.remove('sidebar-collapsed');
+    } else {
+      applyCollapse(localStorage.getItem('sidebarCollapsed') === 'true');
+    }
   });
 })();
