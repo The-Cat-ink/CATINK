@@ -220,39 +220,36 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
             <!-- ===================== -->
             <?php if ($comentariosHabilitados): ?>
             <div class="comentarios-section" id="comentarios">
-              <h2><i class="bi bi-chat-dots"></i> Comentarios <span class="comentarios-count">(<?= $totalComentarios ?>)</span></h2>
+              <h2 class="comentarios-titulo">Comentarios</h2>
               <!-- Formulario -->
-              <?php if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector'): ?>
-                <div class="comentario-form">
-                  <div class="comentario-form-avatar">
-                    <?php
-                      $avatarLector = null;
-                      if (!empty($_SESSION['id_lector'])) {
-                          $stmtAv = $con->prepare("SELECT a.imagen FROM lectores l LEFT JOIN avatares_perfil a ON l.avatar_id = a.id_avatar WHERE l.id = ?");
-                          $stmtAv->bind_param("i", $_SESSION['id_lector']);
-                          $stmtAv->execute();
-                          $avRes = $stmtAv->get_result()->fetch_assoc();
-                          $avatarLector = $avRes['imagen'] ?? null;
-                      }
-                    ?>
-                    <?php if ($avatarLector): ?>
-                      <img src="./../img/avatares/<?= htmlspecialchars($avatarLector) ?>" alt="" class="comentario-avatar">
-                    <?php else: ?>
-                      <div class="comentario-avatar-placeholder"><?= strtoupper(mb_substr($_SESSION['nombre_completo'] ?? 'U', 0, 1)) ?></div>
-                    <?php endif; ?>
-                  </div>
-                  <div class="comentario-form-body">
-                    <textarea id="comentarioTexto" placeholder="Escribe un comentario..." maxlength="1000" rows="3"></textarea>
-                    <div class="comentario-form-footer">
-                      <span class="comentario-chars"><span id="charCount">0</span>/1000</span>
-                      <button type="button" id="btnComentar" class="btn-comentar"><i class="bi bi-send"></i> Comentar</button>
-                    </div>
+              <div class="comentario-form">
+                <div class="comentario-form-avatar">
+                  <?php
+                    $avatarLector = null;
+                    if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector' && !empty($_SESSION['id_lector'])) {
+                        $stmtAv = $con->prepare("SELECT a.imagen FROM lectores l LEFT JOIN avatares_perfil a ON l.avatar_id = a.id_avatar WHERE l.id = ?");
+                        $stmtAv->bind_param("i", $_SESSION['id_lector']);
+                        $stmtAv->execute();
+                        $avRes = $stmtAv->get_result()->fetch_assoc();
+                        $avatarLector = $avRes['imagen'] ?? null;
+                    }
+                  ?>
+                  <?php if ($avatarLector): ?>
+                    <img src="./../img/avatares/<?= htmlspecialchars($avatarLector) ?>" alt="" class="comentario-avatar">
+                  <?php else: ?>
+                    <div class="comentario-avatar-placeholder"><i class="bi bi-person"></i></div>
+                  <?php endif; ?>
+                </div>
+                <div class="comentario-form-body">
+                  <textarea id="comentarioTexto" placeholder="Comparte tu opinión con nosotros..." maxlength="1000" rows="4" <?= (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') ? '' : 'disabled' ?>></textarea>
+                  <div class="comentario-form-footer">
+                    <span class="comentario-chars"><span id="charCount">0</span>/1000</span>
+                    <button type="button" id="btnComentar" class="btn-publicar" <?= (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') ? '' : 'disabled' ?>>Publicar</button>
                   </div>
                 </div>
-              <?php else: ?>
-                <div class="comentario-login-msg">
-                  <p><i class="bi bi-person-circle"></i> <a href="<?= basePath() ?>/login">Inicia sesión</a> para dejar un comentario.</p>
-                </div>
+              </div>
+              <?php if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'lector'): ?>
+                <p class="comentario-login-msg">Inicia sesión desde el menú superior para dejar un comentario.</p>
               <?php endif; ?>
               <!-- Lista de comentarios -->
               <div class="comentarios-lista" id="comentariosLista">
