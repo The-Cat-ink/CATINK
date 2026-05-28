@@ -154,7 +154,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
             <!-- Primeras 2 noticias principales -->
             <div class="col-md-8">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[0]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[0]['crop2'], $ultimasNoticias[0]['crop1']]) ?>" alt="" loading="lazy">
+                    <img src="<?= img([$ultimasNoticias[0]['crop2'], $ultimasNoticias[0]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[0]['categorias'] ?? ''))) as $cat): ?>
@@ -173,7 +173,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
             </div>
             <div class="col-md-4">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[1]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[1]['crop3'], $ultimasNoticias[1]['crop1']]) ?>" alt="" loading="lazy">
+                    <img src="<?= img([$ultimasNoticias[1]['crop3'], $ultimasNoticias[1]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[1]['categorias'] ?? ''))) as $cat): ?>
@@ -193,7 +193,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
         <div class="row">
             <div class="col">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[2]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[2]['crop3'], $ultimasNoticias[2]['crop1']]) ?>" alt="" loading="lazy">
+                    <img src="<?= img([$ultimasNoticias[2]['crop3'], $ultimasNoticias[2]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[2]['categorias'] ?? ''))) as $cat): ?>
@@ -211,7 +211,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
             </div>
             <div class="col">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[3]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[3]['crop3'], $ultimasNoticias[3]['crop1']]) ?>" alt="" loading="lazy">
+                    <img src="<?= img([$ultimasNoticias[3]['crop3'], $ultimasNoticias[3]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[3]['categorias'] ?? ''))) as $cat): ?>
@@ -229,7 +229,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
             </div>
             <div class="col">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[4]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[4]['crop3'], $ultimasNoticias[4]['crop1']]) ?>" alt="" loading="lazy">
+                    <img src="<?= img([$ultimasNoticias[4]['crop3'], $ultimasNoticias[4]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[4]['categorias'] ?? ''))) as $cat): ?>
@@ -249,7 +249,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
         <div class="row">
             <div class="col-md-4">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[5]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[5]['crop3'], $ultimasNoticias[5]['crop1']]) ?>" alt="" loading="lazy">
+                    <img src="<?= img([$ultimasNoticias[5]['crop3'], $ultimasNoticias[5]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[5]['categorias'] ?? ''))) as $cat): ?>
@@ -267,7 +267,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
             </div>
             <div class="col-md-8">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[6]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[6]['crop2'], $ultimasNoticias[6]['crop1']]) ?>" alt="" loading="lazy">
+                    <img src="<?= img([$ultimasNoticias[6]['crop2'], $ultimasNoticias[6]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[6]['categorias'] ?? ''))) as $cat): ?>
@@ -293,7 +293,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidad) : ?>
                     <div class="ad-container">
                         <a href="<?php echo htmlspecialchars($publicidad['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidad['id_pub']); ?>">
-                            <img src="<?php echo htmlspecialchars($publicidad['imagen']); ?>" alt="" class="banner" loading="lazy">
+                            <img src="<?= basePath() ?>/<?php echo htmlspecialchars($publicidad['imagen']); ?>" alt="" class="banner" loading="lazy" decoding="async">
                         </a>
                         <span class="ads-label">ADS</span>
                     </div>
@@ -302,7 +302,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
                     <div class="card mb-3" data-url="<?= newsUrl($row['id']) ?>">
                         <div class="row row-no-gap">
                             <div class="col-md-4">
-                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="card-img-left" loading="lazy">
+                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="card-img-left" loading="lazy" decoding="async">
                             </div>
                             <div class="col-md-8">
                                 <div class="card-body">
@@ -351,7 +351,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
                     <div class="card mb-3" data-url="<?= newsUrl($row['id']) ?>">
                         <div class="row row-no-gap">
                             <div class="col-md-4">
-                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="card-img-left" loading="lazy">
+                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="card-img-left" loading="lazy" decoding="async">
                             </div>
                             <div class="col-md-8">
                                 <div class="card-body">
@@ -389,7 +389,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
                     <?php foreach($noticiasMasRecientes3 as $row): ?>
                         <div class="news-slide">
                             <div class="news-card" data-url="<?= newsUrl($row['id']) ?>">
-                                <img src="<?= img([$row['crop3']]) ?>" alt="" loading="lazy">
+                                <img src="<?= img([$row['crop3']]) ?>" alt="" loading="lazy" decoding="async">
                                 <div class="news-overlay">
                                     <div class="news-tags">
                                         <?php foreach(array_filter(array_map('trim', explode(',', $row['categorias'] ?? ''))) as $cat): ?>
@@ -427,7 +427,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidadInferior) : ?>
                     <div class="ad-container">
                         <a href="<?php echo htmlspecialchars($publicidadInferior['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadInferior['id_pub']); ?>">
-                            <img src="<?php echo htmlspecialchars($publicidadInferior['imagen']); ?>" alt="" class="banner" loading="lazy">
+                            <img src="<?= basePath() ?>/<?php echo htmlspecialchars($publicidadInferior['imagen']); ?>" alt="" class="banner" loading="lazy" decoding="async">
                         </a>
                         <span class="ads-label">ADS</span>
                     </div>
@@ -440,7 +440,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
                             <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidadCuadro) : ?>
                                 <div class="ad-container">
                                     <a href="<?php echo htmlspecialchars($publicidadCuadro['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadCuadro['id_pub']); ?>">
-                                        <img src="<?php echo htmlspecialchars($publicidadCuadro['imagen']); ?>" class="banner-card-img-top" loading="lazy">
+                                        <img src="<?= basePath() ?>/<?php echo htmlspecialchars($publicidadCuadro['imagen']); ?>" class="banner-card-img-top" loading="lazy" decoding="async">
                                     </a>
                                     <span class="ads-label">ADS</span>
                                 </div>
@@ -453,7 +453,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
                                 <?php foreach($ultimasNoticiasSidebar as $row): ?>
                                         <div class="cardSpecial row row-no-gap">
                                             <div class="col-md-4">
-                                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="imgCard card-img-left-rounded">
+                                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="imgCard card-img-left-rounded" loading="lazy" decoding="async">
                                             </div>
                                             <div class="col-md-8">
                                                 <div class="card-body">
@@ -470,7 +470,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
                                 <?php foreach($popularesNoticiasSidebar as $row): ?>
                                         <div class="cardSpecial row row-no-gap">
                                             <div class="col-md-4">
-                                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="imgCard card-img-left-rounded">
+                                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="imgCard card-img-left-rounded" loading="lazy" decoding="async">
                                             </div>
                                             <div class="col-md-8">
                                                 <div class="card-body">

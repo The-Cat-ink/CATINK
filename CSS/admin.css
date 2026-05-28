@@ -146,106 +146,559 @@ hr {
   text-decoration: underline;
 }
 /* ============================
+   Estadísticas rápidas (Contenidos)
+   ============================ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+.stat-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.stat-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+/* ============================
+   Toolbar (Contenidos)
+   ============================ */
+.contenidos-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.contenidos-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.tab-btn:hover {
+  background: var(--border);
+  color: var(--text);
+}
+.tab-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+.contenidos-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.vista-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.vista-btn {
+  padding: 7px 12px;
+  font-size: 1rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+.vista-btn:hover {
+  background: var(--border);
+  color: var(--text);
+}
+.vista-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+/* ============================
    Estilos para Calendario (Contenidos)
    ============================ */
 .calendar-days {
   background: var(--bg);
-  display: flex;
-  gap: 24px;
-  overflow-x: auto;
-  padding-bottom: 16px; /* espacio para scrollbar */
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch; /* smooth scroll iOS */
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  padding: 16px;
 }
 .day-column {
-  min-width: 300px;
-  flex: 0 0 200px;
+  min-width: 0;
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 14px;
   display: flex;
   flex-direction: column;
-  scroll-snap-align: start;
-  padding: 16px;
+  padding: 0;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.day-column.day-today {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(239,51,99,0.15);
 }
 .day-header {
   position: sticky;
   top: 0;
   z-index: 2;
-  padding: 10px;
-  background: var(--bg);
+  padding: 12px 16px;
+  background: var(--card-bg);
   font-weight: 700;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border-bottom: 1px solid var(--border);
   color: var(--text);
-  margin-bottom: 16px;
-  border-radius: 15px;
-  box-shadow: 0 6px 15px rgba(0,0,0,.3);
+}
+.day-today .day-header {
+  background: rgba(239,51,99,0.06);
+  color: var(--accent);
+}
+.day-name {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.day-date {
+  font-size: 0.9rem;
+}
+.day-count {
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .day-news {
   padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   flex: 1;
 }
+/* ============================
+   Noticias Card (Estado visual)
+   ============================ */
 .noticias-card {
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 10px;
+  padding: 0;
   background: var(--card-bg);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   overflow: hidden;
-  box-shadow: 0 6px 15px rgba(0,0,0,.3);
-  transition: transform .2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  transition: transform .2s ease, box-shadow .2s ease;
   width: 100%;
+  position: relative;
 }
 .noticias-card:hover {
-    transform: translateY(-4px);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.1);
 }
+.card-status-bar {
+  height: 3px;
+  width: 100%;
+}
+.estado-publicado .card-status-bar { background: #10b981; }
+.estado-por_publicar .card-status-bar { background: #f59e0b; }
+.estado-programado .card-status-bar { background: #6366f1; }
+
+.estado-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.estado-badge.estado-publicado { background: rgba(16,185,129,0.1); color: #10b981; }
+.estado-badge.estado-por_publicar { background: rgba(245,158,11,0.1); color: #f59e0b; }
+.estado-badge.estado-programado { background: rgba(99,102,241,0.1); color: #6366f1; }
+
+.noticias-card .card-header {
+  padding: 8px 12px;
+  border: none;
+  background: none;
+}
+.card-time {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.card-metrics {
+  display: flex;
+  gap: 12px;
+  padding: 4px 12px 8px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.card-metrics i { margin-right: 3px; }
+
 .noticias-card img {
   width: 100%;
-  height: 140px;
+  height: 130px;
   object-fit: cover;
-  border-radius: 4px;
 }
 .noticias-card h6 {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 600;
   margin: 0;
   color: var(--text);
   line-height: 1.4;
-  padding: 10px 12px 0;
-}
-.noticias-card small {
-    padding: 0 12px;
-    display: block;
-    margin-bottom: 8px;
+  padding: 8px 12px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .noticias-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 6px;
   margin-top: auto;
-  padding: 10px 12px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
 }
 .noticias-actions .btn {
   padding: 4px 8px;
   font-size: 0.85rem;
 }
-.botonesSemana {
+/* ============================
+   Navegación de Semana
+   ============================ */
+.week-nav {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border-top: 1px solid var(--border);
 }
-h4 {
-  padding: 12px 12px;
+.week-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  transition: background 0.2s, border-color 0.2s;
+  font-size: 1rem;
+}
+.week-nav-btn:hover {
+  background: var(--border);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.week-nav-today {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.week-nav-today:hover {
+  opacity: 0.85;
+}
+.week-nav-center {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.week-nav-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+.week-nav-picker {
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.week-nav-picker:hover,
+.week-nav-picker:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+/* ============================
+   Vista Mes (Contenidos)
+   ============================ */
+.month-grid {
+  padding: 16px;
+}
+.month-header-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.month-day-name {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 4px;
+}
+.month-body {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.month-cell {
+  min-height: 100px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.month-cell-empty {
+  background: transparent;
+  border-color: transparent;
+}
+.month-cell-today {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(239,51,99,0.12);
+}
+.month-cell-num {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.today-num {
+  color: #fff;
+  background: var(--accent);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+}
+.month-cell-news {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+.month-news-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  cursor: grab;
+  transition: background 0.15s;
+}
+.month-news-item:hover {
+  background: var(--border);
+}
+.month-news-item.estado-publicado .month-news-dot { background: #10b981; }
+.month-news-item.estado-por_publicar .month-news-dot { background: #f59e0b; }
+.month-news-item.estado-programado .month-news-dot { background: #6366f1; }
+.month-news-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.month-news-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+.month-news-more {
+  font-size: 0.68rem;
+  color: var(--muted);
+  padding: 2px 6px;
+}
+/* ============================
+   Drag & Drop States
+   ============================ */
+.noticias-card[draggable="true"],
+.month-news-item[draggable="true"] {
+  cursor: grab;
+}
+.noticias-card.dragging,
+.month-news-item.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+.day-column.drag-over,
+.month-cell.drag-over {
+  border-color: var(--accent);
+  background: rgba(239,51,99,0.04);
+  box-shadow: inset 0 0 0 2px rgba(239,51,99,0.2);
+}
+.noticias-card.card-moving {
+  animation: cardDrop 0.3s ease;
+}
+@keyframes cardDrop {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+/* ============================
+   Vista Tabla (Contenidos)
+   ============================ */
+.contenidos-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.contenidos-table th {
+  padding: 12px 16px;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+.contenidos-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--text);
+  vertical-align: middle;
+}
+.contenidos-table tbody tr:hover {
+  background: rgba(0,0,0,0.02);
+}
+.table-thumb {
+  width: 60px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.table-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 280px;
+}
+.table-date {
+  white-space: nowrap;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.table-responsive {
+  overflow-x: auto;
 }
 /* Ajustes Mobile específicos para Calendario */
 @media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .contenidos-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .contenidos-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+  .calendar-days {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    overflow-x: auto;
+  }
   .day-column {
-    min-width: 85vw; /* Casi pantalla completa en móvil */
+    min-width: 85vw;
+  }
+  .month-body {
+    grid-template-columns: repeat(7, 1fr);
+  }
+  .month-cell {
+    min-height: 60px;
+    padding: 4px;
+  }
+  .month-news-item {
+    font-size: 0.6rem;
+  }
+  .month-news-title {
+    display: none;
+  }
+  .week-nav {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .week-nav-center {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+  .week-nav-label {
+    font-size: 0.8rem;
   }
   /* Ajuste de filtros en admin.php si no usan grid estándar */
   .card-filter .row {
