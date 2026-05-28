@@ -120,7 +120,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="nav-actions d-flex gap-2 align-items-center">
       <!-- BOTÓN MODO OSCURO -->
       <button id="themeToggle" class="btn btn-outline-secondary">🌙</button>
-      <a href="<?= basePath() . (isset($_SESSION['usuario']) ? '/perfil' : '/login') ?>" class="btn btn-outline-secondary">
+      <a href="<?= basePath() . (isset($_SESSION['usuario']) ? '/perfil' : '/login') ?>" class="btn btn-outline-secondary<?= isset($_SESSION['usuario']) ? ' btn-user' : '' ?>">
         <?php
           if(isset($_SESSION['usuario'])){
             echo "<i class='bi bi-person-fill-check'></i> ";

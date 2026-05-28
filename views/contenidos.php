@@ -53,7 +53,7 @@ while ($row = $result->fetch_assoc()) {
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Gestión de Contenidos</h1>
-        <form method="GET" class="admin-search-form" style="margin-left:auto;">
+        <form method="GET" class="admin-search-form">
             <i class="bi bi-search admin-search-icon"></i>
             <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar por título..." class="admin-search-input">
             <?php if($q): ?><a href="?week=<?= $weekOffset ?>" class="admin-search-clear">&times;</a><?php endif; ?>
