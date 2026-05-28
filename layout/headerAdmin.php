@@ -59,11 +59,12 @@ if (!$fila) {
 <!doctype html>
 <html lang="es" data-bs-theme="light">
 <head>
+  <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light');</script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CatInk News - Admin</title>
-  <link rel="stylesheet" href="./../CSS/styles.css?v=2.3">
-  <link rel="stylesheet" href="./../CSS/admin.css?v=2.3">
+  <link rel="stylesheet" href="./../CSS/styles.css?v=<?= filemtime(__DIR__ . '/../CSS/styles.css') ?>">
+  <link rel="stylesheet" href="./../CSS/admin.css?v=<?= filemtime(__DIR__ . '/../CSS/admin.css') ?>">
   <link rel="icon" type="image/png" href="./../img/catink-icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css">

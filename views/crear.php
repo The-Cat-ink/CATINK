@@ -29,7 +29,7 @@ while($row = $categoriasResult->fetch_assoc()){
 ?>
 <div class="admin-container">
     <h1>Alta de noticia | CatInk News</h1>
-    <form id="formPublicacion" action="./../../controllers/noticiascontroller.php" method="POST" enctype="multipart/form-data">
+    <form id="formPublicacion" action="./../controllers/noticiascontroller.php" method="POST" enctype="multipart/form-data">
         <div class="form-card card">
             <!-- Autor oculto -->
             <input type="hidden" name="autor" value="<?= $fila['id_u'] ?>">

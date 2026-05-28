@@ -65,7 +65,77 @@ ALTER TABLE `usuarios` ADD COLUMN IF NOT EXISTS `foto_personal` VARCHAR(255) DEF
 ALTER TABLE `usuarios` ADD COLUMN IF NOT EXISTS `link_twitter` VARCHAR(255) DEFAULT NULL AFTER `foto_personal`;
 ALTER TABLE `usuarios` ADD COLUMN IF NOT EXISTS `link_instagram` VARCHAR(255) DEFAULT NULL AFTER `link_twitter`;
 
--- 6. (OPCIONAL) Eliminar lectores migrados de la tabla usuarios
+-- 7. Filtro de diccionario (palabras prohibidas)
+CREATE TABLE IF NOT EXISTS `filtro_diccionario` (
+  `id_palabra` int(11) NOT NULL AUTO_INCREMENT,
+  `palabra_baneada` varchar(255) NOT NULL,
+  `reemplazo` varchar(255) DEFAULT '***',
+  PRIMARY KEY (`id_palabra`),
+  UNIQUE KEY `uq_palabra` (`palabra_baneada`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 8. Configuración de comentarios por noticia
+CREATE TABLE IF NOT EXISTS `config_comentarios` (
+  `id_config` int(11) NOT NULL AUTO_INCREMENT,
+  `noticia_id` int(11) NOT NULL,
+  `permitir_comentarios` tinyint(1) NOT NULL DEFAULT 1,
+  `moderacion_previa` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id_config`),
+  UNIQUE KEY `uq_config_noticia` (`noticia_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 9. Comentarios de lectores
+CREATE TABLE IF NOT EXISTS `comentarios` (
+  `id_comentario` int(11) NOT NULL AUTO_INCREMENT,
+  `noticia_id` int(11) NOT NULL,
+  `lector_id` int(11) NOT NULL,
+  `contenido` text NOT NULL,
+  `fecha_publicacion` timestamp NOT NULL DEFAULT current_timestamp(),
+  `estado` enum('activo','oculto','eliminado') NOT NULL DEFAULT 'activo',
+  PRIMARY KEY (`id_comentario`),
+  KEY `idx_comentarios_noticia` (`noticia_id`),
+  KEY `idx_comentarios_lector` (`lector_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 10. Historial de ediciones de comentarios
+CREATE TABLE IF NOT EXISTS `historial_ediciones` (
+  `id_edicion` int(11) NOT NULL AUTO_INCREMENT,
+  `comentario_id` int(11) NOT NULL,
+  `contenido_anterior` text NOT NULL,
+  `fecha_edicion` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_edicion`),
+  KEY `idx_historial_comentario` (`comentario_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 11. Likes en comentarios
+CREATE TABLE IF NOT EXISTS `likes_comentarios` (
+  `id_like` int(11) NOT NULL AUTO_INCREMENT,
+  `comentario_id` int(11) NOT NULL,
+  `lector_id` int(11) NOT NULL,
+  `fecha` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_like`),
+  UNIQUE KEY `uq_like_comentario_lector` (`comentario_id`, `lector_id`),
+  KEY `idx_likes_comentario` (`comentario_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 12. Reportes de comentarios
+CREATE TABLE IF NOT EXISTS `reportes_comentarios` (
+  `id_reporte` int(11) NOT NULL AUTO_INCREMENT,
+  `comentario_id` int(11) NOT NULL,
+  `lector_id` int(11) NOT NULL,
+  `motivo` varchar(255) NOT NULL,
+  `fecha` timestamp NOT NULL DEFAULT current_timestamp(),
+  `estatus` enum('pendiente','revisado','descartado') NOT NULL DEFAULT 'pendiente',
+  PRIMARY KEY (`id_reporte`),
+  KEY `idx_reportes_comentario` (`comentario_id`),
+  KEY `idx_reportes_lector` (`lector_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 13. Soporte para comentarios de admins/editores
+ALTER TABLE `comentarios` MODIFY `lector_id` int(11) DEFAULT NULL;
+ALTER TABLE `comentarios` ADD COLUMN IF NOT EXISTS `usuario_id` int(11) DEFAULT NULL AFTER `lector_id`;
+
+-- 14. (OPCIONAL) Eliminar lectores migrados de la tabla usuarios
 --    Descomenta SOLO después de verificar que la migración fue correcta
 -- DELETE FROM `usuarios`
 -- WHERE `perm_categorias` = 0
