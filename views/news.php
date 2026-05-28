@@ -103,6 +103,41 @@ $publicidad = $stmt->get_result()->fetch_assoc();
 $stmt = $con->prepare("SELECT * FROM publicidad WHERE activo = 1 AND tipo = 2 ORDER BY RAND() LIMIT 1");
 $stmt->execute();
 $publicidadCuadro = $stmt->get_result()->fetch_assoc();
+// ==============================
+// COMENTARIOS
+// ==============================
+$stmtComentarios = $con->prepare("
+    SELECT c.*, l.nombre, l.usuario, l.avatar_id, a.imagen AS avatar_img,
+           (SELECT COUNT(*) FROM likes_comentarios lc WHERE lc.comentario_id = c.id_comentario) AS total_likes
+    FROM comentarios c
+    JOIN lectores l ON c.lector_id = l.id
+    LEFT JOIN avatares_perfil a ON l.avatar_id = a.id_avatar
+    WHERE c.noticia_id = ? AND c.estado = 'activo'
+    ORDER BY c.fecha_publicacion DESC
+");
+$stmtComentarios->bind_param("i", $id);
+$stmtComentarios->execute();
+$comentarios = $stmtComentarios->get_result();
+$totalComentarios = $comentarios->num_rows;
+
+// Config de comentarios para esta noticia
+$stmtCfgCom = $con->prepare("SELECT permitir_comentarios, moderacion_previa FROM config_comentarios WHERE noticia_id = ?");
+$stmtCfgCom->bind_param("i", $id);
+$stmtCfgCom->execute();
+$cfgCom = $stmtCfgCom->get_result()->fetch_assoc();
+$comentariosHabilitados = ($cfgCom === null || $cfgCom['permitir_comentarios'] == 1);
+
+// Likes del lector actual
+$misLikes = [];
+if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
+    $stmtMisLikes = $con->prepare("SELECT comentario_id FROM likes_comentarios WHERE lector_id = ?");
+    $stmtMisLikes->bind_param("i", $_SESSION['id_lector']);
+    $stmtMisLikes->execute();
+    $resLikes = $stmtMisLikes->get_result();
+    while ($lk = $resLikes->fetch_assoc()) {
+        $misLikes[$lk['comentario_id']] = true;
+    }
+}
 ?>
 <style>
   @media (max-width: 768px) {
@@ -180,6 +215,105 @@ $publicidadCuadro = $stmt->get_result()->fetch_assoc();
                 <span class="ads-label">ADS</span>
               </div>
             <?php endif; ?>
+            <!-- ===================== -->
+            <!-- SECCIÓN DE COMENTARIOS -->
+            <!-- ===================== -->
+            <?php if ($comentariosHabilitados): ?>
+            <div class="comentarios-section" id="comentarios">
+              <h2><i class="bi bi-chat-dots"></i> Comentarios <span class="comentarios-count">(<?= $totalComentarios ?>)</span></h2>
+              <!-- Formulario -->
+              <?php if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector'): ?>
+                <div class="comentario-form">
+                  <div class="comentario-form-avatar">
+                    <?php
+                      $avatarLector = null;
+                      if (!empty($_SESSION['id_lector'])) {
+                          $stmtAv = $con->prepare("SELECT a.imagen FROM lectores l LEFT JOIN avatares_perfil a ON l.avatar_id = a.id_avatar WHERE l.id = ?");
+                          $stmtAv->bind_param("i", $_SESSION['id_lector']);
+                          $stmtAv->execute();
+                          $avRes = $stmtAv->get_result()->fetch_assoc();
+                          $avatarLector = $avRes['imagen'] ?? null;
+                      }
+                    ?>
+                    <?php if ($avatarLector): ?>
+                      <img src="./../img/avatares/<?= htmlspecialchars($avatarLector) ?>" alt="" class="comentario-avatar">
+                    <?php else: ?>
+                      <div class="comentario-avatar-placeholder"><?= strtoupper(mb_substr($_SESSION['nombre_completo'] ?? 'U', 0, 1)) ?></div>
+                    <?php endif; ?>
+                  </div>
+                  <div class="comentario-form-body">
+                    <textarea id="comentarioTexto" placeholder="Escribe un comentario..." maxlength="1000" rows="3"></textarea>
+                    <div class="comentario-form-footer">
+                      <span class="comentario-chars"><span id="charCount">0</span>/1000</span>
+                      <button type="button" id="btnComentar" class="btn-comentar"><i class="bi bi-send"></i> Comentar</button>
+                    </div>
+                  </div>
+                </div>
+              <?php else: ?>
+                <div class="comentario-login-msg">
+                  <p><i class="bi bi-person-circle"></i> <a href="<?= basePath() ?>/login">Inicia sesión</a> para dejar un comentario.</p>
+                </div>
+              <?php endif; ?>
+              <!-- Lista de comentarios -->
+              <div class="comentarios-lista" id="comentariosLista">
+                <?php if ($totalComentarios === 0): ?>
+                  <p class="comentarios-vacio" id="comentariosVacio">Sé el primero en comentar.</p>
+                <?php endif; ?>
+                <?php while ($com = $comentarios->fetch_assoc()): ?>
+                  <div class="comentario-item" data-id="<?= $com['id_comentario'] ?>">
+                    <div class="comentario-avatar-col">
+                      <?php if (!empty($com['avatar_img'])): ?>
+                        <img src="./../img/avatares/<?= htmlspecialchars($com['avatar_img']) ?>" alt="" class="comentario-avatar">
+                      <?php else: ?>
+                        <div class="comentario-avatar-placeholder"><?= strtoupper(mb_substr($com['nombre'], 0, 1)) ?></div>
+                      <?php endif; ?>
+                    </div>
+                    <div class="comentario-body">
+                      <div class="comentario-header">
+                        <strong class="comentario-autor"><?= htmlspecialchars($com['nombre']) ?></strong>
+                        <span class="comentario-fecha"><?= date('d M Y, H:i', strtotime($com['fecha_publicacion'])) ?></span>
+                      </div>
+                      <p class="comentario-texto"><?= nl2br(htmlspecialchars($com['contenido'])) ?></p>
+                      <div class="comentario-acciones">
+                        <?php
+                          $yaLiked = isset($misLikes[$com['id_comentario']]);
+                        ?>
+                        <button class="btn-like-com <?= $yaLiked ? 'liked' : '' ?>" data-id="<?= $com['id_comentario'] ?>">
+                          <i class="bi <?= $yaLiked ? 'bi-heart-fill' : 'bi-heart' ?>"></i>
+                          <span class="like-count"><?= (int)$com['total_likes'] ?></span>
+                        </button>
+                        <?php if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector' && $_SESSION['id_lector'] == $com['lector_id']): ?>
+                          <button class="btn-editar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-pencil"></i> Editar</button>
+                          <button class="btn-eliminar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-trash"></i> Eliminar</button>
+                        <?php endif; ?>
+                        <?php if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector' && $_SESSION['id_lector'] != $com['lector_id']): ?>
+                          <button class="btn-reportar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-flag"></i> Reportar</button>
+                        <?php endif; ?>
+                      </div>
+                    </div>
+                  </div>
+                <?php endwhile; ?>
+              </div>
+            </div>
+            <?php endif; ?>
+            <!-- Modal de reporte -->
+            <div class="modal-reporte" id="modalReporte" style="display:none;">
+              <div class="modal-reporte-content">
+                <h3><i class="bi bi-flag"></i> Reportar comentario</h3>
+                <select id="reporteMotivo">
+                  <option value="">Selecciona un motivo...</option>
+                  <option value="Contenido ofensivo">Contenido ofensivo</option>
+                  <option value="Spam">Spam</option>
+                  <option value="Información falsa">Información falsa</option>
+                  <option value="Acoso">Acoso</option>
+                  <option value="Otro">Otro</option>
+                </select>
+                <div class="modal-reporte-btns">
+                  <button id="btnEnviarReporte" class="btn-comentar"><i class="bi bi-send"></i> Enviar</button>
+                  <button id="btnCerrarReporte" class="btn-cancelar">Cancelar</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <!-- SIDEBAR -->
@@ -351,6 +485,207 @@ $publicidadCuadro = $stmt->get_result()->fetch_assoc();
     } else {
       alert(data.msg);
       this.disabled = true;
+    }
+  });
+</script>
+<script>
+  // ============================
+  // SISTEMA DE COMENTARIOS
+  // ============================
+  const noticiaId = <?= $id ?>;
+  const comBase = './../controllers/';
+
+  // Contador de caracteres
+  const textarea = document.getElementById('comentarioTexto');
+  const charCount = document.getElementById('charCount');
+  if (textarea && charCount) {
+    textarea.addEventListener('input', () => {
+      charCount.textContent = textarea.value.length;
+    });
+  }
+
+  // CREAR COMENTARIO
+  const btnComentar = document.getElementById('btnComentar');
+  if (btnComentar) {
+    btnComentar.addEventListener('click', async () => {
+      const contenido = textarea.value.trim();
+      if (!contenido) return;
+      btnComentar.disabled = true;
+      try {
+        const res = await fetch(comBase + 'comentarios.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `action=crear&noticia_id=${noticiaId}&contenido=${encodeURIComponent(contenido)}`
+        });
+        const data = await res.json();
+        if (data.ok && data.comentario) {
+          const c = data.comentario;
+          const avatarHtml = c.avatar_img
+            ? `<img src="./../img/avatares/${c.avatar_img}" alt="" class="comentario-avatar">`
+            : `<div class="comentario-avatar-placeholder">${c.nombre.charAt(0).toUpperCase()}</div>`;
+          const fecha = new Date(c.fecha_publicacion).toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+          const html = `
+            <div class="comentario-item" data-id="${c.id_comentario}">
+              <div class="comentario-avatar-col">${avatarHtml}</div>
+              <div class="comentario-body">
+                <div class="comentario-header">
+                  <strong class="comentario-autor">${c.nombre}</strong>
+                  <span class="comentario-fecha">${fecha}</span>
+                </div>
+                <p class="comentario-texto">${c.contenido.replace(/\n/g, '<br>')}</p>
+                <div class="comentario-acciones">
+                  <button class="btn-like-com" data-id="${c.id_comentario}"><i class="bi bi-heart"></i> <span class="like-count">0</span></button>
+                  <button class="btn-editar-com" data-id="${c.id_comentario}"><i class="bi bi-pencil"></i> Editar</button>
+                  <button class="btn-eliminar-com" data-id="${c.id_comentario}"><i class="bi bi-trash"></i> Eliminar</button>
+                </div>
+              </div>
+            </div>`;
+          const lista = document.getElementById('comentariosLista');
+          const vacio = document.getElementById('comentariosVacio');
+          if (vacio) vacio.remove();
+          lista.insertAdjacentHTML('afterbegin', html);
+          textarea.value = '';
+          charCount.textContent = '0';
+          // Actualizar contador
+          const countEl = document.querySelector('.comentarios-count');
+          if (countEl) {
+            const num = parseInt(countEl.textContent.replace(/\D/g, '')) + 1;
+            countEl.textContent = `(${num})`;
+          }
+        }
+        if (data.msg) alert(data.msg);
+      } catch (e) { console.error(e); }
+      btnComentar.disabled = false;
+    });
+  }
+
+  // DELEGACIÓN DE EVENTOS para likes, editar, eliminar, reportar
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+
+    // LIKE
+    if (btn.classList.contains('btn-like-com')) {
+      const cid = btn.dataset.id;
+      try {
+        const res = await fetch(comBase + 'like_comentario.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `comentario_id=${cid}`
+        });
+        const data = await res.json();
+        if (data.ok) {
+          btn.querySelector('.like-count').textContent = data.total;
+          const icon = btn.querySelector('i');
+          if (data.liked) {
+            btn.classList.add('liked');
+            icon.className = 'bi bi-heart-fill';
+          } else {
+            btn.classList.remove('liked');
+            icon.className = 'bi bi-heart';
+          }
+        } else {
+          alert(data.msg);
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    // ELIMINAR
+    if (btn.classList.contains('btn-eliminar-com')) {
+      if (!confirm('¿Eliminar este comentario?')) return;
+      const cid = btn.dataset.id;
+      try {
+        const res = await fetch(comBase + 'comentarios.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `action=eliminar&comentario_id=${cid}`
+        });
+        const data = await res.json();
+        if (data.ok) {
+          const item = document.querySelector(`.comentario-item[data-id="${cid}"]`);
+          if (item) item.remove();
+          const countEl = document.querySelector('.comentarios-count');
+          if (countEl) {
+            const num = Math.max(0, parseInt(countEl.textContent.replace(/\D/g, '')) - 1);
+            countEl.textContent = `(${num})`;
+          }
+        }
+        alert(data.msg);
+      } catch (e) { console.error(e); }
+    }
+
+    // EDITAR
+    if (btn.classList.contains('btn-editar-com')) {
+      const cid = btn.dataset.id;
+      const item = document.querySelector(`.comentario-item[data-id="${cid}"]`);
+      const textoEl = item.querySelector('.comentario-texto');
+      const textoActual = textoEl.innerText;
+      textoEl.innerHTML = `<textarea class="edit-textarea" maxlength="1000">${textoActual}</textarea>
+        <div class="comentario-form-footer">
+          <button class="btn-comentar btn-guardar-edit" data-id="${cid}"><i class="bi bi-check"></i> Guardar</button>
+          <button class="btn-cancelar btn-cancelar-edit">Cancelar</button>
+        </div>`;
+    }
+
+    // GUARDAR EDICIÓN
+    if (btn.classList.contains('btn-guardar-edit')) {
+      const cid = btn.dataset.id;
+      const item = document.querySelector(`.comentario-item[data-id="${cid}"]`);
+      const editArea = item.querySelector('.edit-textarea');
+      const contenido = editArea.value.trim();
+      if (!contenido) return;
+      try {
+        const res = await fetch(comBase + 'comentarios.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `action=editar&comentario_id=${cid}&contenido=${encodeURIComponent(contenido)}`
+        });
+        const data = await res.json();
+        if (data.ok) {
+          item.querySelector('.comentario-texto').innerHTML = data.contenido.replace(/\n/g, '<br>');
+        } else {
+          alert(data.msg);
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    // CANCELAR EDICIÓN
+    if (btn.classList.contains('btn-cancelar-edit')) {
+      const item = btn.closest('.comentario-item');
+      const editArea = item.querySelector('.edit-textarea');
+      const textoOriginal = editArea.value;
+      item.querySelector('.comentario-texto').innerHTML = textoOriginal.replace(/\n/g, '<br>');
+    }
+
+    // REPORTAR - abrir modal
+    if (btn.classList.contains('btn-reportar-com')) {
+      const modal = document.getElementById('modalReporte');
+      modal.style.display = 'flex';
+      modal.dataset.comentarioId = btn.dataset.id;
+      document.getElementById('reporteMotivo').value = '';
+    }
+
+    // ENVIAR REPORTE
+    if (btn.id === 'btnEnviarReporte') {
+      const modal = document.getElementById('modalReporte');
+      const motivo = document.getElementById('reporteMotivo').value;
+      const cid = modal.dataset.comentarioId;
+      if (!motivo) { alert('Selecciona un motivo.'); return; }
+      try {
+        const res = await fetch(comBase + 'reportar_comentario.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `comentario_id=${cid}&motivo=${encodeURIComponent(motivo)}`
+        });
+        const data = await res.json();
+        alert(data.msg);
+        modal.style.display = 'none';
+      } catch (e) { console.error(e); }
+    }
+
+    // CERRAR MODAL REPORTE
+    if (btn.id === 'btnCerrarReporte') {
+      document.getElementById('modalReporte').style.display = 'none';
     }
   });
 </script>
