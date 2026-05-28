@@ -166,7 +166,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
         <div class="col-md-9">
           <div class="container-noticia">
             <?php
-              $img = !empty($noticia['crop1']) ? "./../" . htmlspecialchars($noticia['crop1']) : "./../img/placeholder.jpg";
+              $img = !empty($noticia['crop1']) ? basePath()."/" . htmlspecialchars($noticia['crop1']) : basePath()."/img/placeholder.jpg";
             ?>
             <img src="<?= $img ?>" alt="" class="img-titular">
             <!-- Categorías -->
@@ -216,7 +216,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
             <?php if ($secciones['publicidad']['estado'] == 1) : ?>
               <div class="ad-container">
                 <a href="<?= $publicidad['url'] ?>" class="banner-button" data-pub="<?= $publicidad['id_pub'] ?>">
-                  <img src="./../<?= $publicidad['imagen'] ?>" alt="" class="banner">
+                  <img src="<?= basePath() ?>/<?= $publicidad['imagen'] ?>" alt="" class="banner" loading="lazy">
                 </a>
                 <span class="ads-label">ADS</span>
               </div>
@@ -248,7 +248,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
               <div class="comentario-form">
                 <div class="comentario-form-avatar">
                   <?php if ($avatarComentario): ?>
-                    <img src="./../img/avatares/<?= htmlspecialchars($avatarComentario) ?>" alt="" class="comentario-avatar">
+                    <img src="<?= basePath() ?>/img/avatares/<?= htmlspecialchars($avatarComentario) ?>" alt="" class="comentario-avatar">
                   <?php else: ?>
                     <div class="comentario-avatar-placeholder"><i class="bi bi-person"></i></div>
                   <?php endif; ?>
@@ -273,7 +273,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                   <div class="comentario-item" data-id="<?= $com['id_comentario'] ?>">
                     <div class="comentario-avatar-col">
                       <?php if (!empty($com['avatar_img'])): ?>
-                        <img src="./../img/avatares/<?= htmlspecialchars($com['avatar_img']) ?>" alt="" class="comentario-avatar">
+                        <img src="<?= basePath() ?>/img/avatares/<?= htmlspecialchars($com['avatar_img']) ?>" alt="" class="comentario-avatar">
                       <?php else: ?>
                         <div class="comentario-avatar-placeholder"><?= strtoupper(mb_substr($com['nombre'], 0, 1)) ?></div>
                       <?php endif; ?>
@@ -346,7 +346,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
               <?php if($secciones['publicidad']['estado'] == 1) : ?>
                 <div class="ad-container">
                   <a href="<?= $publicidadCuadro['url'] ?>" class="banner-button" data-pub="<?= $publicidadCuadro['id_pub'] ?>">
-                    <img src="./../<?= $publicidadCuadro['imagen'] ?>" class="banner-card-img-top">
+                    <img src="<?= basePath() ?>/<?= $publicidadCuadro['imagen'] ?>" class="banner-card-img-top" loading="lazy">
                   </a>
                   <span class="ads-label">ADS</span>
                 </div>
@@ -358,7 +358,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                   <?php while ($row = $ultimas->fetch_assoc()): ?>
                     <div class="cardSpecial row row-no-gap">
                         <div class="col-md-4">
-                            <img src="./../<?=$row['crop3']?>" class="imgCard card-img-left-rounded">
+                            <img src="<?= basePath() ?>/<?=$row['crop3']?>" class="imgCard card-img-left-rounded" loading="lazy">
                         </div>
                         <div class="col-md-8">
                           <div class="card-body">
@@ -375,7 +375,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                   <?php while ($row = $populares->fetch_assoc()): ?>
                     <div class="cardSpecial row row-no-gap">
                         <div class="col-md-4">
-                            <img src="./../<?=$row['crop3']?>" class="imgCard card-img-left-rounded">
+                            <img src="<?= basePath() ?>/<?=$row['crop3']?>" class="imgCard card-img-left-rounded" loading="lazy">
                         </div>
                         <div class="col-md-8">
                           <div class="card-body">
@@ -410,7 +410,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <br>
           <div class="row">
             <?php while($r = $recomendadas->fetch_assoc()): 
-                $img = !empty($r['crop3']) ? "./../".$r['crop3'] : "./../img/placeholder.jpg";
+                $img = !empty($r['crop3']) ? basePath()."/".$r['crop3'] : basePath()."/img/placeholder.jpg";
             ?>
               <div class="col">
                   <div class="card h-100" data-url="./<?= newsUrl($r['id']) ?>">
@@ -440,7 +440,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <br>
           <div class="row">
             <?php while($r = $recientes->fetch_assoc()): 
-                $img = !empty($r['crop3']) ? "./../".$r['crop3'] : "./../img/placeholder.jpg";
+                $img = !empty($r['crop3']) ? basePath()."/".$r['crop3'] : basePath()."/img/placeholder.jpg";
             ?>
               <div class="col">
                   <div class="card h-100"  data-url="./<?= newsUrl($r['id']) ?>">
@@ -483,7 +483,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
     setTimeout(() => toast.remove(), 3000);
   }
   // Sumar vistas
-  fetch("./../controllers/sumarvistas.php", {
+  fetch("<?= basePath() ?>/controllers/sumarvistas.php", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: "noticia_id=<?= $id ?>"
@@ -498,7 +498,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
     if (enviado) return;
     enviado = true;
     let tiempo = Math.floor((Date.now() - inicio) / 1000);
-    navigator.sendBeacon("./../controllers/guardartiempo.php",
+    navigator.sendBeacon("<?= basePath() ?>/controllers/guardartiempo.php",
       new URLSearchParams({ noticia_id: "<?= $id ?>", tiempo: tiempo })
     );
   }
@@ -509,7 +509,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
   // Botón de Like
   document.getElementById('likeBtn').addEventListener('click', async function() {
     const id = this.dataset.id;
-    const res = await fetch('./../controllers/like.php', {
+    const res = await fetch('<?= basePath() ?>/controllers/like.php', {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: `noticia_id=${id}`
@@ -530,7 +530,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
   // SISTEMA DE COMENTARIOS
   // ============================
   const noticiaId = <?= $id ?>;
-  const comBase = './../controllers/';
+  const comBase = '<?= basePath() ?>/controllers/';
 
   // Contador de caracteres
   const textarea = document.getElementById('comentarioTexto');
@@ -558,7 +558,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
         if (data.ok && data.comentario) {
           const c = data.comentario;
           const avatarHtml = c.avatar_img
-            ? `<img src="./../img/avatares/${c.avatar_img}" alt="" class="comentario-avatar">`
+            ? `<img src="<?= basePath() ?>/img/avatares/${c.avatar_img}" alt="" class="comentario-avatar">`
             : `<div class="comentario-avatar-placeholder">${c.nombre.charAt(0).toUpperCase()}</div>`;
           const fecha = new Date(c.fecha_publicacion).toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
           const badgeHtml = c.es_editor == 1 ? '<span class="badge-editor">Editor</span>' : '';

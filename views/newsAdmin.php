@@ -57,7 +57,7 @@ $cats = array_map('trim', $cats);
                 ❤️ Like <span id="likeCount"><?= $noticia['likes'] ?></span>
             </button>
             <?php
-                $img = !empty($noticia['crop1']) ? "./../" . htmlspecialchars($noticia['crop1']) : "./../img/placeholder.jpg";
+                $img = !empty($noticia['crop1']) ? basePath()."/" . htmlspecialchars($noticia['crop1']) : basePath()."/img/placeholder.jpg";
             ?>
             <img src="<?= $img ?>" alt="" class="img-titular">
             <!-- Contenido completo de la noticia -->
@@ -66,7 +66,7 @@ $cats = array_map('trim', $cats);
             </div>
             <div class="ad-container">
                 <a href="<?= $publicidad['url'] ?>" class="banner-button" data-pub="<?= $publicidad['id_pub'] ?>">
-                    <img src="./../<?= $publicidad['imagen'] ?>" alt="" class="banner">
+                    <img src="<?= basePath() ?>/<?= $publicidad['imagen'] ?>" alt="" class="banner">
                 </a>
                 <span class="ads-label">ADS</span>
             </div>
