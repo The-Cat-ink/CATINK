@@ -158,7 +158,7 @@
       num: 2,
       name: 'Banner',
       ratio: 21 / 6,
-      minWidth: 1200,
+      minWidth: 1920,
       inputId: 'imageInputCrop2',
       imgId: 'cropperImage2',
       previewId: 'preview2',
@@ -249,7 +249,7 @@
         minWidth: config.minWidth || 800,
         minHeight: config.minWidth ? Math.round(config.minWidth / (config.ratio || 16/9)) : 450
       });
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.98);
 
       // Guardar en input hidden
       if (hiddenInput) {

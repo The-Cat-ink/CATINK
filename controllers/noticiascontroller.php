@@ -6,9 +6,10 @@ date_default_timezone_set('America/Mexico_City');
 // ============================
 // GUARDAR IMAGEN BASE64
 // ============================
-function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 92) {
+function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 95) {
   if (empty($base64)) return null;
-  if (!preg_match('/^data:image\/(jpeg|jpg|png);base64,/', $base64)) {
+  if (!preg_match('/^data:image\/(jpeg|jpg|png|webp|gif);base64,/', $base64)) {
+    error_log("CATINK IMG: regex no coincide para crop=$crop, inicio=" . substr($base64, 0, 50));
     return null;
   }
   $base64 = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
