@@ -2030,6 +2030,10 @@ hr{
 .comentario-body { flex: 1; min-width: 0; }
 .comentario-header { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
 .comentario-autor { font-size: 0.95rem; }
+.badge-editor {
+  background: var(--accent); color: #fff; font-size: 0.7rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+}
 .comentario-fecha { font-size: 0.8rem; color: var(--muted); }
 .comentario-texto { font-size: 0.95rem; line-height: 1.5; margin: 0 0 8px; word-break: break-word; }
 /* Acciones */

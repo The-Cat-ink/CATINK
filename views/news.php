@@ -107,11 +107,17 @@ $publicidadCuadro = $stmt->get_result()->fetch_assoc();
 // COMENTARIOS
 // ==============================
 $stmtComentarios = $con->prepare("
-    SELECT c.*, l.nombre, l.usuario, l.avatar_id, a.imagen AS avatar_img,
+    SELECT c.*,
+           COALESCE(u.nombre, l.nombre) AS nombre,
+           COALESCE(u.usuario, l.usuario) AS usuario,
+           COALESCE(ua.imagen, la.imagen) AS avatar_img,
+           IF(c.usuario_id IS NOT NULL, 1, 0) AS es_editor,
            (SELECT COUNT(*) FROM likes_comentarios lc WHERE lc.comentario_id = c.id_comentario) AS total_likes
     FROM comentarios c
-    JOIN lectores l ON c.lector_id = l.id
-    LEFT JOIN avatares_perfil a ON l.avatar_id = a.id_avatar
+    LEFT JOIN lectores l ON c.lector_id = l.id
+    LEFT JOIN avatares_perfil la ON l.avatar_id = la.id_avatar
+    LEFT JOIN usuarios u ON c.usuario_id = u.id_u
+    LEFT JOIN avatares_perfil ua ON u.avatar_id = ua.id_avatar
     WHERE c.noticia_id = ? AND c.estado = 'activo'
     ORDER BY c.fecha_publicacion DESC
 ");
@@ -222,33 +228,40 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
             <div class="comentarios-section" id="comentarios">
               <h2 class="comentarios-titulo">Comentarios</h2>
               <!-- Formulario -->
+              <?php
+                $puedeComentarr = isset($_SESSION['tipo']) && ($_SESSION['tipo'] === 'lector' || $_SESSION['tipo'] === 'admin');
+                $avatarComentario = null;
+                if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector' && !empty($_SESSION['id_lector'])) {
+                    $stmtAv = $con->prepare("SELECT a.imagen FROM lectores l LEFT JOIN avatares_perfil a ON l.avatar_id = a.id_avatar WHERE l.id = ?");
+                    $stmtAv->bind_param("i", $_SESSION['id_lector']);
+                    $stmtAv->execute();
+                    $avRes = $stmtAv->get_result()->fetch_assoc();
+                    $avatarComentario = $avRes['imagen'] ?? null;
+                } elseif (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION['usuario'])) {
+                    $stmtAv = $con->prepare("SELECT a.imagen FROM usuarios u LEFT JOIN avatares_perfil a ON u.avatar_id = a.id_avatar WHERE u.usuario = ?");
+                    $stmtAv->bind_param("s", $_SESSION['usuario']);
+                    $stmtAv->execute();
+                    $avRes = $stmtAv->get_result()->fetch_assoc();
+                    $avatarComentario = $avRes['imagen'] ?? null;
+                }
+              ?>
               <div class="comentario-form">
                 <div class="comentario-form-avatar">
-                  <?php
-                    $avatarLector = null;
-                    if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector' && !empty($_SESSION['id_lector'])) {
-                        $stmtAv = $con->prepare("SELECT a.imagen FROM lectores l LEFT JOIN avatares_perfil a ON l.avatar_id = a.id_avatar WHERE l.id = ?");
-                        $stmtAv->bind_param("i", $_SESSION['id_lector']);
-                        $stmtAv->execute();
-                        $avRes = $stmtAv->get_result()->fetch_assoc();
-                        $avatarLector = $avRes['imagen'] ?? null;
-                    }
-                  ?>
-                  <?php if ($avatarLector): ?>
-                    <img src="./../img/avatares/<?= htmlspecialchars($avatarLector) ?>" alt="" class="comentario-avatar">
+                  <?php if ($avatarComentario): ?>
+                    <img src="./../img/avatares/<?= htmlspecialchars($avatarComentario) ?>" alt="" class="comentario-avatar">
                   <?php else: ?>
                     <div class="comentario-avatar-placeholder"><i class="bi bi-person"></i></div>
                   <?php endif; ?>
                 </div>
                 <div class="comentario-form-body">
-                  <textarea id="comentarioTexto" placeholder="Comparte tu opinión con nosotros..." maxlength="1000" rows="4" <?= (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') ? '' : 'disabled' ?>></textarea>
+                  <textarea id="comentarioTexto" placeholder="Comparte tu opinión con nosotros..." maxlength="1000" rows="4" <?= $puedeComentarr ? '' : 'disabled' ?>></textarea>
                   <div class="comentario-form-footer">
                     <span class="comentario-chars"><span id="charCount">0</span>/1000</span>
-                    <button type="button" id="btnComentar" class="btn-publicar" <?= (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') ? '' : 'disabled' ?>>Publicar</button>
+                    <button type="button" id="btnComentar" class="btn-publicar" <?= $puedeComentarr ? '' : 'disabled' ?>>Publicar</button>
                   </div>
                 </div>
               </div>
-              <?php if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'lector'): ?>
+              <?php if (!$puedeComentarr): ?>
                 <p class="comentario-login-msg">Inicia sesión desde el menú superior para dejar un comentario.</p>
               <?php endif; ?>
               <!-- Lista de comentarios -->
@@ -268,22 +281,35 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                     <div class="comentario-body">
                       <div class="comentario-header">
                         <strong class="comentario-autor"><?= htmlspecialchars($com['nombre']) ?></strong>
+                        <?php if ($com['es_editor']): ?>
+                          <span class="badge-editor">Editor</span>
+                        <?php endif; ?>
                         <span class="comentario-fecha"><?= date('d M Y, H:i', strtotime($com['fecha_publicacion'])) ?></span>
                       </div>
                       <p class="comentario-texto"><?= nl2br(htmlspecialchars($com['contenido'])) ?></p>
                       <div class="comentario-acciones">
                         <?php
                           $yaLiked = isset($misLikes[$com['id_comentario']]);
+                          $esMiComentario = false;
+                          if (isset($_SESSION['tipo'])) {
+                              if ($_SESSION['tipo'] === 'lector' && isset($_SESSION['id_lector']) && $com['lector_id'] == $_SESSION['id_lector']) $esMiComentario = true;
+                              if ($_SESSION['tipo'] === 'admin' && $com['usuario_id']) {
+                                  $stmtMyId = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ?");
+                                  $stmtMyId->bind_param("s", $_SESSION['usuario']);
+                                  $stmtMyId->execute();
+                                  $myId = $stmtMyId->get_result()->fetch_assoc();
+                                  if ($myId && $myId['id_u'] == $com['usuario_id']) $esMiComentario = true;
+                              }
+                          }
                         ?>
                         <button class="btn-like-com <?= $yaLiked ? 'liked' : '' ?>" data-id="<?= $com['id_comentario'] ?>">
                           <i class="bi <?= $yaLiked ? 'bi-heart-fill' : 'bi-heart' ?>"></i>
                           <span class="like-count"><?= (int)$com['total_likes'] ?></span>
                         </button>
-                        <?php if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector' && $_SESSION['id_lector'] == $com['lector_id']): ?>
+                        <?php if ($esMiComentario): ?>
                           <button class="btn-editar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-pencil"></i> Editar</button>
                           <button class="btn-eliminar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-trash"></i> Eliminar</button>
-                        <?php endif; ?>
-                        <?php if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector' && $_SESSION['id_lector'] != $com['lector_id']): ?>
+                        <?php elseif (isset($_SESSION['tipo'])): ?>
                           <button class="btn-reportar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-flag"></i> Reportar</button>
                         <?php endif; ?>
                       </div>
@@ -535,12 +561,14 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
             ? `<img src="./../img/avatares/${c.avatar_img}" alt="" class="comentario-avatar">`
             : `<div class="comentario-avatar-placeholder">${c.nombre.charAt(0).toUpperCase()}</div>`;
           const fecha = new Date(c.fecha_publicacion).toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+          const badgeHtml = c.es_editor == 1 ? '<span class="badge-editor">Editor</span>' : '';
           const html = `
             <div class="comentario-item" data-id="${c.id_comentario}">
               <div class="comentario-avatar-col">${avatarHtml}</div>
               <div class="comentario-body">
                 <div class="comentario-header">
                   <strong class="comentario-autor">${c.nombre}</strong>
+                  ${badgeHtml}
                   <span class="comentario-fecha">${fecha}</span>
                 </div>
                 <p class="comentario-texto">${c.contenido.replace(/\n/g, '<br>')}</p>

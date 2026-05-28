@@ -3,13 +3,27 @@ session_start();
 header('Content-Type: application/json');
 require_once(__DIR__ . '/../data/conexion.php');
 
-// Solo lectores logueados pueden comentar
-if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'lector' || !isset($_SESSION['id_lector'])) {
+// Lectores o admins pueden comentar
+$tipoUsuario = $_SESSION['tipo'] ?? null;
+$lectorId = null;
+$usuarioId = null;
+
+if ($tipoUsuario === 'lector' && isset($_SESSION['id_lector'])) {
+    $lectorId = (int)$_SESSION['id_lector'];
+} elseif ($tipoUsuario === 'admin' && isset($_SESSION['usuario'])) {
+    $stmtU = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ?");
+    $stmtU->bind_param("s", $_SESSION['usuario']);
+    $stmtU->execute();
+    $resU = $stmtU->get_result()->fetch_assoc();
+    $usuarioId = $resU ? (int)$resU['id_u'] : null;
+}
+
+if (!$lectorId && !$usuarioId) {
     echo json_encode(['ok' => false, 'msg' => 'Debes iniciar sesión para comentar.']);
     exit;
 }
 
-$lectorId = (int)$_SESSION['id_lector'];
+$esEditor = ($tipoUsuario === 'admin');
 $action = $_POST['action'] ?? '';
 
 // ============================
@@ -57,21 +71,26 @@ switch ($action) {
         // Filtrar palabras prohibidas
         $contenido = filtrarPalabras($con, $contenido);
 
-        // Estado: si requiere moderación previa, se guarda como 'oculto'
-        $estado = ($cfg && $cfg['moderacion_previa'] == 1) ? 'oculto' : 'activo';
+        // Estado: admins publican directo, lectores dependen de config
+        $estado = $esEditor ? 'activo' : (($cfg && $cfg['moderacion_previa'] == 1) ? 'oculto' : 'activo');
 
-        $stmt = $con->prepare("INSERT INTO comentarios (noticia_id, lector_id, contenido, estado) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("iiss", $noticiaId, $lectorId, $contenido, $estado);
+        $stmt = $con->prepare("INSERT INTO comentarios (noticia_id, lector_id, usuario_id, contenido, estado) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("iiiss", $noticiaId, $lectorId, $usuarioId, $contenido, $estado);
 
         if ($stmt->execute()) {
             $msg = ($estado === 'oculto') ? 'Tu comentario fue enviado y será revisado antes de publicarse.' : 'Comentario publicado.';
-            // Obtener datos del comentario recién creado
             $newId = $stmt->insert_id;
             $stmtNew = $con->prepare("
-                SELECT c.*, l.nombre, l.usuario, l.avatar_id, a.imagen AS avatar_img
+                SELECT c.*,
+                       COALESCE(u.nombre, l.nombre) AS nombre,
+                       COALESCE(u.usuario, l.usuario) AS usuario,
+                       COALESCE(ua.imagen, la.imagen) AS avatar_img,
+                       IF(c.usuario_id IS NOT NULL, 1, 0) AS es_editor
                 FROM comentarios c
-                JOIN lectores l ON c.lector_id = l.id
-                LEFT JOIN avatares_perfil a ON l.avatar_id = a.id_avatar
+                LEFT JOIN lectores l ON c.lector_id = l.id
+                LEFT JOIN avatares_perfil la ON l.avatar_id = la.id_avatar
+                LEFT JOIN usuarios u ON c.usuario_id = u.id_u
+                LEFT JOIN avatares_perfil ua ON u.avatar_id = ua.id_avatar
                 WHERE c.id_comentario = ?
             ");
             $stmtNew->bind_param("i", $newId);
@@ -100,9 +119,14 @@ switch ($action) {
             exit;
         }
 
-        // Verificar propiedad
-        $stmtCheck = $con->prepare("SELECT id_comentario, contenido FROM comentarios WHERE id_comentario = ? AND lector_id = ?");
-        $stmtCheck->bind_param("ii", $comentarioId, $lectorId);
+        // Verificar propiedad (lector o admin)
+        if ($lectorId) {
+            $stmtCheck = $con->prepare("SELECT id_comentario, contenido FROM comentarios WHERE id_comentario = ? AND lector_id = ?");
+            $stmtCheck->bind_param("ii", $comentarioId, $lectorId);
+        } else {
+            $stmtCheck = $con->prepare("SELECT id_comentario, contenido FROM comentarios WHERE id_comentario = ? AND usuario_id = ?");
+            $stmtCheck->bind_param("ii", $comentarioId, $usuarioId);
+        }
         $stmtCheck->execute();
         $original = $stmtCheck->get_result()->fetch_assoc();
 
@@ -139,9 +163,14 @@ switch ($action) {
             exit;
         }
 
-        // Verificar propiedad
-        $stmtCheck = $con->prepare("SELECT id_comentario FROM comentarios WHERE id_comentario = ? AND lector_id = ?");
-        $stmtCheck->bind_param("ii", $comentarioId, $lectorId);
+        // Verificar propiedad (lector o admin)
+        if ($lectorId) {
+            $stmtCheck = $con->prepare("SELECT id_comentario FROM comentarios WHERE id_comentario = ? AND lector_id = ?");
+            $stmtCheck->bind_param("ii", $comentarioId, $lectorId);
+        } else {
+            $stmtCheck = $con->prepare("SELECT id_comentario FROM comentarios WHERE id_comentario = ? AND usuario_id = ?");
+            $stmtCheck->bind_param("ii", $comentarioId, $usuarioId);
+        }
         $stmtCheck->execute();
 
         if ($stmtCheck->get_result()->num_rows === 0) {

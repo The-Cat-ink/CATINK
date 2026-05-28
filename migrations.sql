@@ -131,7 +131,11 @@ CREATE TABLE IF NOT EXISTS `reportes_comentarios` (
   KEY `idx_reportes_lector` (`lector_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 13. (OPCIONAL) Eliminar lectores migrados de la tabla usuarios
+-- 13. Soporte para comentarios de admins/editores
+ALTER TABLE `comentarios` MODIFY `lector_id` int(11) DEFAULT NULL;
+ALTER TABLE `comentarios` ADD COLUMN IF NOT EXISTS `usuario_id` int(11) DEFAULT NULL AFTER `lector_id`;
+
+-- 14. (OPCIONAL) Eliminar lectores migrados de la tabla usuarios
 --    Descomenta SOLO después de verificar que la migración fue correcta
 -- DELETE FROM `usuarios`
 -- WHERE `perm_categorias` = 0
