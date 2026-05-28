@@ -9,7 +9,7 @@ include("./../layout/header.php");
     <div class="card">
         <div class="row">
             <div class="col-md-4">
-                <img src="./../img/reclutamineto.jpg" alt="Reclutamiento" class="card-img-left">
+                <img src="<?= basePath() ?>/img/reclutamineto.jpg" alt="Reclutamiento" class="card-img-left">
             </div>
             <div class="col-md-8">
                 <div class="card-body">

@@ -80,7 +80,7 @@
             <div class="form-group">
                 <label for="imagen">Imagen Actual</label>
                 <div>
-                    <img src="./../<?= $publicidad['imagen'] ?>" alt="Imagen Actual" style="max-width: 200px; margin-bottom: 10px;">
+                    <img src="<?= basePath() ?>/<?= $publicidad['imagen'] ?>" alt="Imagen Actual" style="max-width: 200px; margin-bottom: 10px;">
                 </div>
                 <label for="imagen">Cambiar Imagen (Opcional)</label>
                 <input type="file" id="imagen" name="imagen" accept="image/*">

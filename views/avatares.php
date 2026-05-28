@@ -33,7 +33,7 @@ $avatares = $con->query("SELECT * FROM avatares_perfil ORDER BY creado DESC")->f
   <?php endif; ?>
   <?php foreach($avatares as $av): ?>
     <div class="avatar-card <?= $av['activo'] ? '' : 'avatar-disabled' ?>" id="avatar-<?= $av['id_avatar'] ?>">
-      <img src="./../img/avatares/<?= htmlspecialchars($av['imagen']) ?>" alt="Avatar">
+      <img src="<?= basePath() ?>/img/avatares/<?= htmlspecialchars($av['imagen']) ?>" alt="Avatar">
       <div class="avatar-actions">
         <button class="btn-toggle-avatar" data-id="<?= $av['id_avatar'] ?>" data-estado="<?= $av['activo'] ?>" title="<?= $av['activo'] ? 'Desactivar' : 'Activar' ?>">
           <i class="bi <?= $av['activo'] ? 'bi-eye-fill' : 'bi-eye-slash' ?>"></i>

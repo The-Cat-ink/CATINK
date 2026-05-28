@@ -41,7 +41,7 @@ if($id){
             <div class="form-group">
                 <label for="imagen">Imagen:</label>
                 <div>
-                    <img src="./../img/correo/<?= $correo['imagen'] ?>" alt="Actual" style="width:auto; max-height:120px; object-fit:cover;">
+                    <img src="<?= basePath() ?>/img/correo/<?= $correo['imagen'] ?>" alt="Actual" style="width:auto; max-height:120px; object-fit:cover;">
                 </div>
                 <span>Imagen actual</span>
                 <input type="file" id="imagenCorreo" name="imagenCorreo" class="form-control" value="">
