@@ -109,6 +109,53 @@ $totalProgramadas = count(array_filter($allNews, fn($n) => $n['_estado'] !== 'pu
 
 // Días de la semana en español
 $diasSemana = ['Mon' => 'Lun', 'Tue' => 'Mar', 'Wed' => 'Mié', 'Thu' => 'Jue', 'Fri' => 'Vie', 'Sat' => 'Sáb', 'Sun' => 'Dom'];
+
+// ============================
+// Vista MES: calcular datos del mes
+// ============================
+$monthOffset = isset($_GET['month']) ? (int)$_GET['month'] : 0;
+$mesRef = new DateTime();
+$mesRef->modify("$monthOffset months");
+$mesRef->modify('first day of this month');
+$mesAnio = $mesRef->format('Y');
+$mesNum = $mesRef->format('m');
+$mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+$mesNombre = $mesesEsp[(int)$mesNum - 1];
+$diasEnMes = (int)$mesRef->format('t');
+$primerDiaSemana = (int)$mesRef->format('N'); // 1=lun
+
+$newsByMonth = [];
+if ($vista === 'mes') {
+    $mesInicio = "$mesAnio-$mesNum-01 00:00:00";
+    $mesFin = "$mesAnio-$mesNum-$diasEnMes 23:59:59";
+    $sqlMes = "SELECT id, titulo, fecha_publicacion, vistas, likes, crop3 
+               FROM noticias 
+               WHERE fecha_publicacion BETWEEN ? AND ?
+               ORDER BY fecha_publicacion ASC";
+    $stmtMes = $con->prepare($sqlMes);
+    $stmtMes->bind_param("ss", $mesInicio, $mesFin);
+    $stmtMes->execute();
+    $resMes = $stmtMes->get_result();
+    while ($r = $resMes->fetch_assoc()) {
+        $fp = new DateTime($r['fecha_publicacion']);
+        if ($fp < $ahora) {
+            $r['_estado'] = 'publicado';
+        } elseif ($fp->format('Y-m-d') === $hoy) {
+            $r['_estado'] = 'por_publicar';
+        } else {
+            $r['_estado'] = 'programado';
+        }
+        $dia = (int)date('j', strtotime($r['fecha_publicacion']));
+        $newsByMonth[$dia][] = $r;
+    }
+    // Filtro por estado en mes
+    if ($filtro !== 'todos') {
+        foreach ($newsByMonth as &$dayList) {
+            $dayList = array_filter($dayList, fn($n) => $n['_estado'] === $filtro);
+        }
+        unset($dayList);
+    }
+}
 ?>
 <div class="container-fluid">
     <!-- Header -->
@@ -169,7 +216,8 @@ $diasSemana = ['Mon' => 'Lun', 'Tue' => 'Mar', 'Wed' => 'Mié', 'Thu' => 'Jue', 
         </div>
         <div class="contenidos-actions">
             <div class="vista-toggle">
-                <a href="?week=<?= $weekOffset ?>&vista=calendario&filtro=<?= $filtro ?><?= $q ? '&q='.urlencode($q) : '' ?><?= $busquedaGlobal ? '&global=1' : '' ?>" class="vista-btn <?= $vista === 'calendario' ? 'active' : '' ?>" title="Vista calendario"><i class="bi bi-calendar3"></i></a>
+                <a href="?week=<?= $weekOffset ?>&vista=calendario&filtro=<?= $filtro ?><?= $q ? '&q='.urlencode($q) : '' ?><?= $busquedaGlobal ? '&global=1' : '' ?>" class="vista-btn <?= $vista === 'calendario' ? 'active' : '' ?>" title="Vista semana"><i class="bi bi-calendar3"></i></a>
+                <a href="?week=<?= $weekOffset ?>&vista=mes&filtro=<?= $filtro ?><?= $q ? '&q='.urlencode($q) : '' ?><?= $busquedaGlobal ? '&global=1' : '' ?>" class="vista-btn <?= $vista === 'mes' ? 'active' : '' ?>" title="Vista mes"><i class="bi bi-calendar3-week"></i></a>
                 <a href="?week=<?= $weekOffset ?>&vista=tabla&filtro=<?= $filtro ?><?= $q ? '&q='.urlencode($q) : '' ?><?= $busquedaGlobal ? '&global=1' : '' ?>" class="vista-btn <?= $vista === 'tabla' ? 'active' : '' ?>" title="Vista tabla"><i class="bi bi-list-ul"></i></a>
             </div>
             <?php if (!empty($ACL['crear'])): ?>
@@ -201,7 +249,7 @@ $diasSemana = ['Mon' => 'Lun', 'Tue' => 'Mar', 'Wed' => 'Mié', 'Thu' => 'Jue', 
                     $diaSemana = $diasSemana[date('D', strtotime($date))] ?? '';
                     $count = count($newsList);
                 ?>
-                    <div class="day-column <?= $esHoy ? 'day-today' : '' ?>">
+                    <div class="day-column <?= $esHoy ? 'day-today' : '' ?>" data-date="<?= $date ?>" droppable="true">
                         <div class="day-header">
                             <span class="day-name"><?= $diaSemana ?></span>
                             <span class="day-date"><?= date("d/m", strtotime($date)) ?></span>
@@ -218,7 +266,7 @@ $diasSemana = ['Mon' => 'Lun', 'Tue' => 'Mar', 'Wed' => 'Mié', 'Thu' => 'Jue', 
                                     $fechaPublicacion = new DateTime($row['fecha_publicacion']);
                                     $estadoClass = $row['_estado'];
                                 ?>
-                                <div class="noticias-card estado-<?= $estadoClass ?>">
+                                <div class="noticias-card estado-<?= $estadoClass ?>" draggable="true" data-id="<?= $row['id'] ?>">
                                     <div class="card-status-bar"></div>
                                     <div class="card-header d-flex justify-content-between">
                                         <span class="estado-badge estado-<?= $estadoClass ?>">
@@ -268,6 +316,62 @@ $diasSemana = ['Mon' => 'Lun', 'Tue' => 'Mar', 'Wed' => 'Mié', 'Thu' => 'Jue', 
                     <input type="date" class="week-nav-picker" id="weekPicker" value="<?= $startOfWeek->format('Y-m-d') ?>" title="Saltar a fecha">
                 </div>
                 <a href="?week=<?= $weekOffset + 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" id="nextWeek" title="Semana siguiente (→)"><i class="bi bi-chevron-right"></i></a>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- ==================== -->
+    <!-- VISTA MES -->
+    <!-- ==================== -->
+    <?php if ($vista === 'mes' && !$busquedaGlobal): ?>
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="month-grid">
+                <div class="month-header-row">
+                    <?php foreach (['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'] as $d): ?>
+                        <div class="month-day-name"><?= $d ?></div>
+                    <?php endforeach; ?>
+                </div>
+                <div class="month-body">
+                    <?php
+                    // Celdas vacías antes del primer día
+                    for ($i = 1; $i < $primerDiaSemana; $i++): ?>
+                        <div class="month-cell month-cell-empty"></div>
+                    <?php endfor; ?>
+                    <?php for ($dia = 1; $dia <= $diasEnMes; $dia++):
+                        $fechaDia = sprintf('%s-%s-%02d', $mesAnio, $mesNum, $dia);
+                        $esHoyMes = ($fechaDia === $hoy);
+                        $noticiasDelDia = $newsByMonth[$dia] ?? [];
+                    ?>
+                        <div class="month-cell <?= $esHoyMes ? 'month-cell-today' : '' ?>" data-date="<?= $fechaDia ?>" droppable="true">
+                            <span class="month-cell-num <?= $esHoyMes ? 'today-num' : '' ?>"><?= $dia ?></span>
+                            <?php if (!empty($noticiasDelDia)): ?>
+                                <div class="month-cell-news">
+                                    <?php foreach (array_slice($noticiasDelDia, 0, 3) as $n): ?>
+                                        <div class="month-news-item estado-<?= $n['_estado'] ?>" draggable="true" data-id="<?= $n['id'] ?>" title="<?= htmlspecialchars($n['titulo']) ?>">
+                                            <span class="month-news-dot"></span>
+                                            <span class="month-news-title"><?= htmlspecialchars(mb_strimwidth($n['titulo'], 0, 22, '...')) ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                    <?php if (count($noticiasDelDia) > 3): ?>
+                                        <span class="month-news-more">+<?= count($noticiasDelDia) - 3 ?> más</span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endfor; ?>
+                </div>
+            </div>
+            <div class="week-nav">
+                <a href="?month=<?= $monthOffset - 1 ?>&vista=mes&filtro=<?= $filtro ?>" class="week-nav-btn" title="Mes anterior"><i class="bi bi-chevron-left"></i></a>
+                <?php if ($monthOffset !== 0): ?>
+                    <a href="?month=0&vista=mes&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
+                <?php endif; ?>
+                <div class="week-nav-center">
+                    <span class="week-nav-label"><?= $mesNombre ?> <?= $mesAnio ?></span>
+                </div>
+                <a href="?month=<?= $monthOffset + 1 ?>&vista=mes&filtro=<?= $filtro ?>" class="week-nav-btn" title="Mes siguiente"><i class="bi bi-chevron-right"></i></a>
             </div>
         </div>
     </div>
@@ -355,45 +459,49 @@ $diasSemana = ['Mon' => 'Lun', 'Tue' => 'Mar', 'Wed' => 'Mié', 'Thu' => 'Jue', 
     <?php endif; ?>
 </div>
 
-<!-- Navegación con teclado y date picker -->
+<!-- Navegación con teclado, date picker y drag & drop -->
 <script>
 (function(){
     const vista = '<?= $vista ?>';
     const filtro = '<?= $filtro ?>';
     const weekOffset = <?= $weekOffset ?>;
+    const monthOffset = <?= $monthOffset ?>;
     const baseUrl = window.location.pathname;
+    const canEdit = <?= !empty($ACL['editar']) ? 'true' : 'false' ?>;
 
     function goToWeek(offset) {
         window.location.href = `${baseUrl}?week=${offset}&vista=${vista}&filtro=${filtro}`;
     }
+    function goToMonth(offset) {
+        window.location.href = `${baseUrl}?month=${offset}&vista=mes&filtro=${filtro}`;
+    }
 
-    // Atajos de teclado: ← → para semanas
+    // Atajos de teclado: ← → para semanas/meses
     document.addEventListener('keydown', function(e) {
-        // No activar si está enfocado un input
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
         if (e.key === 'ArrowLeft') {
             e.preventDefault();
-            goToWeek(weekOffset - 1);
+            vista === 'mes' ? goToMonth(monthOffset - 1) : goToWeek(weekOffset - 1);
         } else if (e.key === 'ArrowRight') {
             e.preventDefault();
-            goToWeek(weekOffset + 1);
+            vista === 'mes' ? goToMonth(monthOffset + 1) : goToWeek(weekOffset + 1);
         } else if (e.key === 'Home' || (e.key === 't' && !e.ctrlKey && !e.metaKey)) {
             e.preventDefault();
-            goToWeek(0);
+            vista === 'mes' ? goToMonth(0) : goToWeek(0);
         }
     });
 
-    // Obtener el lunes de una fecha (ISO: lun=1, dom=7)
+    // Obtener el lunes de una fecha (ISO)
     function getMonday(d) {
         const date = new Date(d);
-        const day = date.getDay(); // 0=dom, 1=lun...
+        const day = date.getDay();
         const diff = day === 0 ? -6 : 1 - day;
         date.setDate(date.getDate() + diff);
         date.setHours(0, 0, 0, 0);
         return date;
     }
 
-    // Date pickers: calcular offset de semana al seleccionar fecha
+    // Date pickers
     document.querySelectorAll('.week-nav-picker').forEach(picker => {
         picker.addEventListener('change', function() {
             const selected = new Date(this.value + 'T12:00:00');
@@ -404,6 +512,107 @@ $diasSemana = ['Mon' => 'Lun', 'Tue' => 'Mar', 'Wed' => 'Mié', 'Thu' => 'Jue', 
             goToWeek(newOffset);
         });
     });
+
+    // ============================
+    // DRAG & DROP
+    // ============================
+    if (canEdit) {
+        let draggedEl = null;
+        let draggedId = null;
+
+        // Drag start
+        document.addEventListener('dragstart', function(e) {
+            const card = e.target.closest('[draggable="true"][data-id]');
+            if (!card) return;
+            draggedEl = card;
+            draggedId = card.dataset.id;
+            card.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedId);
+        });
+
+        document.addEventListener('dragend', function(e) {
+            if (draggedEl) draggedEl.classList.remove('dragging');
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+            draggedEl = null;
+            draggedId = null;
+        });
+
+        // Drop zones: day-column y month-cell
+        document.addEventListener('dragover', function(e) {
+            const zone = e.target.closest('[data-date][droppable]');
+            if (!zone || !draggedId) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+            zone.classList.add('drag-over');
+        });
+
+        document.addEventListener('dragleave', function(e) {
+            const zone = e.target.closest('[data-date][droppable]');
+            if (zone) zone.classList.remove('drag-over');
+        });
+
+        document.addEventListener('drop', function(e) {
+            e.preventDefault();
+            const zone = e.target.closest('[data-date][droppable]');
+            if (!zone || !draggedId) return;
+            zone.classList.remove('drag-over');
+
+            const newDate = zone.dataset.date;
+            if (!newDate) return;
+
+            // Mover visualmente
+            if (draggedEl) {
+                draggedEl.classList.add('card-moving');
+                const newsContainer = zone.querySelector('.day-news, .month-cell-news');
+                if (newsContainer) {
+                    newsContainer.appendChild(draggedEl);
+                } else if (zone.classList.contains('month-cell')) {
+                    let container = zone.querySelector('.month-cell-news');
+                    if (!container) {
+                        container = document.createElement('div');
+                        container.className = 'month-cell-news';
+                        zone.appendChild(container);
+                    }
+                    container.appendChild(draggedEl);
+                } else {
+                    // day-column sin noticias
+                    const emptyMsg = zone.querySelector('.text-muted');
+                    if (emptyMsg) emptyMsg.remove();
+                    let container = zone.querySelector('.day-news');
+                    if (!container) {
+                        container = document.createElement('div');
+                        container.className = 'day-news';
+                        zone.appendChild(container);
+                    }
+                    container.appendChild(draggedEl);
+                }
+                setTimeout(() => draggedEl.classList.remove('card-moving'), 300);
+            }
+
+            // Guardar en servidor
+            const formData = new FormData();
+            formData.append('id', draggedId);
+            formData.append('fecha', newDate);
+
+            fetch('../controllers/reprogramar_noticia.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    location.reload();
+                }
+            })
+            .catch(() => {
+                alert('Error de conexión al reprogramar');
+                location.reload();
+            });
+        });
+    }
 })();
 </script>
 
