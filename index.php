@@ -98,6 +98,11 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
     }
     return $placeholder;
 }
+// Helper: genera atributos de imagen con lazy loading
+function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
+    $src = img($fields, $placeholder);
+    return "src=\"$src\" loading=\"lazy\" decoding=\"async\" $extra";
+}
 ?>
 <!-- ===================== -->
 <!-- SLIDER PRINCIPAL -->
@@ -148,7 +153,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
             <!-- Primeras 2 noticias principales -->
             <div class="col-md-8">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[0]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[0]['crop2'], $ultimasNoticias[0]['crop1']]) ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[0]['crop2'], $ultimasNoticias[0]['crop1']]) ?>" alt="" loading="lazy">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[0]['categorias'] ?? ''))) as $cat): ?>
@@ -167,7 +172,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
             </div>
             <div class="col-md-4">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[1]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[1]['crop3'], $ultimasNoticias[1]['crop1']]) ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[1]['crop3'], $ultimasNoticias[1]['crop1']]) ?>" alt="" loading="lazy">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[1]['categorias'] ?? ''))) as $cat): ?>
@@ -187,7 +192,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
         <div class="row">
             <div class="col">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[2]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[2]['crop3'], $ultimasNoticias[2]['crop1']]) ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[2]['crop3'], $ultimasNoticias[2]['crop1']]) ?>" alt="" loading="lazy">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[2]['categorias'] ?? ''))) as $cat): ?>
@@ -205,7 +210,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
             </div>
             <div class="col">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[3]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[3]['crop3'], $ultimasNoticias[3]['crop1']]) ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[3]['crop3'], $ultimasNoticias[3]['crop1']]) ?>" alt="" loading="lazy">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[3]['categorias'] ?? ''))) as $cat): ?>
@@ -223,7 +228,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
             </div>
             <div class="col">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[4]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[4]['crop3'], $ultimasNoticias[4]['crop1']]) ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[4]['crop3'], $ultimasNoticias[4]['crop1']]) ?>" alt="" loading="lazy">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[4]['categorias'] ?? ''))) as $cat): ?>
@@ -243,7 +248,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
         <div class="row">
             <div class="col-md-4">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[5]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[5]['crop3'], $ultimasNoticias[5]['crop1']]) ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[5]['crop3'], $ultimasNoticias[5]['crop1']]) ?>" alt="" loading="lazy">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[5]['categorias'] ?? ''))) as $cat): ?>
@@ -261,7 +266,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
             </div>
             <div class="col-md-8">
                 <div class="news-card" data-url="<?= newsUrl($ultimasNoticias[6]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[6]['crop2'], $ultimasNoticias[6]['crop1']]) ?>" alt="">
+                    <img src="<?= img([$ultimasNoticias[6]['crop2'], $ultimasNoticias[6]['crop1']]) ?>" alt="" loading="lazy">
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[6]['categorias'] ?? ''))) as $cat): ?>
@@ -287,7 +292,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidad) : ?>
                     <div class="ad-container">
                         <a href="<?php echo htmlspecialchars($publicidad['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidad['id_pub']); ?>">
-                            <img src="<?php echo htmlspecialchars($publicidad['imagen']); ?>" alt="" class="banner">
+                            <img src="<?php echo htmlspecialchars($publicidad['imagen']); ?>" alt="" class="banner" loading="lazy">
                         </a>
                         <span class="ads-label">ADS</span>
                     </div>
@@ -296,7 +301,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
                     <div class="card mb-3" data-url="<?= newsUrl($row['id']) ?>">
                         <div class="row row-no-gap">
                             <div class="col-md-4">
-                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="card-img-left">
+                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="card-img-left" loading="lazy">
                             </div>
                             <div class="col-md-8">
                                 <div class="card-body">
@@ -345,7 +350,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
                     <div class="card mb-3" data-url="<?= newsUrl($row['id']) ?>">
                         <div class="row row-no-gap">
                             <div class="col-md-4">
-                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="card-img-left">
+                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="card-img-left" loading="lazy">
                             </div>
                             <div class="col-md-8">
                                 <div class="card-body">
@@ -383,7 +388,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
                     <?php foreach($noticiasMasRecientes3 as $row): ?>
                         <div class="news-slide">
                             <div class="news-card" data-url="<?= newsUrl($row['id']) ?>">
-                                <img src="<?= img([$row['crop3']]) ?>" alt="">
+                                <img src="<?= img([$row['crop3']]) ?>" alt="" loading="lazy">
                                 <div class="news-overlay">
                                     <div class="news-tags">
                                         <?php foreach(array_filter(array_map('trim', explode(',', $row['categorias'] ?? ''))) as $cat): ?>
@@ -421,7 +426,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidadInferior) : ?>
                     <div class="ad-container">
                         <a href="<?php echo htmlspecialchars($publicidadInferior['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadInferior['id_pub']); ?>">
-                            <img src="<?php echo htmlspecialchars($publicidadInferior['imagen']); ?>" alt="" class="banner">
+                            <img src="<?php echo htmlspecialchars($publicidadInferior['imagen']); ?>" alt="" class="banner" loading="lazy">
                         </a>
                         <span class="ads-label">ADS</span>
                     </div>
@@ -434,7 +439,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
                             <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidadCuadro) : ?>
                                 <div class="ad-container">
                                     <a href="<?php echo htmlspecialchars($publicidadCuadro['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadCuadro['id_pub']); ?>">
-                                        <img src="<?php echo htmlspecialchars($publicidadCuadro['imagen']); ?>" class="banner-card-img-top">
+                                        <img src="<?php echo htmlspecialchars($publicidadCuadro['imagen']); ?>" class="banner-card-img-top" loading="lazy">
                                     </a>
                                     <span class="ads-label">ADS</span>
                                 </div>

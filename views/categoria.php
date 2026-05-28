@@ -253,7 +253,7 @@ if ($q !== '') {
             <div class="row row-no-gap">
 
               <div class="col-md-4">
-                <img src="<?= htmlspecialchars($img) ?>" class="card-img-left">
+                <img src="<?= htmlspecialchars($img) ?>" class="card-img-left" loading="lazy">
               </div>
 
               <div class="col-md-8">
@@ -315,7 +315,7 @@ if ($q !== '') {
             <?php if($secciones['publicidad']['estado'] == 1) : ?>
                 <div class="ad-container">
                     <a href="<?php echo htmlspecialchars($publicidadCuadro['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadCuadro['id_pub']); ?>">
-                        <img src="./../<?php echo htmlspecialchars($publicidadCuadro['imagen']); ?>" class="banner-card-img-top">
+                        <img src="./../<?php echo htmlspecialchars($publicidadCuadro['imagen']); ?>" class="banner-card-img-top" loading="lazy">
                     </a>
                     <span class="ads-label">ADS</span>
                 </div>
@@ -327,7 +327,7 @@ if ($q !== '') {
                 <?php while ($row = $ultimas->fetch_assoc()): ?>
                   <div class="cardSpecial row row-no-gap">
                         <div class="col-md-4">
-                            <img src="./../<?=$row['crop3']?>" class="imgCard card-img-left-rounded">
+                            <img src="./../<?=$row['crop3']?>" class="imgCard card-img-left-rounded" loading="lazy">
                         </div>
                         <div class="col-md-8">
                             <div class="card-body">
@@ -344,7 +344,7 @@ if ($q !== '') {
                 <?php while ($row = $populares->fetch_assoc()): ?>
                   <div class="cardSpecial row row-no-gap">
                         <div class="col-md-4">
-                            <img src="./../<?=$row['crop3']?>" class="imgCard card-img-left-rounded">
+                            <img src="./../<?=$row['crop3']?>" class="imgCard card-img-left-rounded" loading="lazy">
                         </div>
                         <div class="col-md-8">
                             <div class="card-body">
