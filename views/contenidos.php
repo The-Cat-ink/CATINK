@@ -15,13 +15,16 @@ $vista = $_GET['vista'] ?? 'calendario';
 $busquedaGlobal = isset($_GET['global']) && $_GET['global'] === '1';
 
 // ============================
-// Cálculo de semanas
+// Cálculo de semanas (ISO: lunes a domingo)
 // ============================
-$startOfWeek = new DateTime();
+$ref = new DateTime();
+// Obtener el lunes de la semana actual de forma confiable
+$dayOfWeek = (int)$ref->format('N'); // 1=lun, 7=dom
+$ref->modify('-' . ($dayOfWeek - 1) . ' days'); // ahora es lunes
+$startOfWeek = clone $ref;
 $startOfWeek->modify(($weekOffset * 7) . ' days');
-$startOfWeek->modify('monday this week');
 $endOfWeek = clone $startOfWeek;
-$endOfWeek->modify('sunday this week');
+$endOfWeek->modify('+6 days');
 $fechaInicio = $startOfWeek->format('Y-m-d 00:00:00');
 $fechaFin = $endOfWeek->format('Y-m-d 23:59:59');
 $hoy = (new DateTime())->format('Y-m-d');
@@ -380,14 +383,24 @@ $diasSemana = ['Mon' => 'Lun', 'Tue' => 'Mar', 'Wed' => 'Mié', 'Thu' => 'Jue', 
         }
     });
 
+    // Obtener el lunes de una fecha (ISO: lun=1, dom=7)
+    function getMonday(d) {
+        const date = new Date(d);
+        const day = date.getDay(); // 0=dom, 1=lun...
+        const diff = day === 0 ? -6 : 1 - day;
+        date.setDate(date.getDate() + diff);
+        date.setHours(0, 0, 0, 0);
+        return date;
+    }
+
     // Date pickers: calcular offset de semana al seleccionar fecha
     document.querySelectorAll('.week-nav-picker').forEach(picker => {
         picker.addEventListener('change', function() {
-            const selected = new Date(this.value + 'T00:00:00');
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const diffDays = Math.floor((selected - today) / (1000 * 60 * 60 * 24));
-            const newOffset = Math.floor(diffDays / 7);
+            const selected = new Date(this.value + 'T12:00:00');
+            const mondaySelected = getMonday(selected);
+            const mondayToday = getMonday(new Date());
+            const diffMs = mondaySelected - mondayToday;
+            const newOffset = Math.round(diffMs / (7 * 24 * 60 * 60 * 1000));
             goToWeek(newOffset);
         });
     });
