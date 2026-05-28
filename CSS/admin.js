@@ -223,10 +223,10 @@
 
         // Crear nuevo cropper
         croppers[config.num] = new Cropper(img, {
-          viewMode: 1,
-          autoCropArea: 1,
+          viewMode: 0,          // permite mover la imagen libremente
+          autoCropArea: 0.9,    // el recuadro no ocupa el 100% para poder ver qué hay alrededor
           aspectRatio: config.ratio,
-          cropBoxResizable: false,
+          cropBoxResizable: true,  // también puede redimensionarse
           dragMode: 'move',
           responsive: true,
           guides: true,
@@ -591,6 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const resetBtn = document.getElementById("resetBtn");
   const tipoPublicidad = document.getElementById("tipo");
   const inputCrop = document.getElementById("imagenCrop");
+  if (!inputImage || !cropBtn || !resetBtn || !tipoPublicidad) return;
 
   // Tamaños según tipo
   function getAspectRatio() {
@@ -653,5 +654,37 @@ document.addEventListener("DOMContentLoaded", () => {
       if (cropper) cropper.reset();
       resultPreview.src = "";
       inputCrop.value = "";
+  });
+})();
+
+/* ─────────────────────────────────────────
+   SIDEBAR PLEGABLE — DESKTOP
+───────────────────────────────────────── */
+(function () {
+  const collapseBtn = document.getElementById('sidebarCollapseBtn');
+  const sidebarEl   = document.querySelector('.sidebar');
+  if (!collapseBtn || !sidebarEl) return;
+
+  function applyCollapse(collapsed) {
+    sidebarEl.classList.toggle('collapsed', collapsed);
+    document.body.classList.toggle('sidebar-collapsed', collapsed);
+    collapseBtn.title = collapsed ? 'Expandir menú' : 'Colapsar menú';
+  }
+
+  applyCollapse(localStorage.getItem('sidebarCollapsed') === 'true');
+
+  collapseBtn.addEventListener('click', () => {
+    const next = !sidebarEl.classList.contains('collapsed');
+    applyCollapse(next);
+    localStorage.setItem('sidebarCollapsed', next);
+  });
+
+  // Al pasar a mobile, limpiar estado collapsed del body para no afectar márgenes
+  window.addEventListener('resize', () => {
+    if (window.innerWidth < 769) {
+      document.body.classList.remove('sidebar-collapsed');
+    } else {
+      applyCollapse(localStorage.getItem('sidebarCollapsed') === 'true');
+    }
   });
 })();

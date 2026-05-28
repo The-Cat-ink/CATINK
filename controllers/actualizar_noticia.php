@@ -7,22 +7,26 @@ include("../data/conexion.php");
 // FUNCION GUARDAR IMAGEN BASE64
 // ============================
 function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 95) {
-  if (empty($base64)) return null;
-  if (!preg_match('/^data:image\/(jpeg|jpg|png|webp|gif);base64,/', $base64)) {
-    error_log("CATINK IMG UPDATE: regex no coincide para crop=$crop, inicio=" . substr($base64, 0, 50));
-    return null;
-  }
-  $base64 = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
-  $binario = base64_decode($base64);
-  if ($binario === false) return null;
-  $imagen = imagecreatefromstring($binario);
-  if (!$imagen) return null;
-  $timestamp = time();
-  $nombre = "noticia_{$noticiaId}_{$crop}_{$timestamp}.webp";
-  $rutaFisica = __DIR__ . "/../img/noticias/" . $nombre;
-  imagewebp($imagen, $rutaFisica, $calidad);
-  imagedestroy($imagen);
-  return "img/noticias/" . $nombre;
+    if (empty($base64)) return null;
+
+    if (!preg_match('/^data:image\/(jpeg|jpg|png|webp|gif);base64,/', $base64, $matches)) {
+        error_log("CATINK IMG UPDATE: regex no coincide para crop=$crop, inicio=" . substr($base64, 0, 50));
+        return null;
+    }
+
+    $extension = $matches[1] === 'jpeg' ? 'jpg' : $matches[1];
+
+    // Decodificar base64 sin usar GD (evita doble compresión)
+    $binario = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64));
+    if ($binario === false || empty($binario)) return null;
+
+    $timestamp = time();
+    $nombre = "noticia_{$noticiaId}_{$crop}_{$timestamp}.{$extension}";
+    $rutaFisica = __DIR__ . "/../img/noticias/" . $nombre;
+
+    if (file_put_contents($rutaFisica, $binario) === false) return null;
+
+    return "img/noticias/" . $nombre;
 }
 // ============================
 // DATOS
