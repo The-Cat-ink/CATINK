@@ -638,11 +638,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!cropper) return;
 
       const canvas = cropper.getCroppedCanvas({
-          width: 1200,
-          height: 600,
+          width: 1920,
+          height: 960,
+          imageSmoothingQuality: 'high',
       });
 
-      const croppedImage = canvas.toDataURL("image/jpeg", 0.95);
+      const croppedImage = canvas.toDataURL("image/jpeg", 0.98);
       resultPreview.src = croppedImage;
       inputCrop.value = croppedImage; // enviar al backend
   });
