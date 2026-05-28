@@ -8,6 +8,14 @@
     - animación de progreso de indicadores (círculos SVG)
 */
 document.addEventListener('DOMContentLoaded', function() {
+  // Clickable cards: click en cualquier parte navega a la noticia
+  document.querySelectorAll('[data-url]').forEach(card => {
+    card.addEventListener('click', function(e) {
+      if (e.target.closest('a')) return;
+      window.location.href = card.getAttribute('data-url');
+    });
+  });
+
   // Toggle de colapso: busca botones con data-bs-toggle="collapse" y alterna la clase .show
   document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {
     btn.addEventListener('click', function(e) {
@@ -37,6 +45,21 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   const saved = localStorage.getItem('theme') || 'light';
   applyTheme(saved);
+
+  // Auto-hide navbar on scroll down, show on scroll up
+  const navbar = document.querySelector('.navbar');
+  if (navbar) {
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const curr = window.scrollY;
+      if (curr > lastScroll && curr > 80) {
+        navbar.classList.add('nav-hidden');
+      } else {
+        navbar.classList.remove('nav-hidden');
+      }
+      lastScroll = curr;
+    }, { passive: true });
+  }
 
   // Carrusel mínimo: mantiene las slides en DOM y alterna la clase .active
   const carousel = document.getElementById('carouselExampleCaptions');

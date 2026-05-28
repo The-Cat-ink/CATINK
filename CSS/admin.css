@@ -26,7 +26,7 @@ body.has-sidebar .container {
 }
 body.has-sidebar .site-footer {
   margin-left: var(--sidebar-width);
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s ease, background-color 0.5s ease-in-out, color 0.5s ease-in-out, border-color 0.5s ease-in-out;
 }
 button a {
   text-decoration: none;
@@ -62,7 +62,7 @@ hr {
   display: flex;
   flex-direction: column;
   z-index: 100;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, background-color 0.5s ease-in-out, border-color 0.5s ease-in-out, color 0.5s ease-in-out;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
@@ -277,6 +277,21 @@ h4 {
   text-decoration: none;
   border-radius: 6px;
   font-size: 0.95rem;
+  transition: color 0.5s ease-in-out, background-color 0.3s ease;
+  position: relative;
+}
+.sidebar-menu-link::after {
+  content: '';
+  position: absolute;
+  bottom: 2px; left: 12px; right: 12px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+.sidebar-menu-link:hover::after, .sidebar-menu-link.active::after {
+  transform: scaleX(1);
 }
 .sidebar-menu-link:hover {
   background: rgba(0,0,0,0.04);
@@ -285,10 +300,12 @@ h4 {
   border: none;
   border-top: 1px solid var(--border);
   margin: 8px 0;
+  transition: border-color 0.5s ease-in-out;
 }
 .sidebar > div:last-child {
   padding: 12px;
   border-top: 1px solid var(--border);
+  transition: border-color 0.5s ease-in-out;
 }
 .sidebar .logotipo {
   padding: 12px 14px;
@@ -1536,42 +1553,56 @@ body.sidebar-open {
   position: relative;
   display: flex;
   align-items: center;
-  max-width: 320px;
+  max-width: 300px;
   width: 100%;
+  margin-left: auto;
 }
 .admin-search-icon {
   position: absolute;
-  left: 12px;
+  left: 14px;
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   pointer-events: none;
+  transition: color 0.3s ease;
+}
+.admin-search-form:focus-within .admin-search-icon {
+  color: var(--accent);
 }
 .admin-search-input {
   width: 100%;
-  padding: 8px 32px 8px 36px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--card-bg);
+  padding: 10px 36px 10px 40px;
+  border: 1.5px solid var(--border);
+  border-radius: 50px;
+  background: var(--bg);
   color: var(--text);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+.admin-search-input::placeholder {
+  color: var(--muted);
+  font-size: 0.85rem;
 }
 .admin-search-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(239, 51, 99, 0.1);
+  background: var(--card-bg);
+  box-shadow: 0 2px 12px rgba(239, 51, 99, 0.1);
 }
 .admin-search-clear {
   position: absolute;
-  right: 10px;
+  right: 12px;
   color: var(--muted);
-  font-size: 1.2rem;
   text-decoration: none;
+  font-size: 1.1rem;
   line-height: 1;
-  transition: color 0.2s;
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  transition: color 0.2s, background 0.2s;
 }
 .admin-search-clear:hover {
-  color: var(--accent);
+  color: #fff;
+  background: var(--accent);
 }
 
 /* ─────────────────────────────────────────
@@ -1584,7 +1615,7 @@ body.sidebar-open {
     justify-content: center;
   }
   .sidebar {
-    transition: width 0.3s ease, transform 0.3s ease;
+    transition: width 0.3s ease, transform 0.3s ease, background-color 0.5s ease-in-out, border-color 0.5s ease-in-out, color 0.5s ease-in-out;
   }
   .sidebar.collapsed {
     width: 64px;
@@ -1626,4 +1657,16 @@ body.sidebar-open {
   body.sidebar-collapsed .site-footer {
     margin-left: 64px;
   }
+}
+/* Transición global dark mode para todo el admin */
+body.has-sidebar *,
+.sidebar *,
+.admin-container *,
+.site-main *,
+.site-footer *,
+table, th, td, tr,
+input, select, textarea,
+.form-card, .card, .alert,
+.modal-content, .dropdown-menu {
+  transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out, border-color 0.5s ease-in-out;
 }

@@ -158,7 +158,7 @@
       num: 2,
       name: 'Banner',
       ratio: 21 / 6,
-      minWidth: 1200,
+      minWidth: 1920,
       inputId: 'imageInputCrop2',
       imgId: 'cropperImage2',
       previewId: 'preview2',
@@ -249,7 +249,7 @@
         minWidth: config.minWidth || 800,
         minHeight: config.minWidth ? Math.round(config.minWidth / (config.ratio || 16/9)) : 450
       });
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.98);
 
       // Guardar en input hidden
       if (hiddenInput) {
@@ -641,11 +641,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!cropper) return;
 
       const canvas = cropper.getCroppedCanvas({
-          width: 1200,
-          height: 600,
+          width: 1920,
+          height: 960,
+          imageSmoothingQuality: 'high',
       });
 
-      const croppedImage = canvas.toDataURL("image/jpeg", 0.95);
+      const croppedImage = canvas.toDataURL("image/jpeg", 0.98);
       resultPreview.src = croppedImage;
       inputCrop.value = croppedImage; // enviar al backend
   });
