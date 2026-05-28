@@ -255,10 +255,16 @@ $diasSemana = ['Mon' => 'Lun', 'Tue' => 'Mar', 'Wed' => 'Mié', 'Thu' => 'Jue', 
                     </div>
                 <?php endforeach; ?>
             </div>
-            <div class="botonesSemana d-flex justify-content-between align-items-center mt-4">
-                <a href="?week=<?= $weekOffset - 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Anterior</a>
-                <h4>Semana del <?= $startOfWeek->format('d/m') ?> al <?= $endOfWeek->format('d/m/Y') ?></h4>
-                <a href="?week=<?= $weekOffset + 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="btn btn-outline-secondary">Siguiente <i class="bi bi-arrow-right"></i></a>
+            <div class="week-nav">
+                <a href="?week=<?= $weekOffset - 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" id="prevWeek" title="Semana anterior (←)"><i class="bi bi-chevron-left"></i></a>
+                <?php if ($weekOffset !== 0): ?>
+                    <a href="?week=0&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
+                <?php endif; ?>
+                <div class="week-nav-center">
+                    <span class="week-nav-label">Semana del <?= $startOfWeek->format('d/m') ?> al <?= $endOfWeek->format('d/m/Y') ?></span>
+                    <input type="date" class="week-nav-picker" id="weekPicker" value="<?= $startOfWeek->format('Y-m-d') ?>" title="Saltar a fecha">
+                </div>
+                <a href="?week=<?= $weekOffset + 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" id="nextWeek" title="Semana siguiente (→)"><i class="bi bi-chevron-right"></i></a>
             </div>
         </div>
     </div>
@@ -329,16 +335,64 @@ $diasSemana = ['Mon' => 'Lun', 'Tue' => 'Mar', 'Wed' => 'Mié', 'Thu' => 'Jue', 
                 </table>
             </div>
             <?php if (!$busquedaGlobal): ?>
-            <div class="botonesSemana d-flex justify-content-between align-items-center mt-4">
-                <a href="?week=<?= $weekOffset - 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Anterior</a>
-                <h4>Semana del <?= $startOfWeek->format('d/m') ?> al <?= $endOfWeek->format('d/m/Y') ?></h4>
-                <a href="?week=<?= $weekOffset + 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="btn btn-outline-secondary">Siguiente <i class="bi bi-arrow-right"></i></a>
+            <div class="week-nav">
+                <a href="?week=<?= $weekOffset - 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" title="Semana anterior (←)"><i class="bi bi-chevron-left"></i></a>
+                <?php if ($weekOffset !== 0): ?>
+                    <a href="?week=0&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
+                <?php endif; ?>
+                <div class="week-nav-center">
+                    <span class="week-nav-label">Semana del <?= $startOfWeek->format('d/m') ?> al <?= $endOfWeek->format('d/m/Y') ?></span>
+                    <input type="date" class="week-nav-picker" value="<?= $startOfWeek->format('Y-m-d') ?>" title="Saltar a fecha">
+                </div>
+                <a href="?week=<?= $weekOffset + 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" title="Semana siguiente (→)"><i class="bi bi-chevron-right"></i></a>
             </div>
             <?php endif; ?>
         </div>
     </div>
     <?php endif; ?>
 </div>
+
+<!-- Navegación con teclado y date picker -->
+<script>
+(function(){
+    const vista = '<?= $vista ?>';
+    const filtro = '<?= $filtro ?>';
+    const weekOffset = <?= $weekOffset ?>;
+    const baseUrl = window.location.pathname;
+
+    function goToWeek(offset) {
+        window.location.href = `${baseUrl}?week=${offset}&vista=${vista}&filtro=${filtro}`;
+    }
+
+    // Atajos de teclado: ← → para semanas
+    document.addEventListener('keydown', function(e) {
+        // No activar si está enfocado un input
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            goToWeek(weekOffset - 1);
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            goToWeek(weekOffset + 1);
+        } else if (e.key === 'Home' || (e.key === 't' && !e.ctrlKey && !e.metaKey)) {
+            e.preventDefault();
+            goToWeek(0);
+        }
+    });
+
+    // Date pickers: calcular offset de semana al seleccionar fecha
+    document.querySelectorAll('.week-nav-picker').forEach(picker => {
+        picker.addEventListener('change', function() {
+            const selected = new Date(this.value + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const diffDays = Math.floor((selected - today) / (1000 * 60 * 60 * 24));
+            const newOffset = Math.floor(diffDays / 7);
+            goToWeek(newOffset);
+        });
+    });
+})();
+</script>
 
 <!-- Modal de Confirmación para Eliminar -->
 <div id="modalOverlay" class="crop-modal" style="display: none;">

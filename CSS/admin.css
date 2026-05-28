@@ -416,14 +416,73 @@ hr {
   padding: 4px 8px;
   font-size: 0.85rem;
 }
-.botonesSemana {
+/* ============================
+   Navegación de Semana
+   ============================ */
+.week-nav {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border-top: 1px solid var(--border);
 }
-.botonesSemana h4 {
-  padding: 12px 12px;
+.week-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  transition: background 0.2s, border-color 0.2s;
   font-size: 1rem;
+}
+.week-nav-btn:hover {
+  background: var(--border);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.week-nav-today {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.week-nav-today:hover {
+  opacity: 0.85;
+}
+.week-nav-center {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.week-nav-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+.week-nav-picker {
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.week-nav-picker:hover,
+.week-nav-picker:focus {
+  border-color: var(--accent);
+  outline: none;
 }
 /* ============================
    Vista Tabla (Contenidos)
@@ -490,6 +549,18 @@ hr {
   }
   .day-column {
     min-width: 85vw;
+  }
+  .week-nav {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .week-nav-center {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+  .week-nav-label {
+    font-size: 0.8rem;
   }
   /* Ajuste de filtros en admin.php si no usan grid estándar */
   .card-filter .row {
