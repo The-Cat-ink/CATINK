@@ -300,12 +300,10 @@ h4 {
   border: none;
   border-top: 1px solid var(--border);
   margin: 8px 0;
-  transition: border-color 0.5s ease-in-out;
 }
 .sidebar > div:last-child {
   padding: 12px;
   border-top: 1px solid var(--border);
-  transition: border-color 0.5s ease-in-out;
 }
 .sidebar .logotipo {
   padding: 12px 14px;
@@ -1677,15 +1675,18 @@ body.sidebar-open {
     margin-left: 64px;
   }
 }
-/* Transición global dark mode para todo el admin */
-body.has-sidebar *,
-.sidebar *,
-.admin-container *,
-.site-main *,
-.site-footer *,
-table, th, td, tr,
+/* Transición dark mode para elementos admin */
+body.has-sidebar .site-main,
+body.has-sidebar .admin-container,
+.sidebar,
+.sidebar-menu-link,
+.sidebar .logotipo,
+.sidebar-footer,
+table, th, td,
 input, select, textarea,
 .form-card, .card, .alert,
-.modal-content, .dropdown-menu {
+.modal-content, .dropdown-menu,
+.sidebar-menu hr,
+.sidebar > div:last-child {
   transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out, border-color 0.5s ease-in-out;
 }
