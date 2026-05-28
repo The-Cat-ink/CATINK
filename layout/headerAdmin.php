@@ -3,6 +3,7 @@ if(session_status() == PHP_SESSION_NONE){
     session_start();
 }
 require_once "./../views/helpers/helper.php";
+require_once "./../views/helpers/urlhelper.php";
 require_once "./../views/helpers/acl.php";
 if (!isset($_SESSION["usuario"])) {
     header("Location: ./../index.php");
