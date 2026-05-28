@@ -550,7 +550,6 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
             countEl.textContent = `(${num})`;
           }
         }
-        if (data.msg) alert(data.msg);
       } catch (e) { console.error(e); }
       btnComentar.disabled = false;
     });

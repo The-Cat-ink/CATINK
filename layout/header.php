@@ -43,6 +43,7 @@ $menuJson = [
 <!doctype html>
 <html lang="es" data-bs-theme="light">
 <head>
+  <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light');</script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Google Tag Manager -->
