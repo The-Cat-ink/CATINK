@@ -553,6 +553,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const fechaInput = document.getElementsByName("fecha_publicacion")[0];
     const guardarNoticiaBtns = document.getElementsByName("guardarNoticia");
     const modalForm = document.getElementById("formEdicion");
+    if (!autoAdjustBtn || !manualAdjustBtn || !modalTime || !modalForm) return;
     function getLocalDatetimeString(date = new Date()) {
       const offset = date.getTimezoneOffset();
       const local = new Date(date.getTime() - offset * 60000);
@@ -659,32 +660,53 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* ─────────────────────────────────────────
    SIDEBAR PLEGABLE — DESKTOP
+   - Hover: expande automáticamente, colapsa al salir
+   - Clic en flecha: ancla abierto / desancla
 ───────────────────────────────────────── */
 (function () {
   const collapseBtn = document.getElementById('sidebarCollapseBtn');
   const sidebarEl   = document.querySelector('.sidebar');
   if (!collapseBtn || !sidebarEl) return;
 
-  function applyCollapse(collapsed) {
-    sidebarEl.classList.toggle('collapsed', collapsed);
-    document.body.classList.toggle('sidebar-collapsed', collapsed);
-    collapseBtn.title = collapsed ? 'Expandir menú' : 'Colapsar menú';
+  let pinned = localStorage.getItem('sidebarPinned') === 'true';
+
+  function expand() {
+    sidebarEl.classList.remove('collapsed');
+    document.body.classList.remove('sidebar-collapsed');
+  }
+  function collapse() {
+    sidebarEl.classList.add('collapsed');
+    document.body.classList.add('sidebar-collapsed');
   }
 
-  applyCollapse(localStorage.getItem('sidebarCollapsed') === 'true');
+  // Estado inicial
+  if (window.innerWidth >= 769) {
+    pinned ? expand() : collapse();
+  }
 
-  collapseBtn.addEventListener('click', () => {
-    const next = !sidebarEl.classList.contains('collapsed');
-    applyCollapse(next);
-    localStorage.setItem('sidebarCollapsed', next);
+  // Hover: expande al entrar, colapsa al salir (si no está anclado)
+  sidebarEl.addEventListener('mouseenter', () => {
+    if (window.innerWidth >= 769) expand();
+  });
+  sidebarEl.addEventListener('mouseleave', () => {
+    if (window.innerWidth >= 769 && !pinned) collapse();
   });
 
-  // Al pasar a mobile, limpiar estado collapsed del body para no afectar márgenes
+  // Clic en la flecha: anclar / desanclar
+  collapseBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    pinned = !pinned;
+    localStorage.setItem('sidebarPinned', pinned);
+    collapseBtn.title = pinned ? 'Desanclar menú' : 'Anclar menú abierto';
+    if (!pinned) collapse();
+  });
+
+  // Resize: en mobile no afectar márgenes
   window.addEventListener('resize', () => {
     if (window.innerWidth < 769) {
       document.body.classList.remove('sidebar-collapsed');
     } else {
-      applyCollapse(localStorage.getItem('sidebarCollapsed') === 'true');
+      if (!pinned) collapse();
     }
-  });
+  }, { passive: true });
 })();

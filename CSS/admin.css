@@ -1601,11 +1601,26 @@ body.sidebar-open {
   .sidebar.collapsed .logotipo a { flex: none; }
   .sidebar.collapsed #user { display: none; }
   .sidebar.collapsed .sb-label { display: none; }
+  /* Logotipo en columna al colapsar → flecha queda centrada bajo el icono */
+  .sidebar.collapsed .logotipo {
+    flex-direction: column;
+    padding: 8px 4px;
+    gap: 4px;
+    align-items: center;
+  }
+  .sidebar.collapsed .sidebar-collapse-btn {
+    margin-left: 0;
+  }
   .sidebar.collapsed .sidebar-menu-link {
     justify-content: center;
     padding: 10px;
     gap: 0;
     position: relative;
+  }
+  /* Iconos más grandes y centrados al colapsar */
+  .sidebar.collapsed .sidebar-menu-link i,
+  .sidebar.collapsed .sidebar-footer a i {
+    font-size: 22px;
   }
   .sidebar.collapsed .sidebar-footer {
     flex-direction: column;
