@@ -80,7 +80,7 @@ while ($row = $result->fetch_assoc()) {
                         <?php else: ?>
                             <div class="day-news">
                                 <?php foreach ($newsList as $row): 
-                                    $img = !empty($row['crop3']) ? "./../".$row['crop3'] : "https://via.placeholder.com/300x200";
+                                    $img = !empty($row['crop3']) ? basePath()."/".$row['crop3'] : basePath()."/img/placeholder.jpg";
                                     $ahora = new DateTime();
                                     $fechaPublicacion = new DateTime($row['fecha_publicacion']);
                                     $estado = ($fechaPublicacion < $ahora) ? 

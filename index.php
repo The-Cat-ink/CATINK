@@ -91,12 +91,13 @@ $stmtRecientes = $con->prepare("
 $stmtRecientes->execute();
 $recientes = $stmtRecientes->get_result();
 
-// Helper: devuelve la primera imagen no vacía, o placeholder
+// Helper: devuelve la primera imagen no vacía, o placeholder (ruta absoluta)
 function img($fields, $placeholder = 'img/placeholder.jpg') {
+    $base = basePath();
     foreach ($fields as $f) {
-        if (!empty($f)) return htmlspecialchars($f);
+        if (!empty($f)) return $base . '/' . ltrim(htmlspecialchars($f), '/');
     }
-    return $placeholder;
+    return $base . '/' . $placeholder;
 }
 // Helper: genera atributos de imagen con lazy loading
 function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
