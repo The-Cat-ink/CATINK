@@ -257,30 +257,60 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
   border-top: 1px solid var(--border); justify-content: flex-end;
 }
 
-/* ── PREVIEW CARDS ── */
+/* ── VISTA PREVIA POR SECCIÓN ── */
 .preview-section { margin-top: 14px; }
-.preview-section-title {
-  font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .05em; color: var(--muted); margin-bottom: 8px;
+.preview-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing:.05em; color: var(--muted); margin-bottom: 10px; }
+/* Tabs */
+.pv-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 12px; }
+.pv-tab-btn {
+  padding: 4px 11px; font-size: 11px; font-weight: 600;
+  border-radius: 20px; border: 1.5px solid var(--border);
+  background: transparent; color: var(--muted);
+  cursor: pointer; transition: all .15s; font-family: inherit;
 }
-.preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.preview-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--bg); }
-.preview-card-label {
-  font-size: 10px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .06em; color: var(--muted); padding: 5px 10px;
-  border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 5px;
+.pv-tab-btn.active { background: var(--accent); color:#fff; border-color: var(--accent); }
+.pv-panel { display:none; }
+.pv-panel.active { display:block; }
+/* Helpers */
+.pv-bg { width:100%; height:100%; background-size:cover; background-position:center; background-color: var(--border); }
+.pv-card { position:relative; border-radius:8px; overflow:hidden; background:var(--border); }
+.pv-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.35) 45%, transparent 75%);
+  display:flex; flex-direction:column; justify-content:flex-end; padding:8px; color:#fff;
 }
-.preview-card-body { padding: 7px; display: flex; flex-direction: column; gap: 4px; }
-.preview-img-box {
-  width: 100%; background: var(--border); border-radius: 6px;
-  overflow: hidden; display: flex; align-items: center; justify-content: center;
-  color: var(--muted); font-size: 0.7rem;
+.pv-tag { display:inline-block; background:var(--accent); color:#fff; font-size:7px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:2px 5px; border-radius:3px; margin-bottom:3px; align-self:flex-start; }
+.pv-title-txt { font-size:10px; font-weight:700; line-height:1.3; }
+.pv-desc-txt  { font-size:8px; color:rgba(255,255,255,.8); margin-top:2px; }
+.pv-label { font-size:9px; color:var(--muted); text-align:center; margin-top:3px; }
+/* ─ Hero ─ */
+.pv-hero { aspect-ratio:21/6; border-radius:8px; overflow:hidden; position:relative; }
+.pv-hero-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(to right, rgba(0,0,0,.72) 0%, rgba(0,0,0,.25) 55%, transparent 100%);
+  display:flex; flex-direction:column; justify-content:center; padding:14px 18px;
 }
-.preview-img-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
-/* Mismo ratio que el crop → sin recorte adicional en la vista previa */
-.preview-img-box.banner { aspect-ratio: 21/6; height: auto; }
-.preview-img-box.thumb  { aspect-ratio: 16/9; height: auto; }
-.preview-stub { height: 7px; background: var(--border); border-radius: 4px; }
+.pv-hero-overlay .pv-title-txt { font-size:14px; max-width:55%; }
+.pv-hero-overlay .pv-desc-txt  { font-size:10px; max-width:50%; margin-top:4px; color:rgba(255,255,255,.85); }
+/* ─ Top Semana ─ */
+.pv-top-grid { display:grid; grid-template-columns:2fr 1fr; gap:6px; }
+.pv-top-main { aspect-ratio:21/6; }
+.pv-top-side { aspect-ratio:16/9; }
+/* ─ Recientes ─ */
+.pv-rec-item { display:grid; grid-template-columns:130px 1fr; gap:12px; align-items:start; }
+.pv-rec-thumb { aspect-ratio:16/9; border-radius:6px; overflow:hidden; }
+.pv-rec-info { display:flex; flex-direction:column; gap:3px; }
+.pv-rec-title { font-size:13px; font-weight:700; color:var(--text); line-height:1.3; }
+.pv-rec-desc  { font-size:11px; color:var(--muted); }
+.pv-rec-meta  { font-size:10px; color:var(--muted); margin-top:2px; }
+/* ─ Sidebar ─ */
+.pv-side-cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.pv-side-head { font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+.pv-side-list { display:flex; flex-direction:column; gap:8px; }
+.pv-side-item { display:grid; grid-template-columns:52px 1fr; gap:8px; align-items:center; }
+.pv-side-circle { width:52px; height:52px; border-radius:50%; overflow:hidden; background:var(--border); }
+.pv-side-name { font-size:11px; font-weight:600; color:var(--text); line-height:1.3; }
+.pv-side-ghost { opacity:.3; }
 .preview-stub.short { width: 55%; }
 .preview-title-stub { height: 9px; background: var(--border); border-radius: 4px; }
 
@@ -491,27 +521,98 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
             </div>
           </div>
 
-          <!-- Vista previa -->
+          <!-- Vista previa por sección -->
           <div class="preview-section" id="previewSection" style="display:none;">
-            <div class="preview-section-title">Vista previa</div>
-            <div class="preview-grid">
-              <div class="preview-card">
-                <div class="preview-card-label"><i class="bi bi-display"></i> Vista WEB</div>
-                <div class="preview-card-body">
-                  <div class="preview-img-box banner" id="pvWebBanner"><span>Banner</span></div>
-                  <div class="preview-title-stub"></div>
-                  <div class="preview-stub short"></div>
-                </div>
-              </div>
-              <div class="preview-card">
-                <div class="preview-card-label"><i class="bi bi-phone"></i> Vista MÓVIL</div>
-                <div class="preview-card-body">
-                  <div class="preview-img-box thumb" id="pvMobThumb"><span>Miniatura</span></div>
-                  <div class="preview-title-stub"></div>
-                  <div class="preview-stub short"></div>
+            <div class="preview-section-title">Vista previa por sección</div>
+            <div class="pv-tabs" id="pvTabs">
+              <button type="button" class="pv-tab-btn active" data-tab="hero">Hero</button>
+              <button type="button" class="pv-tab-btn" data-tab="top">Top Semana</button>
+              <button type="button" class="pv-tab-btn" data-tab="rec">Recientes</button>
+              <button type="button" class="pv-tab-btn" data-tab="side">Sidebar</button>
+            </div>
+
+            <!-- Hero -->
+            <div class="pv-panel active" id="pv-hero">
+              <div class="pv-hero pv-card">
+                <div class="pv-bg" id="pvHeroBg"></div>
+                <div class="pv-hero-overlay">
+                  <span class="pv-tag" id="pvHeroCat">CATEGORÍA</span>
+                  <div class="pv-title-txt" id="pvHeroTitle">Título de la noticia</div>
+                  <div class="pv-desc-txt"  id="pvHeroDesc">Descripción corta del artículo...</div>
                 </div>
               </div>
             </div>
+
+            <!-- Top Semana -->
+            <div class="pv-panel" id="pv-top">
+              <div class="pv-top-grid">
+                <div class="pv-card pv-top-main">
+                  <div class="pv-bg" id="pvTopMain"></div>
+                  <div class="pv-overlay">
+                    <span class="pv-tag" id="pvTopCat">CATEGORÍA</span>
+                    <div class="pv-title-txt" id="pvTopTitle">Título de la noticia</div>
+                  </div>
+                </div>
+                <div class="pv-card pv-top-side">
+                  <div class="pv-bg" id="pvTopSide"></div>
+                  <div class="pv-overlay">
+                    <div class="pv-title-txt" style="font-size:8px;color:rgba(255,255,255,.5)">Otra noticia</div>
+                  </div>
+                </div>
+              </div>
+              <div class="pv-top-grid" style="margin-top:3px">
+                <div class="pv-label">Tu noticia (banner)</div>
+                <div class="pv-label">Siguiente noticia</div>
+              </div>
+            </div>
+
+            <!-- Recientes -->
+            <div class="pv-panel" id="pv-rec">
+              <div class="pv-rec-item">
+                <div class="pv-rec-thumb pv-card">
+                  <div class="pv-bg" id="pvRecThumb" style="height:100%;min-height:73px"></div>
+                </div>
+                <div class="pv-rec-info">
+                  <span class="pv-tag" id="pvRecCat">CATEGORÍA</span>
+                  <div class="pv-rec-title" id="pvRecTitle">Título de la noticia</div>
+                  <div class="pv-rec-desc"  id="pvRecDesc">Descripción corta...</div>
+                  <div class="pv-rec-meta">Publicado ahora &middot; Por ti</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="pv-panel" id="pv-side">
+              <div class="pv-side-cols">
+                <div>
+                  <div class="pv-side-head">⏰ Lo más nuevo</div>
+                  <div class="pv-side-list">
+                    <div class="pv-side-item">
+                      <div class="pv-side-circle"><div class="pv-bg" id="pvSide1"></div></div>
+                      <div class="pv-side-name" id="pvSideTitle1">Título de la noticia</div>
+                    </div>
+                    <div class="pv-side-item pv-side-ghost">
+                      <div class="pv-side-circle" style="background:var(--border)"></div>
+                      <div class="pv-side-name" style="color:var(--muted)">Otra noticia</div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="pv-side-head">🔥 Lo más popular</div>
+                  <div class="pv-side-list">
+                    <div class="pv-side-item">
+                      <div class="pv-side-circle"><div class="pv-bg" id="pvSide2"></div></div>
+                      <div class="pv-side-name" id="pvSideTitle2">Título de la noticia</div>
+                    </div>
+                    <div class="pv-side-item pv-side-ghost">
+                      <div class="pv-side-circle" style="background:var(--border)"></div>
+                      <div class="pv-side-name" style="color:var(--muted)">Otra noticia</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
 
         </div>
@@ -680,7 +781,8 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Contadores ── */
   const titulo = document.getElementById('titulo');
   const tCount = document.getElementById('tituloCount');
-  titulo?.addEventListener('input', () => { tCount.textContent = titulo.value.length; });
+  titulo?.addEventListener('input', () => { tCount.textContent = titulo.value.length; updateAllPreviews(); });
+  document.getElementById('descripcion')?.addEventListener('input', updateAllPreviews);
 
   const desc   = document.getElementById('descripcion');
   const dCount = document.getElementById('descCount');
@@ -1021,21 +1123,15 @@ function confirmCrop() {
   document.getElementById('crop' + activeCrop).value = data64;
   setZonePreview(activeCrop, data64);
 
-  if (activeCrop === 2) {
-    document.getElementById('pvWebBanner').innerHTML = `<img src="${data64}">`;
-    // Auto-rellenar miniatura solo si aún está vacía (no sobreescribir crop personalizado)
-    if (!document.getElementById('crop3').value)
-      autoFillMiniature(document.getElementById('cropImg').src);
-  }
-  if (activeCrop === 3) {
-    document.getElementById('pvMobThumb').innerHTML = `<img src="${data64}">`;
-    // Auto-rellenar banner solo si aún está vacío
-    if (!document.getElementById('crop2').value)
-      autoFillBanner(document.getElementById('cropImg').src);
-  }
+  if (activeCrop === 2 && !document.getElementById('crop3').value)
+    autoFillMiniature(document.getElementById('cropImg').src);
+  if (activeCrop === 3 && !document.getElementById('crop2').value)
+    autoFillBanner(document.getElementById('cropImg').src);
+
   const c2 = document.getElementById('crop2').value;
   const c3 = document.getElementById('crop3').value;
   document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
+  updateAllPreviews();
   closeCrop();
 }
 
@@ -1055,8 +1151,8 @@ function autoFillMiniature(srcDataUrl) {
     const data64 = canvas.toDataURL('image/jpeg', 0.85);
     document.getElementById('crop3').value = data64;
     setZonePreview(3, data64);
-    document.getElementById('pvMobThumb').innerHTML = `<img src="${data64}">`;
     document.getElementById('previewSection').style.display = 'block';
+    updateAllPreviews();
   };
   tmpImg.src = srcDataUrl;
 }
@@ -1076,11 +1172,67 @@ function autoFillBanner(srcDataUrl) {
     const data64 = canvas.toDataURL('image/jpeg', 0.85);
     document.getElementById('crop2').value = data64;
     setZonePreview(2, data64);
-    document.getElementById('pvWebBanner').innerHTML = `<img src="${data64}">`;
     document.getElementById('previewSection').style.display = 'block';
+    updateAllPreviews();
   };
   tmpImg.src = srcDataUrl;
 }
+
+/* ── FUNCIONES DE VISTA PREVIA ── */
+function setPvBg(id, data64) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.backgroundImage = data64 ? `url(${data64})` : '';
+}
+function updateAllPreviews() {
+  const c2 = document.getElementById('crop2').value;
+  const c3 = document.getElementById('crop3').value;
+  const title = document.getElementById('titulo')?.value.trim() || 'Título de la noticia';
+  const desc  = document.getElementById('descripcion')?.value.trim() || 'Descripción corta del artículo...';
+  const catEl = document.querySelector('#catChips .cn-chip-name');
+  const cat   = catEl ? catEl.textContent.trim().toUpperCase() : 'CATEGORÍA';
+
+  // Hero (usa crop2)
+  setPvBg('pvHeroBg', c2);
+  ['pvHeroTitle'].forEach(id => { const e=document.getElementById(id); if(e) e.textContent = title; });
+  ['pvHeroDesc'].forEach(id =>  { const e=document.getElementById(id); if(e) e.textContent = desc;  });
+  ['pvHeroCat'].forEach(id =>   { const e=document.getElementById(id); if(e) e.textContent = cat;   });
+
+  // Top Semana (banner = crop2, side = crop3)
+  setPvBg('pvTopMain', c2);
+  setPvBg('pvTopSide', c3);
+  const topTitle = document.getElementById('pvTopTitle');
+  if (topTitle) topTitle.textContent = title;
+  const topCat = document.getElementById('pvTopCat');
+  if (topCat) topCat.textContent = cat;
+
+  // Recientes (usa crop3)
+  setPvBg('pvRecThumb', c3);
+  const recTitle = document.getElementById('pvRecTitle');
+  if (recTitle) recTitle.textContent = title;
+  const recDesc = document.getElementById('pvRecDesc');
+  if (recDesc) recDesc.textContent = desc;
+  const recCat = document.getElementById('pvRecCat');
+  if (recCat) recCat.textContent = cat;
+
+  // Sidebar (usa crop3)
+  setPvBg('pvSide1', c3);
+  setPvBg('pvSide2', c3);
+  ['pvSideTitle1','pvSideTitle2'].forEach(id => {
+    const e = document.getElementById(id); if(e) e.textContent = title;
+  });
+}
+
+/* ── TABS DE VISTA PREVIA ── */
+document.getElementById('pvTabs')?.addEventListener('click', e => {
+  const btn = e.target.closest('.pv-tab-btn');
+  if (!btn) return;
+  document.querySelectorAll('.pv-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.pv-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const panel = document.getElementById('pv-' + btn.dataset.tab);
+  if (panel) panel.classList.add('active');
+});
 </script>
 
 <?php include(__DIR__ . "/../layout/footerAdmin.php"); ?>
