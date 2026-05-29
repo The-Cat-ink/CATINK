@@ -780,9 +780,8 @@ hr {
   list-style: none;
   padding: 8px;
   margin: 0;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   overflow-y: auto;
-  min-height: 0;
 }
 .sidebar-menu-item {
   margin-bottom: 4px;
@@ -791,13 +790,29 @@ hr {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
+  padding: 7px 12px;
   color: var(--text);
   text-decoration: none;
   border-radius: 6px;
-  font-size: 1em;
+  font-size: 0.92rem;
   transition: color 0.5s ease-in-out, background-color 0.3s ease;
   position: relative;
+}
+.sb-label {
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 160px;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.22s ease 0.07s, max-width 0.32s ease, transform 0.22s ease 0.07s;
+}
+.sidebar-menu-link i {
+  font-size: 20px;
+  flex-shrink: 0;
+  transition: transform 0.22s ease;
+}
+.sidebar-menu-link:hover i {
+  transform: translateX(2px);
 }
 .sidebar-menu-link::after {
   content: '';
@@ -813,7 +828,10 @@ hr {
   transform: scaleX(1);
 }
 .sidebar-menu-link:hover {
-  background: rgba(0,0,0,0.04);
+  background: rgba(0,0,0,0.06);
+}
+[data-bs-theme="dark"] .sidebar-menu-link:hover {
+  background: rgba(255,255,255,0.08);
 }
 .sidebar-menu hr {
   border: none;
@@ -859,25 +877,44 @@ hr {
 }
 .sidebar-collapse-btn i {
   display: block;
-  transition: transform 0.3s ease;
+  transition: transform 0.42s ease-in-out;
+  font-size: 20px;
 }
 .sidebar.collapsed .sidebar-collapse-btn i {
   transform: rotate(180deg);
 }
 #user {
-  padding: 6px 8px;
+  padding: 6px 8px 0;
   border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 #user h4 {
   font-size: 1em;
   font-weight: 600;
   color: var(--text);
 }
+/* Botón toggle debajo del username */
+#user .sidebar-collapse-btn {
+  align-self: center;
+  margin: 4px 0;
+  display: none;
+}
 .sidebar-footer {
   display: flex;
-  gap: 10px;
-  padding: 12px;
+  flex-direction: column;
+  gap: 0;
+  padding: 8px;
   border-top: 1px solid var(--border);
+}
+button.sidebar-menu-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
 }
 .btn-icon {
   background: var(--card-bg);
@@ -888,7 +925,10 @@ hr {
   cursor: pointer;
 }
 .btn-icon:hover {
-  background: rgba(0,0,0,0.05);
+  background: rgba(0,0,0,0.07);
+}
+[data-bs-theme="dark"] .btn-icon:hover {
+  background: rgba(255,255,255,0.08);
 }
 /* formato de formulario */
 .title {
@@ -954,7 +994,7 @@ input, textarea {
 }
 input:focus, textarea:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: var(--accent);
 }
 .site-main span.text-muted,
 .sidebar span {
@@ -1345,7 +1385,7 @@ select .ql-font {
 .editor-toolbar .ql-picker.ql-lineheight .ql-picker-label::before {
   content: attr(data-value);
   font-size: 14px;
-  color: #111111;
+  color: var(--text);
 }
 /* PLACEHOLDER CUANDO NO HAY VALOR */
 .editor-toolbar
@@ -1364,7 +1404,7 @@ select .ql-font {
 .editor-toolbar .ql-picker.ql-lineheight .ql-picker-item::before {
   content: attr(data-value);
   font-size: 14px;
-  color: #111111;
+  color: var(--text);
 }
 /* EDITOR */
 .editor-content {
@@ -1414,35 +1454,6 @@ select .ql-font {
 /* Selectores (font, size, color) */
 .editor-toolbar .ql-picker {
   border-radius: 6px;
-}
-/* ===============================
-   QUILL SELECTS — FONDO UNICO
-   =============================== */
-/* Label (lo que se ve cerrado) */
-.editor-toolbar .ql-picker-label {
-  background: #ffffff !important;
-  color: #111111 !important;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 4px 8px;
-}
-/* Flecha */
-.editor-toolbar .ql-picker-label::before {
-  color: #111111 !important;
-}
-/* Dropdown */
-.editor-toolbar .ql-picker-options {
-  background: #ffffff !important;
-  color: #111111 !important;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.15);
-  z-index: 9999;
-}
-/* Opciones */
-.editor-toolbar .ql-picker-item {
-  color: #111111 !important;
-  padding: 6px 10px;
 }
 /* ==================================================
    SISTEMA RESPONSIVE ADMIN
@@ -1565,19 +1576,17 @@ select .ql-font {
   color: #ffffff !important;
 }
 /* ===============================
-   QUILL TOOLBAR — SIEMPRE BLANCO
+   QUILL TOOLBAR — ADAPTADA AL TEMA
    =============================== */
-/* Toolbar completa */
 .editor-toolbar {
-  background: #ffffff !important;
-  border: 1px solid #dcdcdc !important;
-  color: #111111 !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
 }
-/* Botones */
 .editor-toolbar button {
-   background: #ffffff !important;
-  color: #111111 !important;
-  border: 2px solid #cfcfcf !important;
+  background: var(--card-bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
   border-radius: 6px;
   width: 36px;
   height: 36px;
@@ -1586,53 +1595,71 @@ select .ql-font {
   justify-content: center;
   transition: background .15s ease, box-shadow .15s ease;
 }
-/* Hover botones */
 .editor-toolbar button:hover {
-  background: #f2f2f2 !important;
+  background: var(--bg) !important;
   box-shadow: 0 1px 3px rgba(0,0,0,.15);
 }
-/* Botón activo */
 .editor-toolbar button.ql-active {
-  background: #007bff !important;
+  background: var(--accent) !important;
   color: #ffffff !important;
-  border-color: #007bff !important;
-  box-shadow: 0 2px 6px rgba(0,123,255,.35);
+  border-color: var(--accent) !important;
+  box-shadow: 0 2px 6px rgba(239,51,99,.35);
 }
-/* Selects (pickers) */
+/* Íconos SVG de Quill */
+.editor-toolbar .ql-stroke { stroke: var(--text) !important; }
+.editor-toolbar .ql-fill   { fill:   var(--text) !important; }
+.editor-toolbar button.ql-active .ql-stroke { stroke: #fff !important; }
+.editor-toolbar button.ql-active .ql-fill   { fill:   #fff !important; }
+/* Pickers (selects) */
 .editor-toolbar .ql-picker-label {
-  background: #ffffff !important;
-  color: #111111 !important;
-  border: 1px solid #dcdcdc !important;
+  background: var(--card-bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
 }
-/* Flecha del select */
-.editor-toolbar .ql-picker-label::before {
-  color: #111111 !important;
-}
-/* Dropdown */
+.editor-toolbar .ql-picker-label .ql-stroke { stroke: var(--text) !important; }
+/* Texto del valor seleccionado (::before) — necesita override explícito */
+.editor-toolbar .ql-picker-label::before { color: var(--text) !important; }
 .editor-toolbar .ql-picker-options {
-  background: #ffffff !important;
-  color: #111111 !important;
-  border: 1px solid #dcdcdc !important;
-  box-shadow: 0 8px 20px rgba(0,0,0,.15);
+  background: var(--card-bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.25);
 }
-/* Opciones */
 .editor-toolbar .ql-picker-item {
-  color: #111111 !important;
+  color: var(--text) !important;
 }
-/* Hover opciones */
 .editor-toolbar .ql-picker-item:hover {
-  background: #f0f0f0 !important;
+  background: var(--bg) !important;
 }
-/* Seleccionado */
 .editor-toolbar .ql-picker-item.ql-selected {
-  background: #007bff !important;
+  background: var(--accent) !important;
   color: #ffffff !important;
 }
 .editor-toolbar .ql-formats {
   margin-right: 6px;
   padding-right: 6px;
-  border-right: 1px solid #e5e5e5;
+  border-right: 1px solid var(--border);
 }
+/* Placeholder del editor en dark mode */
+.ql-editor.ql-blank::before {
+  color: var(--muted) !important;
+  font-style: italic;
+}
+/* Texto dentro del editor (contenido) */
+.ql-editor { color: var(--text); }
+
+/* Bloque "Barra lateral" en el editor */
+.ql-editor .ql-callout {
+  background: rgba(239,51,99,.07);
+  border-left: 3px solid var(--accent, #EF3363);
+  padding: 10px 16px;
+  border-radius: 0 8px 8px 0;
+  margin: 10px 0;
+  font-style: italic;
+  color: var(--text);
+}
+/* Ícono del botón callout en la toolbar */
+.ql-callout i { pointer-events: none; font-size: 15px; }
 /* ===============================
    PROGRAMACIÓN DE PUBLICACIÓN
    =============================== */
@@ -2126,13 +2153,19 @@ body.sidebar-open {
    SIDEBAR PLEGABLE — DESKTOP
 ───────────────────────────────────────── */
 @media (min-width: 769px) {
-  .sidebar-collapse-btn {
+  .sidebar-collapse-btn,
+  #user .sidebar-collapse-btn {
     display: flex;
     align-items: center;
     justify-content: center;
   }
   .sidebar {
-    transition: width 0.3s ease, transform 0.3s ease, background-color 0.5s ease-in-out, border-color 0.5s ease-in-out, color 0.5s ease-in-out;
+    transition: width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 0.4s ease,
+                border-color 0.4s ease,
+                color 0.4s ease;
+    transition-delay: 0.05s;
   }
   .sidebar.collapsed {
     width: 64px;
@@ -2143,31 +2176,31 @@ body.sidebar-open {
   .sidebar.collapsed .logo-icon { display: block; }
   .sidebar.collapsed .logotipo a { flex: none; }
   .sidebar.collapsed #user { display: none; }
-  .sidebar.collapsed .sb-label { display: none; }
-  /* Logotipo en columna → flecha centrada bajo el icono */
-  .sidebar.collapsed .logotipo {
-    flex-direction: column;
-    padding: 8px 4px;
-    gap: 4px;
-    align-items: center;
+  .sidebar.collapsed .sb-label {
+    max-width: 0;
+    opacity: 0;
+    transform: translateX(-6px);
+    pointer-events: none;
   }
-  .sidebar.collapsed .sidebar-collapse-btn {
-    margin-left: 0;
+  /* Logotipo colapsado: solo el icono, centrado */
+  .sidebar.collapsed .logotipo {
+    padding: 8px 4px;
+    justify-content: center;
   }
   .sidebar.collapsed .sidebar-menu-link {
     justify-content: center;
-    padding: 10px;
+    padding: 8px 10px;
     gap: 0;
   }
-  /* Iconos más grandes y centrados */
+  /* Iconos mismo tamaño en ambos estados */
   .sidebar.collapsed .sidebar-menu-link i,
-  .sidebar.collapsed .sidebar-footer a i {
-    font-size: 22px;
+  .sidebar.collapsed .sidebar-footer a i,
+  .sidebar.collapsed .sidebar-collapse-btn i {
+    font-size: 20px;
   }
-  .sidebar.collapsed .sidebar-footer {
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
+  /* Chevron gira para indicar dirección (abajo=expandir, arriba=colapsar) */
+  .sidebar.collapsed .sidebar-collapse-btn i {
+    transform: rotate(180deg);
   }
   /* Ajustar margen del contenido principal */
   body.sidebar-collapsed .site-main,
@@ -2189,4 +2222,53 @@ input, select, textarea,
 .sidebar-menu hr,
 .sidebar > div:last-child {
   transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out, border-color 0.5s ease-in-out;
+}
+
+/* ── DARK MODE OVERRIDES (admin) ── */
+[data-bs-theme="dark"] select,
+[data-bs-theme="dark"] input,
+[data-bs-theme="dark"] textarea {
+  background: var(--card-bg);
+  color: var(--text);
+  border-color: var(--border);
+  color-scheme: dark;
+}
+[data-bs-theme="dark"] label {
+  color: var(--text);
+}
+[data-bs-theme="dark"] .check {
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+}
+[data-bs-theme="dark"] .cn-section-header:hover {
+  background: rgba(255,255,255,0.04);
+}
+[data-bs-theme="dark"] th {
+  color: var(--text);
+}
+[data-bs-theme="dark"] td {
+  color: var(--text);
+  border-color: var(--border);
+}
+[data-bs-theme="dark"] .form-card {
+  background: var(--card-bg);
+}
+[data-bs-theme="dark"] .cn-schedule-fields .cn-date-input {
+  background: var(--card-bg);
+  border-color: var(--border);
+  color: var(--text);
+}
+[data-bs-theme="dark"] .cn-date-input input {
+  color: var(--text);
+  color-scheme: dark;
+}
+[data-bs-theme="dark"] .cn-cat-menu {
+  background: var(--card-bg);
+  border-color: var(--border);
+}
+[data-bs-theme="dark"] .cn-cat-option {
+  color: var(--text);
+}
+[data-bs-theme="dark"] .cn-cat-option:hover {
+  background: rgba(255,255,255,0.06);
 }

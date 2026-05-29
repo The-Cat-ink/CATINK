@@ -166,7 +166,8 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
         <div class="col-md-9">
           <div class="container-noticia">
             <?php
-              $img = !empty($noticia['crop1']) ? basePath()."/" . htmlspecialchars($noticia['crop1']) : basePath()."/img/placeholder.svg";
+              $imgSrc = $noticia['crop3'] ?? $noticia['crop2'] ?? $noticia['crop1'] ?? null;
+              $img = $imgSrc ? basePath()."/" . htmlspecialchars($imgSrc) : basePath()."/img/placeholder.jpg";
             ?>
             <img src="<?= $img ?>" alt="" class="img-titular">
             <!-- Categorías -->
@@ -410,7 +411,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <br>
           <div class="row">
             <?php while($r = $recomendadas->fetch_assoc()): 
-                $img = !empty($r['crop3']) ? basePath()."/".$r['crop3'] : basePath()."/img/placeholder.svg";
+                $img = !empty($r['crop3']) ? basePath()."/".$r['crop3'] : basePath()."/img/placeholder.jpg";
             ?>
               <div class="col">
                   <div class="card h-100" data-url="./<?= newsUrl($r['id']) ?>">
@@ -440,7 +441,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <br>
           <div class="row">
             <?php while($r = $recientes->fetch_assoc()): 
-                $img = !empty($r['crop3']) ? basePath()."/".$r['crop3'] : basePath()."/img/placeholder.svg";
+                $img = !empty($r['crop3']) ? basePath()."/".$r['crop3'] : basePath()."/img/placeholder.jpg";
             ?>
               <div class="col">
                   <div class="card h-100"  data-url="./<?= newsUrl($r['id']) ?>">

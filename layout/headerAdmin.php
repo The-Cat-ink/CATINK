@@ -92,12 +92,12 @@ if (!$fila) {
             <img class="logo-full" src="./../img/logo.png" alt="Logo">
             <img class="logo-icon" src="./../img/catink-icon.png" alt="Catink">
         </a>
-        <button id="sidebarCollapseBtn" class="btn-icon sidebar-collapse-btn" title="Colapsar menú">
-            <i class="bi bi-chevron-left"></i>
-        </button>
     </div>
     <div id="user">
         <h4><?= htmlspecialchars($fila['usuario']) ?></h4>
+        <button id="sidebarCollapseBtn" class="btn-icon sidebar-collapse-btn" title="Colapsar menú">
+            <i class="bi bi-chevron-up"></i>
+        </button>
     </div>
     <ul class="sidebar-menu">
         <li class="sidebar-menu-item"></li>
@@ -111,7 +111,7 @@ if (!$fila) {
         <?php if (($_SESSION['ACL']['categorias']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
                 <a href="./cats.php" class="sidebar-menu-link" data-tooltip="Categorías">
-                    <i class="bi bi-tag"></i> <span class="sb-label">Categorias</span>
+                    <i class="bi bi-grid"></i> <span class="sb-label">Categorias</span>
                 </a>
             </li>
         <?php endif; ?>
@@ -166,7 +166,9 @@ if (!$fila) {
         <?php endif; ?>
     </ul>
     <div class="sidebar-footer">
-      <button id="themeToggle" class="btn btn-icon" title="Cambiar tema">🌙</button>
+      <button id="themeToggle" class="sidebar-menu-link theme-toggle-btn" title="Cambiar tema">
+          <i class="bi bi-moon theme-icon"></i> <span class="sb-label">Cambiar tema</span>
+      </button>
       <a href="./../controllers/logoutcontroller.php" class="sidebar-menu-link" data-tooltip="Salir">
           <i class="bi bi-box-arrow-right"></i> <span class="sb-label">Salir</span>
       </a>

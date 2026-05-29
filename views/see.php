@@ -54,7 +54,7 @@ function quillPreview($html, $limit = 500) {
         <!-- TARJETA -->
         <div class="col-md-4 mb-3">
             <div class="card shadow-sm h-100">
-                <img src="<?= basePath() ?>/<?= htmlspecialchars($row['crop1'] ?? 'img/placeholder.svg') ?>" class="card-img-top">
+                <img src="<?= basePath() ?>/<?= htmlspecialchars($row['crop2'] ?? $row['crop1'] ?? 'img/placeholder.jpg') ?>" class="card-img-top">
                 <div class="card-body">
                     <p class="text-muted"><?= htmlspecialchars($row['descripcion']) ?></p>
                     <p><small><?= htmlspecialchars(quillPreview($row['contenido'])) ?></small></p>
