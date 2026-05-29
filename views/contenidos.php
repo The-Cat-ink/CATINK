@@ -278,7 +278,8 @@ if ($vista === 'mes') {
                                     $fechaPublicacion = new DateTime($row['fecha_publicacion']);
                                     $estadoClass = $row['_estado'];
                                 ?>
-                                <div class="noticias-card estado-<?= $estadoClass ?>" draggable="true" data-id="<?= $row['id'] ?>">
+                                <?php $puedeMover = ($estadoClass !== 'publicado' && !empty($ACL['editar'])); ?>
+                                <div class="noticias-card estado-<?= $estadoClass ?>" <?= $puedeMover ? 'draggable="true"' : '' ?> data-id="<?= $row['id'] ?>">
                                     <div class="card-status-bar"></div>
                                     <div class="card-header d-flex justify-content-between">
                                         <span class="estado-badge estado-<?= $estadoClass ?>">
@@ -463,7 +464,7 @@ if ($vista === 'mes') {
 
 <!-- Navegación con teclado, date picker y drag & drop -->
 <script>
-(function(){
+document.addEventListener('DOMContentLoaded', () => {
     const vista = '<?= $vista ?>';
     const filtro = '<?= $filtro ?>';
     const weekOffset = <?= $weekOffset ?>;
@@ -519,8 +520,22 @@ if ($vista === 'mes') {
     // DRAG & DROP
     // ============================
     if (canEdit) {
+        const dateTimeModal = document.getElementById('dateTimeModal');
+        const dateTimeForm = document.getElementById('dateTimeForm');
+        const dateTimeCancel = document.getElementById('dateTimeCancel');
+        const reprogIdInput = document.getElementById('reprogId');
+        const reprogDateInput = document.getElementById('reprogDate');
+        const reprogTimeInput = document.getElementById('reprogTime');
+
+        if (!dateTimeModal || !dateTimeForm || !dateTimeCancel || !reprogIdInput || !reprogDateInput || !reprogTimeInput) {
+            console.warn('Modal de reprogramación no disponible en el DOM.');
+            return;
+        }
+
         let draggedEl = null;
         let draggedId = null;
+        let pendingDropZone = null;
+        let pendingCard = null;
 
         // Drag start
         document.addEventListener('dragstart', function(e) {
@@ -567,15 +582,15 @@ if ($vista === 'mes') {
         });
 
         document.addEventListener('drop', function(e) {
-            e.preventDefault();
-            // Buscar zona drop más permisivamente
+            // Buscar zona drop
             const zone = e.target.closest('[data-date]');
             if (!zone || !draggedId) return;
+
+            e.preventDefault();
             zone.classList.remove('drag-over');
 
             // Verificar que tenga droppable
             if (!zone.hasAttribute('droppable')) {
-                alert('No se puede soltar aquí: fecha no disponible para reprogramar');
                 return;
             }
 
@@ -617,22 +632,15 @@ if ($vista === 'mes') {
             }
 
             // Mostrar modal de fecha/hora
-            document.getElementById('reprogId').value = draggedId;
-            document.getElementById('reprogDate').value = newDate;
+            reprogIdInput.value = draggedId;
+            reprogDateInput.value = newDate;
             // Hora por defecto: mantener la original o 09:00
             const timeMatch = draggedEl?.querySelector('.card-time')?.textContent?.match(/(\d{2}:\d{2})/);
-            document.getElementById('reprogTime').value = timeMatch ? timeMatch[1] : '09:00';
+            reprogTimeInput.value = timeMatch ? timeMatch[1] : '09:00';
             pendingDropZone = zone;
             pendingCard = draggedEl;
             dateTimeModal.style.display = 'flex';
         });
-
-        // Modal de fecha/hora para reprogramar
-        const dateTimeModal = document.getElementById('dateTimeModal');
-        const dateTimeForm = document.getElementById('dateTimeForm');
-        const dateTimeCancel = document.getElementById('dateTimeCancel');
-        let pendingDropZone = null;
-        let pendingCard = null;
 
         dateTimeCancel.addEventListener('click', function() {
             dateTimeModal.style.display = 'none';
@@ -643,9 +651,9 @@ if ($vista === 'mes') {
 
         dateTimeForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            const newDate = document.getElementById('reprogDate').value;
-            const newTime = document.getElementById('reprogTime').value;
-            const noticiaId = document.getElementById('reprogId').value;
+            const newDate = reprogDateInput.value;
+            const newTime = reprogTimeInput.value;
+            const noticiaId = reprogIdInput.value;
 
             const formData = new FormData();
             formData.append('id', noticiaId);
@@ -663,13 +671,13 @@ if ($vista === 'mes') {
                     location.reload();
                 } else {
                     dateTimeModal.style.display = 'none';
-                    pendingDropZone = null;
-                    pendingCard = null;
                     // Actualizar UI sin recargar
                     const timeSpan = pendingCard?.querySelector('.card-time');
                     if (timeSpan) {
                         timeSpan.innerHTML = '<i class="bi bi-clock"></i> ' + newTime.substring(0, 5);
                     }
+                    pendingDropZone = null;
+                    pendingCard = null;
                 }
             })
             .catch(() => {
@@ -678,7 +686,7 @@ if ($vista === 'mes') {
             });
         });
     }
-})();
+});
 </script>
 
 <!-- Modal para reprogramar fecha y hora -->

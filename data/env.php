@@ -33,6 +33,11 @@ function env($key, $default = null) {
     return $_ENV[$key] ?? getenv($key) ?: $default;
 }
 
+$timezone = env('APP_TIMEZONE', 'America/Mexico_City');
+if (!empty($timezone)) {
+    date_default_timezone_set($timezone);
+}
+
 // Ocultar errores en producción
 if (env('APP_ENV', 'production') === 'production') {
     error_reporting(0);
