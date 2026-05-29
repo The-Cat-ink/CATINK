@@ -48,20 +48,13 @@ while($row = $categoriasResult->fetch_assoc()) $categorias[] = $row;
   gap: 16px;
   align-items: start;
 }
-/* Columna izquierda: Info → Categorías → Programar */
-#sec-info        { grid-column: 1; grid-row: 1; }
-#sec-cats        { grid-column: 1; grid-row: 2; }
-#sec-schedule    { grid-column: 1; grid-row: 3; }
-/* Columna derecha: Multimedia ocupa las mismas 3 filas */
-#sec-media       { grid-column: 2; grid-row: 1 / span 3; align-self: start; }
+/* Columna izquierda: flex para que las secciones se apilen sin huecos */
+.cn-left-col { display: flex; flex-direction: column; gap: 16px; }
 /* Full-width: Contenido */
-#sec-content     { grid-column: 1 / -1; grid-row: 4; }
+#sec-content { grid-column: 1 / -1; }
 @media (max-width: 860px) {
   .cn-wrap { grid-template-columns: 1fr; }
-  #sec-info, #sec-cats, #sec-media, #sec-schedule, #sec-content {
-    grid-column: 1 !important; grid-row: auto !important;
-    align-self: start !important;
-  }
+  .cn-left-col, #sec-media, #sec-content { grid-column: 1; }
 }
 
 /* ── SECTION CARD ── */
@@ -443,6 +436,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 
     <div class="cn-wrap">
 
+      <div class="cn-left-col">
       <!-- INFORMACIÓN BÁSICA -->
       <div class="cn-section" id="sec-info">
         <div class="cn-section-header">
@@ -498,7 +492,55 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
           </div>
           <div id="catInputs"></div>
         </div>
-      </div>
+      </div><!-- /sec-cats -->
+
+      <!-- PROGRAMAR -->
+      <div class="cn-section" id="sec-schedule">
+        <div class="cn-section-header">
+          <div class="cn-section-icon"><i class="bi bi-calendar-event"></i></div>
+          <div>
+            <p class="cn-section-title">Programar</p>
+          </div>
+          <i class="bi bi-chevron-down cn-section-toggle"></i>
+        </div>
+        <div class="cn-section-body">
+          <div class="cn-schedule-inner">
+            <div class="cn-schedule-row">
+              <div class="cn-schedule-info">
+                <p>Programa tu publicación o desactiva para publicar de inmediato.</p>
+              </div>
+              <div class="cn-toggle-wrap">
+                <label class="cn-toggle">
+                  <input type="checkbox" id="scheduleToggle">
+                  <div class="cn-toggle-track"></div>
+                  <div class="cn-toggle-thumb"></div>
+                </label>
+              </div>
+            </div>
+            <div id="scheduleFields">
+              <div class="cn-schedule-fields">
+                <div class="cn-date-input">
+                  <i class="bi bi-calendar3"></i>
+                  <input type="date" id="schedDate" required>
+                </div>
+                <div class="cn-date-input">
+                  <i class="bi bi-clock"></i>
+                  <input type="time" id="schedTime" required>
+                </div>
+              </div>
+            </div>
+          </div>
+          <?php if (!empty($ACL['crear'])): ?>
+          <div style="margin-top:16px;">
+            <button type="submit" class="cn-publish-btn" name="guardarNoticia">
+              <i class="bi bi-send"></i> Publicar noticia
+            </button>
+          </div>
+          <?php endif; ?>
+        </div>
+      </div><!-- /sec-schedule -->
+
+      </div><!-- /cn-left-col -->
 
       <!-- MULTIMEDIA -->
       <div class="cn-section" id="sec-media">
@@ -683,52 +725,6 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
             <div id="editor" class="editor-content"></div>
           </div>
           <input type="file" id="imageInputEditor" accept="image/*" hidden>
-        </div>
-      </div>
-
-      <!-- PROGRAMAR -->
-      <div class="cn-section" id="sec-schedule">
-        <div class="cn-section-header">
-          <div class="cn-section-icon"><i class="bi bi-calendar-event"></i></div>
-          <div>
-            <p class="cn-section-title">Programar</p>
-          </div>
-          <i class="bi bi-chevron-down cn-section-toggle"></i>
-        </div>
-        <div class="cn-section-body">
-          <div class="cn-schedule-inner">
-            <div class="cn-schedule-row">
-              <div class="cn-schedule-info">
-                <p>Programa tu publicación o desactiva para publicar de inmediato.</p>
-              </div>
-              <div class="cn-toggle-wrap">
-                <label class="cn-toggle">
-                  <input type="checkbox" id="scheduleToggle">
-                  <div class="cn-toggle-track"></div>
-                  <div class="cn-toggle-thumb"></div>
-                </label>
-              </div>
-            </div>
-            <div id="scheduleFields">
-              <div class="cn-schedule-fields">
-                <div class="cn-date-input">
-                  <i class="bi bi-calendar3"></i>
-                  <input type="date" id="schedDate" required>
-                </div>
-                <div class="cn-date-input">
-                  <i class="bi bi-clock"></i>
-                  <input type="time" id="schedTime" required>
-                </div>
-              </div>
-            </div>
-          </div>
-          <?php if (!empty($ACL['crear'])): ?>
-          <div style="margin-top:16px;">
-            <button type="submit" class="cn-publish-btn" name="guardarNoticia">
-              <i class="bi bi-send"></i> Publicar noticia
-            </button>
-          </div>
-          <?php endif; ?>
         </div>
       </div>
 
