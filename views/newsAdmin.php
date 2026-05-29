@@ -57,7 +57,7 @@ $cats = array_map('trim', $cats);
                 ❤️ Like <span id="likeCount"><?= $noticia['likes'] ?></span>
             </button>
             <?php
-                $imgSrc = $noticia['crop2'] ?? $noticia['crop1'] ?? null;
+                $imgSrc = $noticia['crop3'] ?? $noticia['crop2'] ?? $noticia['crop1'] ?? null;
                 $img = $imgSrc ? basePath()."/" . htmlspecialchars($imgSrc) : basePath()."/img/placeholder.jpg";
             ?>
             <img src="<?= $img ?>" alt="" class="img-titular">

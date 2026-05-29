@@ -166,7 +166,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
         <div class="col-md-9">
           <div class="container-noticia">
             <?php
-              $imgSrc = $noticia['crop2'] ?? $noticia['crop1'] ?? null;
+              $imgSrc = $noticia['crop3'] ?? $noticia['crop2'] ?? $noticia['crop1'] ?? null;
               $img = $imgSrc ? basePath()."/" . htmlspecialchars($imgSrc) : basePath()."/img/placeholder.jpg";
             ?>
             <img src="<?= $img ?>" alt="" class="img-titular">
