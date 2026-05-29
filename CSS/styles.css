@@ -598,6 +598,16 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
     overflow: hidden;
   }
 }
+/* Bloque barra lateral dentro del artículo */
+.ql-callout {
+  background: rgba(239,51,99,.07);
+  border-left: 3px solid var(--accent, #EF3363);
+  padding: 10px 16px;
+  border-radius: 0 8px 8px 0;
+  margin: 12px 0;
+  font-style: italic;
+}
+
 /* Single News View */
 .img-titular {
   width: 100%;

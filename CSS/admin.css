@@ -1521,19 +1521,17 @@ select .ql-font {
   color: #ffffff !important;
 }
 /* ===============================
-   QUILL TOOLBAR — SIEMPRE BLANCO
+   QUILL TOOLBAR — ADAPTADA AL TEMA
    =============================== */
-/* Toolbar completa */
 .editor-toolbar {
-  background: #ffffff !important;
-  border: 1px solid #dcdcdc !important;
-  color: #111111 !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
 }
-/* Botones */
 .editor-toolbar button {
-   background: #ffffff !important;
-  color: #111111 !important;
-  border: 2px solid #cfcfcf !important;
+  background: var(--card-bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
   border-radius: 6px;
   width: 36px;
   height: 36px;
@@ -1542,53 +1540,61 @@ select .ql-font {
   justify-content: center;
   transition: background .15s ease, box-shadow .15s ease;
 }
-/* Hover botones */
 .editor-toolbar button:hover {
-  background: #f2f2f2 !important;
+  background: var(--bg) !important;
   box-shadow: 0 1px 3px rgba(0,0,0,.15);
 }
-/* Botón activo */
 .editor-toolbar button.ql-active {
-  background: #007bff !important;
+  background: var(--accent) !important;
   color: #ffffff !important;
-  border-color: #007bff !important;
-  box-shadow: 0 2px 6px rgba(0,123,255,.35);
+  border-color: var(--accent) !important;
+  box-shadow: 0 2px 6px rgba(239,51,99,.35);
 }
-/* Selects (pickers) */
+/* Íconos SVG de Quill */
+.editor-toolbar .ql-stroke { stroke: var(--text) !important; }
+.editor-toolbar .ql-fill   { fill:   var(--text) !important; }
+.editor-toolbar button.ql-active .ql-stroke { stroke: #fff !important; }
+.editor-toolbar button.ql-active .ql-fill   { fill:   #fff !important; }
+/* Pickers (selects) */
 .editor-toolbar .ql-picker-label {
-  background: #ffffff !important;
-  color: #111111 !important;
-  border: 1px solid #dcdcdc !important;
+  background: var(--card-bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
 }
-/* Flecha del select */
-.editor-toolbar .ql-picker-label::before {
-  color: #111111 !important;
-}
-/* Dropdown */
+.editor-toolbar .ql-picker-label .ql-stroke { stroke: var(--text) !important; }
 .editor-toolbar .ql-picker-options {
-  background: #ffffff !important;
-  color: #111111 !important;
-  border: 1px solid #dcdcdc !important;
-  box-shadow: 0 8px 20px rgba(0,0,0,.15);
+  background: var(--card-bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.25);
 }
-/* Opciones */
 .editor-toolbar .ql-picker-item {
-  color: #111111 !important;
+  color: var(--text) !important;
 }
-/* Hover opciones */
 .editor-toolbar .ql-picker-item:hover {
-  background: #f0f0f0 !important;
+  background: var(--bg) !important;
 }
-/* Seleccionado */
 .editor-toolbar .ql-picker-item.ql-selected {
-  background: #007bff !important;
+  background: var(--accent) !important;
   color: #ffffff !important;
 }
 .editor-toolbar .ql-formats {
   margin-right: 6px;
   padding-right: 6px;
-  border-right: 1px solid #e5e5e5;
+  border-right: 1px solid var(--border);
 }
+/* Bloque "Barra lateral" en el editor */
+.ql-editor .ql-callout {
+  background: rgba(239,51,99,.07);
+  border-left: 3px solid var(--accent, #EF3363);
+  padding: 10px 16px;
+  border-radius: 0 8px 8px 0;
+  margin: 10px 0;
+  font-style: italic;
+  color: var(--text);
+}
+/* Ícono del botón callout en la toolbar */
+.ql-callout i { pointer-events: none; font-size: 15px; }
 /* ===============================
    PROGRAMACIÓN DE PUBLICACIÓN
    =============================== */
@@ -2089,7 +2095,12 @@ body.sidebar-open {
     justify-content: center;
   }
   .sidebar {
-    transition: width 0.42s ease-in-out, transform 0.42s ease-in-out, background-color 0.5s ease-in-out, border-color 0.5s ease-in-out, color 0.5s ease-in-out;
+    transition: width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 0.4s ease,
+                border-color 0.4s ease,
+                color 0.4s ease;
+    transition-delay: 0.05s;
   }
   .sidebar.collapsed {
     width: 64px;

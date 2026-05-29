@@ -315,6 +315,14 @@ if (editorElement) {
   );
   Quill.register(LineHeightStyle, true);
 
+  // ===== Define callout (barra lateral) blot =====
+  const Block = Quill.import('blots/block');
+  class CalloutBlot extends Block {}
+  CalloutBlot.blotName = 'callout';
+  CalloutBlot.tagName = 'div';
+  CalloutBlot.className = 'ql-callout';
+  Quill.register(CalloutBlot, true);
+
   // ===== Define social embed blot =====
 const BlockEmbed = Quill.import('blots/block/embed');
 class SocialEmbedBlot extends BlockEmbed {
@@ -396,7 +404,12 @@ if (editorElement) {
         container: '.editor-toolbar',
         handlers: {
           image: imageHandler,
-          embed: embedHandler
+          embed: embedHandler,
+          callout: function() {
+            const range = this.quill.getSelection(true);
+            const format = this.quill.getFormat(range);
+            this.quill.format('callout', !format.callout, Quill.sources.USER);
+          }
         }
       },
       imageResize: {

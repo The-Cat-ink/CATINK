@@ -559,6 +559,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               <button class="ql-video"></button>
               <button class="ql-clean"></button>
               <button class="ql-embed" title="Embebido"><i class="bi bi-boxes"></i></button>
+              <button class="ql-callout" title="Barra lateral"><i class="bi bi-layout-text-sidebar-reverse"></i></button>
             </div>
             <div id="editor" class="editor-content"></div>
           </div>
@@ -808,7 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!document.getElementById('catChips').querySelectorAll('.cn-chip').length)
       errors.push('Al menos una categoría');
     if (!document.getElementById('crop2').value && !document.getElementById('crop3').value)
-      errors.push('Imagen (banner o miniatura)');
+      errors.push('Imagen (banner y miniatura)');
     const editorEl = document.querySelector('#editor .ql-editor');
     const editorHtml = editorEl ? editorEl.innerHTML.trim() : '';
     const emptyEditor = !editorHtml || editorHtml === '<p><br></p>' || editorHtml === '<p></p>';
