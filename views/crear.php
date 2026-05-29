@@ -809,10 +809,10 @@ document.addEventListener('DOMContentLoaded', () => {
       errors.push('Al menos una categoría');
     if (!document.getElementById('crop2').value && !document.getElementById('crop3').value)
       errors.push('Imagen (banner o miniatura)');
-    const texto = window.quill
-      ? quill.getText().replace(/\n/g, '').trim()
-      : document.getElementById('contenido').value.replace(/<[^>]+>/g, '').trim();
-    if (!texto) errors.push('Contenido del artículo');
+    const editorEl = document.querySelector('#editor .ql-editor');
+    const editorHtml = editorEl ? editorEl.innerHTML.trim() : '';
+    const emptyEditor = !editorHtml || editorHtml === '<p><br></p>' || editorHtml === '<p></p>';
+    if (emptyEditor) errors.push('Contenido del artículo');
     return errors;
   }
 
