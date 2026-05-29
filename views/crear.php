@@ -199,6 +199,20 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .cn-zone-original { height: 150px; }
 .cn-zone-banner   { height: 150px; }
 .cn-zone-mini     { height: 110px; }
+.zone-actions {
+  position: absolute; bottom: 6px; right: 6px;
+  display: none; gap: 5px; z-index: 3;
+}
+.upload-zone.has-image .zone-actions { display: flex; }
+.zone-btn {
+  font-size: 11px; font-weight: 600; padding: 3px 9px;
+  border-radius: 5px; border: none; cursor: pointer; line-height: 1.5;
+  backdrop-filter: blur(4px);
+}
+.zone-btn-adjust { background: rgba(255,255,255,.18); color: #fff; }
+.zone-btn-adjust:hover { background: rgba(255,255,255,.3); }
+.zone-btn-remove { background: rgba(239,51,99,.75); color: #fff; }
+.zone-btn-remove:hover { background: rgba(239,51,99,1); }
 
 .cn-media-row1 { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 12px; }
 @media (max-width: 600px) { .cn-media-row1 { grid-template-columns: 1fr; } }
@@ -431,6 +445,10 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               <i class="bi bi-aspect-ratio" style="font-size:20px"></i>
               <span>Optimizado para cabeceras</span>
               <span class="zone-ratio">21 : 6</span>
+              <div class="zone-actions">
+                <button class="zone-btn zone-btn-adjust" onclick="event.stopPropagation();adjustCrop(2)"><i class="bi bi-crop"></i> Ajustar</button>
+                <button class="zone-btn zone-btn-remove" onclick="event.stopPropagation();removeCrop(2)"><i class="bi bi-x-lg"></i> Quitar</button>
+              </div>
             </div>
           </div>
 
@@ -442,6 +460,10 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               <i class="bi bi-image" style="font-size:20px"></i>
               <span>Vista previa en listados y carruseles</span>
               <span class="zone-ratio">16 : 9</span>
+              <div class="zone-actions">
+                <button class="zone-btn zone-btn-adjust" onclick="event.stopPropagation();adjustCrop(3)"><i class="bi bi-crop"></i> Ajustar</button>
+                <button class="zone-btn zone-btn-remove" onclick="event.stopPropagation();removeCrop(3)"><i class="bi bi-x-lg"></i> Quitar</button>
+              </div>
             </div>
           </div>
 
@@ -843,16 +865,48 @@ const CROP_TITLES = {
   3: 'Recortar — Miniatura (16:9)'
 };
 let activeCrop = null, cropperInstance = null;
+const zoneSources = {};
 
 function openCrop(num) {
   activeCrop = num;
   document.getElementById('fileInput').click();
+}
+function adjustCrop(num) {
+  if (!zoneSources[num]) return;
+  activeCrop = num;
+  const cropImg = document.getElementById('cropImg');
+  document.getElementById('cropModalTitle').textContent = CROP_TITLES[num];
+  document.getElementById('cropModal').classList.add('open');
+  if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+  cropImg.onload = () => {
+    cropperInstance = new Cropper(cropImg, {
+      aspectRatio: CROP_RATIOS[num],
+      viewMode: 0, autoCropArea: 0.9,
+      movable: true, zoomable: true,
+      cropBoxResizable: true, dragMode: 'move',
+      responsive: true, guides: true, background: false
+    });
+  };
+  cropImg.src = zoneSources[num];
+  if (cropImg.complete && cropImg.naturalWidth) cropImg.dispatchEvent(new Event('load'));
+}
+function removeCrop(num) {
+  document.getElementById('crop' + num).value = '';
+  delete zoneSources[num];
+  const zone = document.getElementById('zone' + num);
+  const img = zone.querySelector('.preview-img');
+  if (img) img.remove();
+  zone.classList.remove('has-image');
+  const c2 = document.getElementById('crop2').value;
+  const c3 = document.getElementById('crop3').value;
+  document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
 }
 function onFileSelected(e) {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
+    zoneSources[activeCrop] = ev.target.result;
     const cropImg = document.getElementById('cropImg');
     cropImg.src = ev.target.result;
     document.getElementById('cropModalTitle').textContent = CROP_TITLES[activeCrop];
@@ -902,6 +956,7 @@ function confirmCrop() {
 }
 
 function autoFillMiniature(srcDataUrl) {
+  zoneSources[3] = srcDataUrl;
   const tmpImg = new Image();
   tmpImg.onload = function () {
     const ratio = 16 / 9;
