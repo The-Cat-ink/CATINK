@@ -566,7 +566,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               </div>
               <div class="cn-toggle-wrap">
                 <label class="cn-toggle">
-                  <input type="checkbox" id="scheduleToggle" checked>
+                  <input type="checkbox" id="scheduleToggle">
                   <div class="cn-toggle-track"></div>
                   <div class="cn-toggle-thumb"></div>
                 </label>
@@ -764,6 +764,7 @@ document.addEventListener('DOMContentLoaded', () => {
   schedDate.value = ln.slice(0,10);
   schedTime.value = ln.slice(11,16);
 
+  schedFields.style.display = 'none';
   schedToggle?.addEventListener('change', () => {
     schedFields.style.display = schedToggle.checked ? '' : 'none';
   });
@@ -929,25 +930,29 @@ function closeCrop() {
   document.getElementById('cropModal').classList.remove('open');
   if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
 }
+function setZonePreview(zoneId, data64) {
+  const zone = document.getElementById('zone' + zoneId);
+  zone.querySelectorAll('.preview-img').forEach(el => el.remove());
+  const img = document.createElement('img');
+  img.className = 'preview-img';
+  zone.appendChild(img);
+  img.src = data64;
+  zone.classList.add('has-image');
+}
 function confirmCrop() {
   if (!cropperInstance) return;
   const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 1920, maxHeight: 1920 });
   const data64 = canvas.toDataURL('image/jpeg', 0.85);
   document.getElementById('crop' + activeCrop).value = data64;
-
-  const zone = document.getElementById('zone' + activeCrop);
-  let img = zone.querySelector('.preview-img');
-  if (!img) { img = document.createElement('img'); img.className = 'preview-img'; zone.appendChild(img); }
-  img.src = data64;
-  zone.classList.add('has-image');
+  setZonePreview(activeCrop, data64);
 
   if (activeCrop === 2) {
     document.getElementById('pvWebBanner').innerHTML = `<img src="${data64}">`;
-    // Auto-generar miniatura 16:9 de la misma imagen fuente
     autoFillMiniature(document.getElementById('cropImg').src);
   }
   if (activeCrop === 3) {
     document.getElementById('pvMobThumb').innerHTML = `<img src="${data64}">`;
+    autoFillBanner(document.getElementById('cropImg').src);
   }
   const c2 = document.getElementById('crop2').value;
   const c3 = document.getElementById('crop3').value;
@@ -969,14 +974,30 @@ function autoFillMiniature(srcDataUrl) {
     canvas.height = Math.round(canvas.width / ratio);
     canvas.getContext('2d').drawImage(tmpImg, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
     const data64 = canvas.toDataURL('image/jpeg', 0.85);
-
     document.getElementById('crop3').value = data64;
-    const zone3 = document.getElementById('zone3');
-    let previewImg = zone3.querySelector('.preview-img');
-    if (!previewImg) { previewImg = document.createElement('img'); previewImg.className = 'preview-img'; zone3.appendChild(previewImg); }
-    previewImg.src = data64;
-    zone3.classList.add('has-image');
+    setZonePreview(3, data64);
     document.getElementById('pvMobThumb').innerHTML = `<img src="${data64}">`;
+    document.getElementById('previewSection').style.display = 'block';
+  };
+  tmpImg.src = srcDataUrl;
+}
+function autoFillBanner(srcDataUrl) {
+  zoneSources[2] = srcDataUrl;
+  const tmpImg = new Image();
+  tmpImg.onload = function () {
+    const ratio = 21 / 6;
+    let sw = tmpImg.width, sh = tmpImg.height;
+    if (sw / sh > ratio) { sw = sh * ratio; } else { sh = sw / ratio; }
+    const sx = (tmpImg.width  - sw) / 2;
+    const sy = (tmpImg.height - sh) / 2;
+    const canvas = document.createElement('canvas');
+    canvas.width  = Math.min(Math.round(sw), 1920);
+    canvas.height = Math.round(canvas.width / ratio);
+    canvas.getContext('2d').drawImage(tmpImg, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+    const data64 = canvas.toDataURL('image/jpeg', 0.85);
+    document.getElementById('crop2').value = data64;
+    setZonePreview(2, data64);
+    document.getElementById('pvWebBanner').innerHTML = `<img src="${data64}">`;
     document.getElementById('previewSection').style.display = 'block';
   };
   tmpImg.src = srcDataUrl;
