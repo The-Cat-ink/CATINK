@@ -111,7 +111,7 @@ if (!$fila) {
         <?php if (($_SESSION['ACL']['categorias']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
                 <a href="./cats.php" class="sidebar-menu-link" data-tooltip="Categorías">
-                    <i class="bi bi-tag"></i> <span class="sb-label">Categorias</span>
+                    <i class="bi bi-grid"></i> <span class="sb-label">Categorias</span>
                 </a>
             </li>
         <?php endif; ?>

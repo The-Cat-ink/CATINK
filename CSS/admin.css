@@ -714,9 +714,8 @@ hr {
   list-style: none;
   padding: 8px;
   margin: 0;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   overflow-y: auto;
-  min-height: 0;
 }
 .sidebar-menu-item {
   margin-bottom: 4px;
@@ -2070,7 +2069,7 @@ body.sidebar-open {
     justify-content: center;
   }
   .sidebar {
-    transition: width 0.3s ease-in-out, transform 0.3s ease-in-out, background-color 0.5s ease-in-out, border-color 0.5s ease-in-out, color 0.5s ease-in-out;
+    transition: width 0.42s ease-in-out, transform 0.42s ease-in-out, background-color 0.5s ease-in-out, border-color 0.5s ease-in-out, color 0.5s ease-in-out;
   }
   .sidebar.collapsed {
     width: 64px;
