@@ -568,13 +568,20 @@ if ($vista === 'mes') {
 
         document.addEventListener('drop', function(e) {
             e.preventDefault();
-            const zone = e.target.closest('[data-date][droppable]');
+            // Buscar zona drop más permisivamente
+            const zone = e.target.closest('[data-date]');
             if (!zone || !draggedId) return;
             zone.classList.remove('drag-over');
 
+            // Verificar que tenga droppable
+            if (!zone.hasAttribute('droppable')) {
+                alert('No se puede soltar aquí: fecha no disponible para reprogramar');
+                return;
+            }
+
             // Verificar que no sea fecha pasada
             if (zone.dataset.past === '1') {
-                alert('No se pueden mover noticias a fechas pasadas');
+                alert('No se pueden mover noticias a fechas pasadas (anteriores a hoy)');
                 return;
             }
 
