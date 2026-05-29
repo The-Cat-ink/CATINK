@@ -6,6 +6,7 @@ require_once(__DIR__ . "/helpers/urlhelper.php");
 // Obtener todos los avatares
 $avatares = $con->query("SELECT * FROM avatares_perfil ORDER BY creado DESC")->fetch_all(MYSQLI_ASSOC);
 ?>
+<div class="admin-container">
 <h1><i class="bi bi-person-circle"></i> Fotos de Perfil</h1>
 <p style="color:var(--muted);">Sube imágenes preestablecidas que los usuarios podrán elegir como foto de perfil.</p>
 <br>
@@ -235,4 +236,5 @@ document.querySelectorAll('.btn-delete-avatar').forEach(btn => {
   });
 });
 </script>
-<?php include(__DIR__ . "/../layout/footer.php"); ?>
+</div><!-- /admin-container -->
+<?php include(__DIR__ . "/../layout/footerAdmin.php"); ?>
