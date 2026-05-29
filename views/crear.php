@@ -196,9 +196,17 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
   font-size: 0.68rem; background: var(--border);
   border-radius: 4px; padding: 1px 6px; color: var(--muted);
 }
+.cn-zone-icon { font-size: 22px; }
+.upload-zone.has-image .cn-zone-icon,
+.upload-zone.has-image > :not(.preview-img):not(.zone-overlay):not(.zone-actions) { display: none; }
 .cn-zone-original { height: 150px; }
-.cn-zone-banner   { height: 150px; }
-.cn-zone-mini     { height: 110px; }
+/* Banner: ratio exacto 21:6 para ver la imagen tal como queda publicada */
+.cn-zone-banner { aspect-ratio: 21/6; height: auto; min-height: 60px; }
+/* Miniatura: ratio 16:9, acotada a un ancho cómodo centrada */
+.cn-zone-mini {
+  aspect-ratio: 16/9; height: auto;
+  max-width: min(100%, 520px); margin: 0 auto;
+}
 .zone-actions {
   position: absolute; bottom: 6px; right: 6px;
   display: none; gap: 5px; z-index: 3;
@@ -460,8 +468,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
             <p class="cn-zone-label">Imagen Banner</p>
             <div class="upload-zone cn-zone-banner" id="zone2" onclick="openCrop(2)">
               <div class="zone-overlay"><span>Cambiar imagen</span></div>
-              <i class="bi bi-aspect-ratio" style="font-size:20px"></i>
-              <span>Optimizado para cabeceras</span>
+              <i class="bi bi-aspect-ratio cn-zone-icon"></i>
               <span class="zone-ratio">21 : 6</span>
               <div class="zone-actions">
                 <button type="button" class="zone-btn zone-btn-adjust" onclick="event.stopPropagation();adjustCrop(2)"><i class="bi bi-crop"></i> Ajustar</button>
@@ -475,8 +482,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
             <p class="cn-zone-label">Miniatura <span style="text-transform:none;font-size:10px;font-weight:400;color:var(--muted)">(se auto-genera del banner — clic para cambiar)</span></p>
             <div class="upload-zone cn-zone-mini" id="zone3" onclick="openCrop(3)">
               <div class="zone-overlay"><span>Cambiar</span></div>
-              <i class="bi bi-image" style="font-size:20px"></i>
-              <span>Vista previa en listados y carruseles</span>
+              <i class="bi bi-image cn-zone-icon"></i>
               <span class="zone-ratio">16 : 9</span>
               <div class="zone-actions">
                 <button type="button" class="zone-btn zone-btn-adjust" onclick="event.stopPropagation();adjustCrop(3)"><i class="bi bi-crop"></i> Ajustar</button>
@@ -1017,11 +1023,15 @@ function confirmCrop() {
 
   if (activeCrop === 2) {
     document.getElementById('pvWebBanner').innerHTML = `<img src="${data64}">`;
-    autoFillMiniature(document.getElementById('cropImg').src);
+    // Auto-rellenar miniatura solo si aún está vacía (no sobreescribir crop personalizado)
+    if (!document.getElementById('crop3').value)
+      autoFillMiniature(document.getElementById('cropImg').src);
   }
   if (activeCrop === 3) {
     document.getElementById('pvMobThumb').innerHTML = `<img src="${data64}">`;
-    autoFillBanner(document.getElementById('cropImg').src);
+    // Auto-rellenar banner solo si aún está vacío
+    if (!document.getElementById('crop2').value)
+      autoFillBanner(document.getElementById('cropImg').src);
   }
   const c2 = document.getElementById('crop2').value;
   const c3 = document.getElementById('crop3').value;
