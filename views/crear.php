@@ -240,8 +240,8 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .crop-modal-head button:hover { color: var(--accent); }
 .crop-modal-body { padding: 16px; }
 .crop-area {
-  width: 100%; max-height: 400px; overflow: hidden;
-  border-radius: 8px; background: #000;
+  width: 100%; overflow: hidden;
+  border-radius: 8px; background: var(--bg);
 }
 .crop-area img { max-width: 100%; display: block; }
 .crop-modal-foot {
@@ -925,6 +925,27 @@ function openCrop(num) {
   activeCrop = num;
   document.getElementById('fileInput').click();
 }
+function initCropper(num) {
+  const cropImg = document.getElementById('cropImg');
+  const cropArea = document.querySelector('.crop-area');
+  // Ajustar altura del área al ratio real de la imagen (sin zona negra)
+  const maxW = cropArea.clientWidth || 640;
+  const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
+  cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
+
+  cropperInstance = new Cropper(cropImg, {
+    aspectRatio: CROP_RATIOS[num],
+    viewMode: 1,        // crop box no sale de la imagen
+    autoCropArea: 0.98, // ocupa casi toda la altura disponible
+    movable: false,     // imagen no se mueve
+    zoomable: false,    // sin zoom
+    cropBoxResizable: true,
+    dragMode: 'move',   // solo mueve el crop box
+    responsive: true,
+    guides: true,
+    background: false
+  });
+}
 function adjustCrop(num) {
   if (!zoneSources[num]) return;
   activeCrop = num;
@@ -935,15 +956,7 @@ function adjustCrop(num) {
   cropImg.src = '';
   document.getElementById('cropModalTitle').textContent = CROP_TITLES[num];
   document.getElementById('cropModal').classList.add('open');
-  cropImg.onload = () => {
-    cropperInstance = new Cropper(cropImg, {
-      aspectRatio: CROP_RATIOS[num],
-      viewMode: 0, autoCropArea: 0.9,
-      movable: true, zoomable: true,
-      cropBoxResizable: true, dragMode: 'move',
-      responsive: true, guides: true, background: false
-    });
-  };
+  cropImg.onload = () => initCropper(num);
   cropImg.src = zoneSources[num];
 }
 function removeCrop(num) {
@@ -971,15 +984,7 @@ function onFileSelected(e) {
     cropImg.src = '';
     document.getElementById('cropModalTitle').textContent = CROP_TITLES[activeCrop];
     document.getElementById('cropModal').classList.add('open');
-    cropImg.onload = () => {
-      cropperInstance = new Cropper(cropImg, {
-        aspectRatio: CROP_RATIOS[activeCrop],
-        viewMode: 0, autoCropArea: 0.9,
-        movable: true, zoomable: true,
-        cropBoxResizable: true, dragMode: 'move',
-        responsive: true, guides: true, background: false
-      });
-    };
+    cropImg.onload = () => initCropper(activeCrop);
     cropImg.src = ev.target.result;
   };
   reader.readAsDataURL(file);
@@ -992,6 +997,7 @@ function closeCrop() {
   const cropArea = document.querySelector('.crop-area');
   if (!cropArea.contains(cropImg)) cropArea.appendChild(cropImg);
   cropImg.src = '';
+  cropArea.style.height = '';  // resetear para la próxima imagen
 }
 function setZonePreview(zoneId, data64) {
   const zone = document.getElementById('zone' + zoneId);
