@@ -8,6 +8,7 @@ header('Content-Type: application/json');
 
 $id = (int)($_POST['id'] ?? 0);
 $nuevaFecha = $_POST['fecha'] ?? '';
+$nuevaHora = $_POST['hora'] ?? '';
 
 if (!$id || !$nuevaFecha) {
     http_response_code(400);
@@ -19,6 +20,14 @@ if (!$id || !$nuevaFecha) {
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $nuevaFecha)) {
     http_response_code(400);
     echo json_encode(['error' => 'Formato de fecha inválido']);
+    exit;
+}
+
+// Validar que no sea fecha pasada
+$hoy = date('Y-m-d');
+if ($nuevaFecha < $hoy) {
+    http_response_code(400);
+    echo json_encode(['error' => 'No se pueden programar noticias en fechas pasadas']);
     exit;
 }
 
@@ -35,8 +44,8 @@ if (!$row) {
     exit;
 }
 
-// Mantener la hora, solo cambiar la fecha
-$horaOriginal = date('H:i:s', strtotime($row['fecha_publicacion']));
+// Usar hora proporcionada o mantener la original
+$horaOriginal = $nuevaHora ? $nuevaHora . ':00' : date('H:i:s', strtotime($row['fecha_publicacion']));
 $fechaCompleta = $nuevaFecha . ' ' . $horaOriginal;
 
 $update = $con->prepare("UPDATE noticias SET fecha_publicacion = ? WHERE id = ?");

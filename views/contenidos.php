@@ -243,13 +243,25 @@ if ($vista === 'mes') {
     <?php if ($vista === 'calendario' && !$busquedaGlobal): ?>
     <div class="card shadow-sm">
         <div class="card-body p-0">
+            <div class="week-nav" style="border-top:none; border-bottom:1px solid var(--border);">
+                <a href="?week=<?= $weekOffset - 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" id="prevWeek" title="Semana anterior (←)"><i class="bi bi-chevron-left"></i></a>
+                <?php if ($weekOffset !== 0): ?>
+                    <a href="?week=0&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
+                <?php endif; ?>
+                <div class="week-nav-center">
+                    <span class="week-nav-label">Semana del <?= $startOfWeek->format('d/m') ?> al <?= $endOfWeek->format('d/m/Y') ?></span>
+                    <input type="date" class="week-nav-picker" id="weekPicker" value="<?= $startOfWeek->format('Y-m-d') ?>" title="Saltar a fecha">
+                </div>
+                <a href="?week=<?= $weekOffset + 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" id="nextWeek" title="Semana siguiente (→)"><i class="bi bi-chevron-right"></i></a>
+            </div>
             <div class="calendar-days">
                 <?php foreach ($newsByDate as $date => $newsList):
                     $esHoy = ($date === $hoy);
+                    $esPasado = ($date < $hoy);
                     $diaSemana = $diasSemana[date('D', strtotime($date))] ?? '';
                     $count = count($newsList);
                 ?>
-                    <div class="day-column <?= $esHoy ? 'day-today' : '' ?>" data-date="<?= $date ?>" droppable="true">
+                    <div class="day-column <?= $esHoy ? 'day-today' : '' ?> <?= $esPasado ? 'day-past' : '' ?>" data-date="<?= $date ?>" <?= $esPasado ? '' : 'droppable="true"' ?> data-past="<?= $esPasado ? '1' : '0' ?>">
                         <div class="day-header">
                             <span class="day-name"><?= $diaSemana ?></span>
                             <span class="day-date"><?= date("d/m", strtotime($date)) ?></span>
@@ -271,11 +283,11 @@ if ($vista === 'mes') {
                                     <div class="card-header d-flex justify-content-between">
                                         <span class="estado-badge estado-<?= $estadoClass ?>">
                                             <?php if ($estadoClass === 'publicado'): ?>
-                                                <i class="bi bi-check-circle-fill"></i> Publicado
+                                                <i class="bi bi-check-circle-fill"></i><span>Publicado</span>
                                             <?php elseif ($estadoClass === 'por_publicar'): ?>
-                                                <i class="bi bi-clock-fill"></i> Hoy
+                                                <i class="bi bi-clock-fill"></i><span>Hoy</span>
                                             <?php else: ?>
-                                                <i class="bi bi-calendar-event-fill"></i> Programado
+                                                <i class="bi bi-calendar-event-fill"></i><span>Programado</span>
                                             <?php endif; ?>
                                         </span>
                                         <span class="card-time"><i class="bi bi-clock"></i> <?= $fechaPublicacion->format('H:i') ?></span>
@@ -306,17 +318,6 @@ if ($vista === 'mes') {
                     </div>
                 <?php endforeach; ?>
             </div>
-            <div class="week-nav">
-                <a href="?week=<?= $weekOffset - 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" id="prevWeek" title="Semana anterior (←)"><i class="bi bi-chevron-left"></i></a>
-                <?php if ($weekOffset !== 0): ?>
-                    <a href="?week=0&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
-                <?php endif; ?>
-                <div class="week-nav-center">
-                    <span class="week-nav-label">Semana del <?= $startOfWeek->format('d/m') ?> al <?= $endOfWeek->format('d/m/Y') ?></span>
-                    <input type="date" class="week-nav-picker" id="weekPicker" value="<?= $startOfWeek->format('Y-m-d') ?>" title="Saltar a fecha">
-                </div>
-                <a href="?week=<?= $weekOffset + 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" id="nextWeek" title="Semana siguiente (→)"><i class="bi bi-chevron-right"></i></a>
-            </div>
         </div>
     </div>
     <?php endif; ?>
@@ -327,6 +328,16 @@ if ($vista === 'mes') {
     <?php if ($vista === 'mes' && !$busquedaGlobal): ?>
     <div class="card shadow-sm">
         <div class="card-body p-0">
+            <div class="week-nav" style="border-top:none; border-bottom:1px solid var(--border);">
+                <a href="?month=<?= $monthOffset - 1 ?>&vista=mes&filtro=<?= $filtro ?>" class="week-nav-btn" title="Mes anterior"><i class="bi bi-chevron-left"></i></a>
+                <?php if ($monthOffset !== 0): ?>
+                    <a href="?month=0&vista=mes&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
+                <?php endif; ?>
+                <div class="week-nav-center">
+                    <span class="week-nav-label"><?= $mesNombre ?> <?= $mesAnio ?></span>
+                </div>
+                <a href="?month=<?= $monthOffset + 1 ?>&vista=mes&filtro=<?= $filtro ?>" class="week-nav-btn" title="Mes siguiente"><i class="bi bi-chevron-right"></i></a>
+            </div>
             <div class="month-grid">
                 <div class="month-header-row">
                     <?php foreach (['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'] as $d): ?>
@@ -344,7 +355,8 @@ if ($vista === 'mes') {
                         $esHoyMes = ($fechaDia === $hoy);
                         $noticiasDelDia = $newsByMonth[$dia] ?? [];
                     ?>
-                        <div class="month-cell <?= $esHoyMes ? 'month-cell-today' : '' ?>" data-date="<?= $fechaDia ?>" droppable="true">
+                        <?php $esPasadoMes = ($fechaDia < $hoy); ?>
+                        <div class="month-cell <?= $esHoyMes ? 'month-cell-today' : '' ?> <?= $esPasadoMes ? 'month-cell-past' : '' ?>" data-date="<?= $fechaDia ?>" <?= $esPasadoMes ? '' : 'droppable="true"' ?> data-past="<?= $esPasadoMes ? '1' : '0' ?>">
                             <span class="month-cell-num <?= $esHoyMes ? 'today-num' : '' ?>"><?= $dia ?></span>
                             <?php if (!empty($noticiasDelDia)): ?>
                                 <div class="month-cell-news">
@@ -362,16 +374,6 @@ if ($vista === 'mes') {
                         </div>
                     <?php endfor; ?>
                 </div>
-            </div>
-            <div class="week-nav">
-                <a href="?month=<?= $monthOffset - 1 ?>&vista=mes&filtro=<?= $filtro ?>" class="week-nav-btn" title="Mes anterior"><i class="bi bi-chevron-left"></i></a>
-                <?php if ($monthOffset !== 0): ?>
-                    <a href="?month=0&vista=mes&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
-                <?php endif; ?>
-                <div class="week-nav-center">
-                    <span class="week-nav-label"><?= $mesNombre ?> <?= $mesAnio ?></span>
-                </div>
-                <a href="?month=<?= $monthOffset + 1 ?>&vista=mes&filtro=<?= $filtro ?>" class="week-nav-btn" title="Mes siguiente"><i class="bi bi-chevron-right"></i></a>
             </div>
         </div>
     </div>
@@ -540,10 +542,21 @@ if ($vista === 'mes') {
 
         // Drop zones: day-column y month-cell
         document.addEventListener('dragover', function(e) {
-            const zone = e.target.closest('[data-date][droppable]');
+            const zone = e.target.closest('[data-date]');
             if (!zone || !draggedId) return;
+
+            // Verificar si es fecha pasada
+            if (zone.dataset.past === '1') {
+                e.dataTransfer.dropEffect = 'none';
+                zone.style.cursor = 'not-allowed';
+                return;
+            }
+
+            if (!zone.hasAttribute('droppable')) return;
+
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
+            zone.style.cursor = '';
             document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
             zone.classList.add('drag-over');
         });
@@ -555,14 +568,27 @@ if ($vista === 'mes') {
 
         document.addEventListener('drop', function(e) {
             e.preventDefault();
-            const zone = e.target.closest('[data-date][droppable]');
+            // Buscar zona drop más permisivamente
+            const zone = e.target.closest('[data-date]');
             if (!zone || !draggedId) return;
             zone.classList.remove('drag-over');
+
+            // Verificar que tenga droppable
+            if (!zone.hasAttribute('droppable')) {
+                alert('No se puede soltar aquí: fecha no disponible para reprogramar');
+                return;
+            }
+
+            // Verificar que no sea fecha pasada
+            if (zone.dataset.past === '1') {
+                alert('No se pueden mover noticias a fechas pasadas (anteriores a hoy)');
+                return;
+            }
 
             const newDate = zone.dataset.date;
             if (!newDate) return;
 
-            // Mover visualmente
+            // Mover visualmente temporalmente
             if (draggedEl) {
                 draggedEl.classList.add('card-moving');
                 const newsContainer = zone.querySelector('.day-news, .month-cell-news');
@@ -577,7 +603,6 @@ if ($vista === 'mes') {
                     }
                     container.appendChild(draggedEl);
                 } else {
-                    // day-column sin noticias
                     const emptyMsg = zone.querySelector('.text-muted');
                     if (emptyMsg) emptyMsg.remove();
                     let container = zone.querySelector('.day-news');
@@ -591,10 +616,41 @@ if ($vista === 'mes') {
                 setTimeout(() => draggedEl.classList.remove('card-moving'), 300);
             }
 
-            // Guardar en servidor
+            // Mostrar modal de fecha/hora
+            document.getElementById('reprogId').value = draggedId;
+            document.getElementById('reprogDate').value = newDate;
+            // Hora por defecto: mantener la original o 09:00
+            const timeMatch = draggedEl?.querySelector('.card-time')?.textContent?.match(/(\d{2}:\d{2})/);
+            document.getElementById('reprogTime').value = timeMatch ? timeMatch[1] : '09:00';
+            pendingDropZone = zone;
+            pendingCard = draggedEl;
+            dateTimeModal.style.display = 'flex';
+        });
+
+        // Modal de fecha/hora para reprogramar
+        const dateTimeModal = document.getElementById('dateTimeModal');
+        const dateTimeForm = document.getElementById('dateTimeForm');
+        const dateTimeCancel = document.getElementById('dateTimeCancel');
+        let pendingDropZone = null;
+        let pendingCard = null;
+
+        dateTimeCancel.addEventListener('click', function() {
+            dateTimeModal.style.display = 'none';
+            pendingDropZone = null;
+            pendingCard = null;
+            location.reload(); // Recargar para restaurar posición original
+        });
+
+        dateTimeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newDate = document.getElementById('reprogDate').value;
+            const newTime = document.getElementById('reprogTime').value;
+            const noticiaId = document.getElementById('reprogId').value;
+
             const formData = new FormData();
-            formData.append('id', draggedId);
+            formData.append('id', noticiaId);
             formData.append('fecha', newDate);
+            formData.append('hora', newTime);
 
             fetch('../controllers/reprogramar_noticia.php', {
                 method: 'POST',
@@ -605,6 +661,15 @@ if ($vista === 'mes') {
                 if (data.error) {
                     alert('Error: ' + data.error);
                     location.reload();
+                } else {
+                    dateTimeModal.style.display = 'none';
+                    pendingDropZone = null;
+                    pendingCard = null;
+                    // Actualizar UI sin recargar
+                    const timeSpan = pendingCard?.querySelector('.card-time');
+                    if (timeSpan) {
+                        timeSpan.innerHTML = '<i class="bi bi-clock"></i> ' + newTime.substring(0, 5);
+                    }
                 }
             })
             .catch(() => {
@@ -615,6 +680,31 @@ if ($vista === 'mes') {
     }
 })();
 </script>
+
+<!-- Modal para reprogramar fecha y hora -->
+<div id="dateTimeModal" class="crop-modal" style="display: none;">
+    <div class="card" style="max-width: 400px;">
+        <div class="crop-modal-content">
+            <h3><i class="bi bi-calendar-plus"></i> Reprogramar noticia</h3>
+            <p>Selecciona la nueva fecha y hora de publicación:</p>
+            <form id="dateTimeForm">
+                <input type="hidden" id="reprogId">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Fecha</label>
+                    <input type="date" id="reprogDate" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--card-bg); color: var(--text);">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Hora</label>
+                    <input type="time" id="reprogTime" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--card-bg); color: var(--text);">
+                </div>
+                <div class="crop-actions">
+                    <button type="button" class="btn btn-secondary" id="dateTimeCancel">Cancelar</button>
+                    <button type="submit" class="btn btn-accent">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Modal de Confirmación para Eliminar -->
 <div id="modalOverlay" class="crop-modal" style="display: none;">
