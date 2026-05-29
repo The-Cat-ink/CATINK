@@ -259,8 +259,30 @@ hr {
   background: var(--bg);
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  padding: 16px;
+  gap: 6px;
+  padding: 12px;
+}
+@media (max-width: 1200px) {
+  .calendar-days {
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
+    overflow-x: auto;
+  }
+  .estado-badge span {
+    display: none;
+  }
+  .estado-badge i {
+    font-size: 0.65rem;
+  }
+}
+@media (max-width: 992px) {
+  .calendar-days {
+    grid-template-columns: repeat(4, minmax(160px, 1fr));
+  }
+}
+@media (max-width: 768px) {
+  .calendar-days {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
 }
 .day-column {
   min-width: 0;
@@ -360,13 +382,14 @@ hr {
 .estado-programado .card-status-bar { background: #6366f1; }
 
 .estado-badge {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  white-space: nowrap;
 }
 .estado-badge.estado-publicado { background: rgba(16,185,129,0.1); color: #10b981; }
 .estado-badge.estado-por_publicar { background: rgba(245,158,11,0.1); color: #f59e0b; }
@@ -378,8 +401,9 @@ hr {
   background: none;
 }
 .card-time {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--muted);
+  white-space: nowrap;
 }
 .card-metrics {
   display: flex;
@@ -392,8 +416,9 @@ hr {
 
 .noticias-card img {
   width: 100%;
-  height: 130px;
+  aspect-ratio: 16 / 10;
   object-fit: cover;
+  max-height: 120px;
 }
 .noticias-card h6 {
   font-size: 0.88rem;
@@ -410,15 +435,21 @@ hr {
 }
 .noticias-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
   margin-top: auto;
-  padding: 8px 12px;
+  padding: 6px 8px;
   border-top: 1px solid var(--border);
 }
 .noticias-actions .btn {
-  padding: 4px 8px;
-  font-size: 0.85rem;
+  padding: 4px 6px;
+  font-size: 0.75rem;
+  min-width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 /* ============================
    Navegación de Semana

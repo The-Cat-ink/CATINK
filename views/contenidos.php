@@ -283,11 +283,11 @@ if ($vista === 'mes') {
                                     <div class="card-header d-flex justify-content-between">
                                         <span class="estado-badge estado-<?= $estadoClass ?>">
                                             <?php if ($estadoClass === 'publicado'): ?>
-                                                <i class="bi bi-check-circle-fill"></i> Publicado
+                                                <i class="bi bi-check-circle-fill"></i><span>Publicado</span>
                                             <?php elseif ($estadoClass === 'por_publicar'): ?>
-                                                <i class="bi bi-clock-fill"></i> Hoy
+                                                <i class="bi bi-clock-fill"></i><span>Hoy</span>
                                             <?php else: ?>
-                                                <i class="bi bi-calendar-event-fill"></i> Programado
+                                                <i class="bi bi-calendar-event-fill"></i><span>Programado</span>
                                             <?php endif; ?>
                                         </span>
                                         <span class="card-time"><i class="bi bi-clock"></i> <?= $fechaPublicacion->format('H:i') ?></span>
