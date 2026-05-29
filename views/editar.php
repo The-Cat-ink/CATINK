@@ -91,15 +91,15 @@ while($row = $resCat->fetch_assoc()){
                     <p><strong>Imágenes actuales:</strong></p>
                     <div class="row">
                         <div class="col">
-                            <img src="<?= basePath() ?>/<?= htmlspecialchars($noticia['crop1'] ?? 'img/placeholder.jpg') ?>" alt="Actual" style="width:100%; max-height:120px; object-fit:cover;">
+                            <img src="<?= basePath() ?>/<?= htmlspecialchars($noticia['crop1'] ?? 'img/placeholder.svg') ?>" alt="Actual" style="width:100%; max-height:120px; object-fit:cover;">
                             <small class="text-muted">Original</small>
                         </div>
                         <div class="col">
-                            <img src="<?= basePath() ?>/<?= htmlspecialchars($noticia['crop2'] ?? 'img/placeholder.jpg') ?>" alt="Actual" style="width:100%; max-height:120px; object-fit:cover;">
+                            <img src="<?= basePath() ?>/<?= htmlspecialchars($noticia['crop2'] ?? 'img/placeholder.svg') ?>" alt="Actual" style="width:100%; max-height:120px; object-fit:cover;">
                             <small class="text-muted">Banner</small>
                         </div>
                         <div class="col">
-                            <img src="<?= basePath() ?>/<?= htmlspecialchars($noticia['crop3'] ?? 'img/placeholder.jpg') ?>" alt="Actual" style="width:100%; max-height:120px; object-fit:cover;">
+                            <img src="<?= basePath() ?>/<?= htmlspecialchars($noticia['crop3'] ?? 'img/placeholder.svg') ?>" alt="Actual" style="width:100%; max-height:120px; object-fit:cover;">
                             <small class="text-muted">Miniatura</small>
                         </div>
                     </div>

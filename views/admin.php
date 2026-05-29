@@ -195,7 +195,7 @@ function formatNumberShort($num){
                 <div class="row row-cols-1 row-cols-md-3 g-4">
                     <?php foreach($ultimasNoticias as $n):
                         $desc = mb_strimwidth($n['descripcion'] ?? '', 0, 80, '...');
-                        $img = !empty($n['crop3']) ? "./../".$n['crop3'] : "./../img/placeholder.jpg";
+                        $img = !empty($n['crop3']) ? "./../".$n['crop3'] : "./../img/placeholder.svg";
                     ?>
                     <div class="col">
                         <div class="card">

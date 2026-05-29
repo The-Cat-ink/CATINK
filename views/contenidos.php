@@ -274,7 +274,7 @@ if ($vista === 'mes') {
                         <?php else: ?>
                             <div class="day-news">
                                 <?php foreach ($newsList as $row): 
-                                    $img = !empty($row['crop3']) ? basePath()."/".$row['crop3'] : basePath()."/img/placeholder.jpg";
+                                    $img = !empty($row['crop3']) ? basePath()."/".$row['crop3'] : basePath()."/img/placeholder.svg";
                                     $fechaPublicacion = new DateTime($row['fecha_publicacion']);
                                     $estadoClass = $row['_estado'];
                                 ?>
@@ -404,7 +404,7 @@ if ($vista === 'mes') {
                             <tr><td colspan="7" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron noticias</td></tr>
                         <?php else: ?>
                             <?php foreach ($allNews as $row):
-                                $img = !empty($row['crop3']) ? basePath()."/".$row['crop3'] : basePath()."/img/placeholder.jpg";
+                                $img = !empty($row['crop3']) ? basePath()."/".$row['crop3'] : basePath()."/img/placeholder.svg";
                                 $fechaPublicacion = new DateTime($row['fecha_publicacion']);
                                 $estadoClass = $row['_estado'];
                             ?>

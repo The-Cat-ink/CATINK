@@ -847,7 +847,11 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ════════════════════════════════
    CROPPER
 ════════════════════════════════ */
-const CROP_RATIOS = { 1: 1/1, 2: 21/6, 3: 16/9 };
+const CROP_SPECS = {
+  1: { ratio: 1 / 1, minWidth: 1600 },
+  2: { ratio: 21 / 6, minWidth: 1920 },
+  3: { ratio: 16 / 9, minWidth: 800 }
+};
 const CROP_TITLES = {
   1: 'Recortar — Imagen Original (1:1)',
   2: 'Recortar — Banner (21:6)',
@@ -870,8 +874,9 @@ function onFileSelected(e) {
     document.getElementById('cropModal').classList.add('open');
     if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
     cropImg.onload = () => {
+      const spec = CROP_SPECS[activeCrop] || { ratio: NaN };
       cropperInstance = new Cropper(cropImg, {
-        aspectRatio: CROP_RATIOS[activeCrop],
+        aspectRatio: spec.ratio,
         viewMode: 0, autoCropArea: 0.9,
         movable: true, zoomable: true,
         cropBoxResizable: true, dragMode: 'move',
@@ -888,8 +893,42 @@ function closeCrop() {
 }
 function confirmCrop() {
   if (!cropperInstance) return;
-  const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 1920, maxHeight: 1920 });
-  const data64 = canvas.toDataURL('image/jpeg', 0.85);
+  const cropData = cropperInstance.getData();
+  const imageData = cropperInstance.getImageData();
+  const spec = CROP_SPECS[activeCrop] || { ratio: NaN };
+
+  const naturalWidth = imageData.naturalWidth;
+  const naturalHeight = imageData.naturalHeight;
+
+  let targetWidth = cropData.width;
+  let targetHeight = cropData.height;
+
+  if (spec.ratio && Number.isFinite(spec.ratio)) {
+    targetWidth = Math.min(targetWidth, spec.minWidth || targetWidth, naturalWidth);
+    targetHeight = targetWidth / spec.ratio;
+    if (targetHeight > naturalHeight) {
+      targetHeight = naturalHeight;
+      targetWidth = targetHeight * spec.ratio;
+    }
+  } else {
+    if (spec.minWidth) {
+      targetWidth = Math.min(targetWidth, spec.minWidth, naturalWidth);
+    } else {
+      targetWidth = Math.min(targetWidth, naturalWidth);
+    }
+    targetHeight = Math.min(targetHeight, naturalHeight);
+  }
+
+  targetWidth = Math.max(1, Math.round(targetWidth));
+  targetHeight = Math.max(1, Math.round(targetHeight));
+
+  const canvas = cropperInstance.getCroppedCanvas({
+    width: targetWidth,
+    height: targetHeight,
+    imageSmoothingEnabled: true,
+    imageSmoothingQuality: 'high'
+  });
+  const data64 = canvas.toDataURL('image/webp', 0.95);
   document.getElementById('crop' + activeCrop).value = data64;
 
   const zone = document.getElementById('zone' + activeCrop);

@@ -244,12 +244,46 @@
         return;
       }
 
+      const cropData = cropper.getData();
+      const imageData = cropper.getImageData();
+
+      const naturalWidth = imageData.naturalWidth;
+      const naturalHeight = imageData.naturalHeight;
+
+      if (config.minWidth && cropData.width < config.minWidth) {
+        alert(`${config.name}: el recorte es menor a ${config.minWidth}px de ancho. La imagen podría verse pixelada en las vistas grandes.`);
+      }
+
+      let targetWidth = cropData.width;
+      let targetHeight = cropData.height;
+
+      if (config.ratio && Number.isFinite(config.ratio)) {
+        targetWidth = Math.min(targetWidth, config.minWidth || targetWidth, naturalWidth);
+        targetHeight = targetWidth / config.ratio;
+        if (targetHeight > naturalHeight) {
+          targetHeight = naturalHeight;
+          targetWidth = targetHeight * config.ratio;
+        }
+      } else {
+        if (config.minWidth) {
+          targetWidth = Math.min(targetWidth, config.minWidth, naturalWidth);
+        } else {
+          targetWidth = Math.min(targetWidth, naturalWidth);
+        }
+        targetHeight = Math.min(targetHeight, naturalHeight);
+      }
+
+      targetWidth = Math.max(1, Math.round(targetWidth));
+      targetHeight = Math.max(1, Math.round(targetHeight));
+
       const canvas = cropper.getCroppedCanvas({
-        imageSmoothingQuality: 'high',
-        minWidth: config.minWidth || 800,
-        minHeight: config.minWidth ? Math.round(config.minWidth / (config.ratio || 16/9)) : 450
+        width: targetWidth,
+        height: targetHeight,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
       });
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.98);
+
+      const dataUrl = canvas.toDataURL('image/webp', 0.95);
 
       // Guardar en input hidden
       if (hiddenInput) {

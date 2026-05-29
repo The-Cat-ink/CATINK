@@ -92,7 +92,7 @@ $stmtRecientes->execute();
 $recientes = $stmtRecientes->get_result();
 
 // Helper: devuelve la primera imagen no vacía, o placeholder (ruta absoluta)
-function img($fields, $placeholder = 'img/placeholder.jpg') {
+function img($fields, $placeholder = 'img/placeholder.svg') {
     $base = basePath();
     foreach ($fields as $f) {
         if (!empty($f)) return $base . '/' . ltrim(htmlspecialchars($f), '/');
@@ -100,7 +100,7 @@ function img($fields, $placeholder = 'img/placeholder.jpg') {
     return $base . '/' . $placeholder;
 }
 // Helper: genera atributos de imagen con lazy loading
-function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
+function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
     $src = img($fields, $placeholder);
     return "src=\"$src\" loading=\"lazy\" decoding=\"async\" $extra";
 }
@@ -505,7 +505,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
               <br>
               <div class="row">
                 <?php while($r = $recomendadas->fetch_assoc()): 
-                    $img = !empty($r['crop3']) ? $r['crop3'] : "img/placeholder.jpg";
+                    $img = !empty($r['crop3']) ? $r['crop3'] : "img/placeholder.svg";
                 ?>
                   <div class="col">
                       <div class="card h-100" data-url="<?= newsUrl($r['id']) ?>">
@@ -535,7 +535,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.jpg') {
               <br>
               <div class="row">
                 <?php while($r = $recientes->fetch_assoc()): 
-                    $img = !empty($r['crop3']) ? $r['crop3'] : "img/placeholder.jpg";
+                    $img = !empty($r['crop3']) ? $r['crop3'] : "img/placeholder.svg";
                 ?>
                   <div class="col">
                       <div class="card h-100"  data-url="<?= newsUrl($r['id']) ?>">

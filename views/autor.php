@@ -113,7 +113,7 @@ $iniciales = strtoupper(substr($palabras[0], 0, 1) . (isset($palabras[1]) ? subs
             <div class="autor-articles-grid">
                 <?php foreach ($articulos as $art): ?>
                     <?php
-                        $imgArt = !empty($art['crop3']) ? $art['crop3'] : (!empty($art['crop1']) ? $art['crop1'] : 'img/placeholder.jpg');
+                        $imgArt = !empty($art['crop3']) ? $art['crop3'] : (!empty($art['crop1']) ? $art['crop1'] : 'img/placeholder.svg');
                         $cats = !empty($art['categorias']) ? array_map('trim', explode(',', $art['categorias'])) : [];
                     ?>
                     <a href="<?= newsUrl($art['id']) ?>" class="autor-article-card">
