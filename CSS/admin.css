@@ -629,7 +629,10 @@ hr {
   vertical-align: middle;
 }
 .contenidos-table tbody tr:hover {
-  background: rgba(0,0,0,0.02);
+  background: rgba(0,0,0,0.04);
+}
+[data-bs-theme="dark"] .contenidos-table tbody tr:hover {
+  background: rgba(255,255,255,0.05);
 }
 .table-thumb {
   width: 60px;
@@ -732,9 +735,21 @@ hr {
   transition: color 0.5s ease-in-out, background-color 0.3s ease;
   position: relative;
 }
+.sb-label {
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 160px;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.22s ease 0.07s, max-width 0.32s ease, transform 0.22s ease 0.07s;
+}
 .sidebar-menu-link i {
   font-size: 20px;
   flex-shrink: 0;
+  transition: transform 0.22s ease;
+}
+.sidebar-menu-link:hover i {
+  transform: translateX(2px);
 }
 .sidebar-menu-link::after {
   content: '';
@@ -750,7 +765,10 @@ hr {
   transform: scaleX(1);
 }
 .sidebar-menu-link:hover {
-  background: rgba(0,0,0,0.04);
+  background: rgba(0,0,0,0.06);
+}
+[data-bs-theme="dark"] .sidebar-menu-link:hover {
+  background: rgba(255,255,255,0.08);
 }
 .sidebar-menu hr {
   border: none;
@@ -844,7 +862,10 @@ button.sidebar-menu-link {
   cursor: pointer;
 }
 .btn-icon:hover {
-  background: rgba(0,0,0,0.05);
+  background: rgba(0,0,0,0.07);
+}
+[data-bs-theme="dark"] .btn-icon:hover {
+  background: rgba(255,255,255,0.08);
 }
 /* formato de formulario */
 .title {
@@ -910,7 +931,7 @@ input, textarea {
 }
 input:focus, textarea:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: var(--accent);
 }
 .site-main span.text-muted,
 .sidebar span {
@@ -2111,7 +2132,12 @@ body.sidebar-open {
   .sidebar.collapsed .logo-icon { display: block; }
   .sidebar.collapsed .logotipo a { flex: none; }
   .sidebar.collapsed #user { display: none; }
-  .sidebar.collapsed .sb-label { display: none; }
+  .sidebar.collapsed .sb-label {
+    max-width: 0;
+    opacity: 0;
+    transform: translateX(-6px);
+    pointer-events: none;
+  }
   /* Logotipo colapsado: solo el icono, centrado */
   .sidebar.collapsed .logotipo {
     padding: 8px 4px;
@@ -2152,4 +2178,53 @@ input, select, textarea,
 .sidebar-menu hr,
 .sidebar > div:last-child {
   transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out, border-color 0.5s ease-in-out;
+}
+
+/* ── DARK MODE OVERRIDES (admin) ── */
+[data-bs-theme="dark"] select,
+[data-bs-theme="dark"] input,
+[data-bs-theme="dark"] textarea {
+  background: var(--card-bg);
+  color: var(--text);
+  border-color: var(--border);
+  color-scheme: dark;
+}
+[data-bs-theme="dark"] label {
+  color: var(--text);
+}
+[data-bs-theme="dark"] .check {
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+}
+[data-bs-theme="dark"] .cn-section-header:hover {
+  background: rgba(255,255,255,0.04);
+}
+[data-bs-theme="dark"] th {
+  color: var(--text);
+}
+[data-bs-theme="dark"] td {
+  color: var(--text);
+  border-color: var(--border);
+}
+[data-bs-theme="dark"] .form-card {
+  background: var(--card-bg);
+}
+[data-bs-theme="dark"] .cn-schedule-fields .cn-date-input {
+  background: var(--card-bg);
+  border-color: var(--border);
+  color: var(--text);
+}
+[data-bs-theme="dark"] .cn-date-input input {
+  color: var(--text);
+  color-scheme: dark;
+}
+[data-bs-theme="dark"] .cn-cat-menu {
+  background: var(--card-bg);
+  border-color: var(--border);
+}
+[data-bs-theme="dark"] .cn-cat-option {
+  color: var(--text);
+}
+[data-bs-theme="dark"] .cn-cat-option:hover {
+  background: rgba(255,255,255,0.06);
 }
