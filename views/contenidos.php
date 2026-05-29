@@ -243,13 +243,25 @@ if ($vista === 'mes') {
     <?php if ($vista === 'calendario' && !$busquedaGlobal): ?>
     <div class="card shadow-sm">
         <div class="card-body p-0">
+            <div class="week-nav" style="border-top:none; border-bottom:1px solid var(--border);">
+                <a href="?week=<?= $weekOffset - 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" id="prevWeek" title="Semana anterior (←)"><i class="bi bi-chevron-left"></i></a>
+                <?php if ($weekOffset !== 0): ?>
+                    <a href="?week=0&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
+                <?php endif; ?>
+                <div class="week-nav-center">
+                    <span class="week-nav-label">Semana del <?= $startOfWeek->format('d/m') ?> al <?= $endOfWeek->format('d/m/Y') ?></span>
+                    <input type="date" class="week-nav-picker" id="weekPicker" value="<?= $startOfWeek->format('Y-m-d') ?>" title="Saltar a fecha">
+                </div>
+                <a href="?week=<?= $weekOffset + 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" id="nextWeek" title="Semana siguiente (→)"><i class="bi bi-chevron-right"></i></a>
+            </div>
             <div class="calendar-days">
                 <?php foreach ($newsByDate as $date => $newsList):
                     $esHoy = ($date === $hoy);
+                    $esPasado = ($date < $hoy);
                     $diaSemana = $diasSemana[date('D', strtotime($date))] ?? '';
                     $count = count($newsList);
                 ?>
-                    <div class="day-column <?= $esHoy ? 'day-today' : '' ?>" data-date="<?= $date ?>" droppable="true">
+                    <div class="day-column <?= $esHoy ? 'day-today' : '' ?> <?= $esPasado ? 'day-past' : '' ?>" data-date="<?= $date ?>" <?= $esPasado ? '' : 'droppable="true"' ?> data-past="<?= $esPasado ? '1' : '0' ?>">
                         <div class="day-header">
                             <span class="day-name"><?= $diaSemana ?></span>
                             <span class="day-date"><?= date("d/m", strtotime($date)) ?></span>
@@ -306,17 +318,6 @@ if ($vista === 'mes') {
                     </div>
                 <?php endforeach; ?>
             </div>
-            <div class="week-nav">
-                <a href="?week=<?= $weekOffset - 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" id="prevWeek" title="Semana anterior (←)"><i class="bi bi-chevron-left"></i></a>
-                <?php if ($weekOffset !== 0): ?>
-                    <a href="?week=0&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
-                <?php endif; ?>
-                <div class="week-nav-center">
-                    <span class="week-nav-label">Semana del <?= $startOfWeek->format('d/m') ?> al <?= $endOfWeek->format('d/m/Y') ?></span>
-                    <input type="date" class="week-nav-picker" id="weekPicker" value="<?= $startOfWeek->format('Y-m-d') ?>" title="Saltar a fecha">
-                </div>
-                <a href="?week=<?= $weekOffset + 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" id="nextWeek" title="Semana siguiente (→)"><i class="bi bi-chevron-right"></i></a>
-            </div>
         </div>
     </div>
     <?php endif; ?>
@@ -327,6 +328,16 @@ if ($vista === 'mes') {
     <?php if ($vista === 'mes' && !$busquedaGlobal): ?>
     <div class="card shadow-sm">
         <div class="card-body p-0">
+            <div class="week-nav" style="border-top:none; border-bottom:1px solid var(--border);">
+                <a href="?month=<?= $monthOffset - 1 ?>&vista=mes&filtro=<?= $filtro ?>" class="week-nav-btn" title="Mes anterior"><i class="bi bi-chevron-left"></i></a>
+                <?php if ($monthOffset !== 0): ?>
+                    <a href="?month=0&vista=mes&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
+                <?php endif; ?>
+                <div class="week-nav-center">
+                    <span class="week-nav-label"><?= $mesNombre ?> <?= $mesAnio ?></span>
+                </div>
+                <a href="?month=<?= $monthOffset + 1 ?>&vista=mes&filtro=<?= $filtro ?>" class="week-nav-btn" title="Mes siguiente"><i class="bi bi-chevron-right"></i></a>
+            </div>
             <div class="month-grid">
                 <div class="month-header-row">
                     <?php foreach (['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'] as $d): ?>
@@ -344,7 +355,8 @@ if ($vista === 'mes') {
                         $esHoyMes = ($fechaDia === $hoy);
                         $noticiasDelDia = $newsByMonth[$dia] ?? [];
                     ?>
-                        <div class="month-cell <?= $esHoyMes ? 'month-cell-today' : '' ?>" data-date="<?= $fechaDia ?>" droppable="true">
+                        <?php $esPasadoMes = ($fechaDia < $hoy); ?>
+                        <div class="month-cell <?= $esHoyMes ? 'month-cell-today' : '' ?> <?= $esPasadoMes ? 'month-cell-past' : '' ?>" data-date="<?= $fechaDia ?>" <?= $esPasadoMes ? '' : 'droppable="true"' ?> data-past="<?= $esPasadoMes ? '1' : '0' ?>">
                             <span class="month-cell-num <?= $esHoyMes ? 'today-num' : '' ?>"><?= $dia ?></span>
                             <?php if (!empty($noticiasDelDia)): ?>
                                 <div class="month-cell-news">
@@ -362,16 +374,6 @@ if ($vista === 'mes') {
                         </div>
                     <?php endfor; ?>
                 </div>
-            </div>
-            <div class="week-nav">
-                <a href="?month=<?= $monthOffset - 1 ?>&vista=mes&filtro=<?= $filtro ?>" class="week-nav-btn" title="Mes anterior"><i class="bi bi-chevron-left"></i></a>
-                <?php if ($monthOffset !== 0): ?>
-                    <a href="?month=0&vista=mes&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
-                <?php endif; ?>
-                <div class="week-nav-center">
-                    <span class="week-nav-label"><?= $mesNombre ?> <?= $mesAnio ?></span>
-                </div>
-                <a href="?month=<?= $monthOffset + 1 ?>&vista=mes&filtro=<?= $filtro ?>" class="week-nav-btn" title="Mes siguiente"><i class="bi bi-chevron-right"></i></a>
             </div>
         </div>
     </div>
@@ -540,10 +542,21 @@ if ($vista === 'mes') {
 
         // Drop zones: day-column y month-cell
         document.addEventListener('dragover', function(e) {
-            const zone = e.target.closest('[data-date][droppable]');
+            const zone = e.target.closest('[data-date]');
             if (!zone || !draggedId) return;
+
+            // Verificar si es fecha pasada
+            if (zone.dataset.past === '1') {
+                e.dataTransfer.dropEffect = 'none';
+                zone.style.cursor = 'not-allowed';
+                return;
+            }
+
+            if (!zone.hasAttribute('droppable')) return;
+
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
+            zone.style.cursor = '';
             document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
             zone.classList.add('drag-over');
         });
@@ -558,6 +571,12 @@ if ($vista === 'mes') {
             const zone = e.target.closest('[data-date][droppable]');
             if (!zone || !draggedId) return;
             zone.classList.remove('drag-over');
+
+            // Verificar que no sea fecha pasada
+            if (zone.dataset.past === '1') {
+                alert('No se pueden mover noticias a fechas pasadas');
+                return;
+            }
 
             const newDate = zone.dataset.date;
             if (!newDate) return;

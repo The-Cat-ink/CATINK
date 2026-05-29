@@ -277,6 +277,14 @@ hr {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(239,51,99,0.15);
 }
+.day-column.day-past {
+  background: rgba(0,0,0,0.02);
+  border-color: rgba(0,0,0,0.05);
+}
+.day-column.day-past .day-header {
+  color: var(--muted);
+  background: rgba(0,0,0,0.02);
+}
 .day-header {
   position: sticky;
   top: 0;
@@ -522,6 +530,16 @@ hr {
 .month-cell-today {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(239,51,99,0.12);
+}
+.month-cell-past {
+  background: rgba(0,0,0,0.02);
+  border-color: rgba(0,0,0,0.05);
+}
+.month-cell-past .month-cell-num {
+  color: var(--muted);
+}
+.month-cell-past .month-news-item {
+  opacity: 0.6;
 }
 .month-cell-num {
   font-size: 0.8rem;

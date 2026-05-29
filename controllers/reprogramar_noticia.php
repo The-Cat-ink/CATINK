@@ -22,6 +22,14 @@ if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $nuevaFecha)) {
     exit;
 }
 
+// Validar que no sea fecha pasada
+$hoy = date('Y-m-d');
+if ($nuevaFecha < $hoy) {
+    http_response_code(400);
+    echo json_encode(['error' => 'No se pueden programar noticias en fechas pasadas']);
+    exit;
+}
+
 // Obtener hora actual de la noticia para mantenerla
 $stmt = $con->prepare("SELECT fecha_publicacion FROM noticias WHERE id = ?");
 $stmt->bind_param("i", $id);
