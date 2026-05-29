@@ -1322,7 +1322,7 @@ select .ql-font {
 .editor-toolbar .ql-picker.ql-lineheight .ql-picker-label::before {
   content: attr(data-value);
   font-size: 14px;
-  color: #111111;
+  color: var(--text);
 }
 /* PLACEHOLDER CUANDO NO HAY VALOR */
 .editor-toolbar
@@ -1341,7 +1341,7 @@ select .ql-font {
 .editor-toolbar .ql-picker.ql-lineheight .ql-picker-item::before {
   content: attr(data-value);
   font-size: 14px;
-  color: #111111;
+  color: var(--text);
 }
 /* EDITOR */
 .editor-content {
@@ -1391,35 +1391,6 @@ select .ql-font {
 /* Selectores (font, size, color) */
 .editor-toolbar .ql-picker {
   border-radius: 6px;
-}
-/* ===============================
-   QUILL SELECTS — FONDO UNICO
-   =============================== */
-/* Label (lo que se ve cerrado) */
-.editor-toolbar .ql-picker-label {
-  background: #ffffff !important;
-  color: #111111 !important;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 4px 8px;
-}
-/* Flecha */
-.editor-toolbar .ql-picker-label::before {
-  color: #111111 !important;
-}
-/* Dropdown */
-.editor-toolbar .ql-picker-options {
-  background: #ffffff !important;
-  color: #111111 !important;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.15);
-  z-index: 9999;
-}
-/* Opciones */
-.editor-toolbar .ql-picker-item {
-  color: #111111 !important;
-  padding: 6px 10px;
 }
 /* ==================================================
    SISTEMA RESPONSIVE ADMIN
@@ -1583,6 +1554,8 @@ select .ql-font {
   border: 1px solid var(--border) !important;
 }
 .editor-toolbar .ql-picker-label .ql-stroke { stroke: var(--text) !important; }
+/* Texto del valor seleccionado (::before) — necesita override explícito */
+.editor-toolbar .ql-picker-label::before { color: var(--text) !important; }
 .editor-toolbar .ql-picker-options {
   background: var(--card-bg) !important;
   color: var(--text) !important;
@@ -1604,6 +1577,14 @@ select .ql-font {
   padding-right: 6px;
   border-right: 1px solid var(--border);
 }
+/* Placeholder del editor en dark mode */
+.ql-editor.ql-blank::before {
+  color: var(--muted) !important;
+  font-style: italic;
+}
+/* Texto dentro del editor (contenido) */
+.ql-editor { color: var(--text); }
+
 /* Bloque "Barra lateral" en el editor */
 .ql-editor .ql-callout {
   background: rgba(239,51,99,.07);
