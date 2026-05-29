@@ -33,13 +33,35 @@ while($row = $categoriasResult->fetch_assoc()) $categorias[] = $row;
 
 .cn-page-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 20px; color: var(--text); }
 
-/* Grid principal — una sola columna centrada, max-width adaptable */
+/* Eliminar el límite de admin-container en esta vista */
+.admin-container {
+  max-width: none !important;
+  padding: 0 !important;
+}
+
+/* Grid principal: izq = formulario (2fr), der = multimedia (3fr) */
 .cn-wrap {
-  max-width: 860px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
   gap: 16px;
+  align-items: start;
+}
+/* Columna izquierda: Info → Categorías → Programar */
+#sec-info        { grid-column: 1; grid-row: 1; }
+#sec-cats        { grid-column: 1; grid-row: 2; }
+#sec-schedule    { grid-column: 1; grid-row: 3; }
+/* Columna derecha: Multimedia ocupa las mismas 3 filas */
+#sec-media       { grid-column: 2; grid-row: 1 / span 3; align-self: start; }
+/* Full-width: Contenido */
+#sec-content     { grid-column: 1 / -1; grid-row: 4; }
+@media (max-width: 860px) {
+  .cn-wrap { grid-template-columns: 1fr; }
+  #sec-info, #sec-cats, #sec-media, #sec-schedule, #sec-content {
+    grid-column: 1 !important; grid-row: auto !important;
+    align-self: start !important;
+  }
 }
 
 /* ── SECTION CARD ── */
@@ -330,8 +352,6 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 
 /* ── PROGRAMAR ── */
 .cn-schedule-inner {
-  max-width: 520px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -702,17 +722,15 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               </div>
             </div>
           </div>
+          <?php if (!empty($ACL['crear'])): ?>
+          <div style="margin-top:16px;">
+            <button type="submit" class="cn-publish-btn" name="guardarNoticia">
+              <i class="bi bi-send"></i> Publicar noticia
+            </button>
+          </div>
+          <?php endif; ?>
         </div>
       </div>
-
-      <!-- BOTÓN PUBLICAR -->
-      <?php if (!empty($ACL['crear'])): ?>
-      <div class="cn-publish-wrap">
-        <button type="submit" class="cn-publish-btn" name="guardarNoticia">
-          <i class="bi bi-send"></i> Publicar noticia
-        </button>
-      </div>
-      <?php endif; ?>
 
     </div><!-- /cn-wrap -->
   </form>
