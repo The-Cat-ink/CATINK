@@ -21,10 +21,15 @@
   // Toggle de tema: botones con id 'themeToggle'
   const themeBtns = document.querySelectorAll('#themeToggle');
   function applyTheme(theme) {
-    // Aplica el atributo en el elemento <html> para que CSS use las variables
     document.documentElement.setAttribute('data-bs-theme', theme);
-    // Actualiza texto de los botones (solo visual) — no usar emojis en comentarios
-    themeBtns.forEach(b => b.textContent = theme === 'dark' ? '☀️' : '🌙');
+    themeBtns.forEach(b => {
+      const icon = b.querySelector('.theme-icon');
+      if (icon) {
+        icon.className = theme === 'dark' ? 'bi bi-sun theme-icon' : 'bi bi-moon theme-icon';
+      } else {
+        b.textContent = theme === 'dark' ? '☀️' : '🌙';
+      }
+    });
   }
   themeBtns.forEach(btn => {
     btn.addEventListener('click', () => {

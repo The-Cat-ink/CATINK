@@ -803,21 +803,37 @@ hr {
   transform: rotate(180deg);
 }
 #user {
-  padding: 6px 8px;
+  padding: 6px 8px 0;
   border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 #user h4 {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--text);
 }
+/* Botón toggle debajo del username */
+#user .sidebar-collapse-btn {
+  align-self: center;
+  margin: 4px 0;
+  display: none;
+}
 .sidebar-footer {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 12px 8px;
+  gap: 0;
+  padding: 8px;
   border-top: 1px solid var(--border);
+}
+button.sidebar-menu-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
 }
 .btn-icon {
   background: var(--card-bg);
@@ -2066,7 +2082,8 @@ body.sidebar-open {
    SIDEBAR PLEGABLE — DESKTOP
 ───────────────────────────────────────── */
 @media (min-width: 769px) {
-  .sidebar-collapse-btn {
+  .sidebar-collapse-btn,
+  #user .sidebar-collapse-btn {
     display: flex;
     align-items: center;
     justify-content: center;

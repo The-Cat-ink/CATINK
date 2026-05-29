@@ -95,6 +95,9 @@ if (!$fila) {
     </div>
     <div id="user">
         <h4><?= htmlspecialchars($fila['usuario']) ?></h4>
+        <button id="sidebarCollapseBtn" class="btn-icon sidebar-collapse-btn" title="Colapsar menú">
+            <i class="bi bi-chevron-up"></i>
+        </button>
     </div>
     <ul class="sidebar-menu">
         <li class="sidebar-menu-item"></li>
@@ -163,13 +166,12 @@ if (!$fila) {
         <?php endif; ?>
     </ul>
     <div class="sidebar-footer">
-      <button id="themeToggle" class="btn btn-icon" title="Cambiar tema">🌙</button>
+      <button id="themeToggle" class="sidebar-menu-link theme-toggle-btn" title="Cambiar tema">
+          <i class="bi bi-moon theme-icon"></i> <span class="sb-label">Cambiar tema</span>
+      </button>
       <a href="./../controllers/logoutcontroller.php" class="sidebar-menu-link" data-tooltip="Salir">
           <i class="bi bi-box-arrow-right"></i> <span class="sb-label">Salir</span>
       </a>
-      <button id="sidebarCollapseBtn" class="btn-icon sidebar-collapse-btn" title="Colapsar menú">
-          <i class="bi bi-chevron-up"></i>
-      </button>
     </div>
 </div>
 <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
