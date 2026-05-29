@@ -297,20 +297,19 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .pv-top-main { aspect-ratio:21/6; }
 .pv-top-side { aspect-ratio:16/9; }
 /* ─ Recientes ─ */
-.pv-rec-item { display:grid; grid-template-columns:130px 1fr; gap:12px; align-items:start; }
-.pv-rec-thumb { aspect-ratio:16/9; border-radius:6px; overflow:hidden; }
-.pv-rec-info { display:flex; flex-direction:column; gap:3px; }
-.pv-rec-title { font-size:13px; font-weight:700; color:var(--text); line-height:1.3; }
-.pv-rec-desc  { font-size:11px; color:var(--muted); }
-.pv-rec-meta  { font-size:10px; color:var(--muted); margin-top:2px; }
-/* ─ Sidebar ─ */
-.pv-side-cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-.pv-side-head { font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
-.pv-side-list { display:flex; flex-direction:column; gap:8px; }
-.pv-side-item { display:grid; grid-template-columns:52px 1fr; gap:8px; align-items:center; }
-.pv-side-circle { width:52px; height:52px; border-radius:50%; overflow:hidden; background:var(--border); }
-.pv-side-name { font-size:11px; font-weight:600; color:var(--text); line-height:1.3; }
-.pv-side-ghost { opacity:.3; }
+.pv-rec-item { display:grid; grid-template-columns:220px 1fr; gap:16px; align-items:start; }
+.pv-rec-thumb { aspect-ratio:16/9; border-radius:8px; overflow:hidden; }
+.pv-rec-info { display:flex; flex-direction:column; gap:5px; padding-top:4px; }
+.pv-rec-title { font-size:15px; font-weight:700; color:var(--text); line-height:1.3; }
+.pv-rec-desc  { font-size:12px; color:var(--muted); }
+.pv-rec-meta  { font-size:11px; color:var(--muted); margin-top:2px; }
+/* ─ Otros (sidebar) ─ */
+.pv-side-cols { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+.pv-side-head { font-size:11px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+.pv-side-list { display:flex; flex-direction:column; gap:12px; }
+.pv-side-item { display:grid; grid-template-columns:72px 1fr; gap:12px; align-items:center; }
+.pv-side-circle { width:72px; height:72px; border-radius:50%; overflow:hidden; background:var(--border); }
+.pv-side-name { font-size:13px; font-weight:600; color:var(--text); line-height:1.3; }
 .preview-stub.short { width: 55%; }
 .preview-title-stub { height: 9px; background: var(--border); border-radius: 4px; }
 
@@ -525,10 +524,10 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
           <div class="preview-section" id="previewSection" style="display:none;">
             <div class="preview-section-title">Vista previa por sección</div>
             <div class="pv-tabs" id="pvTabs">
-              <button type="button" class="pv-tab-btn active" data-tab="hero">Hero</button>
+              <button type="button" class="pv-tab-btn active" data-tab="hero">Inicio</button>
               <button type="button" class="pv-tab-btn" data-tab="top">Top Semana</button>
               <button type="button" class="pv-tab-btn" data-tab="rec">Recientes</button>
-              <button type="button" class="pv-tab-btn" data-tab="side">Sidebar</button>
+              <button type="button" class="pv-tab-btn" data-tab="side">Otros</button>
             </div>
 
             <!-- Hero -->
@@ -591,10 +590,6 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
                       <div class="pv-side-circle"><div class="pv-bg" id="pvSide1"></div></div>
                       <div class="pv-side-name" id="pvSideTitle1">Título de la noticia</div>
                     </div>
-                    <div class="pv-side-item pv-side-ghost">
-                      <div class="pv-side-circle" style="background:var(--border)"></div>
-                      <div class="pv-side-name" style="color:var(--muted)">Otra noticia</div>
-                    </div>
                   </div>
                 </div>
                 <div>
@@ -603,10 +598,6 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
                     <div class="pv-side-item">
                       <div class="pv-side-circle"><div class="pv-bg" id="pvSide2"></div></div>
                       <div class="pv-side-name" id="pvSideTitle2">Título de la noticia</div>
-                    </div>
-                    <div class="pv-side-item pv-side-ghost">
-                      <div class="pv-side-circle" style="background:var(--border)"></div>
-                      <div class="pv-side-name" style="color:var(--muted)">Otra noticia</div>
                     </div>
                   </div>
                 </div>
