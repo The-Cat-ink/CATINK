@@ -423,31 +423,20 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
         </div>
         <div class="cn-section-body">
 
-          <!-- Fila: Original + Banner -->
-          <div class="cn-media-row1">
-            <div>
-              <p class="cn-zone-label">Imagen Original</p>
-              <div class="upload-zone cn-zone-original" id="zone1" onclick="openCrop(1)">
-                <div class="zone-overlay"><span>Cambiar imagen</span></div>
-                <i class="bi bi-camera" style="font-size:20px"></i>
-                <span>Click para subir</span>
-                <span class="zone-ratio">1 : 1</span>
-              </div>
-            </div>
-            <div>
-              <p class="cn-zone-label">Imagen Banner</p>
-              <div class="upload-zone cn-zone-banner" id="zone2" onclick="openCrop(2)">
-                <div class="zone-overlay"><span>Cambiar imagen</span></div>
-                <i class="bi bi-aspect-ratio" style="font-size:20px"></i>
-                <span>Optimizado para cabeceras</span>
-                <span class="zone-ratio">21 : 6</span>
-              </div>
+          <!-- Banner -->
+          <div style="margin-bottom:12px;">
+            <p class="cn-zone-label">Imagen Banner</p>
+            <div class="upload-zone cn-zone-banner" id="zone2" onclick="openCrop(2)">
+              <div class="zone-overlay"><span>Cambiar imagen</span></div>
+              <i class="bi bi-aspect-ratio" style="font-size:20px"></i>
+              <span>Optimizado para cabeceras</span>
+              <span class="zone-ratio">21 : 6</span>
             </div>
           </div>
 
-          <!-- Miniatura -->
+          <!-- Miniatura (se llena automáticamente al subir el banner) -->
           <div style="margin-bottom:14px;">
-            <p class="cn-zone-label">Miniatura</p>
+            <p class="cn-zone-label">Miniatura <span style="text-transform:none;font-size:10px;font-weight:400;color:var(--muted)">(se auto-genera del banner — clic para cambiar)</span></p>
             <div class="upload-zone cn-zone-mini" id="zone3" onclick="openCrop(3)">
               <div class="zone-overlay"><span>Cambiar</span></div>
               <i class="bi bi-image" style="font-size:20px"></i>
@@ -900,6 +889,8 @@ function confirmCrop() {
 
   if (activeCrop === 2) {
     document.getElementById('pvWebBanner').innerHTML = `<img src="${data64}">`;
+    // Auto-generar miniatura 16:9 de la misma imagen fuente
+    autoFillMiniature(document.getElementById('cropImg').src);
   }
   if (activeCrop === 3) {
     document.getElementById('pvMobThumb').innerHTML = `<img src="${data64}">`;
@@ -908,6 +899,32 @@ function confirmCrop() {
   const c3 = document.getElementById('crop3').value;
   document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
   closeCrop();
+}
+
+function autoFillMiniature(srcDataUrl) {
+  const tmpImg = new Image();
+  tmpImg.onload = function () {
+    const ratio = 16 / 9;
+    let sw = tmpImg.width, sh = tmpImg.height;
+    if (sw / sh > ratio) { sw = sh * ratio; } else { sh = sw / ratio; }
+    const sx = (tmpImg.width  - sw) / 2;
+    const sy = (tmpImg.height - sh) / 2;
+    const canvas = document.createElement('canvas');
+    canvas.width  = Math.min(Math.round(sw), 1280);
+    canvas.height = Math.round(canvas.width / ratio);
+    canvas.getContext('2d').drawImage(tmpImg, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+    const data64 = canvas.toDataURL('image/jpeg', 0.85);
+
+    document.getElementById('crop3').value = data64;
+    const zone3 = document.getElementById('zone3');
+    let previewImg = zone3.querySelector('.preview-img');
+    if (!previewImg) { previewImg = document.createElement('img'); previewImg.className = 'preview-img'; zone3.appendChild(previewImg); }
+    previewImg.src = data64;
+    zone3.classList.add('has-image');
+    document.getElementById('pvMobThumb').innerHTML = `<img src="${data64}">`;
+    document.getElementById('previewSection').style.display = 'block';
+  };
+  tmpImg.src = srcDataUrl;
 }
 </script>
 
