@@ -581,7 +581,7 @@ if ($vista === 'mes') {
             const newDate = zone.dataset.date;
             if (!newDate) return;
 
-            // Mover visualmente
+            // Mover visualmente temporalmente
             if (draggedEl) {
                 draggedEl.classList.add('card-moving');
                 const newsContainer = zone.querySelector('.day-news, .month-cell-news');
@@ -596,7 +596,6 @@ if ($vista === 'mes') {
                     }
                     container.appendChild(draggedEl);
                 } else {
-                    // day-column sin noticias
                     const emptyMsg = zone.querySelector('.text-muted');
                     if (emptyMsg) emptyMsg.remove();
                     let container = zone.querySelector('.day-news');
@@ -610,10 +609,41 @@ if ($vista === 'mes') {
                 setTimeout(() => draggedEl.classList.remove('card-moving'), 300);
             }
 
-            // Guardar en servidor
+            // Mostrar modal de fecha/hora
+            document.getElementById('reprogId').value = draggedId;
+            document.getElementById('reprogDate').value = newDate;
+            // Hora por defecto: mantener la original o 09:00
+            const timeMatch = draggedEl?.querySelector('.card-time')?.textContent?.match(/(\d{2}:\d{2})/);
+            document.getElementById('reprogTime').value = timeMatch ? timeMatch[1] : '09:00';
+            pendingDropZone = zone;
+            pendingCard = draggedEl;
+            dateTimeModal.style.display = 'flex';
+        });
+
+        // Modal de fecha/hora para reprogramar
+        const dateTimeModal = document.getElementById('dateTimeModal');
+        const dateTimeForm = document.getElementById('dateTimeForm');
+        const dateTimeCancel = document.getElementById('dateTimeCancel');
+        let pendingDropZone = null;
+        let pendingCard = null;
+
+        dateTimeCancel.addEventListener('click', function() {
+            dateTimeModal.style.display = 'none';
+            pendingDropZone = null;
+            pendingCard = null;
+            location.reload(); // Recargar para restaurar posición original
+        });
+
+        dateTimeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newDate = document.getElementById('reprogDate').value;
+            const newTime = document.getElementById('reprogTime').value;
+            const noticiaId = document.getElementById('reprogId').value;
+
             const formData = new FormData();
-            formData.append('id', draggedId);
+            formData.append('id', noticiaId);
             formData.append('fecha', newDate);
+            formData.append('hora', newTime);
 
             fetch('../controllers/reprogramar_noticia.php', {
                 method: 'POST',
@@ -624,6 +654,15 @@ if ($vista === 'mes') {
                 if (data.error) {
                     alert('Error: ' + data.error);
                     location.reload();
+                } else {
+                    dateTimeModal.style.display = 'none';
+                    pendingDropZone = null;
+                    pendingCard = null;
+                    // Actualizar UI sin recargar
+                    const timeSpan = pendingCard?.querySelector('.card-time');
+                    if (timeSpan) {
+                        timeSpan.innerHTML = '<i class="bi bi-clock"></i> ' + newTime.substring(0, 5);
+                    }
                 }
             })
             .catch(() => {
@@ -634,6 +673,31 @@ if ($vista === 'mes') {
     }
 })();
 </script>
+
+<!-- Modal para reprogramar fecha y hora -->
+<div id="dateTimeModal" class="crop-modal" style="display: none;">
+    <div class="card" style="max-width: 400px;">
+        <div class="crop-modal-content">
+            <h3><i class="bi bi-calendar-plus"></i> Reprogramar noticia</h3>
+            <p>Selecciona la nueva fecha y hora de publicación:</p>
+            <form id="dateTimeForm">
+                <input type="hidden" id="reprogId">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Fecha</label>
+                    <input type="date" id="reprogDate" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--card-bg); color: var(--text);">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Hora</label>
+                    <input type="time" id="reprogTime" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--card-bg); color: var(--text);">
+                </div>
+                <div class="crop-actions">
+                    <button type="button" class="btn btn-secondary" id="dateTimeCancel">Cancelar</button>
+                    <button type="submit" class="btn btn-accent">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Modal de Confirmación para Eliminar -->
 <div id="modalOverlay" class="crop-modal" style="display: none;">
