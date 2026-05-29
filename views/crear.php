@@ -269,8 +269,9 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
   color: var(--muted); font-size: 0.7rem;
 }
 .preview-img-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.preview-img-box.banner { height: 50px; }
-.preview-img-box.thumb  { height: 75px; }
+/* Mismo ratio que el crop → sin recorte adicional en la vista previa */
+.preview-img-box.banner { aspect-ratio: 21/6; height: auto; }
+.preview-img-box.thumb  { aspect-ratio: 16/9; height: auto; }
 .preview-stub { height: 7px; background: var(--border); border-radius: 4px; }
 .preview-stub.short { width: 55%; }
 .preview-title-stub { height: 9px; background: var(--border); border-radius: 4px; }

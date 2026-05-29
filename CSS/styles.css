@@ -836,6 +836,9 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+/* Tarjetas que respetan el ratio exacto del crop — sin recorte adicional */
+.news-card.card-banner { height: auto; aspect-ratio: 21/6; }
+.news-card.card-thumb  { height: auto; aspect-ratio: 16/9; }
 .news-card:hover {
   transform: scale(1.03);
   box-shadow: 0 14px 35px rgba(0, 0, 0, 0.3);
