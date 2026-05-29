@@ -2068,6 +2068,13 @@ body.sidebar-open {
     align-items: center;
     justify-content: center;
   }
+  /* Expandido: flecha fuera del flujo → no crea columna vacía */
+  .sidebar:not(.collapsed) .sidebar-collapse-btn {
+    position: absolute;
+    right: 10px;
+    top: 12px;
+    z-index: 1;
+  }
   .sidebar {
     transition: width 0.42s ease-in-out, transform 0.42s ease-in-out, background-color 0.5s ease-in-out, border-color 0.5s ease-in-out, color 0.5s ease-in-out;
   }
@@ -2089,6 +2096,7 @@ body.sidebar-open {
     align-items: center;
   }
   .sidebar.collapsed .sidebar-collapse-btn {
+    position: static;
     margin-left: 0;
   }
   .sidebar.collapsed .sidebar-menu-link {
