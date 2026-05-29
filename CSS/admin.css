@@ -796,7 +796,8 @@ hr {
 }
 .sidebar-collapse-btn i {
   display: block;
-  transition: transform 0.3s ease;
+  transition: transform 0.42s ease-in-out;
+  font-size: 20px;
 }
 .sidebar.collapsed .sidebar-collapse-btn i {
   transform: rotate(180deg);
@@ -812,8 +813,10 @@ hr {
 }
 .sidebar-footer {
   display: flex;
-  gap: 10px;
-  padding: 12px;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
   border-top: 1px solid var(--border);
 }
 .btn-icon {
@@ -2068,13 +2071,6 @@ body.sidebar-open {
     align-items: center;
     justify-content: center;
   }
-  /* Expandido: flecha fuera del flujo → no crea columna vacía */
-  .sidebar:not(.collapsed) .sidebar-collapse-btn {
-    position: absolute;
-    right: 10px;
-    top: 12px;
-    z-index: 1;
-  }
   .sidebar {
     transition: width 0.42s ease-in-out, transform 0.42s ease-in-out, background-color 0.5s ease-in-out, border-color 0.5s ease-in-out, color 0.5s ease-in-out;
   }
@@ -2088,31 +2084,25 @@ body.sidebar-open {
   .sidebar.collapsed .logotipo a { flex: none; }
   .sidebar.collapsed #user { display: none; }
   .sidebar.collapsed .sb-label { display: none; }
-  /* Logotipo en columna → flecha centrada bajo el icono */
+  /* Logotipo colapsado: solo el icono, centrado */
   .sidebar.collapsed .logotipo {
-    flex-direction: column;
     padding: 8px 4px;
-    gap: 4px;
-    align-items: center;
-  }
-  .sidebar.collapsed .sidebar-collapse-btn {
-    position: static;
-    margin-left: 0;
+    justify-content: center;
   }
   .sidebar.collapsed .sidebar-menu-link {
     justify-content: center;
     padding: 8px 10px;
     gap: 0;
   }
-  /* Iconos mismo tamaño que en estado expandido */
+  /* Iconos mismo tamaño en ambos estados */
   .sidebar.collapsed .sidebar-menu-link i,
-  .sidebar.collapsed .sidebar-footer a i {
+  .sidebar.collapsed .sidebar-footer a i,
+  .sidebar.collapsed .sidebar-collapse-btn i {
     font-size: 20px;
   }
-  .sidebar.collapsed .sidebar-footer {
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
+  /* Chevron gira para indicar dirección (abajo=expandir, arriba=colapsar) */
+  .sidebar.collapsed .sidebar-collapse-btn i {
+    transform: rotate(180deg);
   }
   /* Ajustar margen del contenido principal */
   body.sidebar-collapsed .site-main,

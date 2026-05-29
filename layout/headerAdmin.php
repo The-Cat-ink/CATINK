@@ -92,9 +92,6 @@ if (!$fila) {
             <img class="logo-full" src="./../img/logo.png" alt="Logo">
             <img class="logo-icon" src="./../img/catink-icon.png" alt="Catink">
         </a>
-        <button id="sidebarCollapseBtn" class="btn-icon sidebar-collapse-btn" title="Colapsar menú">
-            <i class="bi bi-chevron-left"></i>
-        </button>
     </div>
     <div id="user">
         <h4><?= htmlspecialchars($fila['usuario']) ?></h4>
@@ -170,6 +167,9 @@ if (!$fila) {
       <a href="./../controllers/logoutcontroller.php" class="sidebar-menu-link" data-tooltip="Salir">
           <i class="bi bi-box-arrow-right"></i> <span class="sb-label">Salir</span>
       </a>
+      <button id="sidebarCollapseBtn" class="btn-icon sidebar-collapse-btn" title="Colapsar menú">
+          <i class="bi bi-chevron-up"></i>
+      </button>
     </div>
 </div>
 <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
