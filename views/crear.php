@@ -876,9 +876,12 @@ function adjustCrop(num) {
   if (!zoneSources[num]) return;
   activeCrop = num;
   const cropImg = document.getElementById('cropImg');
+  if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+  const cropArea = document.querySelector('.crop-area');
+  if (!cropArea.contains(cropImg)) cropArea.appendChild(cropImg);
+  cropImg.src = '';
   document.getElementById('cropModalTitle').textContent = CROP_TITLES[num];
   document.getElementById('cropModal').classList.add('open');
-  if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
   cropImg.onload = () => {
     cropperInstance = new Cropper(cropImg, {
       aspectRatio: CROP_RATIOS[num],
@@ -889,18 +892,18 @@ function adjustCrop(num) {
     });
   };
   cropImg.src = zoneSources[num];
-  if (cropImg.complete && cropImg.naturalWidth) cropImg.dispatchEvent(new Event('load'));
 }
 function removeCrop(num) {
-  document.getElementById('crop' + num).value = '';
-  delete zoneSources[num];
-  const zone = document.getElementById('zone' + num);
-  const img = zone.querySelector('.preview-img');
-  if (img) img.remove();
-  zone.classList.remove('has-image');
-  const c2 = document.getElementById('crop2').value;
-  const c3 = document.getElementById('crop3').value;
-  document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
+  const clearZone = n => {
+    document.getElementById('crop' + n).value = '';
+    delete zoneSources[n];
+    const z = document.getElementById('zone' + n);
+    z.querySelectorAll('.preview-img').forEach(el => el.remove());
+    z.classList.remove('has-image');
+  };
+  clearZone(num);
+  clearZone(num === 2 ? 3 : 2);
+  document.getElementById('previewSection').style.display = 'none';
 }
 function onFileSelected(e) {
   const file = e.target.files[0];
@@ -909,10 +912,12 @@ function onFileSelected(e) {
   reader.onload = ev => {
     zoneSources[activeCrop] = ev.target.result;
     const cropImg = document.getElementById('cropImg');
-    cropImg.src = ev.target.result;
+    if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+    const cropArea = document.querySelector('.crop-area');
+    if (!cropArea.contains(cropImg)) cropArea.appendChild(cropImg);
+    cropImg.src = '';
     document.getElementById('cropModalTitle').textContent = CROP_TITLES[activeCrop];
     document.getElementById('cropModal').classList.add('open');
-    if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
     cropImg.onload = () => {
       cropperInstance = new Cropper(cropImg, {
         aspectRatio: CROP_RATIOS[activeCrop],
@@ -922,6 +927,7 @@ function onFileSelected(e) {
         responsive: true, guides: true, background: false
       });
     };
+    cropImg.src = ev.target.result;
   };
   reader.readAsDataURL(file);
   e.target.value = '';
@@ -929,6 +935,10 @@ function onFileSelected(e) {
 function closeCrop() {
   document.getElementById('cropModal').classList.remove('open');
   if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+  const cropImg = document.getElementById('cropImg');
+  const cropArea = document.querySelector('.crop-area');
+  if (!cropArea.contains(cropImg)) cropArea.appendChild(cropImg);
+  cropImg.src = '';
 }
 function setZonePreview(zoneId, data64) {
   const zone = document.getElementById('zone' + zoneId);
