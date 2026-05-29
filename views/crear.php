@@ -346,6 +346,23 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 }
 .cn-publish-btn:hover { background: #d42a55; transform: translateY(-2px); }
 .cn-publish-btn:active { transform: translateY(0); }
+
+/* ── TOAST VALIDACIÓN ── */
+.cn-toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  background: #1a1a2e; color: #fff; border: 1.5px solid var(--accent);
+  border-radius: 10px; padding: 13px 20px; z-index: 9999;
+  font-size: 13px; min-width: 270px; max-width: 400px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.5); display: none;
+}
+.cn-toast.show { display: block; animation: toastIn .22s ease; }
+@keyframes toastIn {
+  from { opacity:0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity:1; transform: translateX(-50%) translateY(0); }
+}
+.cn-toast-title { font-weight: 700; color: var(--accent); margin-bottom: 7px; }
+.cn-toast ul { margin: 0; padding-left: 16px; }
+.cn-toast li { margin: 3px 0; }
 </style>
 
 <div class="admin-container">
@@ -446,8 +463,8 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               <span>Optimizado para cabeceras</span>
               <span class="zone-ratio">21 : 6</span>
               <div class="zone-actions">
-                <button class="zone-btn zone-btn-adjust" onclick="event.stopPropagation();adjustCrop(2)"><i class="bi bi-crop"></i> Ajustar</button>
-                <button class="zone-btn zone-btn-remove" onclick="event.stopPropagation();removeCrop(2)"><i class="bi bi-x-lg"></i> Quitar</button>
+                <button type="button" class="zone-btn zone-btn-adjust" onclick="event.stopPropagation();adjustCrop(2)"><i class="bi bi-crop"></i> Ajustar</button>
+                <button type="button" class="zone-btn zone-btn-remove" onclick="event.stopPropagation();removeCrop(2)"><i class="bi bi-x-lg"></i> Quitar</button>
               </div>
             </div>
           </div>
@@ -461,8 +478,8 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               <span>Vista previa en listados y carruseles</span>
               <span class="zone-ratio">16 : 9</span>
               <div class="zone-actions">
-                <button class="zone-btn zone-btn-adjust" onclick="event.stopPropagation();adjustCrop(3)"><i class="bi bi-crop"></i> Ajustar</button>
-                <button class="zone-btn zone-btn-remove" onclick="event.stopPropagation();removeCrop(3)"><i class="bi bi-x-lg"></i> Quitar</button>
+                <button type="button" class="zone-btn zone-btn-adjust" onclick="event.stopPropagation();adjustCrop(3)"><i class="bi bi-crop"></i> Ajustar</button>
+                <button type="button" class="zone-btn zone-btn-remove" onclick="event.stopPropagation();removeCrop(3)"><i class="bi bi-x-lg"></i> Quitar</button>
               </div>
             </div>
           </div>
@@ -600,6 +617,12 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
     </div><!-- /cn-wrap -->
   </form>
 </div><!-- /admin-container -->
+
+<!-- ── TOAST VALIDACIÓN ── -->
+<div class="cn-toast" id="cnToast">
+  <div class="cn-toast-title"><i class="bi bi-exclamation-circle"></i> Faltan campos requeridos:</div>
+  <ul id="cnToastList"></ul>
+</div>
 
 <!-- ── CROP MODAL ── -->
 <div class="crop-modal-overlay" id="cropModal">
@@ -776,6 +799,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let _submitting = false;
 
+  function validateForm() {
+    const errors = [];
+    if (!document.getElementById('titulo').value.trim())
+      errors.push('Título de la noticia');
+    if (!document.getElementById('descripcion').value.trim())
+      errors.push('Descripción corta');
+    if (!document.getElementById('catChips').querySelectorAll('.cn-chip').length)
+      errors.push('Al menos una categoría');
+    if (!document.getElementById('crop2').value && !document.getElementById('crop3').value)
+      errors.push('Imagen (banner o miniatura)');
+    const texto = window.quill
+      ? quill.getText().replace(/\n/g, '').trim()
+      : document.getElementById('contenido').value.replace(/<[^>]+>/g, '').trim();
+    if (!texto) errors.push('Contenido del artículo');
+    return errors;
+  }
+
+  function showToast(errors) {
+    const toast = document.getElementById('cnToast');
+    const list  = document.getElementById('cnToastList');
+    list.innerHTML = errors.map(e => `<li>${e}</li>`).join('');
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 5000);
+  }
+
   form?.addEventListener('submit', e => {
     if (_submitting) { e.preventDefault(); return; }
     _submitting = true;
@@ -800,6 +849,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementsByName('guardarNoticia')[0]?.addEventListener('click', e => {
     e.preventDefault();
     if (_submitting) return;
+    const errors = validateForm();
+    if (errors.length) { showToast(errors); return; }
     if (!schedToggle?.checked) { form.requestSubmit(); return; }
     const selected = schedDate.value + ' ' + schedTime.value;
     if (selected < nowLocal().replace('T',' ')) { modalTime.style.display = 'flex'; }
