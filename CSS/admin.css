@@ -66,6 +66,8 @@ hr {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  font-size: clamp(1rem, 0.95rem + 0.35vw, 1.25rem);
+  line-height: 1.4;
 }
 @media (max-width: 768px) {
   .sidebar {
@@ -256,11 +258,34 @@ hr {
    Estilos para Calendario (Contenidos)
    ============================ */
 .calendar-days {
-  background: var(--bg);
+  background: var(--surface-muted);
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  padding: 16px;
+  gap: 6px;
+  padding: 12px;
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+@media (max-width: 1200px) {
+  .calendar-days {
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
+    overflow-x: auto;
+  }
+  .estado-badge span {
+    display: none;
+  }
+  .estado-badge i {
+    font-size: 0.65rem;
+  }
+}
+@media (max-width: 992px) {
+  .calendar-days {
+    grid-template-columns: repeat(4, minmax(160px, 1fr));
+  }
+}
+@media (max-width: 768px) {
+  .calendar-days {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
 }
 .day-column {
   min-width: 0;
@@ -271,11 +296,19 @@ hr {
   flex-direction: column;
   padding: 0;
   overflow: hidden;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.2s;
 }
 .day-column.day-today {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(239,51,99,0.15);
+}
+.day-column.day-past {
+  background: var(--surface-muted);
+  border-color: var(--surface-muted-strong);
+}
+.day-column.day-past .day-header {
+  color: var(--muted);
+  background: var(--surface-muted);
 }
 .day-header {
   position: sticky;
@@ -290,6 +323,7 @@ hr {
   gap: 8px;
   border-bottom: 1px solid var(--border);
   color: var(--text);
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
 }
 .day-today .day-header {
   background: rgba(239,51,99,0.06);
@@ -321,6 +355,7 @@ hr {
   flex-direction: column;
   gap: 12px;
   flex: 1;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 /* ============================
    Noticias Card (Estado visual)
@@ -352,13 +387,14 @@ hr {
 .estado-programado .card-status-bar { background: #6366f1; }
 
 .estado-badge {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  white-space: nowrap;
 }
 .estado-badge.estado-publicado { background: rgba(16,185,129,0.1); color: #10b981; }
 .estado-badge.estado-por_publicar { background: rgba(245,158,11,0.1); color: #f59e0b; }
@@ -370,8 +406,9 @@ hr {
   background: none;
 }
 .card-time {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--muted);
+  white-space: nowrap;
 }
 .card-metrics {
   display: flex;
@@ -384,8 +421,9 @@ hr {
 
 .noticias-card img {
   width: 100%;
-  height: 130px;
+  aspect-ratio: 16 / 10;
   object-fit: cover;
+  max-height: 120px;
 }
 .noticias-card h6 {
   font-size: 0.88rem;
@@ -402,15 +440,21 @@ hr {
 }
 .noticias-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
   margin-top: auto;
-  padding: 8px 12px;
+  padding: 6px 8px;
   border-top: 1px solid var(--border);
 }
 .noticias-actions .btn {
-  padding: 4px 8px;
-  font-size: 0.85rem;
+  padding: 4px 6px;
+  font-size: 0.75rem;
+  min-width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 /* ============================
    Navegación de Semana
@@ -513,7 +557,7 @@ hr {
   padding: 6px;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.2s;
 }
 .month-cell-empty {
   background: transparent;
@@ -522,6 +566,16 @@ hr {
 .month-cell-today {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(239,51,99,0.12);
+}
+.month-cell-past {
+  background: var(--surface-muted);
+  border-color: var(--surface-muted-strong);
+}
+.month-cell-past .month-cell-num {
+  color: var(--muted);
+}
+.month-cell-past .month-news-item {
+  opacity: 0.6;
 }
 .month-cell-num {
   font-size: 0.8rem;
@@ -554,7 +608,7 @@ hr {
   border-radius: 4px;
   font-size: 0.7rem;
   cursor: grab;
-  transition: background 0.15s;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 .month-news-item:hover {
   background: var(--border);
@@ -585,6 +639,18 @@ hr {
 .noticias-card[draggable="true"],
 .month-news-item[draggable="true"] {
   cursor: grab;
+}
+.noticias-card:not([draggable="true"]) {
+  cursor: default;
+  opacity: 0.95;
+}
+.noticias-card:not([draggable="true"]):after {
+  content: '🔒';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 0.75rem;
+  opacity: 0.5;
 }
 .noticias-card.dragging,
 .month-news-item.dragging {
@@ -629,10 +695,7 @@ hr {
   vertical-align: middle;
 }
 .contenidos-table tbody tr:hover {
-  background: rgba(0,0,0,0.04);
-}
-[data-bs-theme="dark"] .contenidos-table tbody tr:hover {
-  background: rgba(255,255,255,0.05);
+  background: var(--surface-muted);
 }
 .table-thumb {
   width: 60px;
@@ -828,7 +891,7 @@ hr {
   align-items: flex-start;
 }
 #user h4 {
-  font-size: 0.95rem;
+  font-size: 1em;
   font-weight: 600;
   color: var(--text);
 }
@@ -935,7 +998,7 @@ input:focus, textarea:focus {
 }
 .site-main span.text-muted,
 .sidebar span {
-    font-size: 10px;
+    font-size: 0.9em;
     color: var(--muted);
 }
 .btn-success {
