@@ -685,11 +685,10 @@ document.addEventListener("DOMContentLoaded", () => {
     pinned ? expand() : collapse();
   }
 
-  // Hover: expande SOLO al apuntar la flecha
-  collapseBtn.addEventListener('mouseenter', () => {
+  // Hover: expande al entrar al sidebar, colapsa al salir
+  sidebarEl.addEventListener('mouseenter', () => {
     if (window.innerWidth >= 769) expand();
   });
-  // Colapsa al salir del sidebar completo (rango moderado)
   sidebarEl.addEventListener('mouseleave', () => {
     if (window.innerWidth >= 769 && !pinned) collapse();
   });
