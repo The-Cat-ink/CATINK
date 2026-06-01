@@ -44,7 +44,7 @@ $recomendadas = [];
 if(!empty($cats)){
     $placeholders = implode(',', array_fill(0, count($cats), '?'));
     $sqlRec = "
-        SELECT DISTINCT n.id, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion
+        SELECT DISTINCT n.id, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion
         FROM noticias n
         JOIN noticia_categoria nc ON n.id = nc.noticia_id
         JOIN categorias c ON nc.categoria_id = c.id_c
@@ -65,7 +65,7 @@ if(!empty($cats)){
 // NOTICIAS RECIENTES
 // ==============================
 $stmtRecientes = $con->prepare("
-    SELECT id, titulo, descripcion, crop3, fecha_publicacion
+    SELECT id, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion
     FROM noticias
     WHERE fecha_publicacion <= NOW()
     AND id != ?
@@ -79,7 +79,7 @@ $recientes = $stmtRecientes->get_result();
 // Últimas y Populares
 // ==============================
 $stmtUltimas = $con->prepare("
-    SELECT id, titulo, crop3
+    SELECT id, titulo, crop1, crop2, crop3
     FROM noticias
     WHERE fecha_publicacion <= NOW()
     ORDER BY fecha_publicacion DESC
@@ -88,7 +88,7 @@ $stmtUltimas = $con->prepare("
 $stmtUltimas->execute();
 $ultimas = $stmtUltimas->get_result();
 $stmtPopulares = $con->prepare("
-    SELECT id, titulo, crop3
+    SELECT id, titulo, crop1, crop2, crop3
     FROM noticias
     ORDER BY likes DESC
     LIMIT 3
@@ -359,7 +359,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                   <?php while ($row = $ultimas->fetch_assoc()): ?>
                     <div class="cardSpecial row row-no-gap">
                         <div class="col-md-4">
-                            <img src="<?= basePath() ?>/<?=$row['crop3']?>" class="imgCard card-img-left-rounded" loading="lazy">
+                            <img src="<?= basePath() ?>/<?= htmlspecialchars($row['crop3'] ?? $row['crop2'] ?? $row['crop1'] ?? 'img/placeholder.svg') ?>" class="imgCard card-img-left-rounded" loading="lazy">
                         </div>
                         <div class="col-md-8">
                           <div class="card-body">
@@ -376,7 +376,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                   <?php while ($row = $populares->fetch_assoc()): ?>
                     <div class="cardSpecial row row-no-gap">
                         <div class="col-md-4">
-                            <img src="<?= basePath() ?>/<?=$row['crop3']?>" class="imgCard card-img-left-rounded" loading="lazy">
+                            <img src="<?= basePath() ?>/<?= htmlspecialchars($row['crop3'] ?? $row['crop2'] ?? $row['crop1'] ?? 'img/placeholder.svg') ?>" class="imgCard card-img-left-rounded" loading="lazy">
                         </div>
                         <div class="col-md-8">
                           <div class="card-body">
@@ -411,7 +411,8 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <br>
           <div class="row">
             <?php while($r = $recomendadas->fetch_assoc()): 
-                $img = !empty($r['crop3']) ? basePath()."/".$r['crop3'] : basePath()."/img/placeholder.jpg";
+                $imgSrc = $r['crop3'] ?? $r['crop2'] ?? $r['crop1'] ?? null;
+                $img = $imgSrc ? basePath() . "/" . htmlspecialchars($imgSrc) : basePath() . "/img/placeholder.jpg";
             ?>
               <div class="col">
                   <div class="card h-100" data-url="./<?= newsUrl($r['id']) ?>">
@@ -441,7 +442,8 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <br>
           <div class="row">
             <?php while($r = $recientes->fetch_assoc()): 
-                $img = !empty($r['crop3']) ? basePath()."/".$r['crop3'] : basePath()."/img/placeholder.jpg";
+                $imgSrc = $r['crop3'] ?? $r['crop2'] ?? $r['crop1'] ?? null;
+                $img = $imgSrc ? basePath() . "/" . htmlspecialchars($imgSrc) : basePath() . "/img/placeholder.jpg";
             ?>
               <div class="col">
                   <div class="card h-100"  data-url="./<?= newsUrl($r['id']) ?>">

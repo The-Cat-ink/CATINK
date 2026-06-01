@@ -69,7 +69,7 @@ $vid = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 // ==============================
 $recomendadas = [];
 $sqlRec = "
-    SELECT id, titulo, descripcion, crop3, fecha_publicacion, nombre
+    SELECT id, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion, nombre
     FROM noticias, usuarios
     WHERE noticias.autor = usuarios.id_u and fecha_publicacion <= NOW()
     ORDER BY likes DESC, vistas DESC, fecha_publicacion DESC
@@ -82,7 +82,7 @@ $recomendadas = $stmtRec->get_result();
 // NOTICIAS RECIENTES
 // ==============================
 $stmtRecientes = $con->prepare("
-    SELECT id, titulo, descripcion, crop3, fecha_publicacion, nombre
+    SELECT id, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion, nombre
     FROM noticias, usuarios
     WHERE noticias.autor = usuarios.id_u and fecha_publicacion <= NOW()
     ORDER BY fecha_publicacion DESC
@@ -302,7 +302,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
                     <div class="card mb-3" data-url="<?= newsUrl($row['id']) ?>">
                         <div class="row row-no-gap">
                             <div class="col-md-4">
-                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="card-img-left" loading="lazy" decoding="async">
+                                <img src="<?= img([$row['crop3'], $row['crop2'], $row['crop1']]) ?>" alt="" class="card-img-left" loading="lazy" decoding="async">
                             </div>
                             <div class="col-md-8">
                                 <div class="card-body">
@@ -351,7 +351,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
                     <div class="card mb-3" data-url="<?= newsUrl($row['id']) ?>">
                         <div class="row row-no-gap">
                             <div class="col-md-4">
-                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="card-img-left" loading="lazy" decoding="async">
+                                <img src="<?= img([$row['crop3'], $row['crop2'], $row['crop1']]) ?>" alt="" class="card-img-left" loading="lazy" decoding="async">
                             </div>
                             <div class="col-md-8">
                                 <div class="card-body">
@@ -389,7 +389,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
                     <?php foreach($noticiasMasRecientes3 as $row): ?>
                         <div class="news-slide">
                             <div class="news-card card-thumb" data-url="<?= newsUrl($row['id']) ?>">
-                                <img src="<?= img([$row['crop3']]) ?>" alt="" loading="lazy" decoding="async">
+                                <img src="<?= img([$row['crop3'], $row['crop2'], $row['crop1']]) ?>" alt="" loading="lazy" decoding="async">
                                 <div class="news-overlay">
                                     <div class="news-tags">
                                         <?php foreach(array_filter(array_map('trim', explode(',', $row['categorias'] ?? ''))) as $cat): ?>
@@ -453,7 +453,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
                                 <?php foreach($ultimasNoticiasSidebar as $row): ?>
                                         <div class="cardSpecial row row-no-gap">
                                             <div class="col-md-4">
-                                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="imgCard card-img-left-rounded" loading="lazy" decoding="async">
+                                                <img src="<?= img([$row['crop3'], $row['crop2'], $row['crop1']]) ?>" alt="" class="imgCard card-img-left-rounded" loading="lazy" decoding="async">
                                             </div>
                                             <div class="col-md-8">
                                                 <div class="card-body">
@@ -470,7 +470,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
                                 <?php foreach($popularesNoticiasSidebar as $row): ?>
                                         <div class="cardSpecial row row-no-gap">
                                             <div class="col-md-4">
-                                                <img src="<?= img([$row['crop3']]) ?>" alt="" class="imgCard card-img-left-rounded" loading="lazy" decoding="async">
+                                                <img src="<?= img([$row['crop3'], $row['crop2'], $row['crop1']]) ?>" alt="" class="imgCard card-img-left-rounded" loading="lazy" decoding="async">
                                             </div>
                                             <div class="col-md-8">
                                                 <div class="card-body">
@@ -505,11 +505,11 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
               <br>
               <div class="row">
                 <?php while($r = $recomendadas->fetch_assoc()): 
-                    $img = !empty($r['crop3']) ? $r['crop3'] : "img/placeholder.svg";
+                    $img = img([$r['crop3'], $r['crop2'], $r['crop1']]);
                 ?>
                   <div class="col">
                       <div class="card h-100" data-url="<?= newsUrl($r['id']) ?>">
-                          <img src="<?= htmlspecialchars($img) ?>" class="card-img-top">
+                          <img src="<?= $img ?>" class="card-img-top">
                           <div class="card-body">
                               <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-1">
                                   <?= htmlspecialchars($r['titulo']) ?>
