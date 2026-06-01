@@ -87,7 +87,8 @@ $menuJson = [
   <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
   <script src="https://unpkg.com/quill-image-resize-module/image-resize.min.js"></script>
   <script async src="https://www.instagram.com/embed.js"></script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8588111729852920" crossorigin="anonymous"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8588111729852920"
+     crossorigin="anonymous"></script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -118,8 +119,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </ul>
     </div>
     <div class="nav-actions d-flex gap-2 align-items-center">
-      <!-- BOTÓN MODO OSCURO -->
-      <button id="themeToggle" class="btn btn-outline-secondary">🌙</button>
+      <!-- INTERRUPTOR MODO OSCURO (CON ICONOS) -->
+      <label class="theme-switch-icons" title="Cambiar tema">
+        <input type="checkbox" id="themeToggle" class="theme-switch-input">
+        <span class="theme-switch-icons-track">
+          <span class="theme-switch-icons-icon theme-switch-icons-sun">
+            <i class="bi bi-sun"></i>
+          </span>
+          <span class="theme-switch-icons-icon theme-switch-icons-moon">
+            <i class="bi bi-moon-stars"></i>
+          </span>
+          <span class="theme-switch-icons-thumb"></span>
+        </span>
+      </label>
       <a href="<?= basePath() . (isset($_SESSION['usuario']) ? '/perfil' : '/login') ?>" class="btn btn-outline-secondary<?= isset($_SESSION['usuario']) ? ' btn-user' : '' ?>">
         <?php
           if(isset($_SESSION['usuario'])){

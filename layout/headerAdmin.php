@@ -89,8 +89,8 @@ if (!$fila) {
 <div class="sidebar">
     <div class="logotipo">
         <a href="./../index.php">
-            <img class="logo-full" src="./../img/logo.png" alt="Logo">
             <img class="logo-icon" src="./../img/catink-icon.png" alt="Catink">
+            <img class="logo-full" src="./../img/logo.png" alt="Logo">
         </a>
     </div>
     <ul class="sidebar-menu">
@@ -160,9 +160,18 @@ if (!$fila) {
         <?php endif; ?>
     </ul>
     <div class="sidebar-footer">
-      <button id="themeToggle" class="sidebar-menu-link theme-toggle-btn" title="Cambiar tema">
-          <i class="bi bi-moon theme-icon"></i> <span class="sb-label">Cambiar tema</span>
-      </button>
+      <label class="theme-switch-icons sidebar-theme-switch" title="Cambiar tema">
+        <input type="checkbox" id="themeToggle" class="theme-switch-input">
+        <span class="theme-switch-icons-track">
+          <span class="theme-switch-icons-icon theme-switch-icons-sun">
+            <i class="bi bi-sun"></i>
+          </span>
+          <span class="theme-switch-icons-icon theme-switch-icons-moon">
+            <i class="bi bi-moon-stars"></i>
+          </span>
+          <span class="theme-switch-icons-thumb"></span>
+        </span>
+      </label>
       <a href="./../controllers/logoutcontroller.php" class="sidebar-menu-link" data-tooltip="Salir">
           <i class="bi bi-box-arrow-right"></i> <span class="sb-label">Salir</span>
       </a>

@@ -18,27 +18,21 @@
       target.classList.toggle('show');
     });
   });
-  // Toggle de tema: botones con id 'themeToggle'
-  const themeBtns = document.querySelectorAll('#themeToggle');
+  // Toggle de tema: interruptor con id 'themeToggle'
+  const themeToggle = document.getElementById('themeToggle');
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-bs-theme', theme);
-    themeBtns.forEach(b => {
-      const icon = b.querySelector('.theme-icon');
-      if (icon) {
-        icon.className = theme === 'dark' ? 'bi bi-sun theme-icon' : 'bi bi-moon theme-icon';
-      } else {
-        b.textContent = theme === 'dark' ? '☀️' : '🌙';
-      }
-    });
+    if (themeToggle) {
+      themeToggle.checked = theme === 'dark';
+    }
   }
-  themeBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
-      const next = current === 'dark' ? 'light' : 'dark';
+  if (themeToggle) {
+    themeToggle.addEventListener('change', () => {
+      const next = themeToggle.checked ? 'dark' : 'light';
       applyTheme(next);
       localStorage.setItem('theme', next);
     });
-  });
+  }
   const saved = localStorage.getItem('theme') || 'light';
   applyTheme(saved);
   // Toggle Sidebar (Mobile)

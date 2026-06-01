@@ -6,8 +6,12 @@
 */
 /* Reset básico */
 
+*:not(.sidebar):not(.sidebar *) {
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out !important;
+}
+
 body, header, nav, footer, .card, .panel-admin {
-    transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out, border-color 0.5s ease-in-out;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
 body.dark-mode {
@@ -48,7 +52,7 @@ html,body { height: 100%; font-family: system-ui, -apple-system, 'Segoe UI', Rob
   --muted: rgba(255,255,255,0.7);
   --card-bg: #07101a;
   --border: rgba(255,255,255,0.06);
-  --accent: #FF6B98;
+  --accent: #EF3363;
   --indicator-stroke: rgba(255,255,255,0.9);
   --footer-bottom-bg: rgba(255,255,255,0.03);
   --surface-muted: rgba(255,255,255,0.06);
@@ -452,7 +456,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   - .site-footer contiene columnas de enlace y redes
   - .footer-bottom es la franja inferior con copyright
 */
-.site-footer, .footer-bottom, .footer-title, .footer-text, .footer-links a, .social-links a { transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out, border-color 0.5s ease-in-out; }
+.site-footer, .footer-bottom, .footer-title, .footer-text, .footer-links a, .social-links a { transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out; }
 .site-footer { background: var(--card-bg); border-top: 1px solid var(--border); padding-top: 16px; }
 .footer-title { font-weight:700; margin-bottom:15px; }
 .footer-text { font-size:0.95rem; color:var(--muted); }
@@ -2196,8 +2200,99 @@ hr{
 @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(40px); } }
 /* Transición global para el modo oscuro */
 body, .nav-link, .btn, .card, .site-main {
-    transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out, border-color 0.5s ease-in-out !important;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out !important;
 }
 .navbar {
-    transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out, border-color 0.5s ease-in-out, transform 0.3s ease !important;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.3s ease !important;
+}
+
+/* Interruptor de tema (Con Iconos) */
+.theme-switch-icons {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.theme-switch-input {
+  display: none;
+}
+
+.theme-switch-icons-track {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 60px;
+  height: 32px;
+  background: #f0f0f0;
+  border-radius: 50px;
+  position: relative;
+  transition: background-color 0.3s ease;
+  padding: 0 6px;
+}
+
+.theme-switch-icons-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 16px;
+  color: var(--text);
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.theme-switch-icons-sun {
+  opacity: 1;
+}
+
+.theme-switch-icons-moon {
+  opacity: 0.4;
+}
+
+.theme-switch-icons-thumb {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  background: white;
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  transition: left 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 0;
+}
+
+.theme-switch-input:checked + .theme-switch-icons-track {
+  background-color: #2a2a3e;
+}
+
+.theme-switch-input:checked + .theme-switch-icons-track .theme-switch-icons-sun {
+  opacity: 0.4;
+}
+
+.theme-switch-input:checked + .theme-switch-icons-track .theme-switch-icons-moon {
+  opacity: 1;
+}
+
+.theme-switch-input:checked + .theme-switch-icons-track .theme-switch-icons-thumb {
+  left: 31px;
+}
+
+[data-bs-theme="dark"] .theme-switch-icons-track {
+  background-color: #2a2a3e;
+}
+
+[data-bs-theme="dark"] .theme-switch-icons-sun {
+  opacity: 0.4;
+}
+
+[data-bs-theme="dark"] .theme-switch-icons-moon {
+  opacity: 1;
+}
+
+[data-bs-theme="dark"] .theme-switch-icons-thumb {
+  left: 31px;
 }

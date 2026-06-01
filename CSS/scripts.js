@@ -27,22 +27,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Toggle de tema: botones con id 'themeToggle'
-  const themeBtns = document.querySelectorAll('#themeToggle');
+  // Toggle de tema: interruptor con id 'themeToggle'
+  const themeToggle = document.getElementById('themeToggle');
   function applyTheme(theme) {
     // Aplica el atributo en el elemento <html> para que CSS use las variables
     document.documentElement.setAttribute('data-bs-theme', theme);
-    // Actualiza texto de los botones (solo visual) — no usar emojis en comentarios
-    themeBtns.forEach(b => b.textContent = theme === 'dark' ? '☀️' : '🌙');
+    // Actualiza el estado del checkbox
+    if (themeToggle) {
+      themeToggle.checked = theme === 'dark';
+    }
   }
-  themeBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
-      const next = current === 'dark' ? 'light' : 'dark';
+  if (themeToggle) {
+    themeToggle.addEventListener('change', () => {
+      const next = themeToggle.checked ? 'dark' : 'light';
       applyTheme(next);
       localStorage.setItem('theme', next);
     });
-  });
+  }
   const saved = localStorage.getItem('theme') || 'light';
   applyTheme(saved);
 
