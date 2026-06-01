@@ -113,7 +113,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
         <?php foreach($slider as $i => $row): ?>
             <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="<?= $i ?>" class="<?= $i==0?'active':'' ?>">
                 <div class="indicator-avatar">
-                    <img src="<?= img([$row['crop1']]) ?>" alt="<?= htmlspecialchars($row['titulo']) ?>">
+                    <img src="<?= img([$row['crop3'], $row['crop2'], $row['crop1']]) ?>" alt="<?= htmlspecialchars($row['titulo']) ?>">
                     <svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="16"></circle></svg>
                 </div>
             </button>
