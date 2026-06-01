@@ -474,6 +474,11 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .social-links a { font-size:1.5rem; color:var(--text); opacity:0.9; transition: transform .2s ease, opacity .2s ease; text-decoration:none; }
 .social-links a:hover { opacity:1; transform: translateY(-3px); }
 .footer-bottom { background: var(--footer-bottom-bg); padding: 15px 0; }
+/* Animación de paneo horizontal para el slider en móvil */
+@keyframes panLeftRight {
+  0%   { object-position: 10% center; }
+  100% { object-position: 90% center; }
+}
 /* Carousel specific styles (extracted) */
 .carousel, .carousel-inner, .carousel-item { position:relative; height: 65vh; min-height: 320px; overflow:hidden; }
 .carousel-inner { position: relative; }
@@ -739,7 +744,11 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center top;
+    object-position: 10% center;
+  }
+  /* Paneo suave izquierda→derecha cuando la slide es activa (10s = intervalo del carousel) */
+  .carousel-item.active img {
+    animation: panLeftRight 10s ease-in-out alternate forwards;
   }
   /* Caption adjustments for mobile */
   .carousel-caption {
@@ -850,6 +859,11 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .news-card:hover {
   transform: scale(1.03);
   box-shadow: 0 14px 35px rgba(0, 0, 0, 0.3);
+}
+.news-card picture {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .news-card img {
   width: 100%;
@@ -1091,12 +1105,92 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
    MOBILE OPTIMIZATION
    =============================== */
 @media (max-width: 768px) {
+  /* ── MOBILE: imagen arriba · texto DEBAJO (no superpuesto) ── */
+
+  /* La card pasa a flex-column para que imagen y texto se apilen */
+  .news-card {
+    height: auto !important;
+    aspect-ratio: unset !important;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+  }
+
+  /* Contenedor <picture>: ratio 16:9, esquinas superiores redondeadas */
+  .news-card picture {
+    height: auto;
+    aspect-ratio: 16/9;
+    border-radius: 12px 12px 0 0;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  /* Imagen directa (sin <picture>): mismo tratamiento */
+  .news-card > img {
+    height: auto !important;
+    aspect-ratio: 16/9;
+    border-radius: 12px 12px 0 0;
+  }
+  /* Imagen dentro de <picture> */
+  .news-card picture img {
+    height: auto !important;
+    aspect-ratio: 16/9;
+  }
+
+  /* card-banner usa crop3 posicionado a la derecha → arte/círculos visibles */
+  .news-card.card-banner picture img {
+    object-position: right center;
+  }
+
+  /* Sin gradiente — el texto ya no va superpuesto a la imagen */
+  .news-card::before {
+    display: none !important;
+  }
+
+  /* Panel de texto debajo de la imagen */
+  .news-overlay {
+    position: relative !important;
+    inset: auto !important;
+    flex-grow: 1;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    padding: 12px 14px;
+    color: var(--text);
+    min-height: 0;
+  }
+  .news-overlay .news-content {
+    margin-top: 0;
+  }
   .news-overlay h3 {
+    color: var(--text);
+    font-size: 1rem;
     -webkit-line-clamp: 2;
   }
   .news-overlay p {
+    color: var(--muted);
+    font-size: .85rem;
     -webkit-line-clamp: 2;
   }
+  /* Colores de enlaces en panel claro/oscuro */
+  .news-link-card {
+    color: var(--text);
+  }
+  .news-link-card:hover { color: var(--accent); }
+
+  /* Sin scale en hover (overflow ya no contiene el card) */
+  .news-card:hover {
+    transform: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,.2);
+  }
+
+  /* Tags más pequeños */
+  .news-overlay .news-tag {
+    font-size: .65rem;
+    padding: 3px 7px;
+  }
+
   .card-body p {
     -webkit-line-clamp: 2;
     display: -webkit-box;
