@@ -747,8 +747,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const syncState = () => {
     if (desktopMQ.matches) {
-      // Iniciar expandido en desktop, se colapsa al salir del mouse
-      setCollapsed(false);
+      // Iniciar colapsado, luego expandir para ver la transición
+      setCollapsed(true);
+      setTimeout(() => setCollapsed(false), 50);
     } else {
       clearTimeout(collapseTimer);
       setCollapsed(false);

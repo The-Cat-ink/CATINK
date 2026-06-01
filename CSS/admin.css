@@ -917,7 +917,7 @@ hr {
   height: 38px;
   border-radius: 0 !important;
   object-fit: contain;
-  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 .logo-icon {
   display: none;
@@ -925,7 +925,7 @@ hr {
   height: 30px;
   object-fit: contain;
   border-radius: 4px !important;
-  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 .sidebar-collapse-btn {
   flex-shrink: 0;
