@@ -174,7 +174,8 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                   $mtime = filemtime($fullPath);
                   $img = basePath()."/" . $path . '?v=' . $mtime;
                 } else {
-                  $img = basePath()."/" . $path;
+                  // Si la imagen no existe, usar placeholder
+                  $img = basePath()."/img/placeholder.jpg";
                 }
               } else {
                 $img = basePath()."/img/placeholder.jpg";

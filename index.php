@@ -98,12 +98,12 @@ function img($fields, $placeholder = 'img/placeholder.svg') {
         if (!empty($f)) {
             $path = ltrim(htmlspecialchars($f), '/');
             $fullPath = __DIR__ . '/' . $path;
-            // Agregar cache buster si el archivo existe
+            // Agregar cache buster si el archivo existe, sino usar placeholder
             if (file_exists($fullPath)) {
                 $mtime = filemtime($fullPath);
                 return $base . '/' . $path . '?v=' . $mtime;
             }
-            return $base . '/' . $path;
+            // Si la imagen no existe, continuar al siguiente campo o usar placeholder
         }
     }
     return $base . '/' . $placeholder;
