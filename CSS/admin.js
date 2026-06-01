@@ -747,9 +747,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const syncState = () => {
     if (desktopMQ.matches) {
-      // Iniciar colapsado, luego expandir para ver la transición
+      // Iniciar colapsado por defecto en desktop
       setCollapsed(true);
-      setTimeout(() => setCollapsed(false), 50);
     } else {
       clearTimeout(collapseTimer);
       setCollapsed(false);
