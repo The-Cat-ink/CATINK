@@ -71,6 +71,11 @@ hr {
   overscroll-behavior: contain;
   font-size: clamp(1rem, 0.95rem + 0.35vw, 1.25rem);
   line-height: 1.4;
+  scrollbar-width: none;
+}
+.sidebar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 @keyframes sidebar-glide-in {
   from {
