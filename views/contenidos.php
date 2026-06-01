@@ -243,11 +243,13 @@ if ($vista === 'mes') {
     <?php if ($vista === 'calendario' && !$busquedaGlobal): ?>
     <div class="card shadow-sm">
         <div class="card-body p-0">
+            <?php if ($weekOffset !== 0): ?>
+                <div class="week-nav-top">
+                    <a href="?week=0&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
+                </div>
+            <?php endif; ?>
             <div class="week-nav" style="border-top:none; border-bottom:1px solid var(--border);">
                 <a href="?week=<?= $weekOffset - 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" id="prevWeek" title="Semana anterior (←)"><i class="bi bi-chevron-left"></i></a>
-                <?php if ($weekOffset !== 0): ?>
-                    <a href="?week=0&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
-                <?php endif; ?>
                 <div class="week-nav-center">
                     <span class="week-nav-label">Semana del <?= $startOfWeek->format('d/m') ?> al <?= $endOfWeek->format('d/m/Y') ?></span>
                     <input type="date" class="week-nav-picker" id="weekPicker" value="<?= $startOfWeek->format('Y-m-d') ?>" title="Saltar a fecha">
@@ -329,11 +331,13 @@ if ($vista === 'mes') {
     <?php if ($vista === 'mes' && !$busquedaGlobal): ?>
     <div class="card shadow-sm">
         <div class="card-body p-0">
+            <?php if ($monthOffset !== 0): ?>
+                <div class="week-nav-top">
+                    <a href="?month=0&vista=mes&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
+                </div>
+            <?php endif; ?>
             <div class="week-nav" style="border-top:none; border-bottom:1px solid var(--border);">
                 <a href="?month=<?= $monthOffset - 1 ?>&vista=mes&filtro=<?= $filtro ?>" class="week-nav-btn" title="Mes anterior"><i class="bi bi-chevron-left"></i></a>
-                <?php if ($monthOffset !== 0): ?>
-                    <a href="?month=0&vista=mes&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
-                <?php endif; ?>
                 <div class="week-nav-center">
                     <span class="week-nav-label"><?= $mesNombre ?> <?= $mesAnio ?></span>
                 </div>
@@ -445,11 +449,13 @@ if ($vista === 'mes') {
                 </table>
             </div>
             <?php if (!$busquedaGlobal): ?>
+            <?php if ($weekOffset !== 0): ?>
+            <div class="week-nav-top">
+                <a href="?week=0&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
+            </div>
+            <?php endif; ?>
             <div class="week-nav">
                 <a href="?week=<?= $weekOffset - 1 ?>&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-btn" title="Semana anterior (←)"><i class="bi bi-chevron-left"></i></a>
-                <?php if ($weekOffset !== 0): ?>
-                    <a href="?week=0&vista=<?= $vista ?>&filtro=<?= $filtro ?>" class="week-nav-today">Hoy</a>
-                <?php endif; ?>
                 <div class="week-nav-center">
                     <span class="week-nav-label">Semana del <?= $startOfWeek->format('d/m') ?> al <?= $endOfWeek->format('d/m/Y') ?></span>
                     <input type="date" class="week-nav-picker" value="<?= $startOfWeek->format('Y-m-d') ?>" title="Saltar a fecha">

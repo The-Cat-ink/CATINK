@@ -95,9 +95,6 @@ if (!$fila) {
     </div>
     <div id="user">
         <h4><?= htmlspecialchars($fila['usuario']) ?></h4>
-        <button id="sidebarCollapseBtn" class="btn-icon sidebar-collapse-btn" title="Colapsar menú">
-            <i class="bi bi-chevron-up"></i>
-        </button>
     </div>
     <ul class="sidebar-menu">
         <li class="sidebar-menu-item"></li>
