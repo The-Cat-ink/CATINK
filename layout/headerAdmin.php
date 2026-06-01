@@ -93,9 +93,6 @@ if (!$fila) {
             <img class="logo-icon" src="./../img/catink-icon.png" alt="Catink">
         </a>
     </div>
-    <div id="user">
-        <h4><?= htmlspecialchars($fila['usuario']) ?></h4>
-    </div>
     <ul class="sidebar-menu">
         <li class="sidebar-menu-item"></li>
         <?php if ($superadmin): ?>

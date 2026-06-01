@@ -11,13 +11,13 @@
   --sidebar-collapsed-width: 72px;
 }
 body.has-sidebar .site-main {
-  margin-left: var(--sidebar-collapsed-width);
+  margin-left: var(--sidebar-width);
   padding: 16px;
-  transition: margin-left 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: margin-left 1s ease-in-out;
 }
 body.has-sidebar .site-footer {
-  margin-left: var(--sidebar-collapsed-width);
-  transition: margin-left 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+  margin-left: var(--sidebar-width);
+  transition: margin-left 1s ease-in-out,
               background-color 0.5s ease-in-out,
               color 0.5s ease-in-out,
               border-color 0.5s ease-in-out;
@@ -61,20 +61,21 @@ hr {
   position: fixed;
   top: 0;
   left: 0;
-  width: var(--sidebar-width);
+  width: var(--sidebar-collapsed-width);
   height: 100dvh;
   background: var(--card-bg);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   z-index: 100;
-  transition: transform 0.3s ease, background-color 0.5s ease-in-out, border-color 0.5s ease-in-out, color 0.5s ease-in-out;
-  overflow-y: auto;
+  transition: width 1s ease-in-out, background-color 1s ease-in-out, border-color 1s ease-in-out, color 1s ease-in-out;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   font-size: clamp(1rem, 0.95rem + 0.35vw, 1.25rem);
   line-height: 1.4;
   scrollbar-width: none;
+  will-change: width;
 }
 .sidebar::-webkit-scrollbar {
   width: 0;
@@ -844,21 +845,21 @@ hr {
   text-decoration: none;
   border-radius: 6px;
   font-size: 0.92rem;
-  transition: color 0.5s ease-in-out, background-color 0.3s ease;
+  transition: color 0.5s ease-in-out, background-color 0.3s ease, gap 1s ease-in-out;
   position: relative;
 }
 .sb-label {
   overflow: hidden;
   white-space: nowrap;
-  max-width: 160px;
-  opacity: 1;
-  transform: translateX(0);
-  transition: opacity 0.22s ease 0.07s, max-width 0.32s ease, transform 0.22s ease 0.07s;
+  min-width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s ease-in-out 0.1s;
 }
 .sidebar-menu-link i {
   font-size: 20px;
   flex-shrink: 0;
-  transition: transform 0.22s ease;
+  transition: none;
 }
 .sidebar-menu-link:hover i {
   transform: translateX(2px);
@@ -895,21 +896,27 @@ hr {
   padding: 12px 14px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   border-bottom: 1px solid var(--border);
+  min-height: 62px;
+  height: 62px;
 }
 .sidebar .logotipo a {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
 }
 .logo-full {
+  width: 100%;
   max-width: 100%;
   max-height: 38px;
-  height: auto;
+  height: 38px;
   border-radius: 0 !important;
   object-fit: contain;
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
 }
 .logo-icon {
   display: none;
@@ -917,6 +924,7 @@ hr {
   height: 30px;
   object-fit: contain;
   border-radius: 4px !important;
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
 }
 .sidebar-collapse-btn {
   flex-shrink: 0;
@@ -931,24 +939,6 @@ hr {
 }
 .sidebar.is-collapsed .sidebar-collapse-btn i {
   transform: rotate(180deg);
-}
-#user {
-  padding: 6px 8px 0;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-#user h4 {
-  font-size: 1em;
-  font-weight: 600;
-  color: var(--text);
-}
-/* Botón toggle debajo del username */
-#user .sidebar-collapse-btn {
-  align-self: center;
-  margin: 4px 0;
-  display: none;
 }
 .sidebar-footer {
   display: flex;
@@ -2204,60 +2194,63 @@ body.sidebar-open {
 @media (min-width: 769px) {
   body.has-sidebar .site-main,
   body.has-sidebar .site-footer {
-    transition: margin-left 0.38s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  body.has-sidebar:not(.sidebar-collapsed) .site-main,
-  body.has-sidebar:not(.sidebar-collapsed) .site-footer {
-    margin-left: var(--sidebar-width);
+    margin-left: var(--sidebar-collapsed-width);
+    transition: none;
   }
   .sidebar {
-    width: var(--sidebar-width);
-    transform: translateX(calc(var(--sidebar-collapsed-width) - var(--sidebar-width)));
+    width: var(--sidebar-collapsed-width);
     box-shadow: none;
-    transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 0.32s ease,
-                background-color 0.4s ease,
-                border-color 0.4s ease,
-                color 0.4s ease;
-    will-change: transform;
+  }
+  .sidebar:hover {
+    width: var(--sidebar-width);
+    box-shadow: 18px 0 36px rgba(15, 23, 42, 0.1);
+  }
+  .sidebar:hover .sb-label {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .sidebar.is-collapsed {
+    width: var(--sidebar-collapsed-width);
+  }
+  .sidebar:not(.is-collapsed) {
+    width: var(--sidebar-width);
+    box-shadow: 18px 0 36px rgba(15, 23, 42, 0.1);
+  }
+  .sidebar:not(.is-collapsed) .sb-label {
+    opacity: 1;
+    pointer-events: auto;
   }
   .sidebar::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, rgba(15, 23, 42, 0.25), transparent 75%);
+    background: transparent;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
   }
   .sidebar.is-collapsed {
     overflow: hidden;
+    width: var(--sidebar-collapsed-width);
+    box-shadow: 2px 0 8px rgba(15, 23, 42, 0.05);
   }
   .sidebar.is-collapsed::after {
     opacity: 0;
   }
-  .sidebar:not(.is-collapsed) {
-    transform: translateX(0);
-    box-shadow: 18px 0 36px rgba(15, 23, 42, 0.1);
-  }
-  .sidebar:not(.is-collapsed)::after {
-    opacity: 1;
-  }
-  .sidebar.is-collapsed .logo-full { display: none; }
-  .sidebar.is-collapsed .logo-icon { display: block; }
-  .sidebar.is-collapsed .logotipo { padding: 8px 4px; justify-content: center; }
-  .sidebar.is-collapsed .logotipo a { flex: none; }
-  .sidebar.is-collapsed #user { display: none; }
+  .sidebar.is-collapsed .logo-full { opacity: 0; width: 0; height: 0; transform: scale(0.8); }
+  .sidebar.is-collapsed .logo-icon { display: block; opacity: 1; transform: scale(1); }
+  .sidebar.is-collapsed .logotipo { padding: 8px 4px; min-height: 62px; height: 62px; }
+  .sidebar.is-collapsed .logotipo a { flex: none; width: auto; }
   .sidebar.is-collapsed .sb-label {
     max-width: 0;
     opacity: 0;
-    transform: translateX(-6px);
+    transform: translateX(0);
     pointer-events: none;
-    transition: opacity 0.22s ease, max-width 0.32s ease, transform 0.22s ease;
+    transition: opacity 1s ease-in-out, max-width 1s ease-in-out;
   }
   .sidebar.is-collapsed .sidebar-menu-link {
     justify-content: center;
-    padding: 8px 10px;
+    padding: 7px 12px;
     gap: 0;
   }
   .sidebar.is-collapsed .sidebar-menu-link i,

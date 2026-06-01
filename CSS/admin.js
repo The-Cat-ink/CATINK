@@ -742,12 +742,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const handleMouseLeave = () => {
     if (!desktopMQ.matches) return;
     clearTimeout(collapseTimer);
-    collapseTimer = setTimeout(collapse, 160);
+    collapse();
   };
 
   const syncState = () => {
     if (desktopMQ.matches) {
-      collapse();
+      // Iniciar expandido en desktop, se colapsa al salir del mouse
+      setCollapsed(false);
     } else {
       clearTimeout(collapseTimer);
       setCollapsed(false);
