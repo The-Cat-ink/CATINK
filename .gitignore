@@ -3,6 +3,7 @@
 
 # Carpeta de uploads (opcional, si no quieres subir imágenes de prueba)
 # img/avatares/
+img/noticias/
 
 # Archivos del sistema
 .DS_Store
