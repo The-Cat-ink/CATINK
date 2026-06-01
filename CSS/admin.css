@@ -2209,9 +2209,6 @@ body.sidebar-open {
     opacity: 1;
     pointer-events: auto;
   }
-  .sidebar.is-collapsed {
-    width: var(--sidebar-collapsed-width);
-  }
   .sidebar:not(.is-collapsed) {
     width: var(--sidebar-width);
     box-shadow: 18px 0 36px rgba(15, 23, 42, 0.1);
@@ -2237,8 +2234,8 @@ body.sidebar-open {
   .sidebar.is-collapsed::after {
     opacity: 0;
   }
-  .sidebar.is-collapsed .logo-full { opacity: 0; width: 0; height: 0; transform: scale(0.8); }
-  .sidebar.is-collapsed .logo-icon { display: block; opacity: 1; transform: scale(1); }
+  .sidebar.is-collapsed .logo-full { opacity: 0; width: 0; height: 0; }
+  .sidebar.is-collapsed .logo-icon { display: block; opacity: 1; }
   .sidebar.is-collapsed .logotipo { padding: 8px 4px; min-height: 62px; height: 62px; }
   .sidebar.is-collapsed .logotipo a { flex: none; width: auto; }
   .sidebar.is-collapsed .sb-label {
@@ -2246,7 +2243,7 @@ body.sidebar-open {
     opacity: 0;
     transform: translateX(0);
     pointer-events: none;
-    transition: opacity 1s ease-in-out, max-width 1s ease-in-out;
+    transition: opacity 0.3s ease-in-out, max-width 0.3s ease-in-out;
   }
   .sidebar.is-collapsed .sidebar-menu-link {
     justify-content: center;
