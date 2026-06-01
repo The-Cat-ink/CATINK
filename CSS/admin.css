@@ -11,9 +11,20 @@
   --sidebar-collapsed-width: 72px;
 }
 body.has-sidebar .site-main {
-  margin-left: var(--sidebar-collapsed-width);
+  margin-left: var(--sidebar-width);
   padding: 16px;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body.has-sidebar .site-footer {
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.5s ease-in-out,
+              color 0.5s ease-in-out,
+              border-color 0.5s ease-in-out;
+}
+body.has-sidebar.sidebar-collapsed .site-main,
+body.has-sidebar.sidebar-collapsed .site-footer {
+  margin-left: var(--sidebar-collapsed-width);
 }
 body.has-sidebar .site-main .container {
   max-width: none;
@@ -26,10 +37,6 @@ body.has-sidebar .container {
   margin: 0;
   padding-left: 2rem;
   padding-right: 2rem;
-}
-body.has-sidebar .site-footer {
-  margin-left: var(--sidebar-collapsed-width);
-  transition: margin-left 0.3s ease, background-color 0.5s ease-in-out, color 0.5s ease-in-out, border-color 0.5s ease-in-out;
 }
 button a {
   text-decoration: none;
@@ -2201,41 +2208,24 @@ body.sidebar-open {
 @media (min-width: 769px) {
   body.has-sidebar .site-main,
   body.has-sidebar .site-footer {
-    margin-left: var(--sidebar-collapsed-width);
     transition: margin-left 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  body.has-sidebar.sidebar-collapsed .site-main,
+  body.has-sidebar.sidebar-collapsed .site-footer {
+    margin-left: var(--sidebar-collapsed-width);
   }
   .sidebar {
     width: var(--sidebar-width);
-    transform: translateX(calc(var(--sidebar-collapsed-width) - var(--sidebar-width)));
-    box-shadow: none;
-    transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 0.32s ease,
+    transition: width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
                 background-color 0.4s ease,
                 border-color 0.4s ease,
                 color 0.4s ease;
-    will-change: transform;
-  }
-  .sidebar::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, rgba(15, 23, 42, 0.25), transparent 75%);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-  }
-  .sidebar.is-collapsed::after {
-    opacity: 0;
-  }
-  .sidebar:not(.is-collapsed) {
-    transform: translateX(0);
     box-shadow: 18px 0 36px rgba(15, 23, 42, 0.1);
   }
-  .sidebar:not(.is-collapsed)::after {
-    opacity: 1;
-  }
   .sidebar.is-collapsed {
+    width: var(--sidebar-collapsed-width);
     overflow: hidden;
+    box-shadow: none;
   }
   .sidebar.is-collapsed .logo-full { display: none; }
   .sidebar.is-collapsed .logo-icon { display: block; }
