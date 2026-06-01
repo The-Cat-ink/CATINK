@@ -91,11 +91,20 @@ $stmtRecientes = $con->prepare("
 $stmtRecientes->execute();
 $recientes = $stmtRecientes->get_result();
 
-// Helper: devuelve la primera imagen no vacía, o placeholder (ruta absoluta)
+// Helper: devuelve la primera imagen no vacía, o placeholder (ruta absoluta con cache buster)
 function img($fields, $placeholder = 'img/placeholder.svg') {
     $base = basePath();
     foreach ($fields as $f) {
-        if (!empty($f)) return $base . '/' . ltrim(htmlspecialchars($f), '/');
+        if (!empty($f)) {
+            $path = ltrim(htmlspecialchars($f), '/');
+            $fullPath = __DIR__ . '/' . $path;
+            // Agregar cache buster si el archivo existe
+            if (file_exists($fullPath)) {
+                $mtime = filemtime($fullPath);
+                return $base . '/' . $path . '?v=' . $mtime;
+            }
+            return $base . '/' . $path;
+        }
     }
     return $base . '/' . $placeholder;
 }

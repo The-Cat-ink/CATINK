@@ -167,7 +167,18 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <div class="container-noticia">
             <?php
               $imgSrc = $noticia['crop3'] ?? $noticia['crop2'] ?? $noticia['crop1'] ?? null;
-              $img = $imgSrc ? basePath()."/" . htmlspecialchars($imgSrc) : basePath()."/img/placeholder.jpg";
+              if ($imgSrc) {
+                $path = ltrim(htmlspecialchars($imgSrc), '/');
+                $fullPath = __DIR__ . '/../' . $path;
+                if (file_exists($fullPath)) {
+                  $mtime = filemtime($fullPath);
+                  $img = basePath()."/" . $path . '?v=' . $mtime;
+                } else {
+                  $img = basePath()."/" . $path;
+                }
+              } else {
+                $img = basePath()."/img/placeholder.jpg";
+              }
             ?>
             <img src="<?= $img ?>" alt="" class="img-titular">
             <!-- Categorías -->
