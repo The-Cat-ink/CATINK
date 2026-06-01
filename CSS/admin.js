@@ -714,52 +714,56 @@ document.addEventListener("DOMContentLoaded", () => {
 /* ─────────────────────────────────────────
    SIDEBAR PLEGABLE — DESKTOP
    - Hover: expande automáticamente, colapsa al salir
-   - Clic en flecha: ancla abierto / desancla
+   - Controlado por clases
 ───────────────────────────────────────── */
 (function () {
-  const collapseBtn = document.getElementById('sidebarCollapseBtn');
-  const sidebarEl   = document.querySelector('.sidebar');
-  if (!collapseBtn || !sidebarEl) return;
+  const sidebarEl = document.querySelector('.sidebar');
+  if (!sidebarEl) return;
 
-  let pinned = localStorage.getItem('sidebarPinned') === 'true';
+  const body = document.body;
+  const desktopMQ = window.matchMedia('(min-width: 769px)');
+  let collapseTimer;
 
-  function expand() {
-    sidebarEl.classList.remove('collapsed');
-    document.body.classList.remove('sidebar-collapsed');
-  }
-  function collapse() {
-    sidebarEl.classList.add('collapsed');
-    document.body.classList.add('sidebar-collapsed');
-  }
+  const setCollapsed = (collapsed) => {
+    sidebarEl.classList.toggle('is-collapsed', collapsed);
+    body.classList.toggle('sidebar-collapsed', collapsed);
+  };
 
-  // Estado inicial
-  if (window.innerWidth >= 769) {
-    pinned ? expand() : collapse();
-  }
+  const collapse = () => {
+    if (!desktopMQ.matches) return;
+    setCollapsed(true);
+  };
 
-  // Hover: expande al entrar al sidebar, colapsa al salir
-  sidebarEl.addEventListener('mouseenter', () => {
-    if (window.innerWidth >= 769) expand();
-  });
-  sidebarEl.addEventListener('mouseleave', () => {
-    if (window.innerWidth >= 769 && !pinned) collapse();
-  });
+  const expand = () => {
+    clearTimeout(collapseTimer);
+    setCollapsed(false);
+  };
 
-  // Clic en la flecha: anclar / desanclar
-  collapseBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    pinned = !pinned;
-    localStorage.setItem('sidebarPinned', pinned);
-    collapseBtn.title = pinned ? 'Desanclar menú' : 'Anclar menú abierto';
-    if (!pinned) collapse();
-  });
+  const handleMouseLeave = () => {
+    if (!desktopMQ.matches) return;
+    clearTimeout(collapseTimer);
+    collapseTimer = setTimeout(collapse, 160);
+  };
 
-  // Resize: en mobile no afectar márgenes
-  window.addEventListener('resize', () => {
-    if (window.innerWidth < 769) {
-      document.body.classList.remove('sidebar-collapsed');
+  const syncState = () => {
+    if (desktopMQ.matches) {
+      collapse();
     } else {
-      if (!pinned) collapse();
+      clearTimeout(collapseTimer);
+      setCollapsed(false);
     }
-  }, { passive: true });
+  };
+
+  sidebarEl.addEventListener('mouseenter', () => {
+    if (desktopMQ.matches) expand();
+  });
+  sidebarEl.addEventListener('mouseleave', handleMouseLeave);
+
+  if (desktopMQ.addEventListener) {
+    desktopMQ.addEventListener('change', syncState);
+  } else {
+    desktopMQ.addListener(syncState);
+  }
+  window.addEventListener('resize', syncState, { passive: true });
+  syncState();
 })();
