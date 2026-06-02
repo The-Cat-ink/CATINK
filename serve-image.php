@@ -15,8 +15,19 @@ if (empty($file) || strpos($file, '..') !== false || strpos($file, '/') === 0) {
 
 // Construir ruta real
 // En local: c:\xampp\htdocs\CATINK\uploads\
-// En producción: /home/usuario/public_html/CATINK/uploads/
-$uploadsDir = __DIR__ . '/uploads/';
+// En producción Hostinger: /home/usuario/uploads/ (fuera de public_html)
+// Detectar si estamos en producción o local
+$isProduction = strpos($_SERVER['HTTP_HOST'], 'localhost') === false;
+
+if ($isProduction) {
+    // En producción, la carpeta uploads está fuera de public_html
+    // Subir un nivel desde public_html/CATINK
+    $uploadsDir = dirname(dirname(__DIR__)) . '/uploads/';
+} else {
+    // En local, está dentro del proyecto
+    $uploadsDir = __DIR__ . '/uploads/';
+}
+
 $realPath = $uploadsDir . $file;
 
 // Validar que el archivo existe
