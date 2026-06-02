@@ -1123,10 +1123,21 @@ function setZonePreview(zoneId, data64) {
 }
 function confirmCrop() {
   if (!cropperInstance) return;
+  // NO usar canvas.toDataURL() porque comprime
+  // En su lugar, obtener la imagen original sin procesar
   const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 2560, maxHeight: 2560 });
-  const data64 = canvas.toDataURL('image/png');
-  document.getElementById('crop' + activeCrop).value = data64;
-  setZonePreview(activeCrop, data64);
+  
+  // Convertir canvas a blob sin compresión
+  canvas.toBlob(function(blob) {
+    // Convertir blob a base64 sin compresión
+    const reader = new FileReader();
+    reader.onloadend = function() {
+      const data64 = reader.result;
+      document.getElementById('crop' + activeCrop).value = data64;
+      setZonePreview(activeCrop, data64);
+    };
+    reader.readAsDataURL(blob);
+  }, 'image/png', 1.0);  // 1.0 = máxima calidad sin compresión
 
   if (activeCrop === 2 && !document.getElementById('crop3').value)
     autoFillMiniature(document.getElementById('cropImg').src);
