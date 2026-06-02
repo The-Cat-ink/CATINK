@@ -40,7 +40,7 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 95)
     }
 
     $timestamp = time();
-    $nombre    = "noticia_{$noticiaId}_{$crop}_{$timestamp}.jpg";
+    $nombre    = "noticia_{$noticiaId}_{$crop}_{$timestamp}.webp";
     $rutaFisica = $dirFisica . $nombre;
 
     // PNG lossless → convertir a JPEG 95 con GD (único paso con pérdida)
