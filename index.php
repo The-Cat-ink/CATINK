@@ -148,149 +148,95 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
 <!-- ===================== -->
 <!-- TOP NOTICIAS -->
 <!-- ===================== -->
+<?php
+// Macro local para renderizar una news-card con overlay
+function topCard($r, $type = 'thumb') {
+    $isBanner = $type === 'banner';
+    $url  = newsUrl($r['id']);
+    $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
+    $tagsHtml = '';
+    foreach ($cats as $c) {
+        $tagsHtml .= '<a href="' . categoryUrl($c) . '" class="news-tag">' . htmlspecialchars($c) . '</a>';
+    }
+    $overlay = '<div class="news-overlay">
+        <div class="news-tags">' . $tagsHtml . '</div>
+        <div class="news-content">
+            <a href="' . $url . '" class="news-link-card">
+                <h3 class="title-limit-2">' . htmlspecialchars($r['titulo']) . '</h3>
+            </a>
+            <p class="desc-limit-1">' . htmlspecialchars($r['descripcion']) . '</p>
+        </div>
+    </div>';
+    if ($isBanner) {
+        $srcMobile  = img([$r['crop3'], $r['crop2']]);
+        $srcDesktop = img([$r['crop2'], $r['crop1']]);
+        echo '<div class="news-card card-banner" data-url="' . $url . '">
+            <picture>
+                <source media="(max-width: 767px)" srcset="' . $srcMobile . '">
+                <img src="' . $srcDesktop . '" alt="" loading="lazy" decoding="async">
+            </picture>' . $overlay . '</div>';
+    } else {
+        $src = img([$r['crop3'], $r['crop1']]);
+        echo '<div class="news-card card-thumb" data-url="' . $url . '">
+            <img src="' . $src . '" alt="" loading="lazy" decoding="async">' . $overlay . '</div>';
+    }
+}
+?>
 <div class="container mt-5">
     <div class="container-fluid">
         <h2><i class="bi bi-chat-left-dots"></i>  Top Publicaciones de la Semana</h2><br>
+        <?php
+        // Fila 1 — banner grande + thumb pequeño
+        $f1 = array_values(array_filter([
+            $ultimasNoticias[0] ?? null,
+            $ultimasNoticias[1] ?? null,
+        ]));
+        if ($f1):
+        ?>
         <div class="row">
-            <!-- Primeras 2 noticias principales -->
-            <div class="col-md-8">
-                <div class="news-card card-banner" data-url="<?= newsUrl($ultimasNoticias[0]['id']) ?>">
-                    <picture>
-                        <source media="(max-width: 767px)" srcset="<?= img([$ultimasNoticias[0]['crop3'], $ultimasNoticias[0]['crop2']]) ?>">
-                        <img src="<?= img([$ultimasNoticias[0]['crop2'], $ultimasNoticias[0]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
-                    </picture>
-                    <div class="news-overlay">
-                        <div class="news-tags">
-                            <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[0]['categorias'] ?? ''))) as $cat): ?>
-                                <a href="<?= categoryUrl($cat) ?>" class="news-tag"><?= htmlspecialchars($cat) ?></a>
-                            <?php endforeach; ?>
-                        </div>
-                        <div class="news-content">
-                            <a href="<?= newsUrl($ultimasNoticias[0]['id']) ?>" class="news-link-card">
-                                <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[0]['titulo']) ?></h3>
-                            </a>
-                            <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[0]['descripcion']) ?></p>
-                        </div>
-                        
-                    </div>
-                </div>
+            <div class="<?= isset($f1[1]) ? 'col-md-8' : 'col-12' ?>">
+                <?php topCard($f1[0], 'banner'); ?>
             </div>
-            <div class="col-md-4">
-                <div class="news-card card-thumb" data-url="<?= newsUrl($ultimasNoticias[1]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[1]['crop3'], $ultimasNoticias[1]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
-                    <div class="news-overlay">
-                        <div class="news-tags">
-                            <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[1]['categorias'] ?? ''))) as $cat): ?>
-                                <a href="<?= categoryUrl($cat) ?>" class="news-tag"><?= htmlspecialchars($cat) ?></a>
-                            <?php endforeach; ?>
-                        </div>
-                        <div class="news-content">
-                            <a href="<?= newsUrl($ultimasNoticias[1]['id']) ?>" class="news-link-card">
-                                <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[1]['titulo']) ?></h3>
-                            </a>
-                            <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[1]['descripcion']) ?></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <?php if (isset($f1[1])): ?>
+            <div class="col-md-4"><?php topCard($f1[1]); ?></div>
+            <?php endif; ?>
         </div>
+        <?php endif; ?>
+
+        <?php
+        // Fila 2 — hasta 3 thumbs; la clase de columna se adapta a los disponibles
+        $f2 = array_values(array_filter([
+            $ultimasNoticias[2] ?? null,
+            $ultimasNoticias[3] ?? null,
+            $ultimasNoticias[4] ?? null,
+        ]));
+        if ($f2):
+            $col2 = match(count($f2)) { 1 => 'col-12', 2 => 'col-12 col-md-6', default => 'col-12 col-md-4' };
+        ?>
         <div class="row">
-            <div class="col-12 col-md-4">
-                <div class="news-card card-thumb" data-url="<?= newsUrl($ultimasNoticias[2]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[2]['crop3'], $ultimasNoticias[2]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
-                    <div class="news-overlay">
-                        <div class="news-tags">
-                            <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[2]['categorias'] ?? ''))) as $cat): ?>
-                               <a href="<?= categoryUrl($cat) ?>" class="news-tag"><?= htmlspecialchars($cat) ?></a>
-                            <?php endforeach; ?>
-                        </div>
-                        <div class="news-content">
-                            <a href="<?= newsUrl($ultimasNoticias[2]['id']) ?>" class="news-link-card">
-                                <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[2]['titulo']) ?></h3>
-                            </a>
-                            <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[2]['descripcion']) ?></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="news-card card-thumb" data-url="<?= newsUrl($ultimasNoticias[3]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[3]['crop3'], $ultimasNoticias[3]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
-                    <div class="news-overlay">
-                        <div class="news-tags">
-                            <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[3]['categorias'] ?? ''))) as $cat): ?>
-                                <a href="<?= categoryUrl($cat) ?>" class="news-tag"><?= htmlspecialchars($cat) ?></a>
-                            <?php endforeach; ?>
-                        </div>
-                        <div class="news-content">
-                            <a href="<?= newsUrl($ultimasNoticias[3]['id']) ?>" class="news-link-card">
-                                <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[3]['titulo']) ?></h3>
-                            </a>
-                            <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[3]['descripcion']) ?></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="news-card card-thumb" data-url="<?= newsUrl($ultimasNoticias[4]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[4]['crop3'], $ultimasNoticias[4]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
-                    <div class="news-overlay">
-                        <div class="news-tags">
-                            <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[4]['categorias'] ?? ''))) as $cat): ?>
-                                <a href="<?= categoryUrl($cat) ?>" class="news-tag"><?= htmlspecialchars($cat) ?></a>
-                            <?php endforeach; ?>
-                        </div>
-                        <div class="news-content">
-                            <a href="<?= newsUrl($ultimasNoticias[4]['id']) ?>" class="news-link-card">
-                                <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[4]['titulo']) ?></h3>
-                            </a>
-                            <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[4]['descripcion']) ?></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <?php foreach ($f2 as $r): ?>
+            <div class="<?= $col2 ?>"><?php topCard($r); ?></div>
+            <?php endforeach; ?>
         </div>
+        <?php endif; ?>
+
+        <?php
+        // Fila 3 — thumb pequeño + banner grande; se adapta si solo hay 1
+        $f3 = array_values(array_filter([
+            $ultimasNoticias[5] ?? null,
+            $ultimasNoticias[6] ?? null,
+        ]));
+        if ($f3):
+        ?>
         <div class="row">
-            <div class="col-md-4">
-                <div class="news-card card-thumb" data-url="<?= newsUrl($ultimasNoticias[5]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[5]['crop3'], $ultimasNoticias[5]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
-                    <div class="news-overlay">
-                        <div class="news-tags">
-                            <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[5]['categorias'] ?? ''))) as $cat): ?>
-                                <a href="<?= categoryUrl($cat) ?>" class="news-tag"><?= htmlspecialchars($cat) ?></a>
-                            <?php endforeach; ?>
-                        </div>
-                        <div class="news-content">
-                            <a href="<?= newsUrl($ultimasNoticias[5]['id']) ?>" class="news-link-card">
-                                <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[5]['titulo']) ?></h3>
-                            </a>
-                            <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[5]['descripcion']) ?></p>
-                        </div>
-                    </div>
-                </div>
+            <div class="<?= isset($f3[1]) ? 'col-md-4' : 'col-12' ?>">
+                <?php topCard($f3[0]); ?>
             </div>
-            <div class="col-md-8">
-                <div class="news-card card-banner" data-url="<?= newsUrl($ultimasNoticias[6]['id']) ?>">
-                    <picture>
-                        <source media="(max-width: 767px)" srcset="<?= img([$ultimasNoticias[6]['crop3'], $ultimasNoticias[6]['crop2']]) ?>">
-                        <img src="<?= img([$ultimasNoticias[6]['crop2'], $ultimasNoticias[6]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
-                    </picture>
-                    <div class="news-overlay">
-                        <div class="news-tags">
-                            <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[6]['categorias'] ?? ''))) as $cat): ?>
-                                <a href="<?= categoryUrl($cat) ?>" class="news-tag"><?= htmlspecialchars($cat) ?></a>
-                            <?php endforeach; ?>
-                        </div>
-                        <div class="news-content">
-                            <a href="<?= newsUrl($ultimasNoticias[6]['id']) ?>" class="news-link-card">
-                                <h3 class="title-limit-2"><?= htmlspecialchars($ultimasNoticias[6]['titulo']) ?></h3>
-                            </a>
-                            <p class="desc-limit-1"><?= htmlspecialchars($ultimasNoticias[6]['descripcion']) ?></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <?php if (isset($f3[1])): ?>
+            <div class="col-md-8"><?php topCard($f3[1], 'banner'); ?></div>
+            <?php endif; ?>
         </div>
+        <?php endif; ?>
         <!-- ===================== -->
         <!-- SIDEBAR -->
         <!-- ===================== -->

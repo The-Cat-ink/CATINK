@@ -607,6 +607,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   .news-link{
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -780,6 +781,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   .carousel-caption p {
     font-size: 0.95rem;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -875,12 +877,12 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .news-link:hover { color:#EF3363; }
 .news-link-card {display: block; text-decoration:none; color: #fff; position: relative; z-index: 3;}
 .news-link-card:hover { color:#EF3363; }
-/* Gradiente oscuro */
+/* Gradiente oscuro — solo cubre la zona inferior donde va el texto */
 .news-card::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,.92) 0%, rgba(0,0,0,.6) 35%, rgba(0,0,0,.25) 55%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.55) 28%, rgba(0,0,0,.15) 48%, rgba(0,0,0,0) 62%);
   z-index: 1;
 }
 /* Overlay de noticias */
@@ -953,6 +955,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   line-height: 1.2;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1048,6 +1051,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .title-limit-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.2;
@@ -1056,6 +1060,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .title-limit-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   min-height: 0;
@@ -1064,6 +1069,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .desc-limit-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1073,6 +1079,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .desc-limit-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1082,6 +1089,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .desc-limit-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1094,6 +1102,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .card-body h5 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1167,11 +1176,13 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
     color: var(--text);
     font-size: 1rem;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
   .news-overlay p {
     color: var(--muted);
     font-size: .85rem;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
   /* Colores de enlaces en panel claro/oscuro */
   .news-link-card {
@@ -1193,6 +1204,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 
   .card-body p {
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -1746,6 +1758,7 @@ hr{
   .carousel-caption p {
     font-size: 1rem;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -2122,6 +2135,7 @@ hr{
   margin-bottom: 6px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -2131,6 +2145,7 @@ hr{
   margin-bottom: 8px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
