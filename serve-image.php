@@ -19,10 +19,23 @@ if (empty($file) || strpos($file, '..') !== false || strpos($file, '/') === 0) {
 // Detectar si estamos en producción o local
 $isProduction = strpos($_SERVER['HTTP_HOST'], 'localhost') === false;
 
+$uploadsDir = null;
+
 if ($isProduction) {
-    // En producción, la carpeta uploads está fuera de public_html
-    // Subir un nivel desde public_html/CATINK
-    $uploadsDir = dirname(dirname(__DIR__)) . '/uploads/';
+    // En producción Hostinger, intentar múltiples rutas
+    // Opción 1: /home/usuario/uploads/ (un nivel arriba de public_html)
+    $option1 = dirname(dirname(__DIR__)) . '/uploads/';
+    // Opción 2: /home/usuario/public_html/uploads/
+    $option2 = dirname(__DIR__) . '/uploads/';
+    
+    if (is_dir($option1)) {
+        $uploadsDir = $option1;
+    } elseif (is_dir($option2)) {
+        $uploadsDir = $option2;
+    } else {
+        // Si no existe ninguna, usar la opción 1 por defecto
+        $uploadsDir = $option1;
+    }
 } else {
     // En local, está dentro del proyecto
     $uploadsDir = __DIR__ . '/uploads/';
@@ -33,7 +46,16 @@ $realPath = $uploadsDir . $file;
 // Validar que el archivo existe
 if (!file_exists($realPath)) {
     http_response_code(404);
-    exit('File not found: ' . $realPath);
+    // Log para debugging
+    $debugInfo = "Image not found\n";
+    $debugInfo .= "Requested file: " . $file . "\n";
+    $debugInfo .= "Real path: " . $realPath . "\n";
+    $debugInfo .= "Uploads dir: " . $uploadsDir . "\n";
+    $debugInfo .= "Is production: " . ($isProduction ? 'yes' : 'no') . "\n";
+    $debugInfo .= "__DIR__: " . __DIR__ . "\n";
+    $debugInfo .= "dirname(__DIR__): " . dirname(__DIR__) . "\n";
+    error_log($debugInfo);
+    exit('File not found');
 }
 
 // Validar que está dentro de la carpeta uploads
