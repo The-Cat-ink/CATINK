@@ -246,7 +246,7 @@ function topCard($r, $type = 'thumb') {
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidad) : ?>
                     <div class="ad-container">
                         <a href="<?php echo htmlspecialchars($publicidad['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidad['id_pub']); ?>">
-                            <img src="<?= basePath() ?>/<?php echo htmlspecialchars($publicidad['imagen']); ?>" alt="" class="banner" loading="lazy" decoding="async">
+                            <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="" class="banner" loading="lazy" decoding="async">
                         </a>
                         <span class="ads-label">ADS</span>
                     </div>
@@ -380,7 +380,7 @@ function topCard($r, $type = 'thumb') {
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidadInferior) : ?>
                     <div class="ad-container">
                         <a href="<?php echo htmlspecialchars($publicidadInferior['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadInferior['id_pub']); ?>">
-                            <img src="<?= basePath() ?>/<?php echo htmlspecialchars($publicidadInferior['imagen']); ?>" alt="" class="banner" loading="lazy" decoding="async">
+                            <img src="<?= imageUrl($publicidadInferior['imagen']) ?>" alt="" class="banner" loading="lazy" decoding="async">
                         </a>
                         <span class="ads-label">ADS</span>
                     </div>
@@ -393,7 +393,7 @@ function topCard($r, $type = 'thumb') {
                             <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidadCuadro) : ?>
                                 <div class="ad-container">
                                     <a href="<?php echo htmlspecialchars($publicidadCuadro['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadCuadro['id_pub']); ?>">
-                                        <img src="<?= basePath() ?>/<?php echo htmlspecialchars($publicidadCuadro['imagen']); ?>" class="banner-card-img-top" loading="lazy" decoding="async">
+                                        <img src="<?= imageUrl($publicidadCuadro['imagen']) ?>" class="banner-card-img-top" loading="lazy" decoding="async">
                                     </a>
                                     <span class="ads-label">ADS</span>
                                 </div>
