@@ -21,6 +21,37 @@ $link_twitter = trim($_POST['link_twitter'] ?? '');
 $link_instagram = trim($_POST['link_instagram'] ?? '');
 
 // ============================
+// VALIDACIÓN DE BIOGRAFÍA
+// ============================
+if(!empty($biografia)){
+    if(mb_strlen($biografia) > 500){
+        header('Location: ' . basePath() . '/perfil?error=biografia_larga');
+        exit;
+    }
+    // Filtrar palabras prohibidas en biografía
+    $biografia = filtrarPalabras($con, $biografia);
+}
+
+// ============================
+// VALIDACIÓN DE LINKS SOCIALES
+// ============================
+// Validar Twitter/X
+if(!empty($link_twitter)){
+    if(!preg_match('/^https:\/\/(x\.com|twitter\.com)\/[a-zA-Z0-9_]{1,15}(\/.*)?$/', $link_twitter)){
+        header('Location: ' . basePath() . '/perfil?error=twitter_invalido');
+        exit;
+    }
+}
+
+// Validar Instagram
+if(!empty($link_instagram)){
+    if(!preg_match('/^https:\/\/instagram\.com\/[a-zA-Z0-9_.]{1,30}(\/.*)?$/', $link_instagram)){
+        header('Location: ' . basePath() . '/perfil?error=instagram_invalido');
+        exit;
+    }
+}
+
+// ============================
 // VERIFICAR CONTRASEÑA ACTUAL
 // ============================
 if(!empty($pass_actual)){

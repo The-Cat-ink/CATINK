@@ -57,6 +57,47 @@ switch ($action) {
             exit;
         }
 
+        // ============================
+        // RATE LIMITING: máx 5 comentarios por hora
+        // ============================
+        $stmtRateLimit = $con->prepare("
+            SELECT COUNT(*) as count FROM comentarios 
+            WHERE lector_id = ? AND fecha_publicacion > DATE_SUB(NOW(), INTERVAL 1 HOUR)
+        ");
+        $stmtRateLimit->bind_param("i", $lectorId);
+        $stmtRateLimit->execute();
+        $rateCheck = $stmtRateLimit->get_result()->fetch_assoc();
+        
+        if ($rateCheck['count'] >= 5) {
+            echo json_encode(['ok' => false, 'msg' => 'Has alcanzado el límite de comentarios. Intenta más tarde.']);
+            exit;
+        }
+
+        // ============================
+        // DETECCIÓN DE DUPLICADOS
+        // ============================
+        $stmtDuplicate = $con->prepare("
+            SELECT COUNT(*) as count FROM comentarios 
+            WHERE lector_id = ? AND noticia_id = ? AND contenido = ?
+        ");
+        $stmtDuplicate->bind_param("iis", $lectorId, $noticiaId, $contenido);
+        $stmtDuplicate->execute();
+        $dupCheck = $stmtDuplicate->get_result()->fetch_assoc();
+        
+        if ($dupCheck['count'] > 0) {
+            echo json_encode(['ok' => false, 'msg' => 'Ya has publicado este comentario.']);
+            exit;
+        }
+
+        // ============================
+        // VALIDACIÓN DE URLS (máximo 2)
+        // ============================
+        preg_match_all('/https?:\/\/[^\s]+/', $contenido, $urls);
+        if (count($urls[0]) > 2) {
+            echo json_encode(['ok' => false, 'msg' => 'Máximo 2 enlaces por comentario.']);
+            exit;
+        }
+
         // Verificar si los comentarios están habilitados para esta noticia
         $stmtCfg = $con->prepare("SELECT permitir_comentarios, moderacion_previa FROM config_comentarios WHERE noticia_id = ?");
         $stmtCfg->bind_param("i", $noticiaId);
