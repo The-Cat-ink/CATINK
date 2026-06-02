@@ -6,7 +6,7 @@ include("../data/conexion.php");
 // ============================
 // FUNCION GUARDAR IMAGEN BASE64
 // ============================
-function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 95) {
+function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 85) {
     if (empty($base64)) return null;
 
     if (!preg_match('/^data:image\/(jpeg|jpg|png|webp|gif);base64,/', $base64, $matches)) {
@@ -41,28 +41,33 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 95)
     $nombre    = "noticia_{$noticiaId}_{$crop}_{$timestamp}.webp";
     $rutaFisica = $dirFisica . $nombre;
 
-    // PNG lossless → convertir a JPEG 95 con GD (único paso con pérdida)
+    // ============================
+    // PROCESAR IMAGEN
+    // ============================
+    $img = @imagecreatefromstring($binario);
+    if ($img === false) return null;
+
+    $w = imagesx($img);
+    $h = imagesy($img);
+
+    // PNG con transparencia → agregar fondo blanco
     if ($tipo === 'png') {
-        $img = @imagecreatefromstring($binario);
-        if ($img === false) return null;
-        $w = imagesx($img); $h = imagesy($img);
         $fondo = imagecreatetruecolor($w, $h);
         imagefill($fondo, 0, 0, imagecolorallocate($fondo, 255, 255, 255));
         imagecopy($fondo, $img, 0, 0, 0, 0, $w, $h);
         imagedestroy($img);
-        ob_start();
-        imagejpeg($fondo, null, $calidad);
-        $binario = ob_get_clean();
-        imagedestroy($fondo);
+        $img = $fondo;
     }
-    // JPEG/WebP: guardar directamente
 
     // ============================
-    // GUARDAR ARCHIVO CON VALIDACIÓN
+    // GUARDAR COMO WEBP CON CALIDAD ALTA
     // ============================
-    $bytesEscritos = file_put_contents($rutaFisica, $binario);
-    if ($bytesEscritos === false) {
-        error_log("CATINK IMG UPDATE: Error escribiendo archivo $rutaFisica");
+    // Calidad 85 mantiene excelente balance entre tamaño y calidad
+    $resultado = imagewebp($img, $rutaFisica, $calidad);
+    imagedestroy($img);
+
+    if ($resultado === false) {
+        error_log("CATINK IMG UPDATE: Error guardando WebP: $rutaFisica");
         return null;
     }
 
