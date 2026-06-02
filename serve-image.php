@@ -14,16 +14,18 @@ if (empty($file) || strpos($file, '..') !== false || strpos($file, '/') === 0) {
 }
 
 // Construir ruta real (fuera de public_html)
-$realPath = dirname(__DIR__) . '/' . $file;
+// En local: c:\xampp\htdocs\uploads\
+// En producción: /home/usuario/uploads/
+$uploadsDir = dirname(__DIR__) . '/uploads/';
+$realPath = $uploadsDir . $file;
 
 // Validar que el archivo existe
 if (!file_exists($realPath)) {
     http_response_code(404);
-    exit('File not found');
+    exit('File not found: ' . $realPath);
 }
 
 // Validar que está dentro de la carpeta uploads
-$uploadsDir = dirname(__DIR__) . '/uploads/';
 if (strpos(realpath($realPath), realpath($uploadsDir)) !== 0) {
     http_response_code(403);
     exit('Access denied');
