@@ -20,9 +20,28 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 95)
     $binario = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64));
     if ($binario === false || empty($binario)) return null;
 
+    // ============================
+    // CREAR CARPETA SI NO EXISTE
+    // ============================
+    $dirFisica = __DIR__ . "/../img/noticias/";
+    if (!is_dir($dirFisica)) {
+        if (!mkdir($dirFisica, 0755, true)) {
+            error_log("CATINK IMG: No se pudo crear carpeta $dirFisica");
+            return null;
+        }
+    }
+
+    // ============================
+    // VALIDAR PERMISOS DE ESCRITURA
+    // ============================
+    if (!is_writable($dirFisica)) {
+        error_log("CATINK IMG: Carpeta $dirFisica no tiene permisos de escritura");
+        return null;
+    }
+
     $timestamp = time();
     $nombre    = "noticia_{$noticiaId}_{$crop}_{$timestamp}.jpg";
-    $rutaFisica = __DIR__ . "/../img/noticias/" . $nombre;
+    $rutaFisica = $dirFisica . $nombre;
 
     // PNG lossless → convertir a JPEG 95 con GD (único paso con pérdida)
     if ($tipo === 'png') {
@@ -41,7 +60,28 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 95)
     }
     // JPEG/WebP: guardar directamente (ya viene del canvas sin re-encoding extra)
 
-    if (file_put_contents($rutaFisica, $binario) === false) return null;
+    // ============================
+    // GUARDAR ARCHIVO CON VALIDACIÓN
+    // ============================
+    $bytesEscritos = file_put_contents($rutaFisica, $binario);
+    if ($bytesEscritos === false) {
+        error_log("CATINK IMG: Error escribiendo archivo $rutaFisica");
+        return null;
+    }
+
+    // ============================
+    // VALIDAR QUE EL ARCHIVO SE GUARDÓ CORRECTAMENTE
+    // ============================
+    if (!file_exists($rutaFisica)) {
+        error_log("CATINK IMG: Archivo no existe después de guardarlo: $rutaFisica");
+        return null;
+    }
+
+    if (filesize($rutaFisica) === 0) {
+        error_log("CATINK IMG: Archivo vacío: $rutaFisica");
+        unlink($rutaFisica);
+        return null;
+    }
 
     return "img/noticias/" . $nombre;
 }

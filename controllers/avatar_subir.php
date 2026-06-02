@@ -67,10 +67,12 @@ $nombre = 'avatar_' . time() . '_' . mt_rand(1000,9999) . '.' . $ext;
 $destino = $dir . $nombre;
 
 if(move_uploaded_file($file['tmp_name'], $destino)){
+    // Guardar ruta relativa consistente
+    $rutaRelativa = 'img/avatares/' . $nombre;
     $stmt = $con->prepare("INSERT INTO avatares_perfil (imagen) VALUES (?)");
-    $stmt->bind_param("s", $nombre);
+    $stmt->bind_param("s", $rutaRelativa);
     $stmt->execute();
-    echo json_encode(['ok'=>true, 'imagen'=>$nombre]);
+    echo json_encode(['ok'=>true, 'imagen'=>$rutaRelativa]);
 } else {
     echo json_encode(['ok'=>false, 'error'=>'Error al mover archivo.']);
 }

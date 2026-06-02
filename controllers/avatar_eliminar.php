@@ -17,7 +17,12 @@ $stmt->execute();
 $row = $stmt->get_result()->fetch_assoc();
 
 if($row){
-    $archivo = __DIR__ . '/../img/avatares/' . $row['imagen'];
+    // Manejo de rutas: si es solo el nombre, agregar ruta; si es ruta completa, usar como está
+    $rutaImagen = $row['imagen'];
+    if(strpos($rutaImagen, '/') === false){
+        $rutaImagen = 'img/avatares/' . $rutaImagen;
+    }
+    $archivo = __DIR__ . '/../' . $rutaImagen;
     if(file_exists($archivo)) unlink($archivo);
 
     $stmt = $con->prepare("DELETE FROM avatares_perfil WHERE id_avatar = ?");
