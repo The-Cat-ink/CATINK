@@ -80,26 +80,52 @@ if(!empty($pass_actual)){
 $foto_personal = null;
 if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_personal']['error'] === UPLOAD_ERR_OK){
     $file = $_FILES['foto_personal'];
+    
+    // ============================
+    // VALIDAR TAMAÑO (máximo 5MB)
+    // ============================
+    $maxSize = 5 * 1024 * 1024;
+    if($file['size'] > $maxSize){
+        header('Location: ' . basePath() . '/perfil?error=foto_grande');
+        exit;
+    }
+    
     $mime = mime_content_type($file['tmp_name']);
     $permitidos = ['image/jpeg', 'image/png', 'image/webp'];
     if(in_array($mime, $permitidos)){
-        $imagen = imagecreatefromstring(file_get_contents($file['tmp_name']));
-        if($imagen){
-            $dir = __DIR__ . '/../img/editores/';
-            if(!is_dir($dir)) mkdir($dir, 0755, true);
-            // Obtener id_u para nombre de archivo
-            $stmtId = $con->prepare("SELECT id_u, foto_personal FROM usuarios WHERE usuario = ?");
-            $stmtId->bind_param("s", $usuario);
-            $stmtId->execute();
-            $rowId = $stmtId->get_result()->fetch_assoc();
-            // Borrar foto anterior
-            if(!empty($rowId['foto_personal']) && file_exists(__DIR__ . '/../' . $rowId['foto_personal'])){
-                unlink(__DIR__ . '/../' . $rowId['foto_personal']);
+        // ============================
+        // VALIDAR DIMENSIONES
+        // ============================
+        $imageInfo = getimagesize($file['tmp_name']);
+        if($imageInfo !== false && $imageInfo[0] <= 2000 && $imageInfo[1] <= 2000){
+            $imagen = imagecreatefromstring(file_get_contents($file['tmp_name']));
+            if($imagen){
+                $dir = __DIR__ . '/../img/editores/';
+                if(!is_dir($dir)) mkdir($dir, 0755, true);
+                // Obtener id_u para nombre de archivo
+                $stmtId = $con->prepare("SELECT id_u, foto_personal FROM usuarios WHERE usuario = ?");
+                $stmtId->bind_param("s", $usuario);
+                $stmtId->execute();
+                $rowId = $stmtId->get_result()->fetch_assoc();
+                // Borrar foto anterior (protección contra path traversal)
+                if(!empty($rowId['foto_personal'])){
+                    $fotoPath = $rowId['foto_personal'];
+                    // Validar que la ruta no contenga path traversal
+                    if(strpos($fotoPath, '..') === false && strpos($fotoPath, '/') !== 0){
+                        $fullPath = __DIR__ . '/../' . $fotoPath;
+                        if(file_exists($fullPath) && strpos(realpath($fullPath), realpath(__DIR__ . '/../img/editores/')) === 0){
+                            unlink($fullPath);
+                        }
+                    }
+                }
+                $nombreArchivo = 'editor_' . $rowId['id_u'] . '_' . time() . '.webp';
+                imagewebp($imagen, $dir . $nombreArchivo, 92);
+                imagedestroy($imagen);
+                $foto_personal = 'img/editores/' . $nombreArchivo;
             }
-            $nombreArchivo = 'editor_' . $rowId['id_u'] . '_' . time() . '.webp';
-            imagewebp($imagen, $dir . $nombreArchivo, 92);
-            imagedestroy($imagen);
-            $foto_personal = 'img/editores/' . $nombreArchivo;
+        } else {
+            header('Location: ' . basePath() . '/perfil?error=foto_dimensiones');
+            exit;
         }
     }
 }

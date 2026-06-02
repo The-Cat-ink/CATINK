@@ -40,6 +40,36 @@ function filtrarPalabras($con, $texto) {
     return $texto;
 }
 
+// ============================
+// LISTA NEGRA DE DOMINIOS ADULTOS
+// ============================
+function esURLAdulta($url) {
+    $dominiosAdultos = [
+        'pornhub.com', 'xvideos.com', 'xnxx.com', 'redtube.com',
+        'youporn.com', 'tube8.com', 'spankbang.com', 'xhamster.com',
+        'onlyfans.com', 'chaturbate.com', 'cam4.com', 'stripchat.com',
+        'livejasmine.com', 'flirt4free.com', 'myfreecams.com',
+        'sex.com', 'xxx.com', 'adult.com', 'porn.com',
+        'sexo.com', 'porno.com', 'xxx.es', 'sexo.es'
+    ];
+    
+    $urlParsed = parse_url($url);
+    if (!isset($urlParsed['host'])) {
+        return false;
+    }
+    
+    $host = strtolower($urlParsed['host']);
+    $host = preg_replace('/^www\./', '', $host);
+    
+    foreach ($dominiosAdultos as $dominio) {
+        if (strpos($host, $dominio) !== false) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 switch ($action) {
     // ============================
     // CREAR COMENTARIO
@@ -115,6 +145,12 @@ switch ($action) {
             // 3. Validar que no contenga caracteres peligrosos
             if (preg_match('/[<>"\'{};]/', $url)) {
                 echo json_encode(['ok' => false, 'msg' => 'URL contiene caracteres no permitidos.']);
+                exit;
+            }
+            
+            // 4. Validar que no sea URL de contenido adulto
+            if (esURLAdulta($url)) {
+                echo json_encode(['ok' => false, 'msg' => 'No se permiten enlaces a contenido adulto.']);
                 exit;
             }
         }

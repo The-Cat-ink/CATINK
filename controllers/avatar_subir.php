@@ -10,11 +10,51 @@ if(!isset($_FILES['imagen']) || $_FILES['imagen']['error'] !== UPLOAD_ERR_OK){
 }
 
 $file = $_FILES['imagen'];
-$ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-$permitidos = ['jpg','jpeg','png','gif','webp'];
 
-if(!in_array($ext, $permitidos)){
+// ============================
+// VALIDAR TAMAÑO (máximo 5MB)
+// ============================
+$maxSize = 5 * 1024 * 1024; // 5MB
+if($file['size'] > $maxSize){
+    echo json_encode(['ok'=>false, 'error'=>'Archivo demasiado grande (máximo 5MB).']);
+    exit;
+}
+
+// ============================
+// VALIDAR MIME TYPE (no solo extensión)
+// ============================
+$mimeType = mime_content_type($file['tmp_name']);
+$mimePermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+if(!in_array($mimeType, $mimePermitidos)){
     echo json_encode(['ok'=>false, 'error'=>'Formato no válido. Usa JPG, PNG, GIF o WEBP.']);
+    exit;
+}
+
+// ============================
+// VALIDAR EXTENSIÓN (como segunda capa)
+// ============================
+$ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+$extPermitidas = ['jpg','jpeg','png','gif','webp'];
+
+if(!in_array($ext, $extPermitidas)){
+    echo json_encode(['ok'=>false, 'error'=>'Extensión no válida.']);
+    exit;
+}
+
+// ============================
+// VALIDAR DIMENSIONES DE IMAGEN
+// ============================
+$imageInfo = getimagesize($file['tmp_name']);
+if($imageInfo === false){
+    echo json_encode(['ok'=>false, 'error'=>'No es una imagen válida.']);
+    exit;
+}
+
+$maxWidth = 2000;
+$maxHeight = 2000;
+if($imageInfo[0] > $maxWidth || $imageInfo[1] > $maxHeight){
+    echo json_encode(['ok'=>false, 'error'=>'Imagen demasiado grande (máximo 2000x2000 píxeles).']);
     exit;
 }
 
