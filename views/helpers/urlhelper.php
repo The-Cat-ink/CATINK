@@ -63,15 +63,17 @@ function imageUrl($path) {
         return $path;
     }
     
-    // Convertir rutas antiguas de img/avatares/ e img/editores/ a uploads/
-    if (strpos($path, 'img/avatares/') === 0 || strpos($path, 'img/editores/') === 0) {
+    // Convertir rutas antiguas de img/ a uploads/
+    if (strpos($path, 'img/avatares/') === 0 || strpos($path, 'img/editores/') === 0 || strpos($path, 'img/publicidad/') === 0) {
         // Extraer el nombre del archivo
         $filename = basename($path);
-        // Determinar si es avatar o editor
+        // Determinar la carpeta correcta
         if (strpos($path, 'img/avatares/') === 0) {
             $path = 'uploads/avatares/' . $filename;
-        } else {
+        } else if (strpos($path, 'img/editores/') === 0) {
             $path = 'uploads/editores/' . $filename;
+        } else if (strpos($path, 'img/publicidad/') === 0) {
+            $path = 'uploads/publicidad/' . $filename;
         }
     }
     
