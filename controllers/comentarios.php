@@ -34,8 +34,39 @@ function filtrarPalabras($con, $texto) {
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
-        $pattern = '/\b' . preg_quote($row['palabra_baneada'], '/') . '\b/iu';
+        $palabra = $row['palabra_baneada'];
+        
+        // Crear patrón que detecte variaciones (números, caracteres especiales)
+        // Ejemplo: puta -> p[u0@]t[a4@]
+        $patron = '';
+        for ($i = 0; $i < strlen($palabra); $i++) {
+            $char = $palabra[$i];
+            $patron .= preg_quote($char, '/');
+            
+            // Agregar variaciones comunes para cada letra
+            switch (strtolower($char)) {
+                case 'a': $patron .= '[a4@á]'; break;
+                case 'e': $patron .= '[e3é]'; break;
+                case 'i': $patron .= '[i1!í]'; break;
+                case 'o': $patron .= '[o0ó]'; break;
+                case 'u': $patron .= '[u]'; break;
+                case 's': $patron .= '[s5$]'; break;
+                case 'l': $patron .= '[l1!]'; break;
+                case 'g': $patron .= '[g9]'; break;
+                case 'z': $patron .= '[z2]'; break;
+                case 't': $patron .= '[t7]'; break;
+                case 'b': $patron .= '[b8]'; break;
+                default: break;
+            }
+        }
+        
+        // Buscar la palabra con variaciones
+        $pattern = '/\b' . $patron . '\b/iu';
         $texto = preg_replace($pattern, $row['reemplazo'], $texto);
+        
+        // También filtrar sin espacios (para palabras compuestas)
+        $pattern_sin_espacios = '/' . str_replace(' ', '\s*', $patron) . '/iu';
+        $texto = preg_replace($pattern_sin_espacios, $row['reemplazo'], $texto);
     }
     return $texto;
 }
