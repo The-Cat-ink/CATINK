@@ -40,14 +40,32 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 100
     $timestamp = time();
     
     // ============================
-    // GUARDAR EN FORMATO ORIGINAL SIN COMPRESIÓN
+    // GUARDAR EN CARPETA PERSISTENTE (fuera de git)
     // ============================
+    // En producción: /home/usuario/public_html/uploads/
+    // En local: /CATINK/uploads/
+    $dirUploads = dirname(__DIR__) . "/uploads/noticias/";
+    
+    // Si no existe, crear carpeta
+    if (!is_dir($dirUploads)) {
+        if (!mkdir($dirUploads, 0755, true)) {
+            error_log("CATINK IMG UPDATE: No se pudo crear carpeta $dirUploads");
+            return null;
+        }
+    }
+    
+    // Validar permisos
+    if (!is_writable($dirUploads)) {
+        error_log("CATINK IMG UPDATE: Carpeta $dirUploads no tiene permisos de escritura");
+        return null;
+    }
+    
     // Mantener el formato original para preservar calidad
     $extension = strtolower($tipo);
     if ($extension === 'jpg') $extension = 'jpeg';
     
     $nombre = "noticia_{$noticiaId}_{$crop}_{$timestamp}.{$extension}";
-    $rutaFisica = $dirFisica . $nombre;
+    $rutaFisica = $dirUploads . $nombre;
 
     // Guardar directamente sin conversión ni compresión
     $bytesEscritos = file_put_contents($rutaFisica, $binario);
@@ -70,7 +88,7 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 100
         return null;
     }
 
-    return "img/noticias/" . $nombre;
+    return "uploads/noticias/" . $nombre;
 }
 // ============================
 // DATOS

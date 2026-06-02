@@ -1,8 +1,20 @@
 # Entorno local
 .env
 
-# Carpeta de uploads (opcional, si no quieres subir imágenes de prueba)
-# img/avatares/
+# Carpeta de uploads (PERSISTENTE - NO se borra en despliegues)
+uploads/*
+!uploads/.gitkeep
+!uploads/noticias/
+uploads/noticias/*
+!uploads/noticias/.gitkeep
+!uploads/avatares/
+uploads/avatares/*
+!uploads/avatares/.gitkeep
+!uploads/editores/
+uploads/editores/*
+!uploads/editores/.gitkeep
+
+# Carpeta de imágenes en git (se borra en despliegues)
 img/noticias/*
 !img/noticias/.gitkeep
 img/avatares/*
