@@ -91,22 +91,14 @@ $stmtRecientes = $con->prepare("
 $stmtRecientes->execute();
 $recientes = $stmtRecientes->get_result();
 
-// Helper: devuelve la primera imagen no vacía, o placeholder (ruta absoluta con cache buster)
+// Helper: devuelve la primera imagen no vacía, o placeholder
 function img($fields, $placeholder = 'img/placeholder.svg') {
-    $base = basePath();
     foreach ($fields as $f) {
         if (!empty($f)) {
-            $path = ltrim(htmlspecialchars($f), '/');
-            $fullPath = __DIR__ . '/' . $path;
-            // Agregar cache buster si el archivo existe, sino usar placeholder
-            if (file_exists($fullPath)) {
-                $mtime = filemtime($fullPath);
-                return $base . '/' . $path . '?v=' . $mtime;
-            }
-            // Si la imagen no existe, continuar al siguiente campo o usar placeholder
+            return imageUrl($f);
         }
     }
-    return $base . '/' . $placeholder;
+    return imageUrl($placeholder);
 }
 // Helper: genera atributos de imagen con lazy loading
 function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
@@ -550,11 +542,11 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
               <br>
               <div class="row">
                 <?php while($r = $recientes->fetch_assoc()): 
-                    $img = !empty($r['crop3']) ? $r['crop3'] : "img/placeholder.svg";
+                    $img = img([$r['crop3'], $r['crop2'], $r['crop1']]);
                 ?>
                   <div class="col">
                       <div class="card h-100"  data-url="<?= newsUrl($r['id']) ?>">
-                          <img src="<?= htmlspecialchars($img) ?>" class="card-img-top">
+                          <img src="<?= $img ?>" class="card-img-top" loading="lazy" decoding="async">
                           <div class="card-body">
                               <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-1">
                                   <?= htmlspecialchars($r['titulo']) ?>

@@ -253,7 +253,7 @@ if ($q !== '') {
             <div class="row row-no-gap">
 
               <div class="col-md-4">
-                <img src="<?= htmlspecialchars($img) ?>" class="card-img-left" loading="lazy">
+                <img src="<?= $img ?>" class="card-img-left" loading="lazy" decoding="async">
               </div>
 
               <div class="col-md-8">
@@ -326,7 +326,7 @@ if ($q !== '') {
             <?php if($secciones['publicidad']['estado'] == 1) : ?>
                 <div class="ad-container">
                     <a href="<?php echo htmlspecialchars($publicidadCuadro['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadCuadro['id_pub']); ?>">
-                        <img src="<?= basePath() ?>/<?php echo htmlspecialchars($publicidadCuadro['imagen']); ?>" class="banner-card-img-top" loading="lazy">
+                        <img src="<?= imageUrl($publicidadCuadro['imagen']) ?>" class="banner-card-img-top" loading="lazy">
                     </a>
                     <span class="ads-label">ADS</span>
                 </div>
@@ -338,7 +338,7 @@ if ($q !== '') {
                 <?php while ($row = $ultimas->fetch_assoc()): ?>
                   <div class="cardSpecial row row-no-gap">
                         <div class="col-md-4">
-                            <img src="<?= basePath() ?>/<?=$row['crop3']?>" class="imgCard card-img-left-rounded" loading="lazy">
+                            <img src="<?= imageUrl($row['crop3']) ?>" class="imgCard card-img-left-rounded" loading="lazy" decoding="async">
                         </div>
                         <div class="col-md-8">
                             <div class="card-body">
@@ -355,7 +355,7 @@ if ($q !== '') {
                 <?php while ($row = $populares->fetch_assoc()): ?>
                   <div class="cardSpecial row row-no-gap">
                         <div class="col-md-4">
-                            <img src="<?= basePath() ?>/<?=$row['crop3']?>" class="imgCard card-img-left-rounded" loading="lazy">
+                            <img src="<?= imageUrl($row['crop3']) ?>" class="imgCard card-img-left-rounded" loading="lazy" decoding="async">
                         </div>
                         <div class="col-md-8">
                             <div class="card-body">

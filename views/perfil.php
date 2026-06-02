@@ -51,9 +51,9 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
       <div class="perfil-avatar-wrap">
         <div class="perfil-avatar" id="perfilAvatar">
           <?php if($tipoUsuario === 'admin' && !empty($user['foto_personal'])): ?>
-            <img src="<?= basePath() ?>/<?= htmlspecialchars($user['foto_personal']) ?>" alt="Foto personal">
+            <img src="<?= imageUrl($user['foto_personal']) ?>" alt="Foto personal">
           <?php elseif($avatarActual): ?>
-            <img src="<?= basePath() ?>/img/avatares/<?= htmlspecialchars($avatarActual) ?>" alt="Avatar">
+            <img src="<?= imageUrl('img/avatares/' . $avatarActual) ?>" alt="Avatar">
           <?php else: ?>
             <span id="perfilInitials"><?= htmlspecialchars($iniciales) ?></span>
           <?php endif; ?>
@@ -203,7 +203,7 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
       <?php endif; ?>
       <?php foreach($avatares as $av): ?>
         <div class="avatar-option <?= ($user['avatar_id'] ?? 0) == $av['id_avatar'] ? 'avatar-selected' : '' ?>" data-id="<?= $av['id_avatar'] ?>" style="cursor:pointer; border-radius:12px; overflow:hidden; border:3px solid transparent; transition:border-color 0.2s;">
-          <img src="<?= basePath() ?>/img/avatares/<?= htmlspecialchars($av['imagen']) ?>" style="width:100%; height:100px; object-fit:cover; display:block;">
+          <img src="<?= imageUrl('img/avatares/' . $av['imagen']) ?>" style="width:100%; height:100px; object-fit:cover; display:block;">
         </div>
       <?php endforeach; ?>
     </div>

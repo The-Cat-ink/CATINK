@@ -58,16 +58,16 @@ $cats = array_map('trim', $cats);
             </button>
             <?php
                 $imgSrc = $noticia['crop3'] ?? $noticia['crop2'] ?? $noticia['crop1'] ?? null;
-                $img = $imgSrc ? basePath()."/" . htmlspecialchars($imgSrc) : basePath()."/img/placeholder.jpg";
+                $img = imageUrl($imgSrc ?? 'img/placeholder.svg');
             ?>
-            <img src="<?= $img ?>" alt="" class="img-titular">
+            <img src="<?= $img ?>" alt="" class="img-titular" loading="lazy" decoding="async">
             <!-- Contenido completo de la noticia -->
             <div class="ql-editor">
                 <?= $noticia['contenido'] ?>
             </div>
             <div class="ad-container">
                 <a href="<?= $publicidad['url'] ?>" class="banner-button" data-pub="<?= $publicidad['id_pub'] ?>">
-                    <img src="<?= basePath() ?>/<?= $publicidad['imagen'] ?>" alt="" class="banner">
+                    <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="" class="banner" loading="lazy">
                 </a>
                 <span class="ads-label">ADS</span>
             </div>

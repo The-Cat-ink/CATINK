@@ -48,7 +48,7 @@ $pubId = $row['id_pub'];
         <!-- TARJETA -->
         <div class="col-md-4 mb-3">
             <div class="card shadow-sm h-100">
-                <img src="<?= basePath() ?>/<?= htmlspecialchars($row['imagen'] ?? 'img/placeholder.svg') ?>" class="card-img-top">
+                <img src="<?= imageUrl($row['imagen'] ?? 'img/placeholder.svg') ?>" class="card-img-top" loading="lazy" decoding="async">
                 <div class="card-body">
                     <p>Tipo: <?= $row['tipo'] == 1 ? 'Banner Largo' : 'Banner Cuadrado' ?></p>
                     <p>URL: <a href="<?= htmlspecialchars($row['url']) ?>" target="_blank"><?= htmlspecialchars($row['url']) ?></a></p>

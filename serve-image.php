@@ -13,10 +13,10 @@ if (empty($file) || strpos($file, '..') !== false || strpos($file, '/') === 0) {
     exit('Invalid file');
 }
 
-// Construir ruta real (fuera de public_html)
-// En local: c:\xampp\htdocs\uploads\
-// En producción: /home/usuario/uploads/
-$uploadsDir = dirname(__DIR__) . '/uploads/';
+// Construir ruta real
+// En local: c:\xampp\htdocs\CATINK\uploads\
+// En producción: /home/usuario/public_html/CATINK/uploads/
+$uploadsDir = __DIR__ . '/uploads/';
 $realPath = $uploadsDir . $file;
 
 // Validar que el archivo existe

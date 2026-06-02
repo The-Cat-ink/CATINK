@@ -217,7 +217,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
             <?php if ($secciones['publicidad']['estado'] == 1) : ?>
               <div class="ad-container">
                 <a href="<?= $publicidad['url'] ?>" class="banner-button" data-pub="<?= $publicidad['id_pub'] ?>">
-                  <img src="<?= basePath() ?>/<?= $publicidad['imagen'] ?>" alt="" class="banner" loading="lazy">
+                  <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="" class="banner" loading="lazy">
                 </a>
                 <span class="ads-label">ADS</span>
               </div>
@@ -347,7 +347,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
               <?php if($secciones['publicidad']['estado'] == 1) : ?>
                 <div class="ad-container">
                   <a href="<?= $publicidadCuadro['url'] ?>" class="banner-button" data-pub="<?= $publicidadCuadro['id_pub'] ?>">
-                    <img src="<?= basePath() ?>/<?= $publicidadCuadro['imagen'] ?>" class="banner-card-img-top" loading="lazy">
+                    <img src="<?= imageUrl($publicidadCuadro['imagen']) ?>" class="banner-card-img-top" loading="lazy">
                   </a>
                   <span class="ads-label">ADS</span>
                 </div>
@@ -412,11 +412,11 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <div class="row">
             <?php while($r = $recomendadas->fetch_assoc()): 
                 $imgSrc = $r['crop3'] ?? $r['crop2'] ?? $r['crop1'] ?? null;
-                $img = $imgSrc ? basePath() . "/" . htmlspecialchars($imgSrc) : basePath() . "/img/placeholder.jpg";
+                $img = imageUrl($imgSrc ?? 'img/placeholder.svg');
             ?>
               <div class="col">
                   <div class="card h-100" data-url="<?= newsUrl($r['id']) ?>">
-                      <img src="<?= htmlspecialchars($img) ?>" class="card-img-top">
+                      <img src="<?= $img ?>" class="card-img-top" loading="lazy" decoding="async">
                       <div class="card-body">
                           <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-2">
                               <?= htmlspecialchars($r['titulo']) ?>
@@ -443,11 +443,11 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <div class="row">
             <?php while($r = $recientes->fetch_assoc()):
                 $imgSrc = $r['crop3'] ?? $r['crop2'] ?? $r['crop1'] ?? null;
-                $img = $imgSrc ? basePath() . "/" . htmlspecialchars($imgSrc) : basePath() . "/img/placeholder.jpg";
+                $img = imageUrl($imgSrc ?? 'img/placeholder.svg');
             ?>
               <div class="col">
                   <div class="card h-100" data-url="<?= newsUrl($r['id']) ?>">
-                      <img src="<?= htmlspecialchars($img) ?>" class="card-img-top">
+                      <img src="<?= $img ?>" class="card-img-top" loading="lazy" decoding="async">
                       <div class="card-body">
                           <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-2">
                               <?= htmlspecialchars($r['titulo']) ?>

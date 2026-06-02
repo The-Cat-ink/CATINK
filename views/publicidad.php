@@ -45,7 +45,7 @@
         ?>
             <div class="col">
                 <div class="card publicidad-card">
-                    <img src="<?= basePath() ?>/<?= $pub['imagen'] ?>" alt="Publicidad" class="card-img-top">
+                    <img src="<?= imageUrl($pub['imagen']) ?>" alt="Publicidad" class="card-img-top" loading="lazy" decoding="async">
                     <div class="card-body">
                         <h5 class="card-title"><?= $pub['titulo'] ?></h5>
                         <p class="news-tag">Tipo: <?= $pub['tipo'] == 1 ? 'Banner Largo' : 'Banner Cuadrado' ?></p>
