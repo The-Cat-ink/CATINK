@@ -26,12 +26,13 @@ if ($isProduction) {
     // /home/u780114275/domains/catink.com.mx/public_html (aquí está serve-image.php)
     // /home/u780114275/domains/catink.com.mx/uploads/ (aquí están las imágenes - UN NIVEL ARRIBA)
     // Las imágenes están en dirname(__DIR__) . '/uploads/'
-    $uploadsDir = dirname(__DIR__) . '/uploads/';
+    $uploadsDir = dirname(__DIR__) . '/';
 } else {
     // En local, está dentro del proyecto
-    $uploadsDir = __DIR__ . '/uploads/';
+    $uploadsDir = __DIR__ . '/';
 }
 
+// El archivo ya viene con 'uploads/' al inicio, así que no duplicar
 $realPath = $uploadsDir . $file;
 
 // Validar que el archivo existe
