@@ -20,9 +20,16 @@ if($row){
     // Manejo de rutas: si es solo el nombre, agregar ruta; si es ruta completa, usar como está
     $rutaImagen = $row['imagen'];
     if(strpos($rutaImagen, '/') === false){
-        $rutaImagen = 'img/avatares/' . $rutaImagen;
+        // Si no tiene ruta, asumir que es nuevo (uploads/) o viejo (img/)
+        $rutaImagen = 'uploads/avatares/' . $rutaImagen;
     }
-    $archivo = __DIR__ . '/../' . $rutaImagen;
+    // Intentar en uploads/ primero, luego en img/ para compatibilidad
+    $archivo = dirname(__DIR__) . '/' . $rutaImagen;
+    if(!file_exists($archivo)){
+        // Fallback a img/ para avatares antiguos
+        $rutaImagen = str_replace('uploads/avatares/', 'img/avatares/', $rutaImagen);
+        $archivo = __DIR__ . '/../' . $rutaImagen;
+    }
     if(file_exists($archivo)) unlink($archivo);
 
     $stmt = $con->prepare("DELETE FROM avatares_perfil WHERE id_avatar = ?");

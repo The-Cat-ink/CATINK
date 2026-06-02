@@ -59,7 +59,7 @@ if($imageInfo[0] > $maxWidth || $imageInfo[1] > $maxHeight){
 }
 
 // Crear carpeta si no existe
-$dir = __DIR__ . '/../img/avatares/';
+$dir = dirname(__DIR__) . '/uploads/avatares/';
 if(!is_dir($dir)) mkdir($dir, 0755, true);
 
 // Nombre único
@@ -68,7 +68,7 @@ $destino = $dir . $nombre;
 
 if(move_uploaded_file($file['tmp_name'], $destino)){
     // Guardar ruta relativa consistente
-    $rutaRelativa = 'img/avatares/' . $nombre;
+    $rutaRelativa = 'uploads/avatares/' . $nombre;
     $stmt = $con->prepare("INSERT INTO avatares_perfil (imagen) VALUES (?)");
     $stmt->bind_param("s", $rutaRelativa);
     $stmt->execute();

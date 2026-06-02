@@ -63,9 +63,9 @@ function imageUrl($path) {
         return $path;
     }
     
-    // Si es una ruta en /img/, devolverla directamente
+    // Si es una ruta en /img/, servir a través de serve-image.php (para avatares y editores)
     if (strpos($path, 'img/') === 0) {
-        return basePath() . "/" . $path;
+        return basePath() . "/serve-image.php?file=" . urlencode($path);
     }
     
     // Si es una ruta en /uploads/, servir a través de serve-image.php
