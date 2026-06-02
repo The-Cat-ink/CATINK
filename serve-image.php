@@ -29,11 +29,18 @@ if (strpos(realpath($realPath), realpath($uploadsDir)) !== 0) {
     exit('Access denied');
 }
 
-// Obtener tipo MIME
-$mimeType = mime_content_type($realPath);
-if (!$mimeType) {
-    $mimeType = 'application/octet-stream';
-}
+// Obtener tipo MIME por extensión
+$ext = strtolower(pathinfo($realPath, PATHINFO_EXTENSION));
+$mimeTypes = [
+    'jpg' => 'image/jpeg',
+    'jpeg' => 'image/jpeg',
+    'png' => 'image/png',
+    'gif' => 'image/gif',
+    'webp' => 'image/webp',
+    'svg' => 'image/svg+xml',
+    'ico' => 'image/x-icon'
+];
+$mimeType = $mimeTypes[$ext] ?? 'application/octet-stream';
 
 // Servir archivo
 header('Content-Type: ' . $mimeType);

@@ -167,21 +167,9 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <div class="container-noticia">
             <?php
               $imgSrc = $noticia['crop3'] ?? $noticia['crop2'] ?? $noticia['crop1'] ?? null;
-              if ($imgSrc) {
-                $path = ltrim(htmlspecialchars($imgSrc), '/');
-                $fullPath = __DIR__ . '/../' . $path;
-                if (file_exists($fullPath)) {
-                  $mtime = filemtime($fullPath);
-                  $img = basePath()."/" . $path . '?v=' . $mtime;
-                } else {
-                  // Si la imagen no existe, usar placeholder
-                  $img = basePath()."/img/placeholder.jpg";
-                }
-              } else {
-                $img = basePath()."/img/placeholder.jpg";
-              }
+              $img = imageUrl($imgSrc);
             ?>
-            <img src="<?= $img ?>" alt="" class="img-titular">
+            <img src="<?= htmlspecialchars($img) ?>" alt="" class="img-titular">
             <!-- Categorías -->
             <?php foreach ($cats as $cat): ?>
               <span class="news-tag"><?= htmlspecialchars($cat) ?></span>
@@ -371,7 +359,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                   <?php while ($row = $ultimas->fetch_assoc()): ?>
                     <div class="cardSpecial row row-no-gap">
                         <div class="col-md-4">
-                            <img src="<?= basePath() ?>/<?= htmlspecialchars($row['crop3'] ?? $row['crop2'] ?? $row['crop1'] ?? 'img/placeholder.svg') ?>" class="imgCard card-img-left-rounded" loading="lazy">
+                            <img src="<?= htmlspecialchars(imageUrl($row['crop3'] ?? $row['crop2'] ?? $row['crop1'])) ?>" class="imgCard card-img-left-rounded" loading="lazy">
                         </div>
                         <div class="col-md-8">
                           <div class="card-body">
@@ -388,7 +376,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                   <?php while ($row = $populares->fetch_assoc()): ?>
                     <div class="cardSpecial row row-no-gap">
                         <div class="col-md-4">
-                            <img src="<?= basePath() ?>/<?= htmlspecialchars($row['crop3'] ?? $row['crop2'] ?? $row['crop1'] ?? 'img/placeholder.svg') ?>" class="imgCard card-img-left-rounded" loading="lazy">
+                            <img src="<?= htmlspecialchars(imageUrl($row['crop3'] ?? $row['crop2'] ?? $row['crop1'])) ?>" class="imgCard card-img-left-rounded" loading="lazy">
                         </div>
                         <div class="col-md-8">
                           <div class="card-body">
