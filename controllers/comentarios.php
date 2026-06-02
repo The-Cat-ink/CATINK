@@ -97,6 +97,27 @@ switch ($action) {
             echo json_encode(['ok' => false, 'msg' => 'Máximo 2 enlaces por comentario.']);
             exit;
         }
+        
+        // Validar cada URL
+        foreach ($urls[0] as $url) {
+            // 1. Validar longitud (máximo 2048 caracteres)
+            if (strlen($url) > 2048) {
+                echo json_encode(['ok' => false, 'msg' => 'URL demasiado larga.']);
+                exit;
+            }
+            
+            // 2. Validar formato con filter_var
+            if (!filter_var($url, FILTER_VALIDATE_URL)) {
+                echo json_encode(['ok' => false, 'msg' => 'URL inválida.']);
+                exit;
+            }
+            
+            // 3. Validar que no contenga caracteres peligrosos
+            if (preg_match('/[<>"\'{};]/', $url)) {
+                echo json_encode(['ok' => false, 'msg' => 'URL contiene caracteres no permitidos.']);
+                exit;
+            }
+        }
 
         // Verificar si los comentarios están habilitados para esta noticia
         $stmtCfg = $con->prepare("SELECT permitir_comentarios, moderacion_previa FROM config_comentarios WHERE noticia_id = ?");
