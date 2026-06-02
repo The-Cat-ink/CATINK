@@ -11,21 +11,35 @@ date_default_timezone_set('America/Mexico_City');
 function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 95) {
     if (empty($base64)) return null;
 
-    // Detectar el tipo real de imagen que manda el cropper
     if (!preg_match('/^data:image\/(jpeg|jpg|png|webp|gif);base64,/', $base64, $matches)) {
         error_log("CATINK IMG: regex no coincide para crop=$crop, inicio=" . substr($base64, 0, 50));
         return null;
     }
 
-    $extension = $matches[1] === 'jpeg' ? 'jpg' : $matches[1];
-
-    // Decodificar base64 sin usar GD (evita doble compresión)
+    $tipo = $matches[1];
     $binario = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64));
     if ($binario === false || empty($binario)) return null;
 
     $timestamp = time();
-    $nombre = "noticia_{$noticiaId}_{$crop}_{$timestamp}.{$extension}";
+    $nombre    = "noticia_{$noticiaId}_{$crop}_{$timestamp}.jpg";
     $rutaFisica = __DIR__ . "/../img/noticias/" . $nombre;
+
+    // PNG lossless → convertir a JPEG 95 con GD (único paso con pérdida)
+    if ($tipo === 'png') {
+        $img = @imagecreatefromstring($binario);
+        if ($img === false) return null;
+        // Fondo blanco para aplanar posible alfa
+        $w = imagesx($img); $h = imagesy($img);
+        $fondo = imagecreatetruecolor($w, $h);
+        imagefill($fondo, 0, 0, imagecolorallocate($fondo, 255, 255, 255));
+        imagecopy($fondo, $img, 0, 0, 0, 0, $w, $h);
+        imagedestroy($img);
+        ob_start();
+        imagejpeg($fondo, null, $calidad);
+        $binario = ob_get_clean();
+        imagedestroy($fondo);
+    }
+    // JPEG/WebP: guardar directamente (ya viene del canvas sin re-encoding extra)
 
     if (file_put_contents($rutaFisica, $binario) === false) return null;
 

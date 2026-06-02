@@ -1123,8 +1123,8 @@ function setZonePreview(zoneId, data64) {
 }
 function confirmCrop() {
   if (!cropperInstance) return;
-  const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 1920, maxHeight: 1920 });
-  const data64 = canvas.toDataURL('image/jpeg', 0.85);
+  const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 2560, maxHeight: 2560 });
+  const data64 = canvas.toDataURL('image/png');
   document.getElementById('crop' + activeCrop).value = data64;
   setZonePreview(activeCrop, data64);
 
@@ -1150,10 +1150,13 @@ function autoFillMiniature(srcDataUrl) {
     const sx = (tmpImg.width  - sw) / 2;
     const sy = (tmpImg.height - sh) / 2;
     const canvas = document.createElement('canvas');
-    canvas.width  = Math.min(Math.round(sw), 1280);
+    canvas.width  = Math.min(Math.round(sw), 1920);
     canvas.height = Math.round(canvas.width / ratio);
-    canvas.getContext('2d').drawImage(tmpImg, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
-    const data64 = canvas.toDataURL('image/jpeg', 0.85);
+    const ctx3 = canvas.getContext('2d');
+    ctx3.imageSmoothingEnabled = true;
+    ctx3.imageSmoothingQuality = 'high';
+    ctx3.drawImage(tmpImg, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+    const data64 = canvas.toDataURL('image/png');
     document.getElementById('crop3').value = data64;
     setZonePreview(3, data64);
     document.getElementById('previewSection').style.display = 'block';
@@ -1171,10 +1174,13 @@ function autoFillBanner(srcDataUrl) {
     const sx = (tmpImg.width  - sw) / 2;
     const sy = (tmpImg.height - sh) / 2;
     const canvas = document.createElement('canvas');
-    canvas.width  = Math.min(Math.round(sw), 1920);
+    canvas.width  = Math.min(Math.round(sw), 2560);
     canvas.height = Math.round(canvas.width / ratio);
-    canvas.getContext('2d').drawImage(tmpImg, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
-    const data64 = canvas.toDataURL('image/jpeg', 0.85);
+    const ctx2 = canvas.getContext('2d');
+    ctx2.imageSmoothingEnabled = true;
+    ctx2.imageSmoothingQuality = 'high';
+    ctx2.drawImage(tmpImg, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+    const data64 = canvas.toDataURL('image/png');
     document.getElementById('crop2').value = data64;
     setZonePreview(2, data64);
     document.getElementById('previewSection').style.display = 'block';

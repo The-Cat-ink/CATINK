@@ -132,13 +132,13 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
         <?php foreach($slider as $i => $row): ?>
             <div class="carousel-item <?= $i==0?'active':'' ?>" data-url="<?= newsUrl($row['id']) ?>">
                 <picture>
-                    <!-- MÓVIL usa crop2 -->
-                    <source 
-                        media="(max-width:768px)" 
-                        srcset="<?= img([$row['crop1'], $row['crop2']]) ?>">
-                    <!-- DESKTOP usa crop1 -->
-                    <img 
-                        src="<?= img([$row['crop2'], $row['crop1']]) ?>" 
+                    <!-- MÓVIL: miniatura (16:9) con animación de paneo -->
+                    <source
+                        media="(max-width:768px)"
+                        srcset="<?= img([$row['crop3'], $row['crop2']]) ?>">
+                    <!-- DESKTOP: banner (21:6) -->
+                    <img
+                        src="<?= img([$row['crop2'], $row['crop1']]) ?>"
                         class="carousel-img"
                         alt="<?= htmlspecialchars($row['titulo']) ?>">
                 </picture>
@@ -163,7 +163,10 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
             <!-- Primeras 2 noticias principales -->
             <div class="col-md-8">
                 <div class="news-card card-banner" data-url="<?= newsUrl($ultimasNoticias[0]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[0]['crop2'], $ultimasNoticias[0]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
+                    <picture>
+                        <source media="(max-width: 767px)" srcset="<?= img([$ultimasNoticias[0]['crop3'], $ultimasNoticias[0]['crop2']]) ?>">
+                        <img src="<?= img([$ultimasNoticias[0]['crop2'], $ultimasNoticias[0]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
+                    </picture>
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[0]['categorias'] ?? ''))) as $cat): ?>
@@ -200,7 +203,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
             </div>
         </div>
         <div class="row">
-            <div class="col">
+            <div class="col-12 col-md-4">
                 <div class="news-card card-thumb" data-url="<?= newsUrl($ultimasNoticias[2]['id']) ?>">
                     <img src="<?= img([$ultimasNoticias[2]['crop3'], $ultimasNoticias[2]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
                     <div class="news-overlay">
@@ -218,7 +221,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
                     </div>
                 </div>
             </div>
-            <div class="col">
+            <div class="col-12 col-md-4">
                 <div class="news-card card-thumb" data-url="<?= newsUrl($ultimasNoticias[3]['id']) ?>">
                     <img src="<?= img([$ultimasNoticias[3]['crop3'], $ultimasNoticias[3]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
                     <div class="news-overlay">
@@ -236,7 +239,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
                     </div>
                 </div>
             </div>
-            <div class="col">
+            <div class="col-12 col-md-4">
                 <div class="news-card card-thumb" data-url="<?= newsUrl($ultimasNoticias[4]['id']) ?>">
                     <img src="<?= img([$ultimasNoticias[4]['crop3'], $ultimasNoticias[4]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
                     <div class="news-overlay">
@@ -276,7 +279,10 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
             </div>
             <div class="col-md-8">
                 <div class="news-card card-banner" data-url="<?= newsUrl($ultimasNoticias[6]['id']) ?>">
-                    <img src="<?= img([$ultimasNoticias[6]['crop2'], $ultimasNoticias[6]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
+                    <picture>
+                        <source media="(max-width: 767px)" srcset="<?= img([$ultimasNoticias[6]['crop3'], $ultimasNoticias[6]['crop2']]) ?>">
+                        <img src="<?= img([$ultimasNoticias[6]['crop2'], $ultimasNoticias[6]['crop1']]) ?>" alt="" loading="lazy" decoding="async">
+                    </picture>
                     <div class="news-overlay">
                         <div class="news-tags">
                             <?php foreach(array_filter(array_map('trim', explode(',', $ultimasNoticias[6]['categorias'] ?? ''))) as $cat): ?>

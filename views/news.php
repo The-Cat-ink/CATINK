@@ -427,7 +427,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                 $img = $imgSrc ? basePath() . "/" . htmlspecialchars($imgSrc) : basePath() . "/img/placeholder.jpg";
             ?>
               <div class="col">
-                  <div class="card h-100" data-url="./<?= newsUrl($r['id']) ?>">
+                  <div class="card h-100" data-url="<?= newsUrl($r['id']) ?>">
                       <img src="<?= htmlspecialchars($img) ?>" class="card-img-top">
                       <div class="card-body">
                           <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-2">
@@ -453,12 +453,12 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <h3><i class="bi bi-lightning-fill"></i> Noticias recientes</h3>
           <br>
           <div class="row">
-            <?php while($r = $recientes->fetch_assoc()): 
+            <?php while($r = $recientes->fetch_assoc()):
                 $imgSrc = $r['crop3'] ?? $r['crop2'] ?? $r['crop1'] ?? null;
                 $img = $imgSrc ? basePath() . "/" . htmlspecialchars($imgSrc) : basePath() . "/img/placeholder.jpg";
             ?>
               <div class="col">
-                  <div class="card h-100"  data-url="./<?= newsUrl($r['id']) ?>">
+                  <div class="card h-100" data-url="<?= newsUrl($r['id']) ?>">
                       <img src="<?= htmlspecialchars($img) ?>" class="card-img-top">
                       <div class="card-body">
                           <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-2">
