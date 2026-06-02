@@ -21,6 +21,37 @@ $link_twitter = trim($_POST['link_twitter'] ?? '');
 $link_instagram = trim($_POST['link_instagram'] ?? '');
 
 // ============================
+// VALIDACIÓN DE BIOGRAFÍA
+// ============================
+if(!empty($biografia)){
+    if(mb_strlen($biografia) > 500){
+        header('Location: ' . basePath() . '/perfil?error=biografia_larga');
+        exit;
+    }
+    // Filtrar palabras prohibidas en biografía
+    $biografia = filtrarPalabras($con, $biografia);
+}
+
+// ============================
+// VALIDACIÓN DE LINKS SOCIALES
+// ============================
+// Validar Twitter/X
+if(!empty($link_twitter)){
+    if(!preg_match('/^https:\/\/(x\.com|twitter\.com)\/[a-zA-Z0-9_]{1,15}(\/.*)?$/', $link_twitter)){
+        header('Location: ' . basePath() . '/perfil?error=twitter_invalido');
+        exit;
+    }
+}
+
+// Validar Instagram
+if(!empty($link_instagram)){
+    if(!preg_match('/^https:\/\/instagram\.com\/[a-zA-Z0-9_.]{1,30}(\/.*)?$/', $link_instagram)){
+        header('Location: ' . basePath() . '/perfil?error=instagram_invalido');
+        exit;
+    }
+}
+
+// ============================
 // VERIFICAR CONTRASEÑA ACTUAL
 // ============================
 if(!empty($pass_actual)){
@@ -49,26 +80,52 @@ if(!empty($pass_actual)){
 $foto_personal = null;
 if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_personal']['error'] === UPLOAD_ERR_OK){
     $file = $_FILES['foto_personal'];
+    
+    // ============================
+    // VALIDAR TAMAÑO (máximo 5MB)
+    // ============================
+    $maxSize = 5 * 1024 * 1024;
+    if($file['size'] > $maxSize){
+        header('Location: ' . basePath() . '/perfil?error=foto_grande');
+        exit;
+    }
+    
     $mime = mime_content_type($file['tmp_name']);
     $permitidos = ['image/jpeg', 'image/png', 'image/webp'];
     if(in_array($mime, $permitidos)){
-        $imagen = imagecreatefromstring(file_get_contents($file['tmp_name']));
-        if($imagen){
-            $dir = __DIR__ . '/../img/editores/';
-            if(!is_dir($dir)) mkdir($dir, 0755, true);
-            // Obtener id_u para nombre de archivo
-            $stmtId = $con->prepare("SELECT id_u, foto_personal FROM usuarios WHERE usuario = ?");
-            $stmtId->bind_param("s", $usuario);
-            $stmtId->execute();
-            $rowId = $stmtId->get_result()->fetch_assoc();
-            // Borrar foto anterior
-            if(!empty($rowId['foto_personal']) && file_exists(__DIR__ . '/../' . $rowId['foto_personal'])){
-                unlink(__DIR__ . '/../' . $rowId['foto_personal']);
+        // ============================
+        // VALIDAR DIMENSIONES
+        // ============================
+        $imageInfo = getimagesize($file['tmp_name']);
+        if($imageInfo !== false && $imageInfo[0] <= 2000 && $imageInfo[1] <= 2000){
+            $imagen = imagecreatefromstring(file_get_contents($file['tmp_name']));
+            if($imagen){
+                $dir = __DIR__ . '/../img/editores/';
+                if(!is_dir($dir)) mkdir($dir, 0755, true);
+                // Obtener id_u para nombre de archivo
+                $stmtId = $con->prepare("SELECT id_u, foto_personal FROM usuarios WHERE usuario = ?");
+                $stmtId->bind_param("s", $usuario);
+                $stmtId->execute();
+                $rowId = $stmtId->get_result()->fetch_assoc();
+                // Borrar foto anterior (protección contra path traversal)
+                if(!empty($rowId['foto_personal'])){
+                    $fotoPath = $rowId['foto_personal'];
+                    // Validar que la ruta no contenga path traversal
+                    if(strpos($fotoPath, '..') === false && strpos($fotoPath, '/') !== 0){
+                        $fullPath = __DIR__ . '/../' . $fotoPath;
+                        if(file_exists($fullPath) && strpos(realpath($fullPath), realpath(__DIR__ . '/../img/editores/')) === 0){
+                            unlink($fullPath);
+                        }
+                    }
+                }
+                $nombreArchivo = 'editor_' . $rowId['id_u'] . '_' . time() . '.webp';
+                imagewebp($imagen, $dir . $nombreArchivo, 92);
+                imagedestroy($imagen);
+                $foto_personal = 'img/editores/' . $nombreArchivo;
             }
-            $nombreArchivo = 'editor_' . $rowId['id_u'] . '_' . time() . '.webp';
-            imagewebp($imagen, $dir . $nombreArchivo, 92);
-            imagedestroy($imagen);
-            $foto_personal = 'img/editores/' . $nombreArchivo;
+        } else {
+            header('Location: ' . basePath() . '/perfil?error=foto_dimensiones');
+            exit;
         }
     }
 }

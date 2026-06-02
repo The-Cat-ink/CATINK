@@ -6,7 +6,7 @@ exit();
 ?>
 <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; padding:20px;">
   <a href="<?= basePath() ?>/">
-    <img src="<?= basePath() ?>/img/logo.png" alt="CatInk" style="max-width:150px; margin-bottom:20px; border-radius:12px;">
+    <img src="<?= imageUrl('img/logo.png') ?>" alt="CatInk" style="max-width:150px; margin-bottom:20px; border-radius:12px;" loading="lazy" decoding="async">
   </a>
   <div class="card" style="width:100%; max-width:380px; border-radius:12px; padding:24px;">
     <?php if(isset($_GET['error'])): ?>

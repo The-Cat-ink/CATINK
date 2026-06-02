@@ -48,3 +48,31 @@ function searchUrlLong($termino){
 function authorUrl($id){
     return basePath() . "/autor/" . intval($id);
 }
+
+// ============================
+// FUNCIÓN PARA SERVIR IMÁGENES
+// ============================
+// Convierte rutas de BD (uploads/noticias/...) a URLs accesibles
+function imageUrl($path) {
+    if (empty($path)) {
+        return basePath() . "/img/placeholder.svg";
+    }
+    
+    // Si ya es una URL completa, devolverla
+    if (strpos($path, 'http') === 0) {
+        return $path;
+    }
+    
+    // Si es una ruta en /img/, devolverla directamente
+    if (strpos($path, 'img/') === 0) {
+        return basePath() . "/" . $path;
+    }
+    
+    // Si es una ruta en /uploads/, servir a través de serve-image.php
+    if (strpos($path, 'uploads/') === 0) {
+        return basePath() . "/serve-image.php?file=" . urlencode($path);
+    }
+    
+    // Por defecto, devolver placeholder
+    return basePath() . "/img/placeholder.svg";
+}

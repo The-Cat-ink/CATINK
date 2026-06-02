@@ -60,7 +60,7 @@ $fechaRegistro = date('d M Y', strtotime($editor['registro']));
 
 // Foto con fallback
 $fotoEditor = !empty($editor['foto_personal'])
-    ? basePath() . '/' . htmlspecialchars($editor['foto_personal'])
+    ? imageUrl($editor['foto_personal'])
     : null;
 
 // Iniciales para fallback
@@ -117,7 +117,7 @@ $iniciales = strtoupper(substr($palabras[0], 0, 1) . (isset($palabras[1]) ? subs
                         $cats = !empty($art['categorias']) ? array_map('trim', explode(',', $art['categorias'])) : [];
                     ?>
                     <a href="<?= newsUrl($art['id']) ?>" class="autor-article-card">
-                        <img src="<?= basePath() . '/' . htmlspecialchars($imgArt) ?>" alt="" class="autor-article-img">
+                        <img src="<?= imageUrl($imgArt) ?>" alt="" class="autor-article-img" loading="lazy" decoding="async">
                         <div class="autor-article-body">
                             <div class="autor-article-tags">
                                 <?php foreach (array_slice($cats, 0, 2) as $cat): ?>
