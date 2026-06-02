@@ -249,7 +249,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
               <div class="comentario-form">
                 <div class="comentario-form-avatar">
                   <?php if ($avatarComentario): ?>
-                    <img src="<?= basePath() ?>/img/avatares/<?= htmlspecialchars($avatarComentario) ?>" alt="" class="comentario-avatar">
+                    <img src="<?= imageUrl('img/avatares/' . $avatarComentario) ?>" alt="" class="comentario-avatar" loading="lazy" decoding="async">
                   <?php else: ?>
                     <div class="comentario-avatar-placeholder"><i class="bi bi-person"></i></div>
                   <?php endif; ?>
@@ -274,7 +274,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                   <div class="comentario-item" data-id="<?= $com['id_comentario'] ?>">
                     <div class="comentario-avatar-col">
                       <?php if (!empty($com['avatar_img'])): ?>
-                        <img src="<?= basePath() ?>/img/avatares/<?= htmlspecialchars($com['avatar_img']) ?>" alt="" class="comentario-avatar">
+                        <img src="<?= imageUrl('img/avatares/' . $com['avatar_img']) ?>" alt="" class="comentario-avatar" loading="lazy" decoding="async">
                       <?php else: ?>
                         <div class="comentario-avatar-placeholder"><?= strtoupper(mb_substr($com['nombre'], 0, 1)) ?></div>
                       <?php endif; ?>
@@ -561,7 +561,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
         if (data.ok && data.comentario) {
           const c = data.comentario;
           const avatarHtml = c.avatar_img
-            ? `<img src="<?= basePath() ?>/img/avatares/${c.avatar_img}" alt="" class="comentario-avatar">`
+            ? `<img src="<?= basePath() ?>/serve-image.php?file=img/avatares/${c.avatar_img}" alt="" class="comentario-avatar" loading="lazy" decoding="async">`
             : `<div class="comentario-avatar-placeholder">${c.nombre.charAt(0).toUpperCase()}</div>`;
           const fecha = new Date(c.fecha_publicacion).toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
           const badgeHtml = c.es_editor == 1 ? '<span class="badge-editor">Editor</span>' : '';

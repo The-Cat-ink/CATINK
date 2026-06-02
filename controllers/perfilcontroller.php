@@ -100,7 +100,7 @@ if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_persona
         if($imageInfo !== false && $imageInfo[0] <= 2000 && $imageInfo[1] <= 2000){
             $imagen = imagecreatefromstring(file_get_contents($file['tmp_name']));
             if($imagen){
-                $dir = __DIR__ . '/../img/editores/';
+                $dir = dirname(__DIR__) . '/uploads/editores/';
                 if(!is_dir($dir)) mkdir($dir, 0755, true);
                 // Obtener id_u para nombre de archivo
                 $stmtId = $con->prepare("SELECT id_u, foto_personal FROM usuarios WHERE usuario = ?");
@@ -112,8 +112,8 @@ if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_persona
                     $fotoPath = $rowId['foto_personal'];
                     // Validar que la ruta no contenga path traversal
                     if(strpos($fotoPath, '..') === false && strpos($fotoPath, '/') !== 0){
-                        $fullPath = __DIR__ . '/../' . $fotoPath;
-                        if(file_exists($fullPath) && strpos(realpath($fullPath), realpath(__DIR__ . '/../img/editores/')) === 0){
+                        $fullPath = dirname(__DIR__) . '/' . $fotoPath;
+                        if(file_exists($fullPath) && strpos(realpath($fullPath), realpath(dirname(__DIR__) . '/uploads/editores/')) === 0){
                             unlink($fullPath);
                         }
                     }
@@ -121,7 +121,7 @@ if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_persona
                 $nombreArchivo = 'editor_' . $rowId['id_u'] . '_' . time() . '.webp';
                 imagewebp($imagen, $dir . $nombreArchivo, 92);
                 imagedestroy($imagen);
-                $foto_personal = 'img/editores/' . $nombreArchivo;
+                $foto_personal = 'uploads/editores/' . $nombreArchivo;
             }
         } else {
             header('Location: ' . basePath() . '/perfil?error=foto_dimensiones');
