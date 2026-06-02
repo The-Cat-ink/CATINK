@@ -14,15 +14,29 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 95)
         return null;
     }
 
-    $extension = $matches[1] === 'jpeg' ? 'jpg' : $matches[1];
-
-    // Decodificar base64 sin usar GD (evita doble compresión)
+    $tipo = $matches[1];
     $binario = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64));
     if ($binario === false || empty($binario)) return null;
 
     $timestamp = time();
-    $nombre = "noticia_{$noticiaId}_{$crop}_{$timestamp}.{$extension}";
+    $nombre    = "noticia_{$noticiaId}_{$crop}_{$timestamp}.jpg";
     $rutaFisica = __DIR__ . "/../img/noticias/" . $nombre;
+
+    // PNG lossless → convertir a JPEG 95 con GD (único paso con pérdida)
+    if ($tipo === 'png') {
+        $img = @imagecreatefromstring($binario);
+        if ($img === false) return null;
+        $w = imagesx($img); $h = imagesy($img);
+        $fondo = imagecreatetruecolor($w, $h);
+        imagefill($fondo, 0, 0, imagecolorallocate($fondo, 255, 255, 255));
+        imagecopy($fondo, $img, 0, 0, 0, 0, $w, $h);
+        imagedestroy($img);
+        ob_start();
+        imagejpeg($fondo, null, $calidad);
+        $binario = ob_get_clean();
+        imagedestroy($fondo);
+    }
+    // JPEG/WebP: guardar directamente
 
     if (file_put_contents($rutaFisica, $binario) === false) return null;
 
