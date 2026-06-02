@@ -63,7 +63,19 @@ function imageUrl($path) {
         return $path;
     }
     
-    // Si es una ruta en /img/, servir a través de serve-image.php (para avatares y editores)
+    // Convertir rutas antiguas de img/avatares/ e img/editores/ a uploads/
+    if (strpos($path, 'img/avatares/') === 0 || strpos($path, 'img/editores/') === 0) {
+        // Extraer el nombre del archivo
+        $filename = basename($path);
+        // Determinar si es avatar o editor
+        if (strpos($path, 'img/avatares/') === 0) {
+            $path = 'uploads/avatares/' . $filename;
+        } else {
+            $path = 'uploads/editores/' . $filename;
+        }
+    }
+    
+    // Si es una ruta en /img/, servir a través de serve-image.php (para logos, placeholders, etc)
     if (strpos($path, 'img/') === 0) {
         return basePath() . "/serve-image.php?file=" . urlencode($path);
     }
