@@ -24,22 +24,9 @@ $uploadsDir = null;
 if ($isProduction) {
     // En producción Hostinger con estructura:
     // /home/u780114275/domains/catink.com.mx/public_html (aquí está serve-image.php)
-    // /home/u780114275/domains/catink.com.mx/uploads/ (aquí están las imágenes)
-    // Intentar múltiples rutas en orden de probabilidad
-    $option1 = dirname(__DIR__) . '/uploads/';  // /home/u780114275/domains/catink.com.mx/uploads/
-    $option2 = dirname(dirname(__DIR__)) . '/uploads/';  // /home/u780114275/domains/uploads/
-    $option3 = __DIR__ . '/uploads/';  // /home/u780114275/domains/catink.com.mx/public_html/uploads/
-    
-    if (is_dir($option1) && count(scandir($option1)) > 2) {
-        $uploadsDir = $option1;
-    } elseif (is_dir($option2) && count(scandir($option2)) > 2) {
-        $uploadsDir = $option2;
-    } elseif (is_dir($option3) && count(scandir($option3)) > 2) {
-        $uploadsDir = $option3;
-    } else {
-        // Si ninguna tiene archivos, usar la opción 1 (más probable)
-        $uploadsDir = $option1;
-    }
+    // /home/u780114275/domains/catink.com.mx/uploads/ (aquí están las imágenes - UN NIVEL ARRIBA)
+    // Las imágenes están en dirname(__DIR__) . '/uploads/'
+    $uploadsDir = dirname(__DIR__) . '/uploads/';
 } else {
     // En local, está dentro del proyecto
     $uploadsDir = __DIR__ . '/uploads/';
