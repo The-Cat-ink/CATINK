@@ -22,18 +22,22 @@ $isProduction = strpos($_SERVER['HTTP_HOST'], 'localhost') === false;
 $uploadsDir = null;
 
 if ($isProduction) {
-    // En producción Hostinger, intentar múltiples rutas
-    // Opción 1: /home/usuario/uploads/ (un nivel arriba de public_html)
-    $option1 = dirname(dirname(__DIR__)) . '/uploads/';
-    // Opción 2: /home/usuario/public_html/uploads/
-    $option2 = dirname(__DIR__) . '/uploads/';
+    // En producción Hostinger con estructura:
+    // /home/u780114275/domains/catink.com.mx/public_html (aquí está serve-image.php)
+    // /home/u780114275/domains/catink.com.mx/uploads/ (aquí están las imágenes)
+    // Intentar múltiples rutas en orden de probabilidad
+    $option1 = dirname(__DIR__) . '/uploads/';  // /home/u780114275/domains/catink.com.mx/uploads/
+    $option2 = dirname(dirname(__DIR__)) . '/uploads/';  // /home/u780114275/domains/uploads/
+    $option3 = __DIR__ . '/uploads/';  // /home/u780114275/domains/catink.com.mx/public_html/uploads/
     
-    if (is_dir($option1)) {
+    if (is_dir($option1) && count(scandir($option1)) > 2) {
         $uploadsDir = $option1;
-    } elseif (is_dir($option2)) {
+    } elseif (is_dir($option2) && count(scandir($option2)) > 2) {
         $uploadsDir = $option2;
+    } elseif (is_dir($option3) && count(scandir($option3)) > 2) {
+        $uploadsDir = $option3;
     } else {
-        // Si no existe ninguna, usar la opción 1 por defecto
+        // Si ninguna tiene archivos, usar la opción 1 (más probable)
         $uploadsDir = $option1;
     }
 } else {
