@@ -273,6 +273,17 @@ if ($q !== '') {
 
                   <small><?= date('d M Y', strtotime($row['fecha_publicacion'])) ?></small>
 
+                  <?php 
+                    // Mostrar botón de editar si es editor/admin
+                    if (isset($_SESSION['usuario']) && (isset($_SESSION['perm_noticias']) && $_SESSION['perm_noticias'] == 1)): 
+                  ?>
+                    <div style="margin-top: 10px;">
+                      <a href="<?= basePath() ?>/editar/<?= $row['id'] ?>" class="btn btn-sm btn-primary" style="font-size: 0.85rem;">
+                        <i class="bi bi-pencil"></i> Editar
+                      </a>
+                    </div>
+                  <?php endif; ?>
+
                 </div>
               </div>
 

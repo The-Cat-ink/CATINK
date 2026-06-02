@@ -3,7 +3,12 @@
 
 # Carpeta de uploads (opcional, si no quieres subir imágenes de prueba)
 # img/avatares/
-img/noticias/
+img/noticias/*
+!img/noticias/.gitkeep
+img/avatares/*
+!img/avatares/.gitkeep
+img/editores/*
+!img/editores/.gitkeep
 
 # Archivos del sistema
 .DS_Store
