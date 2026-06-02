@@ -246,7 +246,7 @@ if ($q !== '') {
                 array_unshift($cats, $categoria);
             }
 
-            $img = !empty($row['crop3']) ? basePath()."/".$row['crop3'] : basePath()."/img/placeholder.svg";
+            $img = imageUrl($row['crop3']);
           ?>
 
           <div class="card mb-3" data-url="<?= newsUrl($row['id']) ?>">

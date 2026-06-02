@@ -42,11 +42,12 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 100
     $timestamp = time();
     
     // ============================
-    // GUARDAR EN CARPETA PERSISTENTE (fuera de git)
+    // GUARDAR EN CARPETA PERSISTENTE (FUERA de public_html)
     // ============================
-    // En producción: /home/usuario/public_html/uploads/
-    // En local: /CATINK/uploads/
-    $dirUploads = dirname(__DIR__) . "/uploads/noticias/";
+    // En producción: /home/usuario/uploads/noticias/
+    // En local: /uploads/noticias/
+    // Esto evita que Hostinger borre las imágenes en despliegues
+    $dirUploads = dirname(dirname(__DIR__)) . "/uploads/noticias/";
     
     // Si no existe, crear carpeta
     if (!is_dir($dirUploads)) {
