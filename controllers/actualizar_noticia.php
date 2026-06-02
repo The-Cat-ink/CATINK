@@ -6,7 +6,7 @@ include("../data/conexion.php");
 // ============================
 // FUNCION GUARDAR IMAGEN BASE64
 // ============================
-function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 95) {
+function guardarImagenBase64WebpConId($base64, $noticiaId, $crop) {
     if (empty($base64)) return null;
 
     if (!preg_match('/^data:image\/(jpeg|jpg|png|webp|gif);base64,/', $base64, $matches)) {
@@ -18,25 +18,11 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 95)
     $binario = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64));
     if ($binario === false || empty($binario)) return null;
 
+    // Guardar el binario tal cual viene del canvas (PNG sin pérdida). Sin re-encoding => sin pérdida de calidad.
+    $ext = ($tipo === 'jpg') ? 'jpeg' : $tipo;
     $timestamp = time();
-    $nombre    = "noticia_{$noticiaId}_{$crop}_{$timestamp}.jpg";
+    $nombre    = "noticia_{$noticiaId}_{$crop}_{$timestamp}.{$ext}";
     $rutaFisica = __DIR__ . "/../img/noticias/" . $nombre;
-
-    // PNG lossless → convertir a JPEG 95 con GD (único paso con pérdida)
-    if ($tipo === 'png') {
-        $img = @imagecreatefromstring($binario);
-        if ($img === false) return null;
-        $w = imagesx($img); $h = imagesy($img);
-        $fondo = imagecreatetruecolor($w, $h);
-        imagefill($fondo, 0, 0, imagecolorallocate($fondo, 255, 255, 255));
-        imagecopy($fondo, $img, 0, 0, 0, 0, $w, $h);
-        imagedestroy($img);
-        ob_start();
-        imagejpeg($fondo, null, $calidad);
-        $binario = ob_get_clean();
-        imagedestroy($fondo);
-    }
-    // JPEG/WebP: guardar directamente
 
     if (file_put_contents($rutaFisica, $binario) === false) return null;
 

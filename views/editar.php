@@ -407,7 +407,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               </div>
               <div class="cn-toggle-wrap">
                 <label class="cn-toggle">
-                  <input type="checkbox" id="scheduleToggle" checked>
+                  <input type="checkbox" id="scheduleToggle">
                   <div class="cn-toggle-track"></div>
                   <div class="cn-toggle-thumb"></div>
                 </label>
@@ -784,7 +784,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (EXISTING_CROP3_URL) {
     setZonePreviewFromUrl(3, BASE_PATH + '/' + EXISTING_CROP3_URL);
-    zoneSources[3] = BASE_PATH + '/' + EXISTING_CROP3_URL;
+    // Usar el banner como fuente para re-recortar la miniatura (igual que crear.php,
+    // donde zoneSources[3] apunta a la imagen original completa, no al recorte ya hecho)
+    zoneSources[3] = EXISTING_CROP2_URL
+      ? (BASE_PATH + '/' + EXISTING_CROP2_URL)
+      : (BASE_PATH + '/' + EXISTING_CROP3_URL);
   }
   if (EXISTING_CROP2_URL || EXISTING_CROP3_URL) {
     document.getElementById('previewSection').style.display = 'block';
@@ -801,7 +805,8 @@ document.addEventListener('DOMContentLoaded', () => {
     schedDate.value = FECHA_EXISTENTE.slice(0, 10);
     schedTime.value = FECHA_EXISTENTE.slice(11, 16);
   }
-  schedFields.style.display = '';
+  // Programar desactivado por defecto: campos ocultos hasta que se active
+  schedFields.style.display = schedToggle.checked ? '' : 'none';
 
   schedToggle?.addEventListener('change', () => {
     schedFields.style.display = schedToggle.checked ? '' : 'none';
@@ -854,9 +859,10 @@ document.addEventListener('DOMContentLoaded', () => {
                           '<div class="social-embed" data-url="$1"></div>');
       contenidoHid.value = html;
     }
+    // Si Programar está desactivado, conservar la fecha de publicación original
     hiddenFecha.value = schedToggle?.checked
       ? (schedDate.value + 'T' + schedTime.value).replace('T', ' ')
-      : nowLocal().replace('T', ' ');
+      : FECHA_EXISTENTE.replace('T', ' ');
   });
 
   /* ── Click en "Guardar cambios" con validación ── */
@@ -1036,7 +1042,8 @@ function confirmCrop() {
   const data64 = canvas.toDataURL('image/png');
   document.getElementById('crop' + activeCrop).value = data64;
   setZonePreview(activeCrop, data64);
-  zoneSources[activeCrop] = data64;
+  // NO sobrescribir zoneSources con el recorte: así al re-editar se parte de la
+  // fuente original (igual que crear.php) y puedes corregir el recorte libremente.
 
   if (activeCrop === 2 && !document.getElementById('crop3').value)
     autoFillMiniature(document.getElementById('cropImg').src);
