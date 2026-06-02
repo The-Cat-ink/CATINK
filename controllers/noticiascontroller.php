@@ -8,7 +8,7 @@ date_default_timezone_set('America/Mexico_City');
 // ============================
 // GUARDAR IMAGEN BASE64
 // ============================
-function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 85) {
+function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 100) {
     if (empty($base64)) return null;
 
     if (!preg_match('/^data:image\/(jpeg|jpg|png|webp|gif);base64,/', $base64, $matches)) {
@@ -40,36 +40,21 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 85)
     }
 
     $timestamp = time();
-    $nombre    = "noticia_{$noticiaId}_{$crop}_{$timestamp}.webp";
+    
+    // ============================
+    // GUARDAR EN FORMATO ORIGINAL SIN COMPRESIÓN
+    // ============================
+    // Mantener el formato original para preservar calidad
+    $extension = strtolower($tipo);
+    if ($extension === 'jpg') $extension = 'jpeg';
+    
+    $nombre = "noticia_{$noticiaId}_{$crop}_{$timestamp}.{$extension}";
     $rutaFisica = $dirFisica . $nombre;
 
-    // ============================
-    // PROCESAR IMAGEN
-    // ============================
-    $img = @imagecreatefromstring($binario);
-    if ($img === false) return null;
-
-    $w = imagesx($img);
-    $h = imagesy($img);
-
-    // PNG con transparencia → agregar fondo blanco
-    if ($tipo === 'png') {
-        $fondo = imagecreatetruecolor($w, $h);
-        imagefill($fondo, 0, 0, imagecolorallocate($fondo, 255, 255, 255));
-        imagecopy($fondo, $img, 0, 0, 0, 0, $w, $h);
-        imagedestroy($img);
-        $img = $fondo;
-    }
-
-    // ============================
-    // GUARDAR COMO WEBP CON CALIDAD ALTA
-    // ============================
-    // Calidad 85 mantiene excelente balance entre tamaño y calidad
-    $resultado = imagewebp($img, $rutaFisica, $calidad);
-    imagedestroy($img);
-
-    if ($resultado === false) {
-        error_log("CATINK IMG: Error guardando WebP: $rutaFisica");
+    // Guardar directamente sin conversión ni compresión
+    $bytesEscritos = file_put_contents($rutaFisica, $binario);
+    if ($bytesEscritos === false) {
+        error_log("CATINK IMG: Error escribiendo archivo $rutaFisica");
         return null;
     }
 
