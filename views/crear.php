@@ -302,8 +302,9 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .pv-hero { aspect-ratio:21/6; border-radius:8px; overflow:hidden; position:relative; }
 .pv-hero-overlay {
   position:absolute; inset:0;
-  background:linear-gradient(to right, rgba(0,0,0,.72) 0%, rgba(0,0,0,.25) 55%, transparent 100%);
+  /* Sin degradado: la imagen se ve tal cual como en el Inicio real. Sombra para legibilidad del texto. */
   display:flex; flex-direction:column; justify-content:center; padding:14px 18px;
+  text-shadow: 0 1px 4px rgba(0,0,0,.85), 0 0 2px rgba(0,0,0,.6);
 }
 .pv-hero-overlay .pv-title-txt { font-size:14px; max-width:55%; }
 .pv-hero-overlay .pv-desc-txt  { font-size:10px; max-width:50%; margin-top:4px; color:rgba(255,255,255,.85); }
