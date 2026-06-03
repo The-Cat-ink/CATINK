@@ -213,7 +213,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .upload-zone.has-image .cn-zone-icon,
 .upload-zone.has-image > :not(.preview-img):not(.zone-overlay):not(.zone-actions) { display: none; }
 .cn-zone-banner { aspect-ratio: 21/6; height: auto; min-height: 60px; }
-.cn-zone-mini { aspect-ratio: 16/9; height: auto; max-width: min(100%, 520px); margin: 0 auto; }
+.cn-zone-mini { aspect-ratio: 7/5; height: auto; max-width: min(100%, 520px); margin: 0 auto; }
 .zone-actions { position: absolute; bottom: 6px; right: 6px; display: none; gap: 5px; z-index: 3; }
 .upload-zone.has-image .zone-actions { display: flex; }
 .zone-btn { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 5px; border: none; cursor: pointer; line-height: 1.5; backdrop-filter: blur(4px); }
@@ -316,6 +316,34 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 }
 .cn-publish-btn:hover { background: #d42a55; transform: translateY(-2px); }
 .cn-publish-btn:active { transform: translateY(0); }
+
+/* ── BOTÓN ELIMINAR ── */
+.cn-delete-btn {
+  width: 100%; padding: 12px; background: transparent; color: #e53e3e;
+  border: 2px solid #e53e3e; border-radius: 10px; font-size: 15px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  gap: 8px; transition: background .2s, color .2s, transform .15s; font-family: inherit;
+  margin-top: 10px;
+}
+.cn-delete-btn:hover { background: #e53e3e; color: #fff; transform: translateY(-2px); }
+.cn-delete-btn:active { transform: translateY(0); }
+
+/* ── MODAL ELIMINAR ── */
+.del-modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  z-index: 9999; align-items: center; justify-content: center;
+}
+.del-modal-overlay.open { display: flex; }
+.del-modal-box {
+  background: var(--card-bg, #1a1a2e); border-radius: 14px; padding: 28px 28px 22px;
+  max-width: 400px; width: 90%; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+.del-modal-box h3 { margin: 0 0 10px; color: #e53e3e; font-size: 18px; }
+.del-modal-box p  { margin: 0 0 22px; color: var(--text-muted, #aaa); font-size: 14px; line-height: 1.5; }
+.del-modal-actions { display: flex; gap: 10px; }
+.del-modal-actions button { flex: 1; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; }
+.del-btn-cancel  { background: var(--card-border, #333); color: var(--text, #eee); }
+.del-btn-confirm { background: #e53e3e; color: #fff; }
 
 /* ── TOAST ── */
 .cn-toast {
@@ -464,15 +492,20 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               </div>
             </div>
           </div>
-          <?php if (!empty($ACL['editar'])): ?>
-          <div style="margin-top:16px;">
-            <button type="submit" class="cn-publish-btn" id="btnGuardar" name="guardarEdicion">
-              <i class="bi bi-floppy"></i> Guardar cambios
-            </button>
-          </div>
-          <?php endif; ?>
         </div>
       </div><!-- /sec-schedule -->
+      <?php if (!empty($ACL['editar'])): ?>
+      <div style="margin-top:12px;">
+        <button type="submit" class="cn-publish-btn" id="btnGuardar" name="guardarEdicion">
+          <i class="bi bi-floppy"></i> Guardar cambios
+        </button>
+      </div>
+      <?php endif; ?>
+      <?php if (!empty($ACL['eliminar'])): ?>
+      <button type="button" class="cn-delete-btn" id="btnEliminar">
+        <i class="bi bi-trash"></i> Eliminar noticia
+      </button>
+      <?php endif; ?>
 
       </div><!-- /cn-left-col -->
 
@@ -675,6 +708,21 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 </div>
 <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="onFileSelected(event)">
 
+<!-- ── MODAL ELIMINAR NOTICIA ── -->
+<div id="delModalOverlay" class="del-modal-overlay">
+  <div class="del-modal-box">
+    <h3><i class="bi bi-exclamation-triangle"></i> Eliminar noticia</h3>
+    <p>¿Estás seguro de que deseas eliminar esta noticia?<br>Esta acción no se puede deshacer.</p>
+    <div class="del-modal-actions">
+      <button type="button" class="del-btn-cancel" id="delBtnCancel">Cancelar</button>
+      <button type="button" class="del-btn-confirm" id="delBtnConfirm"><i class="bi bi-trash"></i> Eliminar</button>
+    </div>
+  </div>
+</div>
+<form id="formEliminar" action="../controllers/eliminar_noticia.php" method="POST" style="display:none;">
+  <input type="hidden" name="id" value="<?= $id ?>">
+</form>
+
 <!-- ── MODAL HORA INVÁLIDA ── -->
 <div id="timeModalOverlay" class="crop-modal" style="display:none;">
   <div class="crop-modal-content">
@@ -694,6 +742,19 @@ const EXISTING_CROP2_URL = '<?= addslashes($crop2Url) ?>';
 const EXISTING_CROP3_URL = '<?= addslashes($crop3Url) ?>';
 const FECHA_EXISTENTE    = '<?= $fechaExistente ?>';
 const CATS_INICIALES     = <?= json_encode($categoriasSeleccionadas) ?>;
+
+/* ── Modal eliminar noticia ── */
+(function () {
+  const overlay   = document.getElementById('delModalOverlay');
+  const btnOpen   = document.getElementById('btnEliminar');
+  const btnCancel = document.getElementById('delBtnCancel');
+  const btnOk     = document.getElementById('delBtnConfirm');
+  if (!overlay || !btnOpen) return;
+  btnOpen.addEventListener('click', () => overlay.classList.add('open'));
+  btnCancel.addEventListener('click', () => overlay.classList.remove('open'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+  btnOk.addEventListener('click', () => document.getElementById('formEliminar').submit());
+})();
 
 document.addEventListener('DOMContentLoaded', () => {
 

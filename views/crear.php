@@ -219,7 +219,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .cn-zone-banner { aspect-ratio: 21/6; height: auto; min-height: 60px; }
 /* Miniatura: ratio 16:9, acotada a un ancho cómodo centrada */
 .cn-zone-mini {
-  aspect-ratio: 16/9; height: auto;
+  aspect-ratio: 7/5; height: auto;
   max-width: min(100%, 520px); margin: 0 auto;
 }
 .zone-actions {
@@ -311,10 +311,10 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 /* ─ Top Semana ─ */
 .pv-top-grid { display:grid; grid-template-columns:2fr 1fr; gap:6px; }
 .pv-top-main { aspect-ratio:21/6; }
-.pv-top-side { aspect-ratio:16/9; }
+.pv-top-side { aspect-ratio:7/5; }
 /* ─ Recientes ─ */
 .pv-rec-item { display:grid; grid-template-columns:220px 1fr; gap:16px; align-items:start; }
-.pv-rec-thumb { aspect-ratio:16/9; border-radius:8px; overflow:hidden; }
+.pv-rec-thumb { aspect-ratio:7/5; border-radius:8px; overflow:hidden; }
 .pv-rec-info { display:flex; flex-direction:column; gap:5px; padding-top:4px; }
 .pv-rec-title { font-size:15px; font-weight:700; color:var(--text); line-height:1.3; }
 .pv-rec-desc  { font-size:12px; color:var(--muted); }
@@ -531,15 +531,15 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               </div>
             </div>
           </div>
-          <?php if (!empty($ACL['crear'])): ?>
-          <div style="margin-top:16px;">
-            <button type="submit" class="cn-publish-btn" name="guardarNoticia">
-              <i class="bi bi-send"></i> Publicar noticia
-            </button>
-          </div>
-          <?php endif; ?>
         </div>
       </div><!-- /sec-schedule -->
+      <?php if (!empty($ACL['crear'])): ?>
+      <div style="margin-top:12px;">
+        <button type="submit" class="cn-publish-btn" name="guardarNoticia">
+          <i class="bi bi-send"></i> Publicar noticia
+        </button>
+      </div>
+      <?php endif; ?>
 
       </div><!-- /cn-left-col -->
 
@@ -1047,17 +1047,39 @@ function initCropper(num) {
   const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
   cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
 
+  // ratios de recorte por plantilla: banner usa 21/6, miniatura usa 1.6 (ligeramente más angosto que 16:9)
+  const cropRatioOverride = { 2: 21 / 6, 3: 1.4 };
+  const effectiveRatio = cropRatioOverride[num] ?? CROP_RATIOS[num];
+
   cropperInstance = new Cropper(cropImg, {
-    aspectRatio: CROP_RATIOS[num],
-    viewMode: 1,        // crop box no sale de la imagen
-    autoCropArea: 0.98, // ocupa casi toda la altura disponible
-    movable: false,     // imagen no se mueve
-    zoomable: false,    // sin zoom
+    aspectRatio: effectiveRatio,
+    viewMode: 1,
+    autoCropArea: 0.98,
+    movable: false,
+    zoomable: false,
     cropBoxResizable: true,
-    dragMode: 'move',   // solo mueve el crop box
+    dragMode: 'move',
     responsive: true,
     guides: true,
-    background: false
+    background: false,
+    ready() {
+      if (num === 2 || num === 3) {
+        const imgData = cropperInstance.getImageData();
+        const ratio = cropRatioOverride[num];
+        let cbH = imgData.height;
+        let cbW = cbH * ratio;
+        if (cbW > imgData.width) {
+          cbW = imgData.width;
+          cbH = cbW / ratio;
+        }
+        cropperInstance.setCropBoxData({
+          width:  cbW,
+          height: cbH,
+          left:   imgData.left + (imgData.width  - cbW) / 2,
+          top:    imgData.top  + (imgData.height - cbH) / 2
+        });
+      }
+    }
   });
 }
 function adjustCrop(num) {
@@ -1156,7 +1178,7 @@ function autoFillMiniature(srcDataUrl) {
   zoneSources[3] = srcDataUrl;
   const tmpImg = new Image();
   tmpImg.onload = function () {
-    const ratio = 16 / 9;
+    const ratio = 1.4;
     let sw = tmpImg.width, sh = tmpImg.height;
     if (sw / sh > ratio) { sw = sh * ratio; } else { sh = sw / ratio; }
     const sx = (tmpImg.width  - sw) / 2;
