@@ -8,11 +8,13 @@ echo "<hr>";
 
 // 1. Verificar carpetas
 echo "<h3>1. Verificar Carpetas</h3>";
-$baseDir = dirname(__FILE__);
+$publicHtmlDir = dirname(__FILE__);
+$baseDir = dirname($publicHtmlDir); // Sube un nivel fuera de public_html
 $uploadDir = $baseDir . "/uploads/publicidad";
-$imgDir = $baseDir . "/img/publicidad";
+$imgDir = $publicHtmlDir . "/img/publicidad";
 
-echo "<p><strong>Base Dir:</strong> " . htmlspecialchars($baseDir) . "</p>";
+echo "<p><strong>Public HTML Dir:</strong> " . htmlspecialchars($publicHtmlDir) . "</p>";
+echo "<p><strong>Base Dir (fuera de public_html):</strong> " . htmlspecialchars($baseDir) . "</p>";
 echo "<p><strong>Upload Dir (esperado):</strong> " . htmlspecialchars($uploadDir) . "</p>";
 echo "<p><strong>Existe uploads/publicidad:</strong> " . (is_dir($uploadDir) ? "✅ SÍ" : "❌ NO") . "</p>";
 echo "<p><strong>Permisos uploads/publicidad:</strong> " . (is_writable($uploadDir) ? "✅ Escribible" : "❌ No escribible") . "</p>";
@@ -67,7 +69,7 @@ if (is_dir($uploadDir)) {
         echo "</ul>";
     }
 } else {
-    echo "<p>❌ La carpeta uploads/publicidad no existe</p>";
+    echo "<p>❌ La carpeta uploads/publicidad no existe en: " . htmlspecialchars($uploadDir) . "</p>";
 }
 
 // 4. Listar archivos en img/publicidad (antiguo)
@@ -93,8 +95,9 @@ if (is_dir($imgDir)) {
 
 // 5. Verificar serve-image.php
 echo "<h3>5. Verificar serve-image.php</h3>";
-$serveImagePath = $baseDir . "/serve-image.php";
+$serveImagePath = $publicHtmlDir . "/serve-image.php";
 echo "<p><strong>Existe serve-image.php:</strong> " . (file_exists($serveImagePath) ? "✅ SÍ" : "❌ NO") . "</p>";
+echo "<p><strong>Ruta:</strong> " . htmlspecialchars($serveImagePath) . "</p>";
 
 // 6. Test de URL
 echo "<h3>6. Test de URLs</h3>";
