@@ -78,7 +78,7 @@
                 <input type="datetime-local" id="fechaFin" name="fechaFin" required>
             </div>
             <div class="form-actions">
-                <button type="submit" class="btn btn-accent" name="guardarPublicidad">
+                <button type="submit" class="btn btn-accent" name="guardarPublicidad" id="submitBtn">
                     Guardar publicidad
                 </button>
             </div>
@@ -95,6 +95,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultPreview = document.getElementById('resultPreview');
     const imagenCrop = document.getElementById('imagenCrop');
     const cropButtons = document.querySelector('.crop-buttons');
+    const form = document.querySelector('form');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    let canvasBlob = null;
     
     if (!imagenInput) return;
     
@@ -129,15 +133,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0);
                 
-                const base64 = canvas.toDataURL('image/png');
-                console.log('Base64 generado:', base64.substring(0, 100));
-                console.log('Largo:', base64.length);
-                
-                resultPreview.src = base64;
+                resultPreview.src = canvas.toDataURL('image/png');
                 resultPreview.style.display = 'block';
                 
-                imagenCrop.value = base64;
-                console.log('imagenCrop.value actualizado, largo:', imagenCrop.value.length);
+                canvas.toBlob(function(blob) {
+                    canvasBlob = blob;
+                    console.log('Canvas blob creado, tamaño:', blob.size, 'bytes');
+                }, 'image/png');
             };
             img.onerror = function() {
                 console.error('Error cargando imagen');
@@ -156,7 +158,35 @@ document.addEventListener('DOMContentLoaded', function() {
             resultPreview.style.display = 'none';
             resultPreview.src = '';
             imagenCrop.value = '';
+            canvasBlob = null;
             if (cropButtons) cropButtons.style.display = 'none';
+        });
+    }
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (canvasBlob) {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                formData.append('imagenBlob', canvasBlob, 'imagen.png');
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = response.url || './../views/publicidad.php';
+                    } else {
+                        alert('Error al guardar publicidad');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al guardar publicidad');
+                });
+            }
         });
     }
 });
