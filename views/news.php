@@ -144,6 +144,16 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
         $misLikes[$lk['comentario_id']] = true;
     }
 }
+
+// Verificar si el usuario actual es el autor de la noticia
+$esAutor = false;
+if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION['usuario'])) {
+    $stmtAutor = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ?");
+    $stmtAutor->bind_param("s", $_SESSION['usuario']);
+    $stmtAutor->execute();
+    $resAutor = $stmtAutor->get_result()->fetch_assoc();
+    $esAutor = ($resAutor && $resAutor['id_u'] == $noticia['autor']);
+}
 ?>
 <style>
   @media (max-width: 768px) {
@@ -180,9 +190,16 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
               Por <a href="<?= authorUrl($noticia['autor_id'] ?? 0) ?>" style="color: var(--accent); text-decoration: none; font-weight: 700;"><?= htmlspecialchars($noticia['autor_nombre'] ?? 'Desconocido') ?></a> —
               <?= date("d/m/Y H:i", strtotime($noticia['fecha_publicacion'])) ?>
             </p>
-            <button id="likeBtn" class="like-btn" data-id="<?= $id ?>">
-              <i class="bi bi-heart-fill" style="color: red;"></i> Like <span id="likeCount"><?= $noticia['likes'] ?></span>
-            </button>
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+              <button id="likeBtn" class="like-btn" data-id="<?= $id ?>">
+                <i class="bi bi-heart-fill" style="color: red;"></i> Like <span id="likeCount"><?= $noticia['likes'] ?></span>
+              </button>
+              <?php if ($esAutor): ?>
+                <a href="<?= basePath() ?>/views/editar.php?id=<?= $id ?>" class="like-btn" style="background: var(--accent); color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                  <i class="bi bi-pencil-square"></i> Editar
+                </a>
+              <?php endif; ?>
+            </div>
             <!-- Contenido completo de la noticia -->
             <div class="post-content">
               <?php

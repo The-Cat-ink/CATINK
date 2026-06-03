@@ -42,29 +42,29 @@ function filtrarPalabras($con, $texto) {
             $char = $palabra[$i];
             
             if ($char === ' ') {
-                $patron .= '\s+';
+                $patron .= '\\s+';
                 continue;
             }
             
-            // Agregar la letra con variaciones comunes
-            $patron .= preg_quote($char, '/');
+            // Agregar variaciones comunes para cada letra
             switch (strtolower($char)) {
-                case 'a': $patron = substr($patron, 0, -1) . '[aá4@]'; break;
-                case 'e': $patron = substr($patron, 0, -1) . '[eé3]'; break;
-                case 'i': $patron = substr($patron, 0, -1) . '[ií1!]'; break;
-                case 'o': $patron = substr($patron, 0, -1) . '[oó0]'; break;
-                case 's': $patron = substr($patron, 0, -1) . '[s5$]'; break;
-                case 'l': $patron = substr($patron, 0, -1) . '[l1!]'; break;
-                case 'g': $patron = substr($patron, 0, -1) . '[g9]'; break;
-                case 'z': $patron = substr($patron, 0, -1) . '[z2]'; break;
-                case 't': $patron = substr($patron, 0, -1) . '[t7]'; break;
-                case 'b': $patron = substr($patron, 0, -1) . '[b8]'; break;
-                default: break;
+                case 'a': $patron .= '[aá4@]'; break;
+                case 'e': $patron .= '[eé3]'; break;
+                case 'i': $patron .= '[ií1!]'; break;
+                case 'o': $patron .= '[oó0]'; break;
+                case 'u': $patron .= '[uú]'; break;
+                case 's': $patron .= '[s5$]'; break;
+                case 'l': $patron .= '[l1!]'; break;
+                case 'g': $patron .= '[g9]'; break;
+                case 'z': $patron .= '[z2]'; break;
+                case 't': $patron .= '[t7]'; break;
+                case 'b': $patron .= '[b8]'; break;
+                default: $patron .= preg_quote($char, '/'); break;
             }
         }
         
-        // Buscar la palabra con variaciones (con límites de palabra)
-        $pattern = '/\b' . $patron . '\b/iu';
+        // Buscar la palabra con variaciones (sin límites de palabra para detectar variaciones)
+        $pattern = '/' . $patron . '/iu';
         $texto = preg_replace($pattern, $row['reemplazo'], $texto);
     }
     return $texto;

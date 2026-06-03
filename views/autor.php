@@ -66,6 +66,16 @@ $fotoEditor = !empty($editor['foto_personal'])
 // Iniciales para fallback
 $palabras = explode(' ', $editor['nombre']);
 $iniciales = strtoupper(substr($palabras[0], 0, 1) . (isset($palabras[1]) ? substr($palabras[1], 0, 1) : ''));
+
+// Verificar si es el editor actual
+$esEditorActual = false;
+if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION['usuario'])) {
+    $stmtCheck = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ?");
+    $stmtCheck->bind_param("s", $_SESSION['usuario']);
+    $stmtCheck->execute();
+    $resCheck = $stmtCheck->get_result()->fetch_assoc();
+    $esEditorActual = ($resCheck && $resCheck['id_u'] == $id);
+}
 ?>
 
 <div class="container" style="max-width: 900px; margin: 0 auto; padding: 30px 16px;">
@@ -98,6 +108,11 @@ $iniciales = strtoupper(substr($palabras[0], 0, 1) . (isset($palabras[1]) ? subs
                 <?php if (!empty($editor['link_instagram'])): ?>
                     <a href="<?= htmlspecialchars($editor['link_instagram']) ?>" target="_blank" rel="noopener noreferrer" class="autor-social-link autor-social-instagram">
                         <i class="bi bi-instagram"></i> Instagram
+                    </a>
+                <?php endif; ?>
+                <?php if ($esEditorActual): ?>
+                    <a href="<?= basePath() ?>/perfil" class="autor-social-link autor-social-edit" style="background: var(--accent); color: #fff; border-radius: 6px; padding: 8px 16px; font-weight: 600;">
+                        <i class="bi bi-pencil-square"></i> Editar Perfil
                     </a>
                 <?php endif; ?>
             </div>
