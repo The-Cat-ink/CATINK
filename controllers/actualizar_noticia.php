@@ -118,12 +118,13 @@ if ($id <= 0 || empty($titulo) || empty($descripcion) || empty($contenido)) {
 // ============================
 // ACTUALIZAR NOTICIA (SIN CATEGORIA)
 // ============================
+$usuario_id = $_SESSION['id_u'] ?? null;
 $update = $con->prepare("
   UPDATE noticias
-  SET titulo = ?, descripcion = ?, contenido = ?, fecha_publicacion = ?
+  SET titulo = ?, descripcion = ?, contenido = ?, fecha_publicacion = ?, editado_por = ?
   WHERE id = ?
 ");
-$update->bind_param("ssssi", $titulo, $descripcion, $contenido, $fecha_publicacion, $id);
+$update->bind_param("ssssii", $titulo, $descripcion, $contenido, $fecha_publicacion, $usuario_id, $id);
 $update->execute();
 // ============================
 // OBTENER IMAGENES ACTUALES

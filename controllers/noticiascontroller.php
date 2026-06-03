@@ -124,10 +124,11 @@ if (empty($titulo) || empty($descripcion) || empty($contenido)) {
 // ============================
 // INSERTAR NOTICIA (YA SIN CATEGORIA)
 // ============================
-$sql = "INSERT INTO noticias (titulo, descripcion, autor, contenido, fecha_publicacion)
-        VALUES (?, ?, ?, ?, ?)";
+$usuario_id = $_SESSION['id_u'] ?? null;
+$sql = "INSERT INTO noticias (titulo, descripcion, autor, contenido, fecha_publicacion, creado_por, editado_por)
+        VALUES (?, ?, ?, ?, ?, ?, ?)";
 $stmt = $con->prepare($sql);
-$stmt->bind_param("ssiss", $titulo, $descripcion, $autor, $contenido, $fecha_publicacion);
+$stmt->bind_param("ssissii", $titulo, $descripcion, $autor, $contenido, $fecha_publicacion, $usuario_id, $usuario_id);
 $stmt->execute();
 $noticiaId = $con->insert_id;
 // ============================

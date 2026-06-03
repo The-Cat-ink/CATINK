@@ -145,3 +145,12 @@ ALTER TABLE `comentarios` ADD COLUMN IF NOT EXISTS `usuario_id` int(11) DEFAULT 
 --   AND `perm_usuarios` = 0
 --   AND `perm_correos` = 0
 --   AND `perm_videos` = 0;
+
+-- 15. Auditoría de noticias (rastrear quién creó y editó)
+ALTER TABLE `noticias` ADD COLUMN IF NOT EXISTS `creado_por` INT NULL AFTER `fecha_publicacion`;
+ALTER TABLE `noticias` ADD COLUMN IF NOT EXISTS `editado_por` INT NULL AFTER `creado_por`;
+ALTER TABLE `noticias` ADD COLUMN IF NOT EXISTS `ultima_edicion` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER `editado_por`;
+
+-- Foreign keys para auditoría
+ALTER TABLE `noticias` ADD CONSTRAINT IF NOT EXISTS `fk_noticias_creado_por` FOREIGN KEY (`creado_por`) REFERENCES `usuarios`(`id_u`) ON DELETE SET NULL;
+ALTER TABLE `noticias` ADD CONSTRAINT IF NOT EXISTS `fk_noticias_editado_por` FOREIGN KEY (`editado_por`) REFERENCES `usuarios`(`id_u`) ON DELETE SET NULL;
