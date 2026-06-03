@@ -8,35 +8,56 @@ proteger('publicidad','crear');
 function guardarPublicidadBase64Webp($base64, $publicidadId, $calidad = 95) {
     if (empty($base64)) return null;
 
-    if (!preg_match('/^data:image\/(jpeg|jpg|png|webp);base64,/', $base64)) {
+    if (!preg_match('/^data:image\/(jpeg|jpg|png|webp|gif);base64,/', $base64, $matches)) {
+        error_log("PUBLICIDAD: regex no coincide, inicio=" . substr($base64, 0, 50));
         return null;
     }
-    $base64 = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
-    $binario = base64_decode($base64);
-    if ($binario === false) return null;
-    $imagen = imagecreatefromstring($binario);
-    if (!$imagen) return null;
+    
+    $tipo = $matches[1];
+    $binario = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64));
+    if ($binario === false || empty($binario)) {
+        error_log("PUBLICIDAD: base64_decode falló");
+        return null;
+    }
     
     $dirUploads = dirname(dirname(__DIR__)) . "/uploads/publicidad/";
     
     if (!is_dir($dirUploads)) {
         if (!mkdir($dirUploads, 0755, true)) {
-            error_log("No se pudo crear directorio: $dirUploads");
+            error_log("PUBLICIDAD: No se pudo crear directorio: $dirUploads");
             return null;
         }
     }
     
-    $timestamp = time();
-    $nombre = "pub_{$publicidadId}_{$timestamp}.webp";
-    $rutaFisica = $dirUploads . $nombre;
-    
-    if (!imagewebp($imagen, $rutaFisica, $calidad)) {
-        error_log("No se pudo guardar imagen: $rutaFisica");
-        imagedestroy($imagen);
+    if (!is_writable($dirUploads)) {
+        error_log("PUBLICIDAD: Directorio no escribible: $dirUploads");
         return null;
     }
     
-    imagedestroy($imagen);
+    $timestamp = time();
+    $extension = strtolower($tipo);
+    if ($extension === 'jpg') $extension = 'jpeg';
+    
+    $nombre = "pub_{$publicidadId}_{$timestamp}.{$extension}";
+    $rutaFisica = $dirUploads . $nombre;
+    
+    $bytesEscritos = file_put_contents($rutaFisica, $binario);
+    if ($bytesEscritos === false) {
+        error_log("PUBLICIDAD: Error escribiendo archivo: $rutaFisica");
+        return null;
+    }
+    
+    if (!file_exists($rutaFisica)) {
+        error_log("PUBLICIDAD: Archivo no existe después de guardarlo: $rutaFisica");
+        return null;
+    }
+    
+    if (filesize($rutaFisica) === 0) {
+        error_log("PUBLICIDAD: Archivo vacío: $rutaFisica");
+        unlink($rutaFisica);
+        return null;
+    }
+    
     return "uploads/publicidad/" . $nombre;
 }
 // ============================
