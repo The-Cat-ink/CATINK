@@ -146,24 +146,53 @@
 </div>
 
 <script>
-    // Script simple para mostrar preview y crop (si existe la funcionalidad JS global, esto podría necesitar ajuste)
-    // Asumo que el JS de crop ya existe en admin.js o scripts.js, pero aquí agrego lógica básica para mostrar elementos
-    const imagenInput = document.getElementById('imagen');
-    const imagePreview = document.getElementById('imagePreview');
-    const cropButtonsArea = document.getElementById('cropButtonsArea');
+document.getElementById('imagen').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
     
-    imagenInput.addEventListener('change', function(e) {
-        if (this.files && this.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                imagePreview.src = e.target.result;
-                imagePreview.style.display = 'block';
-                cropButtonsArea.style.display = 'block';
-                // Aquí debería iniciarse la librería de cropper si se usa una
-            }
-            reader.readAsDataURL(this.files[0]);
-        }
-    });
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const img = document.getElementById('imagePreview');
+        img.src = event.target.result;
+        img.style.display = 'block';
+        document.getElementById('cropButtonsArea').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('cropBtn').addEventListener('click', function() {
+    const imagePreview = document.getElementById('imagePreview');
+    if (!imagePreview.src) {
+        alert('Por favor selecciona una imagen primero');
+        return;
+    }
+    
+    const canvas = document.createElement('canvas');
+    const img = new Image();
+    img.onload = function() {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        
+        const resultPreview = document.getElementById('resultPreview');
+        resultPreview.src = canvas.toDataURL('image/webp', 0.95);
+        resultPreview.style.display = 'block';
+        document.getElementById('previewTitle').style.display = 'block';
+        
+        document.getElementById('imagenCrop').value = canvas.toDataURL('image/webp', 0.95);
+    };
+    img.src = imagePreview.src;
+});
+
+document.getElementById('resetBtn').addEventListener('click', function() {
+    document.getElementById('imagen').value = '';
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('resultPreview').style.display = 'none';
+    document.getElementById('previewTitle').style.display = 'none';
+    document.getElementById('imagenCrop').value = '';
+    document.getElementById('cropButtonsArea').style.display = 'none';
+});
 </script>
 
 <?php

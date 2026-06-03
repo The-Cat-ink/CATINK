@@ -85,6 +85,55 @@
         </div>
     </form>
 </div>
+
+<script>
+document.getElementById('imagen').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const img = document.getElementById('imagePreview');
+        img.src = event.target.result;
+        img.style.display = 'block';
+        document.querySelector('.crop-buttons').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('cropBtn').addEventListener('click', function() {
+    const imagePreview = document.getElementById('imagePreview');
+    if (!imagePreview.src) {
+        alert('Por favor selecciona una imagen primero');
+        return;
+    }
+    
+    const canvas = document.createElement('canvas');
+    const img = new Image();
+    img.onload = function() {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        
+        const resultPreview = document.getElementById('resultPreview');
+        resultPreview.src = canvas.toDataURL('image/webp', 0.95);
+        resultPreview.style.display = 'block';
+        
+        document.getElementById('imagenCrop').value = canvas.toDataURL('image/webp', 0.95);
+    };
+    img.src = imagePreview.src;
+});
+
+document.getElementById('resetBtn').addEventListener('click', function() {
+    document.getElementById('imagen').value = '';
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('resultPreview').style.display = 'none';
+    document.getElementById('imagenCrop').value = '';
+    document.querySelector('.crop-buttons').style.display = 'none';
+});
+</script>
+
 <?php
     include("./../layout/footerAdmin.php");
 ?>
