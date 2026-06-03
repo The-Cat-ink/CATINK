@@ -92,7 +92,9 @@ $publicidadId = $con->insert_id;
 // ============================
 // GUARDAR IMAGEN CROP
 // ============================
-$imagenFinal = guardarPublicidadBase64Webp($_POST['imagenCrop'] ?? null, $publicidadId);
+$imagenCropRecibido = $_POST['imagenCrop'] ?? null;
+error_log("DEBUG PUBLICIDAD: imagenCrop recibido = " . (empty($imagenCropRecibido) ? "VACIO" : substr($imagenCropRecibido, 0, 100)));
+$imagenFinal = guardarPublicidadBase64Webp($imagenCropRecibido, $publicidadId);
 // ============================
 // ACTUALIZAR IMAGEN EN BD
 // ============================
