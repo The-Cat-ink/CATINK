@@ -146,54 +146,76 @@
 </div>
 
 <script>
-document.getElementById('imagen').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        const img = document.getElementById('imagePreview');
-        img.src = event.target.result;
-        img.style.display = 'block';
-        document.getElementById('cropButtonsArea').style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-});
-
-document.getElementById('cropBtn').addEventListener('click', function() {
+document.addEventListener('DOMContentLoaded', function() {
+    const imagenInput = document.getElementById('imagen');
     const imagePreview = document.getElementById('imagePreview');
-    if (!imagePreview.src) {
-        alert('Por favor selecciona una imagen primero');
-        return;
+    const cropBtn = document.getElementById('cropBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const resultPreview = document.getElementById('resultPreview');
+    const imagenCrop = document.getElementById('imagenCrop');
+    const cropButtonsArea = document.getElementById('cropButtonsArea');
+    const previewTitle = document.getElementById('previewTitle');
+    
+    if (!imagenInput) return;
+    
+    imagenInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            imagePreview.src = event.target.result;
+            imagePreview.style.display = 'block';
+            if (cropButtonsArea) cropButtonsArea.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    });
+    
+    if (cropBtn) {
+        cropBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (!imagePreview.src) {
+                alert('Por favor selecciona una imagen primero');
+                return;
+            }
+            
+            const canvas = document.createElement('canvas');
+            const img = new Image();
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                
+                const base64 = canvas.toDataURL('image/png');
+                console.log('Base64 generado:', base64.substring(0, 50) + '...');
+                
+                resultPreview.src = base64;
+                resultPreview.style.display = 'block';
+                if (previewTitle) previewTitle.style.display = 'block';
+                
+                imagenCrop.value = base64;
+                console.log('imagenCrop actualizado');
+            };
+            img.src = imagePreview.src;
+        });
     }
     
-    const canvas = document.createElement('canvas');
-    const img = new Image();
-    img.onload = function() {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        
-        const base64 = canvas.toDataURL('image/png');
-        
-        const resultPreview = document.getElementById('resultPreview');
-        resultPreview.src = base64;
-        resultPreview.style.display = 'block';
-        document.getElementById('previewTitle').style.display = 'block';
-        
-        document.getElementById('imagenCrop').value = base64;
-    };
-    img.src = imagePreview.src;
-});
-
-document.getElementById('resetBtn').addEventListener('click', function() {
-    document.getElementById('imagen').value = '';
-    document.getElementById('imagePreview').style.display = 'none';
-    document.getElementById('resultPreview').style.display = 'none';
-    document.getElementById('previewTitle').style.display = 'none';
-    document.getElementById('imagenCrop').value = '';
-    document.getElementById('cropButtonsArea').style.display = 'none';
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            imagenInput.value = '';
+            imagePreview.style.display = 'none';
+            imagePreview.src = '';
+            resultPreview.style.display = 'none';
+            resultPreview.src = '';
+            if (previewTitle) previewTitle.style.display = 'none';
+            imagenCrop.value = '';
+            if (cropButtonsArea) cropButtonsArea.style.display = 'none';
+        });
+    }
 });
 </script>
 
