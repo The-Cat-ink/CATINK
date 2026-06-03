@@ -8,9 +8,6 @@
         "eliminar" => false
     ];
 ?>
-<script>
-    const ACL = <?= json_encode($ACL) ?>;
-</script>
 <?php
     $q = trim($_GET['q'] ?? '');
     if($q !== ''){
