@@ -28,20 +28,6 @@
             <div class="form-group">
                 <label for="imagen">Imagen</label>
                 <input type="file" id="imagen" name="imagen" accept="image/*" required>
-                <!-- Imagen original -->
-                <div class="crop-container">
-                    <img id="imagePreview" style="max-width:100%; display:none;">
-                </div>
-                <!-- Botones -->
-                <div class="crop-buttons">
-                    <button type="button" id="cropBtn">Recortar</button>
-                    <button type="button" id="resetBtn">Deshacer</button>
-                </div>
-                <!-- Resultado final -->
-                <h4>Vista previa final:</h4>
-                <img id="resultPreview" style="max-width:100%; border:1px solid #ccc;">
-                <!-- Imagen final enviada al backend (base64) -->
-                <input type="hidden" name="imagenCrop" id="imagenCrop" value="">
             </div>
             <div class="form-group">
                 <label for="url" >Url</label>
@@ -78,81 +64,13 @@
                 <input type="datetime-local" id="fechaFin" name="fechaFin" required>
             </div>
             <div class="form-actions">
-                <button type="submit" class="btn btn-accent" name="guardarPublicidad" id="submitBtn">
+                <button type="submit" class="btn btn-accent" name="guardarPublicidad">
                     Guardar publicidad
                 </button>
             </div>
         </div>
     </form>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const imagenInput = document.getElementById('imagen');
-    const imagePreview = document.getElementById('imagePreview');
-    const cropBtn = document.getElementById('cropBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const resultPreview = document.getElementById('resultPreview');
-    const imagenCrop = document.getElementById('imagenCrop');
-    const cropButtons = document.querySelector('.crop-buttons');
-    
-    if (!imagenInput) return;
-    
-    imagenInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            imagePreview.src = event.target.result;
-            imagePreview.style.display = 'block';
-            if (cropButtons) cropButtons.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    });
-    
-    if (cropBtn) {
-        cropBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            if (!imagePreview.src) {
-                alert('Por favor selecciona una imagen primero');
-                return;
-            }
-            
-            const canvas = document.createElement('canvas');
-            const img = new Image();
-            img.onload = function() {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                
-                const data64 = canvas.toDataURL('image/png');
-                imagenCrop.value = data64;
-                
-                resultPreview.src = data64;
-                resultPreview.style.display = 'block';
-            };
-            img.src = imagePreview.src;
-        });
-    }
-    
-    if (resetBtn) {
-        resetBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            imagenInput.value = '';
-            imagePreview.style.display = 'none';
-            imagePreview.src = '';
-            resultPreview.style.display = 'none';
-            resultPreview.src = '';
-            imagenCrop.value = '';
-            if (cropButtons) cropButtons.style.display = 'none';
-        });
-    }
-});
-</script>
 
 <?php
     include("./../layout/footerAdmin.php");

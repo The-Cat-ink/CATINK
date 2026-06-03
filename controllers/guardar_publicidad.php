@@ -90,10 +90,26 @@ $stmt->bind_param("sisiss", $titulo, $tipo, $url, $estado, $fechaInicio, $fechaF
 $stmt->execute();
 $publicidadId = $con->insert_id;
 // ============================
-// GUARDAR IMAGEN CROP
+// GUARDAR IMAGEN
 // ============================
-$imagenCropRecibido = $_POST['imagenCrop'] ?? null;
-$imagenFinal = guardarPublicidadBase64Webp($imagenCropRecibido, $publicidadId);
+$imagenFinal = null;
+
+if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+    $dirUploads = dirname(dirname(__DIR__)) . "/uploads/publicidad/";
+    
+    if (!is_dir($dirUploads)) {
+        mkdir($dirUploads, 0755, true);
+    }
+    
+    $timestamp = time();
+    $extension = pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION);
+    $nombre = "pub_{$publicidadId}_{$timestamp}." . strtolower($extension);
+    $rutaFisica = $dirUploads . $nombre;
+    
+    if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaFisica)) {
+        $imagenFinal = "uploads/publicidad/" . $nombre;
+    }
+}
 // ============================
 // ACTUALIZAR IMAGEN EN BD
 // ============================
