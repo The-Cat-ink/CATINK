@@ -343,13 +343,17 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 
   <!-- Información de auditoría -->
   <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 12px; color: var(--muted);">
-    <?php if ($creadoPor): ?>
-      <div><strong>Creado por:</strong> <?= htmlspecialchars($creadoPor['nombre']) ?></div>
-    <?php endif; ?>
-    <?php if ($editadoPor && $editadoPor['nombre'] !== ($creadoPor['nombre'] ?? '')): ?>
+    <div><strong>Creado por:</strong> <?= $creadoPor ? htmlspecialchars($creadoPor['nombre']) : 'Sin información' ?></div>
+    <?php if ($editadoPor): ?>
       <div><strong>Última edición por:</strong> <?= htmlspecialchars($editadoPor['nombre']) ?> 
         <?php if ($noticia['ultima_edicion']): ?>
-          hace <?= htmlspecialchars(date('d/m/Y H:i', strtotime($noticia['ultima_edicion']))) ?>
+          - <?= htmlspecialchars(date('d/m/Y H:i', strtotime($noticia['ultima_edicion']))) ?>
+        <?php endif; ?>
+      </div>
+    <?php elseif ($noticia['editado_por']): ?>
+      <div><strong>Última edición por:</strong> Sin información
+        <?php if ($noticia['ultima_edicion']): ?>
+          - <?= htmlspecialchars(date('d/m/Y H:i', strtotime($noticia['ultima_edicion']))) ?>
         <?php endif; ?>
       </div>
     <?php endif; ?>
