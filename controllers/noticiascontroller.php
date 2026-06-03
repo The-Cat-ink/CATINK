@@ -124,7 +124,7 @@ if (empty($titulo) || empty($descripcion) || empty($contenido)) {
 // ============================
 // INSERTAR NOTICIA (YA SIN CATEGORIA)
 // ============================
-$usuario_id = $_SESSION['id_u'] ?? null;
+$usuario_id = intval($_SESSION['id_u'] ?? 0);
 $sql = "INSERT INTO noticias (titulo, descripcion, autor, contenido, fecha_publicacion, creado_por, editado_por)
         VALUES (?, ?, ?, ?, ?, ?, ?)";
 $stmt = $con->prepare($sql);

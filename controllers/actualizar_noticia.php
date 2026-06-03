@@ -119,7 +119,6 @@ if ($id <= 0 || empty($titulo) || empty($descripcion) || empty($contenido)) {
 // ACTUALIZAR NOTICIA (SIN CATEGORIA)
 // ============================
 $usuario_id = $_SESSION['id_u'] ?? null;
-error_log("DEBUG ACTUALIZAR: usuario_id = " . ($usuario_id ?? "NULL"));
 
 // Si creado_por es NULL (nota antigua), llenarla con el usuario actual
 $checkCreado = $con->prepare("SELECT creado_por FROM noticias WHERE id = ?");
@@ -127,16 +126,17 @@ $checkCreado->bind_param("i", $id);
 $checkCreado->execute();
 $resCreado = $checkCreado->get_result()->fetch_assoc();
 $creado_por = $resCreado['creado_por'] ?? $usuario_id;
-error_log("DEBUG ACTUALIZAR: creado_por = " . ($creado_por ?? "NULL"));
 
 $update = $con->prepare("
   UPDATE noticias
   SET titulo = ?, descripcion = ?, contenido = ?, fecha_publicacion = ?, creado_por = ?, editado_por = ?
   WHERE id = ?
 ");
-$update->bind_param("sssssii", $titulo, $descripcion, $contenido, $fecha_publicacion, $creado_por, $usuario_id, $id);
+// Asegurarse de que creado_por y usuario_id son integers
+$creado_por = intval($creado_por);
+$usuario_id = intval($usuario_id);
+$update->bind_param("ssssiii", $titulo, $descripcion, $contenido, $fecha_publicacion, $creado_por, $usuario_id, $id);
 $result = $update->execute();
-error_log("DEBUG ACTUALIZAR: UPDATE ejecutado, resultado = " . ($result ? "OK" : "FAIL"));
 // ============================
 // OBTENER IMAGENES ACTUALES
 // ============================
