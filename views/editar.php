@@ -54,6 +54,10 @@ while ($row = $resCat->fetch_assoc()) $categoriasSeleccionadas[] = $row;
 
 // Fecha actual de publicación para pre-cargar el programador
 $fechaExistente = date('Y-m-d\TH:i', strtotime($noticia['fecha_publicacion']));
+
+// URLs de imágenes usando imageUrl() para servir correctamente
+$crop2Url = imageUrl($noticia['crop2'] ?? '');
+$crop3Url = imageUrl($noticia['crop3'] ?? '');
 ?>
 <script>const ACL = <?= json_encode($ACL) ?>;</script>
 
@@ -686,8 +690,8 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 <script>
 // Datos PHP → JS
 const BASE_PATH          = '<?= basePath() ?>';
-const EXISTING_CROP2_URL = '<?= addslashes($noticia['crop2'] ?? '') ?>';
-const EXISTING_CROP3_URL = '<?= addslashes($noticia['crop3'] ?? '') ?>';
+const EXISTING_CROP2_URL = '<?= addslashes($crop2Url) ?>';
+const EXISTING_CROP3_URL = '<?= addslashes($crop3Url) ?>';
 const FECHA_EXISTENTE    = '<?= $fechaExistente ?>';
 const CATS_INICIALES     = <?= json_encode($categoriasSeleccionadas) ?>;
 
@@ -813,16 +817,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ── Pre-cargar zonas con imágenes existentes ── */
   if (EXISTING_CROP2_URL) {
-    setZonePreviewFromUrl(2, BASE_PATH + '/' + EXISTING_CROP2_URL);
-    zoneSources[2] = BASE_PATH + '/' + EXISTING_CROP2_URL;
+    setZonePreviewFromUrl(2, EXISTING_CROP2_URL);
+    zoneSources[2] = EXISTING_CROP2_URL;
   }
   if (EXISTING_CROP3_URL) {
-    setZonePreviewFromUrl(3, BASE_PATH + '/' + EXISTING_CROP3_URL);
+    setZonePreviewFromUrl(3, EXISTING_CROP3_URL);
     // Usar el banner como fuente para re-recortar la miniatura (igual que crear.php,
     // donde zoneSources[3] apunta a la imagen original completa, no al recorte ya hecho)
     zoneSources[3] = EXISTING_CROP2_URL
-      ? (BASE_PATH + '/' + EXISTING_CROP2_URL)
-      : (BASE_PATH + '/' + EXISTING_CROP3_URL);
+      ? EXISTING_CROP2_URL
+      : EXISTING_CROP3_URL;
   }
   if (EXISTING_CROP2_URL || EXISTING_CROP3_URL) {
     document.getElementById('previewSection').style.display = 'block';
