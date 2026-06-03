@@ -87,6 +87,12 @@
 <script>
 let cropper = null;
 
+function getAspectRatio() {
+    const tipo = document.getElementById('tipo').value;
+    // 1 = Banner (16:9), 2 = Cuadro (1:1)
+    return tipo === '1' ? 16/9 : 1;
+}
+
 document.getElementById('imagen').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -101,8 +107,9 @@ document.getElementById('imagen').addEventListener('change', function(e) {
             cropper.destroy();
         }
         
+        const aspectRatio = getAspectRatio();
         cropper = new Cropper(cropImg, {
-            aspectRatio: NaN,
+            aspectRatio: aspectRatio,
             autoCropArea: 1,
             responsive: true,
             restore: true,
@@ -115,6 +122,13 @@ document.getElementById('imagen').addEventListener('change', function(e) {
         });
     };
     reader.readAsDataURL(file);
+});
+
+document.getElementById('tipo').addEventListener('change', function() {
+    if (cropper) {
+        const aspectRatio = getAspectRatio();
+        cropper.setAspectRatio(aspectRatio);
+    }
 });
 
 document.getElementById('cropConfirmBtn').addEventListener('click', function(e) {

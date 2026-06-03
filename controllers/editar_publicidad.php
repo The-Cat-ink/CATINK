@@ -97,7 +97,31 @@ $stmt->execute();
 // ============================
 // ACTUALIZAR IMAGEN (SI SE ENVIO UNA NUEVA)
 // ============================
+$imagenFinal = null;
+
+// Si hay base64 del crop, usarlo
 if (!empty($imagenCrop)) {
+    $imagenFinal = guardarPublicidadBase64Webp($imagenCrop, $id_pub);
+}
+// Si no hay crop pero hay archivo, guardar el archivo directamente
+elseif (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+    $dirUploads = dirname(dirname(__DIR__)) . "/uploads/publicidad/";
+    
+    if (!is_dir($dirUploads)) {
+        mkdir($dirUploads, 0755, true);
+    }
+    
+    $timestamp = time();
+    $extension = pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION);
+    $nombre = "pub_{$id_pub}_{$timestamp}." . strtolower($extension);
+    $rutaFisica = $dirUploads . $nombre;
+    
+    if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaFisica)) {
+        $imagenFinal = "uploads/publicidad/" . $nombre;
+    }
+}
+
+if ($imagenFinal) {
     // Primero obtenemos la imagen anterior para borrarla (opcional, buena práctica)
     $stmtImg = $con->prepare("SELECT imagen FROM publicidad WHERE id_pub = ?");
     $stmtImg->bind_param("i", $id_pub);
@@ -105,18 +129,16 @@ if (!empty($imagenCrop)) {
     $resImg = $stmtImg->get_result();
     $rowImg = $resImg->fetch_assoc();
     
-    // Guardar nueva imagen
-    $imagenFinal = guardarPublicidadBase64Webp($imagenCrop, $id_pub);
+    // Actualizar en BD
+    $update = $con->prepare("UPDATE publicidad SET imagen=? WHERE id_pub=?");
+    $update->bind_param("si", $imagenFinal, $id_pub);
+    $update->execute();
     
-    if ($imagenFinal) {
-        // Actualizar en BD
-        $update = $con->prepare("UPDATE publicidad SET imagen=? WHERE id_pub=?");
-        $update->bind_param("si", $imagenFinal, $id_pub);
-        $update->execute();
-        
-        // Borrar imagen vieja del servidor si existe y es diferente
-        if ($rowImg && !empty($rowImg['imagen']) && file_exists(__DIR__ . "/../" . $rowImg['imagen'])) {
-            unlink(__DIR__ . "/../" . $rowImg['imagen']);
+    // Borrar imagen vieja del servidor si existe y es diferente
+    if ($rowImg && !empty($rowImg['imagen'])) {
+        $rutaVieja = dirname(dirname(__DIR__)) . "/" . $rowImg['imagen'];
+        if (file_exists($rutaVieja)) {
+            unlink($rutaVieja);
         }
     }
 }
