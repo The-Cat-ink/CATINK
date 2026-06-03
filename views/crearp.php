@@ -122,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const canvas = document.createElement('canvas');
             const img = new Image();
+            img.crossOrigin = 'anonymous';
             img.onload = function() {
                 canvas.width = img.width;
                 canvas.height = img.height;
@@ -129,13 +130,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 ctx.drawImage(img, 0, 0);
                 
                 const base64 = canvas.toDataURL('image/png');
-                console.log('Base64 generado:', base64.substring(0, 50) + '...');
+                console.log('Base64 generado:', base64.substring(0, 100));
+                console.log('Largo:', base64.length);
                 
                 resultPreview.src = base64;
                 resultPreview.style.display = 'block';
                 
                 imagenCrop.value = base64;
-                console.log('imagenCrop actualizado');
+                console.log('imagenCrop.value actualizado, largo:', imagenCrop.value.length);
+            };
+            img.onerror = function() {
+                console.error('Error cargando imagen');
             };
             img.src = imagePreview.src;
         });
