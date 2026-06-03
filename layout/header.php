@@ -102,6 +102,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a class="navbar-brand" href="<?= basePath() . '/' ?>">
       <img id="logo" src="" alt="CatInk Logo">
     </a>
+    <form class="nav-search buscador-desplegable" onsubmit="return false;">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Buscar noticias..."
+        autocomplete="off"
+        class="search-input input-desplegable"
+      >
+      <div id="searchResults" class="search-results"></div>
+      <button type="button" id="clearBtn" class="search-btn clear-btn btn-oculto" title="Limpiar búsqueda">
+        <i class="bi bi-x-lg"></i>
+      </button>
+      <button type="button" id="searchBtn" class="search-btn btn-lupa" title="Buscar">
+        <i class="bi bi-search"></i>
+      </button>
+    </form>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
       data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
@@ -152,22 +168,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <i class="bi bi-box-arrow-right"></i>
         </a>
       <?php endif; ?>
-      <form class="nav-search buscador-desplegable" onsubmit="return false;">
-        <input 
-          type="text" 
-          id="searchInput" 
-          placeholder="Buscar noticias..." 
-          autocomplete="off" 
-          class="search-input input-desplegable"
-        >
-        <div id="searchResults" class="search-results"></div>
-        <button type="button" id="clearBtn" class="search-btn clear-btn btn-oculto" title="Limpiar búsqueda">
-          <i class="bi bi-x-lg"></i>
-        </button>
-        <button type="button" id="searchBtn" class="search-btn btn-lupa" title="Buscar">
-          <i class="bi bi-search"></i>
-        </button>
-      </form>
     </div>
   </div>
 </nav>
