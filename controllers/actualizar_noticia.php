@@ -152,6 +152,26 @@ $new1 = guardarImagenBase64WebpConId($_POST['crop1'] ?? null, $id, 'crop1');
 $new2 = guardarImagenBase64WebpConId($_POST['crop2'] ?? null, $id, 'crop2');
 $new3 = guardarImagenBase64WebpConId($_POST['crop3'] ?? null, $id, 'crop3');
 if ($new1 || $new2 || $new3) {
+  // Eliminar imágenes antiguas si se suben nuevas
+  if ($new1 && $c1 && $c1 !== $new1) {
+    $rutaVieja = dirname(dirname(__DIR__)) . "/" . $c1;
+    if (file_exists($rutaVieja)) {
+      unlink($rutaVieja);
+    }
+  }
+  if ($new2 && $c2 && $c2 !== $new2) {
+    $rutaVieja = dirname(dirname(__DIR__)) . "/" . $c2;
+    if (file_exists($rutaVieja)) {
+      unlink($rutaVieja);
+    }
+  }
+  if ($new3 && $c3 && $c3 !== $new3) {
+    $rutaVieja = dirname(dirname(__DIR__)) . "/" . $c3;
+    if (file_exists($rutaVieja)) {
+      unlink($rutaVieja);
+    }
+  }
+  
   $c1 = $new1 ?: $c1;
   $c2 = $new2 ?: $c2;
   $c3 = $new3 ?: $c3;

@@ -1069,9 +1069,15 @@ function setZonePreviewFromUrl(zoneId, url) {
   zone.querySelectorAll('.preview-img').forEach(el => el.remove());
   const img = document.createElement('img');
   img.className = 'preview-img';
+  img.onload = function() {
+    zone.classList.add('has-image');
+  };
+  img.onerror = function() {
+    console.error('Error cargando imagen:', url);
+    zone.classList.remove('has-image');
+  };
   img.src = url;
   zone.appendChild(img);
-  zone.classList.add('has-image');
 }
 
 function confirmCrop() {
