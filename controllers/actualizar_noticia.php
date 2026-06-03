@@ -175,6 +175,6 @@ if (!empty($categorias)) {
 // ============================
 // REDIRECCION
 // ============================
-header("Location: ./../views/contenidos.php?msg=actualizado");
+header("Location: ./../views/editar.php?id=$id&msg=actualizado");
 exit;
 ?>
