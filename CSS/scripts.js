@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const carousel = document.getElementById('carouselExampleCaptions');
   if (carousel) {
     const items = Array.from(carousel.querySelectorAll('.carousel-item'));
+    console.log('Carrusel encontrado, items:', items.length);
     let current = items.findIndex(i => i.classList.contains('active'));
     if (current < 0) current = 0;
     const interval = parseInt(carousel.getAttribute('data-bs-interval')) || 10000;
@@ -75,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showSlide(index) {
       if (index < 0) index = items.length - 1;
       if (index >= items.length) index = 0;
+      console.log('Mostrando slide:', index);
       items.forEach((it, idx) => {
         it.classList.toggle('active', idx === index);
       });
@@ -85,6 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function startAuto() {
       stopAuto();
+      console.log('Iniciando auto-play con intervalo:', interval);
       timer = setInterval(() => showSlide(current + 1), interval);
     }
     function stopAuto() { if (timer) { clearInterval(timer); timer = null; } }
@@ -100,6 +103,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicia carrusel automático
     showSlide(current);
     startAuto();
+  } else {
+    console.log('Carrusel NO encontrado');
   }
 
   // Animación de progreso de indicadores: dibuja stroke-dashoffset en los círculos SVG
