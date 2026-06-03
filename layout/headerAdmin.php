@@ -56,6 +56,8 @@ if (!$fila) {
     header("Location: ./../index.php");
     exit();
 }
+// Guardar id_u en la sesión para usarlo en controladores
+$_SESSION['id_u'] = $fila['id_u'];
 ?>
 <!doctype html>
 <html lang="es" data-bs-theme="light">
