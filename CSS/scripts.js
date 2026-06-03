@@ -48,8 +48,6 @@ document.addEventListener('DOMContentLoaded', function() {
   applyTheme(saved);
 
   // Auto-hide navbar on scroll down, show on scroll up
-  // DESHABILITADO: El navbar siempre debe estar visible
-  /*
   const navbar = document.querySelector('.navbar');
   if (navbar) {
     let lastScroll = 0;
@@ -63,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
       lastScroll = curr;
     }, { passive: true });
   }
-  */
 
   // Carrusel mínimo: mantiene las slides en DOM y alterna la clase .active
   const carousel = document.getElementById('carouselExampleCaptions');
