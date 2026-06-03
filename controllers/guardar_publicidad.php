@@ -94,7 +94,12 @@ $publicidadId = $con->insert_id;
 // ============================
 $imagenFinal = null;
 
-if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+// Si hay base64 del crop, usarlo
+if (!empty($_POST['imagenCrop'])) {
+    $imagenFinal = guardarPublicidadBase64Webp($_POST['imagenCrop'], $publicidadId);
+}
+// Si no hay crop pero hay archivo, guardar el archivo directamente
+elseif (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
     $dirUploads = dirname(dirname(__DIR__)) . "/uploads/publicidad/";
     
     if (!is_dir($dirUploads)) {

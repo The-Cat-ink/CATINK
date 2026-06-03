@@ -28,6 +28,18 @@
             <div class="form-group">
                 <label for="imagen">Imagen</label>
                 <input type="file" id="imagen" name="imagen" accept="image/*" required>
+                <input type="hidden" name="imagenCrop" id="imagenCrop" value="">
+                <div id="cropperContainer" style="display:none; margin-top: 20px;">
+                    <img id="cropImg" style="max-width: 100%;">
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <button type="button" id="cropConfirmBtn" class="btn btn-accent">Confirmar recorte</button>
+                        <button type="button" id="cropCancelBtn" class="btn btn-secondary">Cancelar</button>
+                    </div>
+                </div>
+                <div id="previewContainer" style="display:none; margin-top: 20px;">
+                    <h4>Vista previa:</h4>
+                    <img id="previewImg" style="max-width: 100%; border: 1px solid #ccc;">
+                </div>
             </div>
             <div class="form-group">
                 <label for="url" >Url</label>
@@ -71,6 +83,75 @@
         </div>
     </form>
 </div>
+
+<script>
+let cropper = null;
+
+document.getElementById('imagen').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const cropImg = document.getElementById('cropImg');
+        cropImg.src = event.target.result;
+        document.getElementById('cropperContainer').style.display = 'block';
+        
+        if (cropper) {
+            cropper.destroy();
+        }
+        
+        cropper = new Cropper(cropImg, {
+            aspectRatio: NaN,
+            autoCropArea: 1,
+            responsive: true,
+            restore: true,
+            guides: true,
+            center: true,
+            highlight: true,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: true,
+        });
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('cropConfirmBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    if (!cropper) return;
+    
+    const canvas = cropper.getCroppedCanvas({
+        maxWidth: 2560,
+        maxHeight: 2560,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+    });
+    
+    const data64 = canvas.toDataURL('image/png');
+    document.getElementById('imagenCrop').value = data64;
+    
+    const previewImg = document.getElementById('previewImg');
+    previewImg.src = data64;
+    document.getElementById('previewContainer').style.display = 'block';
+    document.getElementById('cropperContainer').style.display = 'none';
+});
+
+document.getElementById('cropCancelBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    document.getElementById('imagen').value = '';
+    document.getElementById('imagenCrop').value = '';
+    document.getElementById('cropperContainer').style.display = 'none';
+    document.getElementById('previewContainer').style.display = 'none';
+    
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+});
+</script>
 
 <?php
     include("./../layout/footerAdmin.php");
