@@ -34,10 +34,70 @@ function filtrarPalabras($con, $texto) {
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
-        $pattern = '/\b' . preg_quote($row['palabra_baneada'], '/') . '\b/iu';
+        $palabra = $row['palabra_baneada'];
+        
+        // Crear patrón que detecte variaciones (números, caracteres especiales)
+        $patron = '';
+        for ($i = 0; $i < strlen($palabra); $i++) {
+            $char = $palabra[$i];
+            
+            if ($char === ' ') {
+                $patron .= '\\s+';
+                continue;
+            }
+            
+            // Agregar variaciones comunes para cada letra
+            switch (strtolower($char)) {
+                case 'a': $patron .= '[aá4@]'; break;
+                case 'e': $patron .= '[eé3]'; break;
+                case 'i': $patron .= '[ií1!]'; break;
+                case 'o': $patron .= '[oó0]'; break;
+                case 'u': $patron .= '[uú]'; break;
+                case 's': $patron .= '[s5$]'; break;
+                case 'l': $patron .= '[l1!]'; break;
+                case 'g': $patron .= '[g9]'; break;
+                case 'z': $patron .= '[z2]'; break;
+                case 't': $patron .= '[t7]'; break;
+                case 'b': $patron .= '[b8]'; break;
+                default: $patron .= preg_quote($char, '/'); break;
+            }
+        }
+        
+        // Buscar la palabra con variaciones (sin límites de palabra para detectar variaciones)
+        $pattern = '/' . $patron . '/iu';
         $texto = preg_replace($pattern, $row['reemplazo'], $texto);
     }
     return $texto;
+}
+
+// ============================
+// LISTA NEGRA DE DOMINIOS ADULTOS
+// ============================
+function esURLAdulta($url) {
+    $dominiosAdultos = [
+        'pornhub.com', 'xvideos.com', 'xnxx.com', 'redtube.com',
+        'youporn.com', 'tube8.com', 'spankbang.com', 'xhamster.com',
+        'onlyfans.com', 'chaturbate.com', 'cam4.com', 'stripchat.com',
+        'livejasmine.com', 'flirt4free.com', 'myfreecams.com',
+        'sex.com', 'xxx.com', 'adult.com', 'porn.com',
+        'sexo.com', 'porno.com', 'xxx.es', 'sexo.es'
+    ];
+    
+    $urlParsed = parse_url($url);
+    if (!isset($urlParsed['host'])) {
+        return false;
+    }
+    
+    $host = strtolower($urlParsed['host']);
+    $host = preg_replace('/^www\./', '', $host);
+    
+    foreach ($dominiosAdultos as $dominio) {
+        if (strpos($host, $dominio) !== false) {
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 switch ($action) {
@@ -55,6 +115,74 @@ switch ($action) {
         if (mb_strlen($contenido) > 1000) {
             echo json_encode(['ok' => false, 'msg' => 'El comentario es demasiado largo (máx. 1000 caracteres).']);
             exit;
+        }
+
+        // ============================
+        // RATE LIMITING: máx 5 comentarios por hora
+        // ============================
+        $stmtRateLimit = $con->prepare("
+            SELECT COUNT(*) as count FROM comentarios 
+            WHERE lector_id = ? AND fecha_publicacion > DATE_SUB(NOW(), INTERVAL 1 HOUR)
+        ");
+        $stmtRateLimit->bind_param("i", $lectorId);
+        $stmtRateLimit->execute();
+        $rateCheck = $stmtRateLimit->get_result()->fetch_assoc();
+        
+        if ($rateCheck['count'] >= 5) {
+            echo json_encode(['ok' => false, 'msg' => 'Has alcanzado el límite de comentarios. Intenta más tarde.']);
+            exit;
+        }
+
+        // ============================
+        // DETECCIÓN DE DUPLICADOS
+        // ============================
+        $stmtDuplicate = $con->prepare("
+            SELECT COUNT(*) as count FROM comentarios 
+            WHERE lector_id = ? AND noticia_id = ? AND contenido = ?
+        ");
+        $stmtDuplicate->bind_param("iis", $lectorId, $noticiaId, $contenido);
+        $stmtDuplicate->execute();
+        $dupCheck = $stmtDuplicate->get_result()->fetch_assoc();
+        
+        if ($dupCheck['count'] > 0) {
+            echo json_encode(['ok' => false, 'msg' => 'Ya has publicado este comentario.']);
+            exit;
+        }
+
+        // ============================
+        // VALIDACIÓN DE URLS (máximo 2)
+        // ============================
+        preg_match_all('/https?:\/\/[^\s]+/', $contenido, $urls);
+        if (count($urls[0]) > 2) {
+            echo json_encode(['ok' => false, 'msg' => 'Máximo 2 enlaces por comentario.']);
+            exit;
+        }
+        
+        // Validar cada URL
+        foreach ($urls[0] as $url) {
+            // 1. Validar longitud (máximo 2048 caracteres)
+            if (strlen($url) > 2048) {
+                echo json_encode(['ok' => false, 'msg' => 'URL demasiado larga.']);
+                exit;
+            }
+            
+            // 2. Validar formato con filter_var
+            if (!filter_var($url, FILTER_VALIDATE_URL)) {
+                echo json_encode(['ok' => false, 'msg' => 'URL inválida.']);
+                exit;
+            }
+            
+            // 3. Validar que no contenga caracteres peligrosos
+            if (preg_match('/[<>"\'{};]/', $url)) {
+                echo json_encode(['ok' => false, 'msg' => 'URL contiene caracteres no permitidos.']);
+                exit;
+            }
+            
+            // 4. Validar que no sea URL de contenido adulto
+            if (esURLAdulta($url)) {
+                echo json_encode(['ok' => false, 'msg' => 'No se permiten enlaces a contenido adulto.']);
+                exit;
+            }
         }
 
         // Verificar si los comentarios están habilitados para esta noticia

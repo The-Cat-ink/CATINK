@@ -17,7 +17,19 @@ $stmt->execute();
 $row = $stmt->get_result()->fetch_assoc();
 
 if($row){
-    $archivo = __DIR__ . '/../img/avatares/' . $row['imagen'];
+    // Manejo de rutas: si es solo el nombre, agregar ruta; si es ruta completa, usar como está
+    $rutaImagen = $row['imagen'];
+    if(strpos($rutaImagen, '/') === false){
+        // Si no tiene ruta, asumir que es nuevo (uploads/)
+        $rutaImagen = 'uploads/avatares/' . $rutaImagen;
+    }
+    // Intentar en uploads/ primero, luego en img/ para compatibilidad
+    $archivo = dirname(dirname(__DIR__)) . '/' . $rutaImagen;
+    if(!file_exists($archivo)){
+        // Fallback a img/ para avatares antiguos
+        $rutaImagen = str_replace('uploads/avatares/', 'img/avatares/', $rutaImagen);
+        $archivo = __DIR__ . '/../' . $rutaImagen;
+    }
     if(file_exists($archivo)) unlink($archivo);
 
     $stmt = $con->prepare("DELETE FROM avatares_perfil WHERE id_avatar = ?");

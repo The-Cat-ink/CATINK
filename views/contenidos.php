@@ -278,7 +278,7 @@ if ($vista === 'mes') {
                         <?php else: ?>
                             <div class="day-news">
                                 <?php foreach ($newsList as $row): 
-                                    $img = !empty($row['crop3']) ? basePath()."/".$row['crop3'] : basePath()."/img/placeholder.svg";
+                                    $img = imageUrl($row['crop3'] ?? 'img/placeholder.svg');
                                     $fechaPublicacion = new DateTime($row['fecha_publicacion']);
                                     $estadoClass = $row['_estado'];
                                 ?>
@@ -297,7 +297,7 @@ if ($vista === 'mes') {
                                         </span>
                                         <span class="card-time"><i class="bi bi-clock"></i> <?= $fechaPublicacion->format('H:i') ?></span>
                                     </div>
-                                    <img src="<?= htmlspecialchars($img) ?>" alt="" class="card-img-top" loading="lazy" decoding="async">
+                                    <img src="<?= $img ?>" alt="" class="card-img-top" loading="lazy" decoding="async">
                                     <h6><?= htmlspecialchars($row['titulo']) ?></h6>
                                     <div class="card-metrics">
                                         <span><i class="bi bi-eye"></i> <?= number_format($row['vistas']) ?></span>
@@ -412,12 +412,12 @@ if ($vista === 'mes') {
                             <tr><td colspan="7" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron noticias</td></tr>
                         <?php else: ?>
                             <?php foreach ($allNews as $row):
-                                $img = !empty($row['crop3']) ? basePath()."/".$row['crop3'] : basePath()."/img/placeholder.svg";
+                                $img = imageUrl($row['crop3'] ?? 'img/placeholder.svg');
                                 $fechaPublicacion = new DateTime($row['fecha_publicacion']);
                                 $estadoClass = $row['_estado'];
                             ?>
                             <tr>
-                                <td><img src="<?= htmlspecialchars($img) ?>" alt="" class="table-thumb" loading="lazy" decoding="async"></td>
+                                <td><img src="<?= $img ?>" alt="" class="table-thumb" loading="lazy" decoding="async"></td>
                                 <td><strong class="table-title"><?= htmlspecialchars($row['titulo']) ?></strong></td>
                                 <td>
                                     <span class="estado-badge estado-<?= $estadoClass ?>">

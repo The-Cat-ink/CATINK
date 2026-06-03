@@ -48,3 +48,45 @@ function searchUrlLong($termino){
 function authorUrl($id){
     return basePath() . "/autor/" . intval($id);
 }
+
+// ============================
+// FUNCIÓN PARA SERVIR IMÁGENES
+// ============================
+// Convierte rutas de BD (uploads/noticias/...) a URLs accesibles
+function imageUrl($path) {
+    if (empty($path)) {
+        return basePath() . "/img/placeholder.svg";
+    }
+    
+    // Si ya es una URL completa, devolverla
+    if (strpos($path, 'http') === 0) {
+        return $path;
+    }
+    
+    // Convertir rutas antiguas de img/ a uploads/
+    if (strpos($path, 'img/avatares/') === 0 || strpos($path, 'img/editores/') === 0 || strpos($path, 'img/publicidad/') === 0) {
+        // Extraer el nombre del archivo
+        $filename = basename($path);
+        // Determinar la carpeta correcta
+        if (strpos($path, 'img/avatares/') === 0) {
+            $path = 'uploads/avatares/' . $filename;
+        } else if (strpos($path, 'img/editores/') === 0) {
+            $path = 'uploads/editores/' . $filename;
+        } else if (strpos($path, 'img/publicidad/') === 0) {
+            $path = 'uploads/publicidad/' . $filename;
+        }
+    }
+    
+    // Si es una ruta en /img/, servir a través de serve-image.php (para logos, placeholders, etc)
+    if (strpos($path, 'img/') === 0) {
+        return basePath() . "/serve-image.php?file=" . urlencode($path);
+    }
+    
+    // Si es una ruta en /uploads/, servir a través de serve-image.php
+    if (strpos($path, 'uploads/') === 0) {
+        return basePath() . "/serve-image.php?file=" . urlencode($path);
+    }
+    
+    // Por defecto, devolver placeholder
+    return basePath() . "/img/placeholder.svg";
+}

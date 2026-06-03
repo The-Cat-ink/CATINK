@@ -124,7 +124,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav align-items-center">
-        <li class="nav-item"><a class="nav-link" href="<?= basePath() . '/' ?>">Inicio</a></li>
         <?php foreach ($categorias as $cat): ?>
           <li class="nav-item">
             <a class="nav-link" href="<?= categoryUrl($cat['nombre']) ?>">

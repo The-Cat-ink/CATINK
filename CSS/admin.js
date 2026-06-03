@@ -282,7 +282,8 @@
         imageSmoothingQuality: 'high'
       });
 
-      const dataUrl = canvas.toDataURL('image/webp', 0.95);
+      // Usar PNG sin compresión para mantener calidad máxima
+      const dataUrl = canvas.toDataURL('image/png');
 
       // Guardar en input hidden
       if (hiddenInput) {

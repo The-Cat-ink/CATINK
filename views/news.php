@@ -144,6 +144,16 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
         $misLikes[$lk['comentario_id']] = true;
     }
 }
+
+// Verificar si el usuario actual es el autor de la noticia
+$esAutor = false;
+if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION['usuario'])) {
+    $stmtAutor = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ?");
+    $stmtAutor->bind_param("s", $_SESSION['usuario']);
+    $stmtAutor->execute();
+    $resAutor = $stmtAutor->get_result()->fetch_assoc();
+    $esAutor = ($resAutor && $resAutor['id_u'] == $noticia['autor']);
+}
 ?>
 <style>
   @media (max-width: 768px) {
@@ -167,21 +177,9 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <div class="container-noticia">
             <?php
               $imgSrc = $noticia['crop3'] ?? $noticia['crop2'] ?? $noticia['crop1'] ?? null;
-              if ($imgSrc) {
-                $path = ltrim(htmlspecialchars($imgSrc), '/');
-                $fullPath = __DIR__ . '/../' . $path;
-                if (file_exists($fullPath)) {
-                  $mtime = filemtime($fullPath);
-                  $img = basePath()."/" . $path . '?v=' . $mtime;
-                } else {
-                  // Si la imagen no existe, usar placeholder
-                  $img = basePath()."/img/placeholder.jpg";
-                }
-              } else {
-                $img = basePath()."/img/placeholder.jpg";
-              }
+              $img = imageUrl($imgSrc);
             ?>
-            <img src="<?= $img ?>" alt="" class="img-titular">
+            <img src="<?= htmlspecialchars($img) ?>" alt="" class="img-titular">
             <!-- Categorías -->
             <?php foreach ($cats as $cat): ?>
               <span class="news-tag"><?= htmlspecialchars($cat) ?></span>
@@ -192,9 +190,16 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
               Por <a href="<?= authorUrl($noticia['autor_id'] ?? 0) ?>" style="color: var(--accent); text-decoration: none; font-weight: 700;"><?= htmlspecialchars($noticia['autor_nombre'] ?? 'Desconocido') ?></a> —
               <?= date("d/m/Y H:i", strtotime($noticia['fecha_publicacion'])) ?>
             </p>
-            <button id="likeBtn" class="like-btn" data-id="<?= $id ?>">
-              <i class="bi bi-heart-fill" style="color: red;"></i> Like <span id="likeCount"><?= $noticia['likes'] ?></span>
-            </button>
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+              <button id="likeBtn" class="like-btn" data-id="<?= $id ?>">
+                <i class="bi bi-heart-fill" style="color: red;"></i> Like <span id="likeCount"><?= $noticia['likes'] ?></span>
+              </button>
+              <?php if ($esAutor): ?>
+                <a href="<?= basePath() ?>/views/editar.php?id=<?= $id ?>" class="like-btn" style="background: var(--accent); color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                  <i class="bi bi-pencil-square"></i> Editar
+                </a>
+              <?php endif; ?>
+            </div>
             <!-- Contenido completo de la noticia -->
             <div class="post-content">
               <?php
@@ -229,7 +234,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
             <?php if ($secciones['publicidad']['estado'] == 1) : ?>
               <div class="ad-container">
                 <a href="<?= $publicidad['url'] ?>" class="banner-button" data-pub="<?= $publicidad['id_pub'] ?>">
-                  <img src="<?= basePath() ?>/<?= $publicidad['imagen'] ?>" alt="" class="banner" loading="lazy">
+                  <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="" class="banner" loading="lazy">
                 </a>
                 <span class="ads-label">ADS</span>
               </div>
@@ -261,7 +266,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
               <div class="comentario-form">
                 <div class="comentario-form-avatar">
                   <?php if ($avatarComentario): ?>
-                    <img src="<?= basePath() ?>/img/avatares/<?= htmlspecialchars($avatarComentario) ?>" alt="" class="comentario-avatar">
+                    <img src="<?= imageUrl('img/avatares/' . $avatarComentario) ?>" alt="" class="comentario-avatar" loading="lazy" decoding="async">
                   <?php else: ?>
                     <div class="comentario-avatar-placeholder"><i class="bi bi-person"></i></div>
                   <?php endif; ?>
@@ -286,7 +291,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                   <div class="comentario-item" data-id="<?= $com['id_comentario'] ?>">
                     <div class="comentario-avatar-col">
                       <?php if (!empty($com['avatar_img'])): ?>
-                        <img src="<?= basePath() ?>/img/avatares/<?= htmlspecialchars($com['avatar_img']) ?>" alt="" class="comentario-avatar">
+                        <img src="<?= imageUrl('img/avatares/' . $com['avatar_img']) ?>" alt="" class="comentario-avatar" loading="lazy" decoding="async">
                       <?php else: ?>
                         <div class="comentario-avatar-placeholder"><?= strtoupper(mb_substr($com['nombre'], 0, 1)) ?></div>
                       <?php endif; ?>
@@ -359,7 +364,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
               <?php if($secciones['publicidad']['estado'] == 1) : ?>
                 <div class="ad-container">
                   <a href="<?= $publicidadCuadro['url'] ?>" class="banner-button" data-pub="<?= $publicidadCuadro['id_pub'] ?>">
-                    <img src="<?= basePath() ?>/<?= $publicidadCuadro['imagen'] ?>" class="banner-card-img-top" loading="lazy">
+                    <img src="<?= imageUrl($publicidadCuadro['imagen']) ?>" class="banner-card-img-top" loading="lazy">
                   </a>
                   <span class="ads-label">ADS</span>
                 </div>
@@ -371,7 +376,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                   <?php while ($row = $ultimas->fetch_assoc()): ?>
                     <div class="cardSpecial row row-no-gap">
                         <div class="col-md-4">
-                            <img src="<?= basePath() ?>/<?= htmlspecialchars($row['crop3'] ?? $row['crop2'] ?? $row['crop1'] ?? 'img/placeholder.svg') ?>" class="imgCard card-img-left-rounded" loading="lazy">
+                            <img src="<?= htmlspecialchars(imageUrl($row['crop3'] ?? $row['crop2'] ?? $row['crop1'])) ?>" class="imgCard card-img-left-rounded" loading="lazy">
                         </div>
                         <div class="col-md-8">
                           <div class="card-body">
@@ -388,7 +393,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                   <?php while ($row = $populares->fetch_assoc()): ?>
                     <div class="cardSpecial row row-no-gap">
                         <div class="col-md-4">
-                            <img src="<?= basePath() ?>/<?= htmlspecialchars($row['crop3'] ?? $row['crop2'] ?? $row['crop1'] ?? 'img/placeholder.svg') ?>" class="imgCard card-img-left-rounded" loading="lazy">
+                            <img src="<?= htmlspecialchars(imageUrl($row['crop3'] ?? $row['crop2'] ?? $row['crop1'])) ?>" class="imgCard card-img-left-rounded" loading="lazy">
                         </div>
                         <div class="col-md-8">
                           <div class="card-body">
@@ -424,11 +429,11 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <div class="row">
             <?php while($r = $recomendadas->fetch_assoc()): 
                 $imgSrc = $r['crop3'] ?? $r['crop2'] ?? $r['crop1'] ?? null;
-                $img = $imgSrc ? basePath() . "/" . htmlspecialchars($imgSrc) : basePath() . "/img/placeholder.jpg";
+                $img = imageUrl($imgSrc ?? 'img/placeholder.svg');
             ?>
               <div class="col">
                   <div class="card h-100" data-url="<?= newsUrl($r['id']) ?>">
-                      <img src="<?= htmlspecialchars($img) ?>" class="card-img-top">
+                      <img src="<?= $img ?>" class="card-img-top" loading="lazy" decoding="async">
                       <div class="card-body">
                           <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-2">
                               <?= htmlspecialchars($r['titulo']) ?>
@@ -455,11 +460,11 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
           <div class="row">
             <?php while($r = $recientes->fetch_assoc()):
                 $imgSrc = $r['crop3'] ?? $r['crop2'] ?? $r['crop1'] ?? null;
-                $img = $imgSrc ? basePath() . "/" . htmlspecialchars($imgSrc) : basePath() . "/img/placeholder.jpg";
+                $img = imageUrl($imgSrc ?? 'img/placeholder.svg');
             ?>
               <div class="col">
                   <div class="card h-100" data-url="<?= newsUrl($r['id']) ?>">
-                      <img src="<?= htmlspecialchars($img) ?>" class="card-img-top">
+                      <img src="<?= $img ?>" class="card-img-top" loading="lazy" decoding="async">
                       <div class="card-body">
                           <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-2">
                               <?= htmlspecialchars($r['titulo']) ?>
@@ -573,7 +578,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
         if (data.ok && data.comentario) {
           const c = data.comentario;
           const avatarHtml = c.avatar_img
-            ? `<img src="<?= basePath() ?>/img/avatares/${c.avatar_img}" alt="" class="comentario-avatar">`
+            ? `<img src="<?= basePath() ?>/serve-image.php?file=img/avatares/${c.avatar_img}" alt="" class="comentario-avatar" loading="lazy" decoding="async">`
             : `<div class="comentario-avatar-placeholder">${c.nombre.charAt(0).toUpperCase()}</div>`;
           const fecha = new Date(c.fecha_publicacion).toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
           const badgeHtml = c.es_editor == 1 ? '<span class="badge-editor">Editor</span>' : '';

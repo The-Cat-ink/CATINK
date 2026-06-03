@@ -12,7 +12,7 @@ $showRegistro = isset($_GET['modo']) && $_GET['modo'] === 'registro';
 ?>
 <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; padding:20px;">
     <a href="<?= basePath() ?>/">
-      <img src="<?= basePath() ?>/img/logo.png" alt="CatInk" style="width:180px; margin-bottom:24px; border-radius:12px;">
+      <img src="<?= imageUrl('img/logo.png') ?>" alt="CatInk" style="width:180px; margin-bottom:24px; border-radius:12px;" loading="lazy" decoding="async">
     </a>
 
     <div class="card" style="width:100%; max-width:400px; border-radius:12px; padding:24px; overflow:hidden; position:relative;">

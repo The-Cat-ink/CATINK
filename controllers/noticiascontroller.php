@@ -8,7 +8,7 @@ date_default_timezone_set('America/Mexico_City');
 // ============================
 // GUARDAR IMAGEN BASE64
 // ============================
-function guardarImagenBase64WebpConId($base64, $noticiaId, $crop) {
+function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 100) {
     if (empty($base64)) return null;
 
     if (!preg_match('/^data:image\/(jpeg|jpg|png|webp|gif);base64,/', $base64, $matches)) {
@@ -20,15 +20,78 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop) {
     $binario = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64));
     if ($binario === false || empty($binario)) return null;
 
-    // Guardar el binario tal cual viene del canvas (PNG sin pérdida). Sin re-encoding => sin pérdida de calidad.
-    $ext = ($tipo === 'jpg') ? 'jpeg' : $tipo;
+    // ============================
+    // CREAR CARPETA SI NO EXISTE
+    // ============================
+    $dirFisica = __DIR__ . "/../img/noticias/";
+    if (!is_dir($dirFisica)) {
+        if (!mkdir($dirFisica, 0755, true)) {
+            error_log("CATINK IMG: No se pudo crear carpeta $dirFisica");
+            return null;
+        }
+    }
+
+    // ============================
+    // VALIDAR PERMISOS DE ESCRITURA
+    // ============================
+    if (!is_writable($dirFisica)) {
+        error_log("CATINK IMG: Carpeta $dirFisica no tiene permisos de escritura");
+        return null;
+    }
+
     $timestamp = time();
-    $nombre    = "noticia_{$noticiaId}_{$crop}_{$timestamp}.{$ext}";
-    $rutaFisica = __DIR__ . "/../img/noticias/" . $nombre;
+    
+    // ============================
+    // GUARDAR EN CARPETA PERSISTENTE (FUERA de public_html)
+    // ============================
+    // En producción: /home/usuario/uploads/noticias/
+    // En local: /uploads/noticias/
+    // Esto evita que Hostinger borre las imágenes en despliegues
+    $dirUploads = dirname(dirname(__DIR__)) . "/uploads/noticias/";
+    
+    // Si no existe, crear carpeta
+    if (!is_dir($dirUploads)) {
+        if (!mkdir($dirUploads, 0755, true)) {
+            error_log("CATINK IMG: No se pudo crear carpeta $dirUploads");
+            return null;
+        }
+    }
+    
+    // Validar permisos
+    if (!is_writable($dirUploads)) {
+        error_log("CATINK IMG: Carpeta $dirUploads no tiene permisos de escritura");
+        return null;
+    }
+    
+    // Mantener el formato original para preservar calidad
+    $extension = strtolower($tipo);
+    if ($extension === 'jpg') $extension = 'jpeg';
+    
+    $nombre = "noticia_{$noticiaId}_{$crop}_{$timestamp}.{$extension}";
+    $rutaFisica = $dirUploads . $nombre;
 
-    if (file_put_contents($rutaFisica, $binario) === false) return null;
+    // Guardar directamente sin conversión ni compresión
+    $bytesEscritos = file_put_contents($rutaFisica, $binario);
+    if ($bytesEscritos === false) {
+        error_log("CATINK IMG: Error escribiendo archivo $rutaFisica");
+        return null;
+    }
 
-    return "img/noticias/" . $nombre;
+    // ============================
+    // VALIDAR QUE EL ARCHIVO SE GUARDÓ CORRECTAMENTE
+    // ============================
+    if (!file_exists($rutaFisica)) {
+        error_log("CATINK IMG: Archivo no existe después de guardarlo: $rutaFisica");
+        return null;
+    }
+
+    if (filesize($rutaFisica) === 0) {
+        error_log("CATINK IMG: Archivo vacío: $rutaFisica");
+        unlink($rutaFisica);
+        return null;
+    }
+
+    return "uploads/noticias/" . $nombre;
 }
 // ============================
 // CONEXION
@@ -61,10 +124,11 @@ if (empty($titulo) || empty($descripcion) || empty($contenido)) {
 // ============================
 // INSERTAR NOTICIA (YA SIN CATEGORIA)
 // ============================
-$sql = "INSERT INTO noticias (titulo, descripcion, autor, contenido, fecha_publicacion)
-        VALUES (?, ?, ?, ?, ?)";
+$usuario_id = intval($_SESSION['id_u'] ?? 0);
+$sql = "INSERT INTO noticias (titulo, descripcion, autor, contenido, fecha_publicacion, creado_por, editado_por)
+        VALUES (?, ?, ?, ?, ?, ?, ?)";
 $stmt = $con->prepare($sql);
-$stmt->bind_param("ssiss", $titulo, $descripcion, $autor, $contenido, $fecha_publicacion);
+$stmt->bind_param("ssissii", $titulo, $descripcion, $autor, $contenido, $fecha_publicacion, $usuario_id, $usuario_id);
 $stmt->execute();
 $noticiaId = $con->insert_id;
 // ============================

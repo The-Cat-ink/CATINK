@@ -13,11 +13,27 @@ if (empty($ACL['editar'])) { header("Location: admin.php"); exit(); }
 if (!isset($_GET['id']))    { header("Location: contenidos.php"); exit; }
 $id = intval($_GET['id']);
 
-$stmt = $con->prepare("SELECT id, titulo, descripcion, contenido, fecha_publicacion, crop1, crop2, crop3 FROM noticias WHERE id = ?");
+$stmt = $con->prepare("SELECT id, titulo, descripcion, contenido, fecha_publicacion, crop1, crop2, crop3, creado_por, editado_por, ultima_edicion FROM noticias WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $noticia = $stmt->get_result()->fetch_assoc();
 if (!$noticia) { header("Location: contenidos.php"); exit; }
+
+// Obtener información de quién creó y editó
+$creadoPor = null;
+$editadoPor = null;
+if ($noticia['creado_por']) {
+    $stmtCreador = $con->prepare("SELECT nombre FROM usuarios WHERE id_u = ?");
+    $stmtCreador->bind_param("i", $noticia['creado_por']);
+    $stmtCreador->execute();
+    $creadoPor = $stmtCreador->get_result()->fetch_assoc();
+}
+if ($noticia['editado_por']) {
+    $stmtEditor = $con->prepare("SELECT nombre FROM usuarios WHERE id_u = ?");
+    $stmtEditor->bind_param("i", $noticia['editado_por']);
+    $stmtEditor->execute();
+    $editadoPor = $stmtEditor->get_result()->fetch_assoc();
+}
 
 $categoriasResult = $con->query("SELECT id_c, nombre FROM categorias ORDER BY nombre ASC");
 $categorias = [];
@@ -38,6 +54,10 @@ while ($row = $resCat->fetch_assoc()) $categoriasSeleccionadas[] = $row;
 
 // Fecha actual de publicación para pre-cargar el programador
 $fechaExistente = date('Y-m-d\TH:i', strtotime($noticia['fecha_publicacion']));
+
+// URLs de imágenes usando imageUrl() para servir correctamente
+$crop2Url = imageUrl($noticia['crop2'] ?? '');
+$crop3Url = imageUrl($noticia['crop3'] ?? '');
 ?>
 <script>const ACL = <?= json_encode($ACL) ?>;</script>
 
@@ -352,6 +372,24 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
   </div>
 
   <h1 class="cn-page-title" style="text-align:center;">Editar noticia</h1>
+
+  <!-- Información de auditoría -->
+  <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 12px; color: var(--muted);">
+    <div><strong>Creado por:</strong> <?= $creadoPor ? htmlspecialchars($creadoPor['nombre']) : 'Sin información' ?></div>
+    <?php if ($editadoPor): ?>
+      <div><strong>Última edición por:</strong> <?= htmlspecialchars($editadoPor['nombre']) ?> 
+        <?php if ($noticia['ultima_edicion']): ?>
+          - <?= htmlspecialchars(date('d/m/Y H:i', strtotime($noticia['ultima_edicion']))) ?>
+        <?php endif; ?>
+      </div>
+    <?php elseif ($noticia['editado_por']): ?>
+      <div><strong>Última edición por:</strong> Sin información
+        <?php if ($noticia['ultima_edicion']): ?>
+          - <?= htmlspecialchars(date('d/m/Y H:i', strtotime($noticia['ultima_edicion']))) ?>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
+  </div>
 
   <form id="formEdicion" action="./../controllers/actualizar_noticia.php" method="POST" enctype="multipart/form-data">
     <input type="hidden" name="id"    value="<?= $noticia['id'] ?>">
@@ -700,8 +738,8 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 <script>
 // Datos PHP → JS
 const BASE_PATH          = '<?= basePath() ?>';
-const EXISTING_CROP2_URL = '<?= addslashes($noticia['crop2'] ?? '') ?>';
-const EXISTING_CROP3_URL = '<?= addslashes($noticia['crop3'] ?? '') ?>';
+const EXISTING_CROP2_URL = '<?= addslashes($crop2Url) ?>';
+const EXISTING_CROP3_URL = '<?= addslashes($crop3Url) ?>';
 const FECHA_EXISTENTE    = '<?= $fechaExistente ?>';
 const CATS_INICIALES     = <?= json_encode($categoriasSeleccionadas) ?>;
 
@@ -840,16 +878,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ── Pre-cargar zonas con imágenes existentes ── */
   if (EXISTING_CROP2_URL) {
-    setZonePreviewFromUrl(2, BASE_PATH + '/' + EXISTING_CROP2_URL);
-    zoneSources[2] = BASE_PATH + '/' + EXISTING_CROP2_URL;
+    setZonePreviewFromUrl(2, EXISTING_CROP2_URL);
+    zoneSources[2] = EXISTING_CROP2_URL;
   }
   if (EXISTING_CROP3_URL) {
-    setZonePreviewFromUrl(3, BASE_PATH + '/' + EXISTING_CROP3_URL);
+    setZonePreviewFromUrl(3, EXISTING_CROP3_URL);
     // Usar el banner como fuente para re-recortar la miniatura (igual que crear.php,
     // donde zoneSources[3] apunta a la imagen original completa, no al recorte ya hecho)
     zoneSources[3] = EXISTING_CROP2_URL
-      ? (BASE_PATH + '/' + EXISTING_CROP2_URL)
-      : (BASE_PATH + '/' + EXISTING_CROP3_URL);
+      ? EXISTING_CROP2_URL
+      : EXISTING_CROP3_URL;
   }
   if (EXISTING_CROP2_URL || EXISTING_CROP3_URL) {
     document.getElementById('previewSection').style.display = 'block';
@@ -1092,9 +1130,15 @@ function setZonePreviewFromUrl(zoneId, url) {
   zone.querySelectorAll('.preview-img').forEach(el => el.remove());
   const img = document.createElement('img');
   img.className = 'preview-img';
+  img.onload = function() {
+    zone.classList.add('has-image');
+  };
+  img.onerror = function() {
+    console.error('Error cargando imagen:', url);
+    zone.classList.remove('has-image');
+  };
   img.src = url;
   zone.appendChild(img);
-  zone.classList.add('has-image');
 }
 
 function confirmCrop() {

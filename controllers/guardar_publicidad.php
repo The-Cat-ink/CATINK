@@ -8,24 +8,57 @@ proteger('publicidad','crear');
 function guardarPublicidadBase64Webp($base64, $publicidadId, $calidad = 95) {
     if (empty($base64)) return null;
 
-    if (!preg_match('/^data:image\/(jpeg|jpg|png|webp);base64,/', $base64)) {
+    if (!preg_match('/^data:image\/(jpeg|jpg|png|webp|gif);base64,/', $base64, $matches)) {
+        error_log("PUBLICIDAD: regex no coincide, inicio=" . substr($base64, 0, 50));
         return null;
     }
-    $base64 = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
-    $binario = base64_decode($base64);
-    if ($binario === false) return null;
-    $imagen = imagecreatefromstring($binario);
-    if (!$imagen) return null;
-    $timestamp = time();
-    $nombre = "pub_{$publicidadId}_{$timestamp}.webp";
-    $rutaFisica = __DIR__ . "/../img/publicidad/" . $nombre;
-    // Crear carpeta si no existe
-    if (!is_dir(__DIR__ . "/../img/publicidad")) {
-        mkdir(__DIR__ . "/../img/publicidad", 0777, true);
+    
+    $tipo = $matches[1];
+    $binario = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64));
+    if ($binario === false || empty($binario)) {
+        error_log("PUBLICIDAD: base64_decode falló");
+        return null;
     }
-    imagewebp($imagen, $rutaFisica, $calidad);
-    imagedestroy($imagen);
-    return "img/publicidad/" . $nombre;
+    
+    $dirUploads = dirname(dirname(__DIR__)) . "/uploads/publicidad/";
+    
+    if (!is_dir($dirUploads)) {
+        if (!mkdir($dirUploads, 0755, true)) {
+            error_log("PUBLICIDAD: No se pudo crear directorio: $dirUploads");
+            return null;
+        }
+    }
+    
+    if (!is_writable($dirUploads)) {
+        error_log("PUBLICIDAD: Directorio no escribible: $dirUploads");
+        return null;
+    }
+    
+    $timestamp = time();
+    $extension = strtolower($tipo);
+    if ($extension === 'jpg') $extension = 'jpeg';
+    
+    $nombre = "pub_{$publicidadId}_{$timestamp}.{$extension}";
+    $rutaFisica = $dirUploads . $nombre;
+    
+    $bytesEscritos = file_put_contents($rutaFisica, $binario);
+    if ($bytesEscritos === false) {
+        error_log("PUBLICIDAD: Error escribiendo archivo: $rutaFisica");
+        return null;
+    }
+    
+    if (!file_exists($rutaFisica)) {
+        error_log("PUBLICIDAD: Archivo no existe después de guardarlo: $rutaFisica");
+        return null;
+    }
+    
+    if (filesize($rutaFisica) === 0) {
+        error_log("PUBLICIDAD: Archivo vacío: $rutaFisica");
+        unlink($rutaFisica);
+        return null;
+    }
+    
+    return "uploads/publicidad/" . $nombre;
 }
 // ============================
 // CONEXION
@@ -57,9 +90,31 @@ $stmt->bind_param("sisiss", $titulo, $tipo, $url, $estado, $fechaInicio, $fechaF
 $stmt->execute();
 $publicidadId = $con->insert_id;
 // ============================
-// GUARDAR IMAGEN CROP
+// GUARDAR IMAGEN
 // ============================
-$imagenFinal = guardarPublicidadBase64Webp($_POST['imagenCrop'] ?? null, $publicidadId);
+$imagenFinal = null;
+
+// Si hay base64 del crop, usarlo
+if (!empty($_POST['imagenCrop'])) {
+    $imagenFinal = guardarPublicidadBase64Webp($_POST['imagenCrop'], $publicidadId);
+}
+// Si no hay crop pero hay archivo, guardar el archivo directamente
+elseif (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+    $dirUploads = dirname(dirname(__DIR__)) . "/uploads/publicidad/";
+    
+    if (!is_dir($dirUploads)) {
+        mkdir($dirUploads, 0755, true);
+    }
+    
+    $timestamp = time();
+    $extension = pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION);
+    $nombre = "pub_{$publicidadId}_{$timestamp}." . strtolower($extension);
+    $rutaFisica = $dirUploads . $nombre;
+    
+    if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaFisica)) {
+        $imagenFinal = "uploads/publicidad/" . $nombre;
+    }
+}
 // ============================
 // ACTUALIZAR IMAGEN EN BD
 // ============================

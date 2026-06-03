@@ -91,22 +91,14 @@ $stmtRecientes = $con->prepare("
 $stmtRecientes->execute();
 $recientes = $stmtRecientes->get_result();
 
-// Helper: devuelve la primera imagen no vacía, o placeholder (ruta absoluta con cache buster)
+// Helper: devuelve la primera imagen no vacía, o placeholder
 function img($fields, $placeholder = 'img/placeholder.svg') {
-    $base = basePath();
     foreach ($fields as $f) {
         if (!empty($f)) {
-            $path = ltrim(htmlspecialchars($f), '/');
-            $fullPath = __DIR__ . '/' . $path;
-            // Agregar cache buster si el archivo existe, sino usar placeholder
-            if (file_exists($fullPath)) {
-                $mtime = filemtime($fullPath);
-                return $base . '/' . $path . '?v=' . $mtime;
-            }
-            // Si la imagen no existe, continuar al siguiente campo o usar placeholder
+            return imageUrl($f);
         }
     }
-    return $base . '/' . $placeholder;
+    return imageUrl($placeholder);
 }
 // Helper: genera atributos de imagen con lazy loading
 function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
@@ -254,7 +246,7 @@ function topCard($r, $type = 'thumb') {
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidad) : ?>
                     <div class="ad-container">
                         <a href="<?php echo htmlspecialchars($publicidad['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidad['id_pub']); ?>">
-                            <img src="<?= basePath() ?>/<?php echo htmlspecialchars($publicidad['imagen']); ?>" alt="" class="banner" loading="lazy" decoding="async">
+                            <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="" class="banner" loading="lazy" decoding="async">
                         </a>
                         <span class="ads-label">ADS</span>
                     </div>
@@ -388,7 +380,7 @@ function topCard($r, $type = 'thumb') {
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidadInferior) : ?>
                     <div class="ad-container">
                         <a href="<?php echo htmlspecialchars($publicidadInferior['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadInferior['id_pub']); ?>">
-                            <img src="<?= basePath() ?>/<?php echo htmlspecialchars($publicidadInferior['imagen']); ?>" alt="" class="banner" loading="lazy" decoding="async">
+                            <img src="<?= imageUrl($publicidadInferior['imagen']) ?>" alt="" class="banner" loading="lazy" decoding="async">
                         </a>
                         <span class="ads-label">ADS</span>
                     </div>
@@ -401,7 +393,7 @@ function topCard($r, $type = 'thumb') {
                             <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidadCuadro) : ?>
                                 <div class="ad-container">
                                     <a href="<?php echo htmlspecialchars($publicidadCuadro['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadCuadro['id_pub']); ?>">
-                                        <img src="<?= basePath() ?>/<?php echo htmlspecialchars($publicidadCuadro['imagen']); ?>" class="banner-card-img-top" loading="lazy" decoding="async">
+                                        <img src="<?= imageUrl($publicidadCuadro['imagen']) ?>" class="banner-card-img-top" loading="lazy" decoding="async">
                                     </a>
                                     <span class="ads-label">ADS</span>
                                 </div>
@@ -496,11 +488,11 @@ function topCard($r, $type = 'thumb') {
               <br>
               <div class="row">
                 <?php while($r = $recientes->fetch_assoc()): 
-                    $img = !empty($r['crop3']) ? $r['crop3'] : "img/placeholder.svg";
+                    $img = img([$r['crop3'], $r['crop2'], $r['crop1']]);
                 ?>
                   <div class="col">
                       <div class="card h-100"  data-url="<?= newsUrl($r['id']) ?>">
-                          <img src="<?= htmlspecialchars($img) ?>" class="card-img-top">
+                          <img src="<?= $img ?>" class="card-img-top" loading="lazy" decoding="async">
                           <div class="card-body">
                               <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-1">
                                   <?= htmlspecialchars($r['titulo']) ?>

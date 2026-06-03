@@ -60,12 +60,22 @@ $fechaRegistro = date('d M Y', strtotime($editor['registro']));
 
 // Foto con fallback
 $fotoEditor = !empty($editor['foto_personal'])
-    ? basePath() . '/' . htmlspecialchars($editor['foto_personal'])
+    ? imageUrl($editor['foto_personal'])
     : null;
 
 // Iniciales para fallback
 $palabras = explode(' ', $editor['nombre']);
 $iniciales = strtoupper(substr($palabras[0], 0, 1) . (isset($palabras[1]) ? substr($palabras[1], 0, 1) : ''));
+
+// Verificar si es el editor actual
+$esEditorActual = false;
+if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION['usuario'])) {
+    $stmtCheck = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ?");
+    $stmtCheck->bind_param("s", $_SESSION['usuario']);
+    $stmtCheck->execute();
+    $resCheck = $stmtCheck->get_result()->fetch_assoc();
+    $esEditorActual = ($resCheck && $resCheck['id_u'] == $id);
+}
 ?>
 
 <div class="container" style="max-width: 900px; margin: 0 auto; padding: 30px 16px;">
@@ -100,6 +110,11 @@ $iniciales = strtoupper(substr($palabras[0], 0, 1) . (isset($palabras[1]) ? subs
                         <i class="bi bi-instagram"></i> Instagram
                     </a>
                 <?php endif; ?>
+                <?php if ($esEditorActual): ?>
+                    <a href="<?= basePath() ?>/perfil" class="autor-social-link autor-social-edit" style="background: var(--accent); color: #fff; border-radius: 6px; padding: 8px 16px; font-weight: 600;">
+                        <i class="bi bi-pencil-square"></i> Editar Perfil
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -117,7 +132,7 @@ $iniciales = strtoupper(substr($palabras[0], 0, 1) . (isset($palabras[1]) ? subs
                         $cats = !empty($art['categorias']) ? array_map('trim', explode(',', $art['categorias'])) : [];
                     ?>
                     <a href="<?= newsUrl($art['id']) ?>" class="autor-article-card">
-                        <img src="<?= basePath() . '/' . htmlspecialchars($imgArt) ?>" alt="" class="autor-article-img">
+                        <img src="<?= imageUrl($imgArt) ?>" alt="" class="autor-article-img" loading="lazy" decoding="async">
                         <div class="autor-article-body">
                             <div class="autor-article-tags">
                                 <?php foreach (array_slice($cats, 0, 2) as $cat): ?>
