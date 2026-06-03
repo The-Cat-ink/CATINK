@@ -76,7 +76,7 @@ if (!$fila) {
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
     <?php if($ACL): ?>
         <script>
-            const ACL = {
+            window.ACL = {
                 crear: <?= $ACL['crear'] ? 'true' : 'false' ?>,
                 leer: <?= $ACL['leer'] ? 'true' : 'false' ?>,
                 editar: <?= $ACL['editar'] ? 'true' : 'false' ?>,
