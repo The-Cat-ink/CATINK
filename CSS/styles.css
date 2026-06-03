@@ -6,10 +6,6 @@
 */
 /* Reset básico */
 
-*:not(.sidebar):not(.sidebar *):not(.carousel-item) {
-    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out !important;
-}
-
 body, header, nav, footer, .card, .panel-admin {
     transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
