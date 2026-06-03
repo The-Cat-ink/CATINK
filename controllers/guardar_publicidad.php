@@ -16,14 +16,28 @@ function guardarPublicidadBase64Webp($base64, $publicidadId, $calidad = 95) {
     if ($binario === false) return null;
     $imagen = imagecreatefromstring($binario);
     if (!$imagen) return null;
+    
+    $baseDir = dirname(__DIR__);
+    $uploadDir = $baseDir . "/uploads/publicidad";
+    
+    // Crear carpeta si no existe
+    if (!is_dir($uploadDir)) {
+        if (!mkdir($uploadDir, 0755, true)) {
+            error_log("No se pudo crear directorio: $uploadDir");
+            return null;
+        }
+    }
+    
     $timestamp = time();
     $nombre = "pub_{$publicidadId}_{$timestamp}.webp";
-    $rutaFisica = dirname(__DIR__) . "/uploads/publicidad/" . $nombre;
-    // Crear carpeta si no existe
-    if (!is_dir(dirname(__DIR__) . "/uploads/publicidad")) {
-        mkdir(dirname(__DIR__) . "/uploads/publicidad", 0755, true);
+    $rutaFisica = $uploadDir . "/" . $nombre;
+    
+    if (!imagewebp($imagen, $rutaFisica, $calidad)) {
+        error_log("No se pudo guardar imagen webp: $rutaFisica");
+        imagedestroy($imagen);
+        return null;
     }
-    imagewebp($imagen, $rutaFisica, $calidad);
+    
     imagedestroy($imagen);
     return "uploads/publicidad/" . $nombre;
 }
