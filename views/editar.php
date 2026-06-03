@@ -454,20 +454,20 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               </div>
             </div>
           </div>
-          <?php if (!empty($ACL['editar'])): ?>
-          <div style="margin-top:16px;">
-            <button type="submit" class="cn-publish-btn" id="btnGuardar" name="guardarEdicion">
-              <i class="bi bi-floppy"></i> Guardar cambios
-            </button>
-          </div>
-          <?php endif; ?>
-          <?php if (!empty($ACL['eliminar'])): ?>
-          <button type="button" class="cn-delete-btn" id="btnEliminar">
-            <i class="bi bi-trash"></i> Eliminar noticia
-          </button>
-          <?php endif; ?>
         </div>
       </div><!-- /sec-schedule -->
+      <?php if (!empty($ACL['editar'])): ?>
+      <div style="margin-top:12px;">
+        <button type="submit" class="cn-publish-btn" id="btnGuardar" name="guardarEdicion">
+          <i class="bi bi-floppy"></i> Guardar cambios
+        </button>
+      </div>
+      <?php endif; ?>
+      <?php if (!empty($ACL['eliminar'])): ?>
+      <button type="button" class="cn-delete-btn" id="btnEliminar">
+        <i class="bi bi-trash"></i> Eliminar noticia
+      </button>
+      <?php endif; ?>
 
       </div><!-- /cn-left-col -->
 
