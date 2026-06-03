@@ -175,12 +175,14 @@ document.getElementById('cropBtn').addEventListener('click', function() {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
         
+        const base64 = canvas.toDataURL('image/png');
+        
         const resultPreview = document.getElementById('resultPreview');
-        resultPreview.src = canvas.toDataURL('image/webp', 0.95);
+        resultPreview.src = base64;
         resultPreview.style.display = 'block';
         document.getElementById('previewTitle').style.display = 'block';
         
-        document.getElementById('imagenCrop').value = canvas.toDataURL('image/webp', 0.95);
+        document.getElementById('imagenCrop').value = base64;
     };
     img.src = imagePreview.src;
 });
