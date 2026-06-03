@@ -18,14 +18,14 @@ function guardarPublicidadBase64Webp($base64, $publicidadId, $calidad = 95) {
     if (!$imagen) return null;
     $timestamp = time();
     $nombre = "pub_{$publicidadId}_{$timestamp}.webp";
-    $rutaFisica = __DIR__ . "/../img/publicidad/" . $nombre;
+    $rutaFisica = dirname(__DIR__) . "/uploads/publicidad/" . $nombre;
     // Crear carpeta si no existe
-    if (!is_dir(__DIR__ . "/../img/publicidad")) {
-        mkdir(__DIR__ . "/../img/publicidad", 0777, true);
+    if (!is_dir(dirname(__DIR__) . "/uploads/publicidad")) {
+        mkdir(dirname(__DIR__) . "/uploads/publicidad", 0755, true);
     }
     imagewebp($imagen, $rutaFisica, $calidad);
     imagedestroy($imagen);
-    return "img/publicidad/" . $nombre;
+    return "uploads/publicidad/" . $nombre;
 }
 // ============================
 // CONEXION
