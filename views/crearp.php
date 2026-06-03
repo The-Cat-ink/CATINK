@@ -40,8 +40,8 @@
                 <!-- Resultado final -->
                 <h4>Vista previa final:</h4>
                 <img id="resultPreview" style="max-width:100%; border:1px solid #ccc;">
-                <!-- Imagen final enviada al backend -->
-                <input type="hidden" name="imagenCrop" id="imagenCrop">
+                <!-- Imagen final enviada al backend (base64) -->
+                <input type="hidden" name="imagenCrop" id="imagenCrop" value="">
             </div>
             <div class="form-group">
                 <label for="url" >Url</label>
@@ -95,10 +95,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultPreview = document.getElementById('resultPreview');
     const imagenCrop = document.getElementById('imagenCrop');
     const cropButtons = document.querySelector('.crop-buttons');
-    const form = document.querySelector('form');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    let canvasBlob = null;
     
     if (!imagenInput) return;
     
@@ -126,23 +122,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const canvas = document.createElement('canvas');
             const img = new Image();
-            img.crossOrigin = 'anonymous';
             img.onload = function() {
                 canvas.width = img.width;
                 canvas.height = img.height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0);
                 
-                resultPreview.src = canvas.toDataURL('image/png');
-                resultPreview.style.display = 'block';
+                const data64 = canvas.toDataURL('image/png');
+                imagenCrop.value = data64;
                 
-                canvas.toBlob(function(blob) {
-                    canvasBlob = blob;
-                    console.log('Canvas blob creado, tamaño:', blob.size, 'bytes');
-                }, 'image/png');
-            };
-            img.onerror = function() {
-                console.error('Error cargando imagen');
+                resultPreview.src = data64;
+                resultPreview.style.display = 'block';
             };
             img.src = imagePreview.src;
         });
@@ -158,35 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
             resultPreview.style.display = 'none';
             resultPreview.src = '';
             imagenCrop.value = '';
-            canvasBlob = null;
             if (cropButtons) cropButtons.style.display = 'none';
-        });
-    }
-    
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            if (canvasBlob) {
-                e.preventDefault();
-                
-                const formData = new FormData(form);
-                formData.append('imagenBlob', canvasBlob, 'imagen.png');
-                
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.href = response.url || './../views/publicidad.php';
-                    } else {
-                        alert('Error al guardar publicidad');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al guardar publicidad');
-                });
-            }
         });
     }
 });

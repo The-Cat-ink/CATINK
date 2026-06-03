@@ -92,32 +92,8 @@ $publicidadId = $con->insert_id;
 // ============================
 // GUARDAR IMAGEN CROP
 // ============================
-$imagenFinal = null;
-
-// Intentar recibir blob de archivo
-if (isset($_FILES['imagenBlob']) && $_FILES['imagenBlob']['error'] === UPLOAD_ERR_OK) {
-    $dirUploads = dirname(dirname(__DIR__)) . "/uploads/publicidad/";
-    
-    if (!is_dir($dirUploads)) {
-        mkdir($dirUploads, 0755, true);
-    }
-    
-    $timestamp = time();
-    $nombre = "pub_{$publicidadId}_{$timestamp}.png";
-    $rutaFisica = $dirUploads . $nombre;
-    
-    if (move_uploaded_file($_FILES['imagenBlob']['tmp_name'], $rutaFisica)) {
-        error_log("PUBLICIDAD: Imagen guardada desde blob: $rutaFisica");
-        $imagenFinal = "uploads/publicidad/" . $nombre;
-    } else {
-        error_log("PUBLICIDAD: Error moviendo archivo blob");
-    }
-} else {
-    // Fallback a base64 si no hay blob
-    $imagenCropRecibido = $_POST['imagenCrop'] ?? null;
-    error_log("DEBUG PUBLICIDAD: imagenCrop recibido = " . (empty($imagenCropRecibido) ? "VACIO" : substr($imagenCropRecibido, 0, 100)));
-    $imagenFinal = guardarPublicidadBase64Webp($imagenCropRecibido, $publicidadId);
-}
+$imagenCropRecibido = $_POST['imagenCrop'] ?? null;
+$imagenFinal = guardarPublicidadBase64Webp($imagenCropRecibido, $publicidadId);
 // ============================
 // ACTUALIZAR IMAGEN EN BD
 // ============================
