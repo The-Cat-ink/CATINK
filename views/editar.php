@@ -13,11 +13,27 @@ if (empty($ACL['editar'])) { header("Location: admin.php"); exit(); }
 if (!isset($_GET['id']))    { header("Location: contenidos.php"); exit; }
 $id = intval($_GET['id']);
 
-$stmt = $con->prepare("SELECT id, titulo, descripcion, contenido, fecha_publicacion, crop1, crop2, crop3 FROM noticias WHERE id = ?");
+$stmt = $con->prepare("SELECT id, titulo, descripcion, contenido, fecha_publicacion, crop1, crop2, crop3, creado_por, editado_por, ultima_edicion FROM noticias WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $noticia = $stmt->get_result()->fetch_assoc();
 if (!$noticia) { header("Location: contenidos.php"); exit; }
+
+// Obtener información de quién creó y editó
+$creadoPor = null;
+$editadoPor = null;
+if ($noticia['creado_por']) {
+    $stmtCreador = $con->prepare("SELECT nombre FROM usuarios WHERE id_u = ?");
+    $stmtCreador->bind_param("i", $noticia['creado_por']);
+    $stmtCreador->execute();
+    $creadoPor = $stmtCreador->get_result()->fetch_assoc();
+}
+if ($noticia['editado_por']) {
+    $stmtEditor = $con->prepare("SELECT nombre FROM usuarios WHERE id_u = ?");
+    $stmtEditor->bind_param("i", $noticia['editado_por']);
+    $stmtEditor->execute();
+    $editadoPor = $stmtEditor->get_result()->fetch_assoc();
+}
 
 $categoriasResult = $con->query("SELECT id_c, nombre FROM categorias ORDER BY nombre ASC");
 $categorias = [];
@@ -324,6 +340,20 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
   </div>
 
   <h1 class="cn-page-title" style="text-align:center;">Editar noticia</h1>
+
+  <!-- Información de auditoría -->
+  <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 12px; color: var(--muted);">
+    <?php if ($creadoPor): ?>
+      <div><strong>Creado por:</strong> <?= htmlspecialchars($creadoPor['nombre']) ?></div>
+    <?php endif; ?>
+    <?php if ($editadoPor && $editadoPor['nombre'] !== ($creadoPor['nombre'] ?? '')): ?>
+      <div><strong>Última edición por:</strong> <?= htmlspecialchars($editadoPor['nombre']) ?> 
+        <?php if ($noticia['ultima_edicion']): ?>
+          hace <?= htmlspecialchars(date('d/m/Y H:i', strtotime($noticia['ultima_edicion']))) ?>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
+  </div>
 
   <form id="formEdicion" action="./../controllers/actualizar_noticia.php" method="POST" enctype="multipart/form-data">
     <input type="hidden" name="id"    value="<?= $noticia['id'] ?>">
