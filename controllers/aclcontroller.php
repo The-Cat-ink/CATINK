@@ -2,7 +2,7 @@
 if(session_status() == PHP_SESSION_NONE){
     session_start();
 }
-require_once(__DIR__ . "/../views/helpers/helper.php");
+require_once(dirname(dirname(__FILE__)) . "/views/helpers/helper.php");
 function proteger($modulo,$accion,$json=true){
     if(!isset($_SESSION['ACL'])){
         header("Location: ../index.php");
