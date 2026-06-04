@@ -79,6 +79,7 @@ $prog = $programacion[0] ?? ['id_programacion' => '', 'hora' => '', 'estado' => 
                     <th>Email</th>
                     <th>Sexo</th>
                     <th>Fecha de alta</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -88,6 +89,16 @@ $prog = $programacion[0] ?? ['id_programacion' => '', 'hora' => '', 'estado' => 
                     <td><?php echo $suscripcion['correo']; ?></td>
                     <td><?php echo $suscripcion['sexo']; ?></td>
                     <td><?php echo $suscripcion['fecha']; ?></td>
+                    <td>
+                        <?php if($ACL['eliminar']): ?>
+                            <form method="POST" action="./../controllers/eliminarSuscriptor.php" style="display:inline;">
+                                <input type="hidden" name="id" value="<?php echo $suscripcion['id_suscripcion']; ?>">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar este suscriptor?');">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </form>
+                        <?php endif; ?>
+                    </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
