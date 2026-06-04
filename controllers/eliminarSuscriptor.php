@@ -2,9 +2,10 @@
 session_start();
 include(__DIR__ . "/../data/conexion.php");
 
-$ACL = $_SESSION['ACL']['suscripciones'] ?? ['eliminar' => false];
+$superadmin = $_SESSION['superadmin'] ?? false;
+$tienePermiso = $superadmin || ($_SESSION['ACL']['suscripciones']['eliminar'] ?? false);
 
-if (!$ACL['eliminar']) {
+if (!$tienePermiso) {
     header("Location: ./../views/suscripciones.php?error=permisos");
     exit();
 }
@@ -16,7 +17,8 @@ if (!isset($_POST['id'])) {
 
 $id = intval($_POST['id']);
 
-if (!$id) {
+if ($id <= 0) {
+    error_log("ID inválido recibido: " . $_POST['id']);
     header("Location: ./../views/suscripciones.php?error=id_invalido");
     exit();
 }
