@@ -57,47 +57,51 @@ while ($row = $resultado->fetch_assoc()) {
     $noticias[] = $row;
 }
 
-if (empty($noticias)) {
-    header("Location: ./../views/suscripciones.php?error=sin_noticias");
-    exit();
-}
+error_log("Noticias encontradas: " . count($noticias));
 
 // Preparar contenido de noticias
 $contenidoNoticias = '';
-foreach ($noticias as $index => $noticia) {
-    $descripcion = strip_tags($noticia['descripcion']);
-    $descripcion = mb_strimwidth($descripcion, 0, 100, '...');
+if (empty($noticias)) {
+    $contenidoNoticias = "
+    <div style='background:#ffffff;padding:20px;border-radius:10px;text-align:center;'>
+        <p style='font-family:Arial,sans-serif;color:#666;'>No hay noticias nuevas en las últimas 24 horas.</p>
+    </div>";
+} else {
+    foreach ($noticias as $index => $noticia) {
+        $descripcion = strip_tags($noticia['descripcion']);
+        $descripcion = mb_strimwidth($descripcion, 0, 100, '...');
 
-    $webp = 'https://catink.com.mx/' . $noticia['crop3'];
-    $png = __DIR__ . "/../views/email/logo_temp_{$index}.png";
+        $webp = 'https://catink.com.mx/' . $noticia['crop3'];
+        $png = __DIR__ . "/../views/email/logo_temp_{$index}.png";
 
-    try {
-        $image = imagecreatefromwebp($webp);
-        if ($image) {
-            imagepng($image, $png);
-            imagedestroy($image);
+        try {
+            $image = imagecreatefromwebp($webp);
+            if ($image) {
+                imagepng($image, $png);
+                imagedestroy($image);
+            }
+        } catch (Exception $e) {
+            error_log("Error convirtiendo imagen: " . $e->getMessage());
         }
-    } catch (Exception $e) {
-        error_log("Error convirtiendo imagen: " . $e->getMessage());
-    }
 
-    $contenidoNoticias .= "
-    <table width='100%' cellpadding='0' cellspacing='0' border='0' 
-        style='background:#ffffff;margin-bottom:15px;border-radius:10px;overflow:hidden;'>
-    <tr class='stack-column'>
-    <td width='240' valign='top' class='card-padding' style='padding:14px;'>
-        <img src='cid:logo{$index}' width='220' class='stack-img' 
-            style='width:100%;max-width:220px;height:auto;display:block;border-radius:10px;border:0;margin:0;'>
-    </td>
-    <td valign='top' class='card-padding' style='padding:14px;font-family:Arial,sans-serif;'>
-        <a href='https://catink.com.mx/views/news.php?id={$noticia['id']}' 
-           style='display:block;margin:14px;text-decoration:none;color:#EF3363;'>
-            <h3 style='margin:0;font-family:Arial,sans-serif;color:#EF3363;'>{$noticia['titulo']}</h3>
-        </a>
-        <p style='margin:14px;'>{$descripcion}</p>
-    </td>
-    </tr>
-    </table>";
+        $contenidoNoticias .= "
+        <table width='100%' cellpadding='0' cellspacing='0' border='0' 
+            style='background:#ffffff;margin-bottom:15px;border-radius:10px;overflow:hidden;'>
+        <tr class='stack-column'>
+        <td width='240' valign='top' class='card-padding' style='padding:14px;'>
+            <img src='cid:logo{$index}' width='220' class='stack-img' 
+                style='width:100%;max-width:220px;height:auto;display:block;border-radius:10px;border:0;margin:0;'>
+        </td>
+        <td valign='top' class='card-padding' style='padding:14px;font-family:Arial,sans-serif;'>
+            <a href='https://catink.com.mx/views/news.php?id={$noticia['id']}' 
+               style='display:block;margin:14px;text-decoration:none;color:#EF3363;'>
+                <h3 style='margin:0;font-family:Arial,sans-serif;color:#EF3363;'>{$noticia['titulo']}</h3>
+            </a>
+            <p style='margin:14px;'>{$descripcion}</p>
+        </td>
+        </tr>
+        </table>";
+    }
 }
 
 // Cargar plantilla
@@ -123,6 +127,8 @@ try {
     $mail->setFrom('news@catink.com.mx', 'Noticias del día');
     $mail->addAddress($suscriptor['correo'], $suscriptor['nombre_completo']);
 
+    error_log("Enviando correo a: " . $suscriptor['correo']);
+
     // Adjuntar imágenes
     for ($i = 0; $i < count($noticias); $i++) {
         $png = __DIR__ . "/../views/email/logo_temp_{$i}.png";
@@ -138,7 +144,12 @@ try {
     $body = str_replace('{{unsubscribe_url}}', $unsubscribeUrl, $plantilla);
 
     $mail->Body = $body;
-    $mail->send();
+    
+    if ($mail->send()) {
+        error_log("Correo enviado exitosamente a: " . $suscriptor['correo']);
+    } else {
+        error_log("Error al enviar correo: " . $mail->ErrorInfo);
+    }
 
     // Limpiar archivos temporales
     for ($i = 0; $i < count($noticias); $i++) {
@@ -152,7 +163,7 @@ try {
     exit();
 
 } catch (Exception $e) {
-    error_log("Error enviando correo: " . $mail->ErrorInfo);
+    error_log("Excepción enviando correo: " . $e->getMessage());
     header("Location: ./../views/suscripciones.php?error=envio");
     exit();
 }
