@@ -16,13 +16,25 @@ if (!isset($_POST['id'])) {
 
 $id = intval($_POST['id']);
 
-$stmt = $con->prepare("DELETE FROM suscripciones WHERE id_suscripcion = ?");
-$stmt->bind_param("i", $id);
-
-if ($stmt->execute()) {
-    header("Location: ./../views/suscripciones.php?success=1");
-} else {
-    header("Location: ./../views/suscripciones.php?error=db");
+if (!$id) {
+    header("Location: ./../views/suscripciones.php?error=id_invalido");
+    exit();
 }
+
+$stmt = $con->prepare("DELETE FROM suscripciones WHERE id_suscripcion = ?");
+if (!$stmt) {
+    error_log("Error preparando statement: " . $con->error);
+    header("Location: ./../views/suscripciones.php?error=db");
+    exit();
+}
+
+$stmt->bind_param("i", $id);
+if (!$stmt->execute()) {
+    error_log("Error ejecutando delete: " . $stmt->error);
+    header("Location: ./../views/suscripciones.php?error=db");
+    exit();
+}
+
+header("Location: ./../views/suscripciones.php?success=1");
 exit();
 ?>
