@@ -90,6 +90,12 @@ $prog = $programacion[0] ?? ['id_programacion' => '', 'hora' => '', 'estado' => 
                     <td><?php echo $suscripcion['sexo']; ?></td>
                     <td><?php echo $suscripcion['fecha']; ?></td>
                     <td>
+                        <form method="POST" action="./../controllers/enviarCorreoSuscriptor.php" style="display:inline;">
+                            <input type="hidden" name="id" value="<?php echo $suscripcion['id_sub']; ?>">
+                            <button type="submit" class="btn btn-sm btn-primary" title="Enviar correo a este suscriptor">
+                                <i class="bi bi-envelope"></i> Enviar
+                            </button>
+                        </form>
                         <form method="POST" action="./../controllers/eliminarSuscriptor.php" style="display:inline;">
                             <input type="hidden" name="id" value="<?php echo $suscripcion['id_sub']; ?>">
                             <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar este suscriptor?');">
