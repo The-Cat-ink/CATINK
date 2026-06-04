@@ -626,10 +626,9 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .img-titular {
   width: 100%;
   height: auto;
-  max-height: 500px;
-  object-fit: cover;
   border-radius: 8px;
   margin-bottom: 24px;
+  display: block;
 }
 .descripcion {
   font-size: 1.1rem;

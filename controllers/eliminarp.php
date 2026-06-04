@@ -11,7 +11,8 @@ if (isset($_POST['id'])) {
     $stmt->execute();
     $result = $stmt->get_result();
     if ($row = $result->fetch_assoc()) {
-        $imagenPath = dirname(dirname(__DIR__)) . "/" . $row['imagen'];
+        $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+        $imagenPath = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/" . $row['imagen'];
         if (!empty($row['imagen']) && file_exists($imagenPath)) {
             unlink($imagenPath);
         }
