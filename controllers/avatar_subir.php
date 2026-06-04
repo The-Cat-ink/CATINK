@@ -61,7 +61,8 @@ if($imageInfo[0] > $maxWidth || $imageInfo[1] > $maxHeight){
 // Crear carpeta si no existe
 // En producción: /home/u780114275/domains/catink.com.mx/uploads/avatares/
 // En local: c:\xampp\htdocs\CATINK\uploads\avatares\
-$dir = dirname(dirname(__DIR__)) . '/uploads/avatares/';
+$isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+$dir = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . '/uploads/avatares/';
 if(!is_dir($dir)) mkdir($dir, 0755, true);
 
 // Nombre único

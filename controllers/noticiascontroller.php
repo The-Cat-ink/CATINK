@@ -47,7 +47,8 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 100
     // En producción: /home/usuario/uploads/noticias/
     // En local: /uploads/noticias/
     // Esto evita que Hostinger borre las imágenes en despliegues
-    $dirUploads = dirname(dirname(__DIR__)) . "/uploads/noticias/";
+    $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+    $dirUploads = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/uploads/noticias/";
     
     // Si no existe, crear carpeta
     if (!is_dir($dirUploads)) {

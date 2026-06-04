@@ -24,7 +24,8 @@ if($row){
         $rutaImagen = 'uploads/avatares/' . $rutaImagen;
     }
     // Intentar en uploads/ primero, luego en img/ para compatibilidad
-    $archivo = dirname(dirname(__DIR__)) . '/' . $rutaImagen;
+    $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+    $archivo = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . '/' . $rutaImagen;
     if(!file_exists($archivo)){
         // Fallback a img/ para avatares antiguos
         $rutaImagen = str_replace('uploads/avatares/', 'img/avatares/', $rutaImagen);
