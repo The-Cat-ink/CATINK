@@ -21,7 +21,7 @@ if (!$id) {
     exit();
 }
 
-$stmt = $con->prepare("DELETE FROM suscripciones WHERE id_suscripcion = ?");
+$stmt = $con->prepare("DELETE FROM suscripciones WHERE id_sub = ?");
 if (!$stmt) {
     error_log("Error preparando statement: " . $con->error);
     header("Location: ./../views/suscripciones.php?error=db");
