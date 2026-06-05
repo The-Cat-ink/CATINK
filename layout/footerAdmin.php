@@ -63,11 +63,18 @@ document.head.appendChild(style);
 const params = new URLSearchParams(window.location.search);
 if (params.has('success')) {
     const successType = params.get('success');
-    const messages = {
-        'correo_enviado': 'Correo enviado exitosamente',
-        'programacion_actualizada': 'Programación actualizada correctamente'
-    };
-    showToast(messages[successType] || 'Operación completada', 'success');
+    let message = 'Operación completada';
+    
+    if (successType === 'correo_enviado') {
+        message = 'Correo enviado exitosamente';
+    } else if (successType === 'correos_enviados') {
+        const count = params.get('count') || '0';
+        message = `${count} correo(s) enviado(s) exitosamente`;
+    } else if (successType === 'programacion_actualizada') {
+        message = 'Programación actualizada correctamente';
+    }
+    
+    showToast(message, 'success');
 }
 if (params.has('error')) {
     const errorType = params.get('error');

@@ -71,10 +71,22 @@ $prog = $programacion[0] ?? ['id_programacion' => '', 'hora' => '', 'estado' => 
             <?php if($q): ?><a href="./suscripciones.php" class="admin-search-clear">&times;</a><?php endif; ?>
         </form>
     </div>
+    <div class="mb-3">
+        <button type="button" class="btn btn-sm btn-secondary" onclick="toggleSelectAll()">
+            <i class="bi bi-check-all"></i> Seleccionar todos
+        </button>
+        <button type="button" class="btn btn-sm btn-warning" onclick="deselectAll()">
+            <i class="bi bi-x-circle"></i> Deseleccionar
+        </button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="sendToSelected()" id="sendSelectedBtn" style="display:none;">
+            <i class="bi bi-envelope"></i> Enviar a seleccionados
+        </button>
+    </div>
     <div class="table-responsive">
         <table class="table table-striped">
             <thead>
                 <tr>
+                    <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()"></th>
                     <th>Nombre</th>
                     <th>Email</th>
                     <th>Sexo</th>
@@ -85,6 +97,7 @@ $prog = $programacion[0] ?? ['id_programacion' => '', 'hora' => '', 'estado' => 
             <tbody>
                 <?php foreach($suscripciones as $suscripcion): ?>
                 <tr>
+                    <td><input type="checkbox" class="subscriber-checkbox" value="<?php echo $suscripcion['id_sub']; ?>" onchange="updateSendButton()"></td>
                     <td><?php echo $suscripcion['nombre_completo']; ?></td>
                     <td><?php echo $suscripcion['correo']; ?></td>
                     <td><?php echo $suscripcion['sexo']; ?></td>
@@ -109,4 +122,69 @@ $prog = $programacion[0] ?? ['id_programacion' => '', 'hora' => '', 'estado' => 
         </table>
     </div>
 </div>
+
+<script>
+function toggleSelectAll() {
+    const checkboxes = document.querySelectorAll('.subscriber-checkbox');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const allChecked = selectAllCheckbox.checked;
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = allChecked;
+    });
+    
+    updateSendButton();
+}
+
+function deselectAll() {
+    const checkboxes = document.querySelectorAll('.subscriber-checkbox');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    selectAllCheckbox.checked = false;
+    
+    updateSendButton();
+}
+
+function updateSendButton() {
+    const checkboxes = document.querySelectorAll('.subscriber-checkbox:checked');
+    const sendBtn = document.getElementById('sendSelectedBtn');
+    
+    if (checkboxes.length > 0) {
+        sendBtn.style.display = 'inline-block';
+    } else {
+        sendBtn.style.display = 'none';
+    }
+}
+
+function sendToSelected() {
+    const checkboxes = document.querySelectorAll('.subscriber-checkbox:checked');
+    
+    if (checkboxes.length === 0) {
+        alert('Selecciona al menos un suscriptor');
+        return;
+    }
+    
+    const ids = Array.from(checkboxes).map(cb => cb.value);
+    
+    // Crear un formulario oculto para enviar múltiples IDs
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = './../controllers/enviarCorreoMultiple.php';
+    
+    ids.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'ids[]';
+        input.value = id;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+
 <?php include("./../layout/footerAdmin.php"); ?>
