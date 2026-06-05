@@ -83,7 +83,7 @@ try {
     $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
     $mail->addAddress($email, $usuario['nombre']);
 
-    $resetUrl = "https://www.catink.com.mx/views/reset_contrasena.php?token=" . urlencode($token);
+    $resetUrl = "https://www.catink.com.mx/reset_contrasena?token=" . urlencode($token);
 
     $mail->isHTML(true);
     $mail->Subject = "Recuperar tu contraseña en CatInk";
