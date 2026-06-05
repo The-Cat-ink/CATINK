@@ -66,9 +66,9 @@ $_SESSION['id_u'] = $fila['id_u'];
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CatInk News - Admin</title>
-  <link rel="stylesheet" href="/CSS/styles.css">
-  <link rel="stylesheet" href="/CSS/admin.css">
-  <link rel="icon" type="image/png" href="/img/catink-icon.png">
+  <link rel="stylesheet" href="<?= basePath() ?>/CSS/styles.css">
+  <link rel="stylesheet" href="<?= basePath() ?>/CSS/admin.css">
+  <link rel="icon" type="image/png" href="<?= basePath() ?>/img/catink-icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css">
   <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
@@ -90,9 +90,9 @@ $_SESSION['id_u'] = $fila['id_u'];
 <body class="has-sidebar">
 <div class="sidebar">
     <div class="logotipo">
-        <a href="/">
-            <img class="logo-icon" src="/img/catink-icon.png" alt="Catink">
-            <img class="logo-full" src="/img/logo.png" alt="Logo">
+        <a href="<?= basePath() ?>/">
+            <img class="logo-icon" src="<?= basePath() ?>/img/catink-icon.png" alt="Catink">
+            <img class="logo-full" src="<?= basePath() ?>/img/logo.png" alt="Logo">
         </a>
     </div>
     <ul class="sidebar-menu">

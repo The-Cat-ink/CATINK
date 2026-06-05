@@ -3,7 +3,7 @@
 <!-- Contenedor de notificaciones Toast -->
 <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 <!-- Script local para comportamientos generales en admin -->
-<script src="/CSS/admin.js?v=<?= filemtime(__DIR__ . '/../CSS/admin.js') ?>"></script>
+<script src="<?= basePath() ?>/CSS/admin.js?v=<?= filemtime(__DIR__ . '/../CSS/admin.js') ?>"></script>
 <script>
 function showToast(message, type = 'success', duration = 3000) {
     const container = document.getElementById('toastContainer');
