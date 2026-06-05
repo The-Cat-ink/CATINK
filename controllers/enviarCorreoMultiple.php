@@ -65,7 +65,6 @@ logDebug("Noticias encontradas: " . count($noticias));
 
 // Preparar contenido de noticias
 $contenidoNoticias = '';
-$imagenesPNG = [];
 
 if (empty($noticias)) {
     $contenidoNoticias = "
@@ -77,74 +76,26 @@ if (empty($noticias)) {
         $descripcion = strip_tags($noticia['descripcion']);
         $descripcion = mb_strimwidth($descripcion, 0, 100, '...');
 
-        // Construir URL correcta de la imagen
+        // Construir URL correcta de la imagen (usar directamente, sin descargar)
         $imagenUrl = 'https://www.catink.com.mx/serve-image.php?file=' . urlencode($noticia['crop3']);
-        $webpTemp = sys_get_temp_dir() . "/webp_temp_{$index}_" . time() . ".webp";
-        $png = sys_get_temp_dir() . "/logo_temp_{$index}_" . time() . ".png";
 
-        $imagenAdjuntada = false;
-        try {
-            // Descargar la imagen
-            $webpData = file_get_contents($imagenUrl);
-            if ($webpData === false) {
-                logDebug("No se pudo descargar la imagen: $imagenUrl");
-            } else {
-                file_put_contents($webpTemp, $webpData);
-                
-                // Convertir WebP a PNG
-                $image = imagecreatefromwebp($webpTemp);
-                if ($image) {
-                    imagepng($image, $png);
-                    imagedestroy($image);
-                    $imagenesPNG[] = $png;
-                    $imagenAdjuntada = true;
-                    logDebug("Imagen convertida: $png");
-                    
-                    // Limpiar WebP temporal
-                    if (file_exists($webpTemp)) {
-                        unlink($webpTemp);
-                    }
-                } else {
-                    logDebug("No se pudo convertir WebP a PNG: $webpTemp");
-                }
-            }
-        } catch (Exception $e) {
-            logDebug("Error convirtiendo imagen: " . $e->getMessage());
-        }
-
-        if ($imagenAdjuntada) {
-            $contenidoNoticias .= "
-            <table width='100%' cellpadding='0' cellspacing='0' border='0' 
-                style='background:#ffffff;margin-bottom:15px;border-radius:10px;overflow:hidden;'>
-            <tr class='stack-column'>
-            <td width='240' valign='top' class='card-padding' style='padding:14px;'>
-                <img src='cid:logo{$index}' width='220' class='stack-img' 
-                    style='width:100%;max-width:220px;height:auto;display:block;border-radius:10px;border:0;margin:0;'>
-            </td>
-            <td valign='top' class='card-padding' style='padding:14px;font-family:Arial,sans-serif;'>
-                <a href='https://catink.com.mx/views/news.php?id={$noticia['id']}' 
-                   style='display:block;margin:14px;text-decoration:none;color:#EF3363;'>
-                    <h3 style='margin:0;font-family:Arial,sans-serif;color:#EF3363;'>{$noticia['titulo']}</h3>
-                </a>
-                <p style='margin:14px;'>{$descripcion}</p>
-            </td>
-            </tr>
-            </table>";
-        } else {
-            $contenidoNoticias .= "
-            <table width='100%' cellpadding='0' cellspacing='0' border='0' 
-                style='background:#ffffff;margin-bottom:15px;border-radius:10px;overflow:hidden;'>
-            <tr class='stack-column'>
-            <td valign='top' class='card-padding' style='padding:14px;font-family:Arial,sans-serif;'>
-                <a href='https://catink.com.mx/views/news.php?id={$noticia['id']}' 
-                   style='display:block;margin:14px;text-decoration:none;color:#EF3363;'>
-                    <h3 style='margin:0;font-family:Arial,sans-serif;color:#EF3363;'>{$noticia['titulo']}</h3>
-                </a>
-                <p style='margin:14px;'>{$descripcion}</p>
-            </td>
-            </tr>
-            </table>";
-        }
+        $contenidoNoticias .= "
+        <table width='100%' cellpadding='0' cellspacing='0' border='0' 
+            style='background:#ffffff;margin-bottom:15px;border-radius:10px;overflow:hidden;'>
+        <tr class='stack-column'>
+        <td width='240' valign='top' class='card-padding' style='padding:14px;'>
+            <img src='{$imagenUrl}' width='220' class='stack-img' 
+                style='width:100%;max-width:220px;height:auto;display:block;border-radius:10px;border:0;margin:0;'>
+        </td>
+        <td valign='top' class='card-padding' style='padding:14px;font-family:Arial,sans-serif;'>
+            <a href='https://www.catink.com.mx/views/news.php?id={$noticia['id']}' 
+               style='display:block;margin:14px;text-decoration:none;color:#EF3363;'>
+                <h3 style='margin:0;font-family:Arial,sans-serif;color:#EF3363;'>{$noticia['titulo']}</h3>
+            </a>
+            <p style='margin:14px;'>{$descripcion}</p>
+        </td>
+        </tr>
+        </table>";
     }
 }
 
@@ -185,16 +136,6 @@ try {
 
             logDebug("Enviando correo a: " . $suscriptor['correo']);
 
-            // Adjuntar imágenes
-            foreach ($imagenesPNG as $i => $png) {
-                if (file_exists($png)) {
-                    $mail->addEmbeddedImage($png, "logo{$i}", "logo.png");
-                    logDebug("Imagen adjuntada con CID logo{$i}: $png");
-                } else {
-                    logDebug("Archivo no existe: $png");
-                }
-            }
-
             $mail->isHTML(true);
             $mail->Subject = 'Resumen diario de noticias';
 
@@ -216,13 +157,6 @@ try {
         }
     }
 
-    // Limpiar archivos temporales
-    foreach ($imagenesPNG as $png) {
-        if (file_exists($png)) {
-            unlink($png);
-            logDebug("Archivo temporal eliminado: $png");
-        }
-    }
 
     if ($enviados > 0) {
         header("Location: ./../views/suscripciones.php?success=correos_enviados&count=$enviados");
