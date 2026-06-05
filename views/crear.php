@@ -449,9 +449,9 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
         <div class="cn-section-body">
           <div class="cn-field">
             <label for="titulo">Título de la Noticia</label>
-            <input class="cn-input" type="text" id="titulo" name="titulo" maxlength="50"
+            <input class="cn-input" type="text" id="titulo" name="titulo" maxlength="80"
                    placeholder="Escribe un título impactante..." required>
-            <div class="cn-hint"><span id="tituloCount">0</span>/50</div>
+            <div class="cn-hint"><span id="tituloCount">0</span>/80</div>
           </div>
           <div class="cn-field">
             <label for="descripcion">Descripción corta</label>
