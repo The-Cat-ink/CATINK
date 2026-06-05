@@ -46,6 +46,9 @@ $showRegistro = isset($_GET['modo']) && $_GET['modo'] === 'registro';
         <p class="text-center" style="margin-top:16px; font-size:0.9rem;">
             ¿No tienes cuenta? <a href="#" onclick="showPanel('registro'); return false;" style="color:var(--accent); text-decoration:none; font-weight:600;">Regístrate</a>
         </p>
+        <p class="text-center" style="margin-top:8px; font-size:0.9rem;">
+            <a href="./olvide_contraseña.php" style="color:var(--accent); text-decoration:none; font-weight:600;">¿Olvidaste tu contraseña?</a>
+        </p>
       </div>
 
       <!-- Panel REGISTRO -->
