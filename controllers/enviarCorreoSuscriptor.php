@@ -170,10 +170,12 @@ try {
     error_log("Enviando correo a: " . $suscriptor['correo']);
 
     // Adjuntar imágenes
-    foreach ($imagenesPNG as $index => $png) {
+    foreach ($imagenesPNG as $i => $png) {
         if (file_exists($png)) {
-            $mail->addEmbeddedImage($png, "logo{$index}", "logo.png");
-            error_log("Imagen adjuntada: $png");
+            $mail->addEmbeddedImage($png, "logo{$i}", "logo.png");
+            error_log("Imagen adjuntada con CID logo{$i}: $png");
+        } else {
+            error_log("Archivo no existe: $png");
         }
     }
 
