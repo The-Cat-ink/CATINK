@@ -77,16 +77,17 @@ if (empty($noticias)) {
         $descripcion = strip_tags($noticia['descripcion']);
         $descripcion = mb_strimwidth($descripcion, 0, 100, '...');
 
-        $webpUrl = 'https://catink.com.mx/' . $noticia['crop3'];
+        // Construir URL correcta de la imagen
+        $imagenUrl = 'https://www.catink.com.mx/serve-image.php?file=' . urlencode($noticia['crop3']);
         $webpTemp = sys_get_temp_dir() . "/webp_temp_{$index}_" . time() . ".webp";
         $png = sys_get_temp_dir() . "/logo_temp_{$index}_" . time() . ".png";
 
         $imagenAdjuntada = false;
         try {
-            // Descargar la imagen WebP
-            $webpData = file_get_contents($webpUrl);
+            // Descargar la imagen
+            $webpData = file_get_contents($imagenUrl);
             if ($webpData === false) {
-                logDebug("No se pudo descargar la imagen: $webpUrl");
+                logDebug("No se pudo descargar la imagen: $imagenUrl");
             } else {
                 file_put_contents($webpTemp, $webpData);
                 
