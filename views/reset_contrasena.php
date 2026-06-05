@@ -1,4 +1,8 @@
 <?php
+require_once(__DIR__ . "/../views/helpers/urlhelper.php");
+if(session_status() === PHP_SESSION_NONE){
+    session_start();
+}
 include("./../layout/header.php");
 include("./../data/conexion.php");
 
@@ -24,45 +28,43 @@ if (empty($token)) {
 }
 ?>
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-lg">
-                <div class="card-body p-5">
-                    <h2 class="text-center mb-4">Establecer Nueva Contraseña</h2>
-                    
-                    <?php if ($error): ?>
-                        <div class="alert alert-danger" role="alert">
-                            <strong>Error:</strong> <?= htmlspecialchars($error) ?>
-                        </div>
-                        <div class="text-center">
-                            <a href="./olvide_contrasena.php" class="btn btn-primary">Solicitar Nuevo Enlace</a>
-                        </div>
-                    <?php elseif ($token_valido): ?>
-                        <form method="POST" action="./../controllers/actualizar_contrasena.php" id="formReset">
-                            <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
-                            
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Nueva Contraseña</label>
-                                <input type="password" class="form-control" id="password" name="password" required minlength="8" placeholder="Mínimo 8 caracteres">
-                                <small class="text-muted">Debe contener al menos 8 caracteres</small>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="password_confirm" class="form-label">Confirmar Contraseña</label>
-                                <input type="password" class="form-control" id="password_confirm" name="password_confirm" required minlength="8" placeholder="Repite tu contraseña">
-                            </div>
-                            
-                            <div id="passwordError" class="alert alert-danger d-none" role="alert">
-                                Las contraseñas no coinciden
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary w-100">Actualizar Contraseña</button>
-                        </form>
-                    <?php endif; ?>
-                </div>
+<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; padding:20px;">
+    <a href="<?= basePath() ?>/">
+      <img src="<?= imageUrl('img/logo.png') ?>" alt="CatInk" style="width:180px; margin-bottom:24px; border-radius:12px;" loading="lazy" decoding="async">
+    </a>
+
+    <div class="card" style="width:100%; max-width:400px; border-radius:12px; padding:24px; overflow:hidden; position:relative;">
+        <h2 class="text-center mb-4" style="font-weight:600;">Establecer Nueva Contraseña</h2>
+        
+        <?php if ($error): ?>
+            <p style="color:#EF3363; text-align:center; margin-bottom:12px;">
+                <strong>Error:</strong> <?= htmlspecialchars($error) ?>
+            </p>
+            <div style="text-align:center;">
+                <a href="<?= basePath() ?>/olvide_contrasena" class="btn-perfil-save" style="display:inline-block; text-decoration:none;">Solicitar Nuevo Enlace</a>
             </div>
-        </div>
+        <?php elseif ($token_valido): ?>
+            <form method="POST" action="./../controllers/actualizar_contrasena.php" id="formReset">
+                <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
+                
+                <div class="form-group">
+                    <label for="password">Nueva Contraseña</label>
+                    <input type="password" class="input" id="password" name="password" required minlength="8" placeholder="Mínimo 8 caracteres">
+                    <small style="color:var(--muted); font-size:0.85rem;">Debe contener al menos 8 caracteres</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password_confirm">Confirmar Contraseña</label>
+                    <input type="password" class="input" id="password_confirm" name="password_confirm" required minlength="8" placeholder="Repite tu contraseña">
+                </div>
+                
+                <div id="passwordError" style="color:#EF3363; text-align:center; margin-bottom:12px; display:none;">
+                    Las contraseñas no coinciden
+                </div>
+                
+                <button type="submit" class="btn-perfil-save" style="margin-top:12px;">Actualizar Contraseña</button>
+            </form>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -74,9 +76,9 @@ document.getElementById('formReset')?.addEventListener('submit', function(e) {
     
     if (password !== passwordConfirm) {
         e.preventDefault();
-        errorDiv.classList.remove('d-none');
+        errorDiv.style.display = 'block';
     } else {
-        errorDiv.classList.add('d-none');
+        errorDiv.style.display = 'none';
     }
 });
 </script>
