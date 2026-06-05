@@ -62,6 +62,7 @@ error_log("Noticias encontradas: " . count($noticias));
 
 // Preparar contenido de noticias
 $contenidoNoticias = '';
+
 if (empty($noticias)) {
     $contenidoNoticias = "
     <div style='background:#ffffff;padding:20px;border-radius:10px;text-align:center;'>
@@ -72,29 +73,19 @@ if (empty($noticias)) {
         $descripcion = strip_tags($noticia['descripcion']);
         $descripcion = mb_strimwidth($descripcion, 0, 100, '...');
 
-        $webp = 'https://catink.com.mx/' . $noticia['crop3'];
-        $png = __DIR__ . "/../views/email/logo_temp_{$index}.png";
-
-        try {
-            $image = imagecreatefromwebp($webp);
-            if ($image) {
-                imagepng($image, $png);
-                imagedestroy($image);
-            }
-        } catch (Exception $e) {
-            error_log("Error convirtiendo imagen: " . $e->getMessage());
-        }
+        // Construir URL correcta de la imagen (usar directamente, sin descargar)
+        $imagenUrl = 'https://www.catink.com.mx/serve-image.php?file=' . urlencode($noticia['crop3']);
 
         $contenidoNoticias .= "
         <table width='100%' cellpadding='0' cellspacing='0' border='0' 
             style='background:#ffffff;margin-bottom:15px;border-radius:10px;overflow:hidden;'>
         <tr class='stack-column'>
         <td width='240' valign='top' class='card-padding' style='padding:14px;'>
-            <img src='cid:logo{$index}' width='220' class='stack-img' 
+            <img src='{$imagenUrl}' width='220' class='stack-img' 
                 style='width:100%;max-width:220px;height:auto;display:block;border-radius:10px;border:0;margin:0;'>
         </td>
         <td valign='top' class='card-padding' style='padding:14px;font-family:Arial,sans-serif;'>
-            <a href='https://catink.com.mx/views/news.php?id={$noticia['id']}' 
+            <a href='https://www.catink.com.mx/views/news.php?id={$noticia['id']}' 
                style='display:block;margin:14px;text-decoration:none;color:#EF3363;'>
                 <h3 style='margin:0;font-family:Arial,sans-serif;color:#EF3363;'>{$noticia['titulo']}</h3>
             </a>
@@ -130,14 +121,6 @@ try {
 
     error_log("Enviando correo a: " . $suscriptor['correo']);
 
-    // Adjuntar imágenes
-    for ($i = 0; $i < count($noticias); $i++) {
-        $png = __DIR__ . "/../views/email/logo_temp_{$i}.png";
-        if (file_exists($png)) {
-            $mail->addEmbeddedImage($png, "logo{$i}", "logo.png");
-        }
-    }
-
     $mail->isHTML(true);
     $mail->Subject = 'Resumen diario de noticias';
 
@@ -152,13 +135,6 @@ try {
         error_log("Error al enviar correo: " . $mail->ErrorInfo);
     }
 
-    // Limpiar archivos temporales
-    for ($i = 0; $i < count($noticias); $i++) {
-        $png = __DIR__ . "/../views/email/logo_temp_{$i}.png";
-        if (file_exists($png)) {
-            unlink($png);
-        }
-    }
 
     header("Location: ./../views/suscripciones.php?success=correo_enviado");
     exit();
