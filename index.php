@@ -452,12 +452,11 @@ function topCard($r, $type = 'thumb') {
             </div>
         </div>
         <br>
-        <div class="row">
-            <div class="container">
+        <div>
               <h3><i class="bi bi-stars"></i> Recomendados para ti</h3>
               <br>
               <div class="row">
-                <?php while($r = $recomendadas->fetch_assoc()): 
+                <?php while($r = $recomendadas->fetch_assoc()):
                     $img = img([$r['crop3'], $r['crop2'], $r['crop1']]);
                 ?>
                   <div class="col">
@@ -480,18 +479,16 @@ function topCard($r, $type = 'thumb') {
                 <?php endwhile; ?>
               </div>
             </div>
-          </div>
         <br>
-        <div class="row">
-            <div class="container">
+        <div>
               <h3><i class="bi bi-lightning-fill"></i> Noticias recientes</h3>
               <br>
               <div class="row">
-                <?php while($r = $recientes->fetch_assoc()): 
+                <?php while($r = $recientes->fetch_assoc()):
                     $img = img([$r['crop3'], $r['crop2'], $r['crop1']]);
                 ?>
                   <div class="col">
-                      <div class="card h-100"  data-url="<?= newsUrl($r['id']) ?>">
+                      <div class="card h-100" data-url="<?= newsUrl($r['id']) ?>">
                           <img src="<?= $img ?>" class="card-img-top" loading="lazy" decoding="async">
                           <div class="card-body">
                               <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-1">
@@ -510,7 +507,6 @@ function topCard($r, $type = 'thumb') {
                 <?php endwhile; ?>
               </div>
             </div>
-          </div>
     </div>
 </div>
 
