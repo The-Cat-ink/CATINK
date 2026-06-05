@@ -74,18 +74,35 @@ if (empty($noticias)) {
         $descripcion = strip_tags($noticia['descripcion']);
         $descripcion = mb_strimwidth($descripcion, 0, 100, '...');
 
-        $webp = 'https://catink.com.mx/' . $noticia['crop3'];
+        $webpUrl = 'https://catink.com.mx/' . $noticia['crop3'];
+        $webpTemp = sys_get_temp_dir() . "/webp_temp_{$index}_" . time() . ".webp";
         $png = sys_get_temp_dir() . "/logo_temp_{$index}_" . time() . ".png";
 
         $imagenAdjuntada = false;
         try {
-            $image = imagecreatefromwebp($webp);
-            if ($image) {
-                imagepng($image, $png);
-                imagedestroy($image);
-                $imagenesPNG[] = $png;
-                $imagenAdjuntada = true;
-                error_log("Imagen convertida: $png");
+            // Descargar la imagen WebP
+            $webpData = file_get_contents($webpUrl);
+            if ($webpData === false) {
+                error_log("No se pudo descargar la imagen: $webpUrl");
+            } else {
+                file_put_contents($webpTemp, $webpData);
+                
+                // Convertir WebP a PNG
+                $image = imagecreatefromwebp($webpTemp);
+                if ($image) {
+                    imagepng($image, $png);
+                    imagedestroy($image);
+                    $imagenesPNG[] = $png;
+                    $imagenAdjuntada = true;
+                    error_log("Imagen convertida: $png");
+                    
+                    // Limpiar WebP temporal
+                    if (file_exists($webpTemp)) {
+                        unlink($webpTemp);
+                    }
+                } else {
+                    error_log("No se pudo convertir WebP a PNG: $webpTemp");
+                }
             }
         } catch (Exception $e) {
             error_log("Error convirtiendo imagen: " . $e->getMessage());
