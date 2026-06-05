@@ -7,6 +7,7 @@ use PHPMailer\PHPMailer\Exception;
 require(__DIR__."/../../PHPMailer/src/PHPMailer.php");
 require(__DIR__."/../../PHPMailer/src/Exception.php");
 require(__DIR__."/../../PHPMailer/src/SMTP.php");
+include(__DIR__."/../../data/env.php");
 include(__DIR__."/../../data/conexion.php");
 $hoy = date("Y-m-d H:i:s");
 // Consulta para obtener informacion de correos a enviar

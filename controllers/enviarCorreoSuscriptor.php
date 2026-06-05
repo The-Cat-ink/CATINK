@@ -1,6 +1,7 @@
 <?php
 date_default_timezone_set("America/Mexico_City");
 session_start();
+include(__DIR__ . "/../data/env.php");
 include(__DIR__ . "/../data/conexion.php");
 
 $superadmin = $_SESSION['superadmin'] ?? false;
@@ -117,14 +118,14 @@ $plantilla = str_replace("{{noticias}}", $contenidoNoticias, $plantilla);
 try {
     $mail = new PHPMailer(true);
     $mail->isSMTP();
-    $mail->Host = 'smtp.hostinger.com';
+    $mail->Host = env('SMTP_HOST');
     $mail->SMTPAuth = true;
-    $mail->Username = 'news@catink.com.mx';
-    $mail->Password = '6n+Z^6Ys*3kS';
-    $mail->SMTPSecure = 'ssl';
-    $mail->Port = 465;
+    $mail->Username = env('SMTP_USERNAME');
+    $mail->Password = env('SMTP_PASSWORD');
+    $mail->SMTPSecure = env('SMTP_SECURE');
+    $mail->Port = env('SMTP_PORT');
 
-    $mail->setFrom('news@catink.com.mx', 'Noticias del día');
+    $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
     $mail->addAddress($suscriptor['correo'], $suscriptor['nombre_completo']);
 
     error_log("Enviando correo a: " . $suscriptor['correo']);

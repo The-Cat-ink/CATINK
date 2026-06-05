@@ -7,6 +7,7 @@ use PHPMailer\PHPMailer\Exception;
 require("./../../PHPMailer/src/PHPMailer.php");
 require("./../../PHPMailer/src/Exception.php");
 require("./../../PHPMailer/src/SMTP.php");
+include("./../../data/env.php");
 include("./../../data/conexion.php");
 
 $nombre = $_POST['name'] ?? '';

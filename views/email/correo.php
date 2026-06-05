@@ -8,6 +8,7 @@ use PHPMailer\PHPMailer\Exception;
 require(__DIR__."/../../PHPMailer/src/PHPMailer.php");
 require(__DIR__."/../../PHPMailer/src/Exception.php");
 require(__DIR__."/../../PHPMailer/src/SMTP.php");
+include(__DIR__."/../../data/env.php");
 include(__DIR__."/../../data/conexion.php");
 
 // Obtenemos la hora programada
@@ -90,14 +91,14 @@ if (abs(strtotime(date("H:i:s")) - strtotime($horaProgramada)) <= 60) {
 
     try {
         $mail->isSMTP();
-        $mail->Host = 'smtp.hostinger.com';
+        $mail->Host = env('SMTP_HOST');
         $mail->SMTPAuth = true;
-        $mail->Username = 'news@catink.com.mx';
-        $mail->Password = '6n+Z^6Ys*3kS';
-        $mail->SMTPSecure = 'ssl';
-        $mail->Port = 465;
+        $mail->Username = env('SMTP_USERNAME');
+        $mail->Password = env('SMTP_PASSWORD');
+        $mail->SMTPSecure = env('SMTP_SECURE');
+        $mail->Port = env('SMTP_PORT');
 
-        $mail->setFrom('news@catink.com.mx', 'Noticias del día');
+        $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
 
         // Destinatarios
         $sqlUsuarios = "SELECT correo, nombre_completo FROM suscripciones";
