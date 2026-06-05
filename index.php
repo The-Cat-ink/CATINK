@@ -183,7 +183,7 @@ function topCard($r, $type = 'thumb') {
 }
 ?>
 <div class="container mt-5">
-    <div class="container-fluid">
+    <div>
         <h2><i class="bi bi-chat-left-dots"></i>  Top Publicaciones de la Semana</h2><br>
         <?php
         // Fila 1 — banner grande + thumb pequeño
