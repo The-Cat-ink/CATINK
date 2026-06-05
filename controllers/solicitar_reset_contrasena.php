@@ -62,7 +62,7 @@ if (!$usuario) {
 
 // Generar token único
 $token = bin2hex(random_bytes(32));
-$expira = date("Y-m-d H:i:s", strtotime("+1 hour"));
+$expira = date("Y-m-d H:i:s", strtotime("+24 hours"));
 
 // Guardar token en BD
 $stmt = $con->prepare("INSERT INTO password_reset_tokens (email, token, tipo_usuario, expira) VALUES (?, ?, ?, ?)");
@@ -98,7 +98,7 @@ try {
                 Recuperar Contraseña
             </a>
         </p>
-        <p style='color:#666; font-size:12px;'>Este enlace expira en 1 hora.</p>
+        <p style='color:#666; font-size:12px;'>Este enlace expira en 24 horas.</p>
         <p style='color:#666; font-size:12px;'>Si no solicitaste esta recuperación, ignora este correo.</p>
         <hr style='border:none; border-top:1px solid #ddd; margin:20px 0;'>
         <p style='color:#999; font-size:11px; text-align:center;'>© 2026 CatInk. Todos los derechos reservados.</p>
