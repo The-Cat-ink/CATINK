@@ -20,8 +20,8 @@ try {
     $mail->isSMTP();
     $mail->Host       = 'smtp.gmail.com';
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'catink.oficial@gmail.com';
-    $mail->Password   = 'lamcszfwuoftmlpv';
+    $mail->Username   = env('GMAIL_USERNAME');
+    $mail->Password   = env('GMAIL_APP_PASSWORD');
     $mail->SMTPSecure = 'tls';
     $mail->Port       = 587;
 

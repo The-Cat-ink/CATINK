@@ -41,12 +41,12 @@ $mail = new PHPMailer(true);
 
 try {
     $mail->isSMTP();
-    $mail->Host       = 'smtp.gmail.com';
+    $mail->Host       = env('SMTP_HOST');
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'news@catink.com.mx';
-    $mail->Password   = '6n+Z^6Ys*3kS';
-    $mail->SMTPSecure = 'ssl';
-    $mail->Port       = 465;
+    $mail->Username   = env('SMTP_USERNAME');
+    $mail->Password   = env('SMTP_PASSWORD');
+    $mail->SMTPSecure = env('SMTP_SECURE');
+    $mail->Port       = env('SMTP_PORT');
 
     $mail->setFrom('news@catink.com.mx', 'CatInk News');
 

@@ -19,13 +19,13 @@ try {
     $mailAdmin->isSMTP();
     $mailAdmin->Host       = 'smtp.gmail.com';
     $mailAdmin->SMTPAuth   = true;
-    $mailAdmin->Username   = 'catink.oficial@gmail.com';
-    $mailAdmin->Password   = 'lamcszfwuoftmlpv'; // Considera usar variables de entorno
+    $mailAdmin->Username   = env('GMAIL_USERNAME');
+    $mailAdmin->Password   = env('GMAIL_APP_PASSWORD');
     $mailAdmin->SMTPSecure = 'tls';
     $mailAdmin->Port       = 587;
 
-    $mailAdmin->setFrom('catink.oficial@gmail.com', 'Contacto CatInk');
-    $mailAdmin->addAddress('arturo_mtz_h@hotmail.com', 'ING Arturo Matínez Hernández');
+    $mailAdmin->setFrom(env('GMAIL_FROM_EMAIL'), env('GMAIL_FROM_NAME'));
+    $mailAdmin->addAddress(env('GMAIL_REPLY_TO'), 'ING Arturo Matínez Hernández');
 
     $mailAdmin->isHTML(true);
     $mailAdmin->Subject = "Solicitud de asesoramiento por parte de CatInk";
@@ -47,12 +47,12 @@ try {
     $mailUser->isSMTP();
     $mailUser->Host       = 'smtp.gmail.com';
     $mailUser->SMTPAuth   = true;
-    $mailUser->Username   = 'catink.oficial@gmail.com';
-    $mailUser->Password   = 'lamcszfwuoftmlpv';
+    $mailUser->Username   = env('GMAIL_USERNAME');
+    $mailUser->Password   = env('GMAIL_APP_PASSWORD');
     $mailUser->SMTPSecure = 'tls';
     $mailUser->Port       = 587;
 
-    $mailUser->setFrom('catink.oficial@gmail.com', 'CatInk');
+    $mailUser->setFrom(env('GMAIL_FROM_EMAIL'), 'CatInk');
     $mailUser->addAddress($email, $nombre);
 
     $mailUser->isHTML(true);
