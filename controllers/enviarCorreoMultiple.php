@@ -4,6 +4,21 @@ session_start();
 include(__DIR__ . "/../data/env.php");
 include(__DIR__ . "/../data/conexion.php");
 
+// Log file para debug
+$logFile = __DIR__ . "/../logs/email_debug.log";
+if (!is_dir(__DIR__ . "/../logs")) {
+    mkdir(__DIR__ . "/../logs", 0755, true);
+}
+
+function logDebug($message) {
+    global $logFile;
+    $timestamp = date("Y-m-d H:i:s");
+    file_put_contents($logFile, "[$timestamp] $message\n", FILE_APPEND);
+    error_log($message);
+}
+
+logDebug("=== Iniciando envío de correos múltiples ===");
+
 $superadmin = $_SESSION['superadmin'] ?? false;
 $tienePermiso = $superadmin || ($_SESSION['ACL']['suscripciones']['editar'] ?? false);
 
@@ -47,7 +62,7 @@ while ($row = $resultado->fetch_assoc()) {
     $noticias[] = $row;
 }
 
-error_log("Noticias encontradas: " . count($noticias));
+logDebug("Noticias encontradas: " . count($noticias));
 
 // Preparar contenido de noticias
 $contenidoNoticias = '';
@@ -72,7 +87,7 @@ if (empty($noticias)) {
             // Descargar la imagen WebP
             $webpData = file_get_contents($webpUrl);
             if ($webpData === false) {
-                error_log("No se pudo descargar la imagen: $webpUrl");
+                logDebug("No se pudo descargar la imagen: $webpUrl");
             } else {
                 file_put_contents($webpTemp, $webpData);
                 
@@ -83,18 +98,18 @@ if (empty($noticias)) {
                     imagedestroy($image);
                     $imagenesPNG[] = $png;
                     $imagenAdjuntada = true;
-                    error_log("Imagen convertida: $png");
+                    logDebug("Imagen convertida: $png");
                     
                     // Limpiar WebP temporal
                     if (file_exists($webpTemp)) {
                         unlink($webpTemp);
                     }
                 } else {
-                    error_log("No se pudo convertir WebP a PNG: $webpTemp");
+                    logDebug("No se pudo convertir WebP a PNG: $webpTemp");
                 }
             }
         } catch (Exception $e) {
-            error_log("Error convirtiendo imagen: " . $e->getMessage());
+            logDebug("Error convirtiendo imagen: " . $e->getMessage());
         }
 
         if ($imagenAdjuntada) {
@@ -168,15 +183,15 @@ try {
             $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
             $mail->addAddress($suscriptor['correo'], $suscriptor['nombre_completo']);
 
-            error_log("Enviando correo a: " . $suscriptor['correo']);
+            logDebug("Enviando correo a: " . $suscriptor['correo']);
 
             // Adjuntar imágenes
             foreach ($imagenesPNG as $i => $png) {
                 if (file_exists($png)) {
                     $mail->addEmbeddedImage($png, "logo{$i}", "logo.png");
-                    error_log("Imagen adjuntada con CID logo{$i}: $png");
+                    logDebug("Imagen adjuntada con CID logo{$i}: $png");
                 } else {
-                    error_log("Archivo no existe: $png");
+                    logDebug("Archivo no existe: $png");
                 }
             }
 
@@ -189,14 +204,14 @@ try {
             $mail->Body = $body;
             
             if ($mail->send()) {
-                error_log("Correo enviado exitosamente a: " . $suscriptor['correo']);
+                logDebug("Correo enviado exitosamente a: " . $suscriptor['correo']);
                 $enviados++;
             } else {
-                error_log("Error al enviar correo a " . $suscriptor['correo'] . ": " . $mail->ErrorInfo);
+                logDebug("Error al enviar correo a " . $suscriptor['correo'] . ": " . $mail->ErrorInfo);
                 $errores++;
             }
         } catch (Exception $e) {
-            error_log("Excepción enviando correo a " . $suscriptor['correo'] . ": " . $e->getMessage());
+            logDebug("Excepción enviando correo a " . $suscriptor['correo'] . ": " . $e->getMessage());
             $errores++;
         }
     }
@@ -205,7 +220,7 @@ try {
     foreach ($imagenesPNG as $png) {
         if (file_exists($png)) {
             unlink($png);
-            error_log("Archivo temporal eliminado: $png");
+            logDebug("Archivo temporal eliminado: $png");
         }
     }
 
