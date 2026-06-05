@@ -429,7 +429,6 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 
   <form id="formPublicacion" action="./../controllers/noticiascontroller.php" method="POST" enctype="multipart/form-data">
     <input type="hidden" name="autor" value="<?= $fila['id_u'] ?? '' ?>">
-    <input type="hidden" name="crop1" id="crop1">
     <input type="hidden" name="crop2" id="crop2">
     <input type="hidden" name="crop3" id="crop3">
     <input type="hidden" name="contenido" id="contenido">
