@@ -89,8 +89,8 @@ RewriteRule ^contacto/?$ views/contactanos.php [L]
 # =========================
 # RECUPERACION DE CONTRASENA
 # =========================
-RewriteRule ^olvide_contrasena(\.php)?/?$ views/olvide_contrasena.php [L,QSA]
-RewriteRule ^reset_contrasena(\.php)?/?$ views/reset_contrasena.php [L,QSA]
+RewriteRule ^olvide_contrasena/?$ views/olvide_contrasena.php [L,QSA]
+RewriteRule ^reset_contrasena/?$ views/reset_contrasena.php [L,QSA]
 # =========================
 # 404
 # =========================
