@@ -12,5 +12,5 @@ $sql = "UPDATE programacion_correos SET hora = ?, estado = ? WHERE id_programaci
 $stmt = $con->prepare($sql);
 $stmt->bind_param("ss", $hora, $estado);
 $stmt->execute();
-header('Location: ./../views/suscripciones.php');
+header('Location: ./../views/suscripciones.php?success=programacion_actualizada');
 exit();
