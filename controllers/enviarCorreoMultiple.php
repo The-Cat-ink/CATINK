@@ -6,18 +6,17 @@ include(__DIR__ . "/../data/conexion.php");
 
 // Log file para debug
 $logFile = __DIR__ . "/../logs/email_debug.log";
-if (!is_dir(__DIR__ . "/../logs")) {
-    mkdir(__DIR__ . "/../logs", 0755, true);
-}
+@mkdir(__DIR__ . "/../logs", 0755, true);
 
 function logDebug($message) {
     global $logFile;
     $timestamp = date("Y-m-d H:i:s");
-    file_put_contents($logFile, "[$timestamp] $message\n", FILE_APPEND);
+    @file_put_contents($logFile, "[$timestamp] $message\n", FILE_APPEND);
     error_log($message);
 }
 
-logDebug("=== Iniciando envío de correos múltiples ===");
+// Escribir log de inicio
+file_put_contents($logFile, "\n=== Iniciando envío de correos múltiples a las " . date("Y-m-d H:i:s") . " ===\n", FILE_APPEND);
 
 $superadmin = $_SESSION['superadmin'] ?? false;
 $tienePermiso = $superadmin || ($_SESSION['ACL']['suscripciones']['editar'] ?? false);
