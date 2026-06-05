@@ -6,20 +6,20 @@ $q = trim($_GET['q'] ?? '');
 if($q !== ''){
     $like = $con->real_escape_string("%$q%");
     $sql = "
-    SELECT c.id_c, c.nombre, COUNT(DISTINCT nc.noticia_id) AS total_noticias
+    SELECT c.id_c, c.nombre, c.orden, COUNT(DISTINCT nc.noticia_id) AS total_noticias
     FROM categorias c
     LEFT JOIN noticia_categoria nc ON c.id_c = nc.categoria_id
     WHERE c.nombre LIKE '$like'
-    GROUP BY c.id_c, c.nombre
-    ORDER BY c.nombre
+    GROUP BY c.id_c, c.nombre, c.orden
+    ORDER BY c.orden ASC, c.nombre ASC
     ";
 } else {
     $sql = "
-    SELECT c.id_c, c.nombre, COUNT(DISTINCT nc.noticia_id) AS total_noticias
+    SELECT c.id_c, c.nombre, c.orden, COUNT(DISTINCT nc.noticia_id) AS total_noticias
     FROM categorias c
     LEFT JOIN noticia_categoria nc ON c.id_c = nc.categoria_id
-    GROUP BY c.id_c, c.nombre
-    ORDER BY c.nombre
+    GROUP BY c.id_c, c.nombre, c.orden
+    ORDER BY c.orden ASC, c.nombre ASC
     ";
 }
 $result = $con->query($sql);
@@ -40,9 +40,10 @@ $result = $con->query($sql);
         <div class="card-body">
             <h5 class="card-title">Lista de Categorías</h5>
             <div class="table-responsive">
-                <table class="table table-striped table-bordered">
+                <table class="table table-striped table-bordered" id="categoriasTable">
                     <thead>
                         <tr>
+                            <th style="width: 40px;"><i class="bi bi-arrows-move"></i></th>
                             <th>Nombre</th>
                             <th>Total Noticias</th>
                             <?php if($ACL['editar'] || $ACL['eliminar']): ?>
@@ -50,9 +51,10 @@ $result = $con->query($sql);
                             <?php endif; ?>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="categoriasBody">
                         <?php while($row = $result->fetch_assoc()): ?>
-                        <tr>
+                        <tr draggable="true" data-id="<?= $row['id_c'] ?>" class="categoria-row">
+                            <td style="cursor: grab; text-align: center;"><i class="bi bi-arrows-move"></i></td>
                             <td><?= htmlspecialchars($row['nombre']) ?></td>
                             <td><?= $row['total_noticias'] ?></td>
                             <?php if($ACL['editar'] || $ACL['eliminar']): ?>
@@ -186,6 +188,78 @@ document.addEventListener('DOMContentLoaded', () => {
             modalNombre.parentElement.style.display = "block";
         }
     });
+
+    // DRAG AND DROP PARA REORDENAR CATEGORÍAS
+    let draggedRow = null;
+
+    const rows = document.querySelectorAll('.categoria-row');
+    rows.forEach(row => {
+        row.addEventListener('dragstart', (e) => {
+            draggedRow = row;
+            row.style.opacity = '0.5';
+            e.dataTransfer.effectAllowed = 'move';
+        });
+
+        row.addEventListener('dragend', (e) => {
+            row.style.opacity = '1';
+        });
+
+        row.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (row !== draggedRow) {
+                row.style.borderTop = '3px solid #EF3363';
+            }
+        });
+
+        row.addEventListener('dragleave', (e) => {
+            row.style.borderTop = '';
+        });
+
+        row.addEventListener('drop', (e) => {
+            e.preventDefault();
+            row.style.borderTop = '';
+            if (row !== draggedRow) {
+                const tbody = document.getElementById('categoriasBody');
+                if (draggedRow.offsetTop < row.offsetTop) {
+                    row.parentNode.insertBefore(draggedRow, row.nextSibling);
+                } else {
+                    row.parentNode.insertBefore(draggedRow, row);
+                }
+                guardarOrden();
+            }
+        });
+    });
+
+    function guardarOrden() {
+        const rows = document.querySelectorAll('.categoria-row');
+        const orden = [];
+        rows.forEach((row, index) => {
+            orden.push({
+                id_c: row.dataset.id,
+                orden: index
+            });
+        });
+
+        fetch('./../controllers/reordenar_categorias.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ categorias: orden })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (!d.success) {
+                console.error('Error al guardar orden:', d.error);
+                alert('Error al guardar el orden');
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            alert('Error en la petición');
+        });
+    }
 });
 </script>
 <?php include("./../layout/footerAdmin.php"); ?>

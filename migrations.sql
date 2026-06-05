@@ -168,3 +168,6 @@ CREATE TABLE IF NOT EXISTS `password_reset_tokens` (
   INDEX `idx_email_token` (`email`, `token`),
   INDEX `idx_expira` (`expira`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 6. Agregar columna de orden a categorías
+ALTER TABLE `categorias` ADD COLUMN IF NOT EXISTS `orden` INT DEFAULT 0 AFTER `nombre`;
