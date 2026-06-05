@@ -502,7 +502,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .indicator-avatar { position:relative; width:72px; height:72px; }
 .indicator-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
 .indicator-avatar svg { position:absolute; inset:0; transform:rotate(-90deg); }
-.indicator-avatar circle { fill:none; stroke:var(--indicator-stroke); stroke-width:3; stroke-dasharray:100; stroke-dashoffset:100; transition: stroke-dashoffset linear; }
+.indicator-avatar circle { fill:none; stroke:rgba(255,255,255,0.9); stroke-width:3; stroke-dasharray:100; stroke-dashoffset:100; transition: stroke-dashoffset linear; }
 /* Carousel visibility control */
 .carousel-img { width:100%; display:block; }
 /* caption show on md+ */
