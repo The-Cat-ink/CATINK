@@ -349,7 +349,7 @@ if ($q !== '') {
                     <br>
                 <?php endwhile; ?>
               </ul>
-              <h3><i class="bi bi-fire"></i> Lo más popular</h3>
+              <h3>Lo más popular</h3>
               <br>
               <ul class="list-group list-group-flush">
                 <?php while ($row = $populares->fetch_assoc()): ?>

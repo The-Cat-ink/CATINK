@@ -184,7 +184,7 @@ function topCard($r, $type = 'thumb') {
 ?>
 <div class="container mt-5">
     <div>
-        <h2><i class="bi bi-chat-left-dots"></i>  Top Publicaciones de la Semana</h2><br>
+        <h2>Publicaciones de la Semana</h2><br>
         <!-- Fila 1: banner + thumb -->
         <div class="row">
             <div class="col-md-8"><?php topCard($ultimasNoticias[0], 'banner'); ?></div>
@@ -207,7 +207,7 @@ function topCard($r, $type = 'thumb') {
         <!-- ===================== -->
         <!-- SIDEBAR -->
         <!-- ===================== -->
-        <h2><i class="bi bi-newspaper"></i>  Lo más recientes</h2>
+        <h2>Lo más recientes</h2>
         <div class="row mt-5">
             <div class="col-md-9">
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidad) : ?>
@@ -384,7 +384,7 @@ function topCard($r, $type = 'thumb') {
                                     <br>
                                 <?php endforeach; ?>
                             </div>
-                            <h3><i class="bi bi-fire"></i> Lo más popular</h3>
+                            <h3>Lo más popular</h3>
                             <br>
                             <div class="sidebar-news-list">
                                 <?php foreach($popularesNoticiasSidebar as $row): ?>
@@ -420,7 +420,7 @@ function topCard($r, $type = 'thumb') {
         </div>
         <br>
         <div>
-              <h3><i class="bi bi-stars"></i> Recomendados para ti</h3>
+              <h3>Recomendados para ti</h3>
               <br>
               <div class="row">
                 <?php while($r = $recomendadas->fetch_assoc()):
@@ -448,7 +448,7 @@ function topCard($r, $type = 'thumb') {
             </div>
         <br>
         <div>
-              <h3><i class="bi bi-lightning-fill"></i> Noticias recientes</h3>
+              <h3>Noticias recientes</h3>
               <br>
               <div class="row">
                 <?php while($r = $recientes->fetch_assoc()):

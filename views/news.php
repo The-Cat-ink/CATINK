@@ -387,7 +387,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                     <br>
                   <?php endwhile; ?>
                 </ul>
-                <h3><i class="bi bi-fire"></i> Lo más popular</h3>
+                <h3>Lo más popular</h3>
                 <br>
                 <ul class="list-group list-group-flush">
                   <?php while ($row = $populares->fetch_assoc()): ?>
@@ -424,7 +424,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
       <br>
       <div class="row">
         <div class="container">
-          <h3><i class="bi bi-stars"></i> Recomendados para ti</h3>
+          <h3>Recomendados para ti</h3>
           <br>
           <div class="row">
             <?php while($r = $recomendadas->fetch_assoc()): 
@@ -455,7 +455,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
       <br>
       <div class="row">
         <div class="container">
-          <h3><i class="bi bi-lightning-fill"></i> Noticias recientes</h3>
+          <h3>Noticias recientes</h3>
           <br>
           <div class="row">
             <?php while($r = $recientes->fetch_assoc()):
