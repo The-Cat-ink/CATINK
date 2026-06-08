@@ -61,7 +61,7 @@ $stmt = $con->prepare("SELECT * FROM publicidad WHERE activo = 1 AND tipo = 1 OR
 $stmt->execute();
 $publicidadInferior = $stmt->get_result()->fetch_assoc();
 // obtener videos
-$stmt = $con->prepare("SELECT * FROM videos WHERE activo = 1 ORDER BY id_v DESC LIMIT 6");
+$stmt = $con->prepare("SELECT * FROM videos WHERE activo = 1 ORDER BY orden ASC, id_v DESC LIMIT 6");
 $stmt->execute();
 $vid = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 // ==============================

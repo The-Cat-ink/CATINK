@@ -23,27 +23,61 @@ if($q !== ''){
     ";
 }
 $result = $con->query($sql);
+
+$categorias = [];
+while($row = $result->fetch_assoc()){
+    $categorias[] = $row;
+}
+$totalCategorias = count($categorias);
+$totalNoticiasAsignadas = array_sum(array_column($categorias, 'total_noticias'));
 ?>
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Gestión de Categorias</h1>
-        <form method="GET" class="admin-search-form">
+    <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 12px;">
+        <h1 style="margin:0;">Gestión de Categorías</h1>
+        <form method="GET" class="admin-search-form" style="display:flex; align-items:center; gap:8px;">
             <i class="bi bi-search admin-search-icon"></i>
             <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar categoría..." class="admin-search-input">
             <?php if($q): ?><a href="./cats.php" class="admin-search-clear">&times;</a><?php endif; ?>
         </form>
     </div>
-    <?php if($ACL['crear']): ?>
-        <button id="btnCrear" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear categoría</button>
-    <?php endif; ?>
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Lista de Categorías</h5>
+
+    <!-- Estadísticas rápidas -->
+    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(99,102,241,0.1); color: #6366f1;"><i class="bi bi-grid-fill"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $totalCategorias ?></span>
+                <span class="stat-label">Categorías Existentes</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: #10b981;"><i class="bi bi-newspaper"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $totalNoticiasAsignadas ?></span>
+                <span class="stat-label">Noticias Asignadas</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="contenidos-toolbar">
+        <div class="contenidos-tabs">
+            <span class="tab-btn active">Todas las categorías</span>
+        </div>
+        <div class="contenidos-actions">
+            <?php if($ACL['crear']): ?>
+                <button id="btnCrear" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear categoría</button>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-striped table-bordered" id="categoriasTable">
+                <table class="contenidos-table" id="categoriasTable">
                     <thead>
                         <tr>
-                            <th style="width: 40px;"><i class="bi bi-arrows-move"></i></th>
+                            <th style="width: 40px; text-align:center;"><i class="bi bi-arrows-move"></i></th>
                             <th>Nombre</th>
                             <th>Total Noticias</th>
                             <?php if($ACL['editar'] || $ACL['eliminar']): ?>
@@ -52,50 +86,76 @@ $result = $con->query($sql);
                         </tr>
                     </thead>
                     <tbody id="categoriasBody">
-                        <?php while($row = $result->fetch_assoc()): ?>
-                        <tr draggable="true" data-id="<?= $row['id_c'] ?>" class="categoria-row">
-                            <td style="cursor: grab; text-align: center;"><i class="bi bi-arrows-move"></i></td>
-                            <td><?= htmlspecialchars($row['nombre']) ?></td>
-                            <td><?= $row['total_noticias'] ?></td>
-                            <?php if($ACL['editar'] || $ACL['eliminar']): ?>
-                                <td>
-                                    <?php if($ACL['editar']): ?>
-                                        <button class="btn btn-secondary btn-editar" 
-                                            data-id="<?= $row['id_c'] ?>" 
-                                            data-nombre="<?= htmlspecialchars($row['nombre']) ?>"><i class="bi bi-pencil"></i></button>
-                                    <?php endif; ?>
-                                    <?php if($ACL['eliminar']): ?>
-                                        <button class="btn btn-delete btn-eliminar"
-                                            data-id="<?= $row['id_c'] ?>" 
-                                            data-nombre="<?= htmlspecialchars($row['nombre']) ?>"><i class="bi bi-trash3"></i></button>
-                                    <?php endif; ?>
-                                </td>
-                            <?php endif; ?>
-                        </tr>
-                        <?php endwhile; ?>
+                        <?php if(empty($categorias)): ?>
+                            <tr><td colspan="4" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron categorías.</td></tr>
+                        <?php else: ?>
+                            <?php foreach($categorias as $row): ?>
+                            <tr data-id="<?= $row['id_c'] ?>" class="categoria-row">
+                                <td style="cursor: grab; text-align: center; color:var(--muted);"><i class="bi bi-grip-vertical"></i></td>
+                                <td><strong class="table-title"><?= htmlspecialchars($row['nombre']) ?></strong></td>
+                                <td><span class="estado-badge estado-publicado" style="background:rgba(16,185,129,0.1); color:#10b981;"><?= $row['total_noticias'] ?> noticias</span></td>
+                                <?php if($ACL['editar'] || $ACL['eliminar']): ?>
+                                    <td>
+                                        <div class="noticias-actions" style="border-top:none; padding:0; justify-content:flex-start;">
+                                            <?php if($ACL['editar']): ?>
+                                                <button class="btn btn-edit btn-editar" 
+                                                    data-id="<?= $row['id_c'] ?>" 
+                                                    data-nombre="<?= htmlspecialchars($row['nombre']) ?>" title="Editar"><i class="bi bi-pencil-square"></i></button>
+                                            <?php endif; ?>
+                                            <?php if($ACL['eliminar']): ?>
+                                                <button class="btn btn-delete btn-eliminar"
+                                                    data-id="<?= $row['id_c'] ?>" 
+                                                    data-nombre="<?= htmlspecialchars($row['nombre']) ?>" title="Eliminar"><i class="bi bi-trash"></i></button>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                <?php endif; ?>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
-<!-- MODAL NATIVO -->
-<div id="modal" class="modal">
-    <div class="modal-content">
-        <span id="modalClose" class="modal-close">&times;</span>
-        <h3 id="modalTitle"></h3>
-        <p id="modalConfirmText" style="display:none;"></p>
-        <br>
-        <form id="modalForm">
-            <input type="hidden" name="id_c" id="modalId">
-            <div class="mb-3">
-                <label for="modalNombre">Nombre</label>
-                <input type="text" id="modalNombre" name="nombre" required>
-            </div>
-            <button type="submit" id="modalSubmit" class="btn btn-accent"></button>
-        </form>
+
+<!-- MODAL CROP/NATIVO -->
+<div id="modal" class="crop-modal" style="display: none;">
+    <div class="card" style="max-width: 400px; width:100%;">
+        <div class="crop-modal-content">
+            <h3 id="modalTitle"></h3>
+            <p id="modalConfirmText" style="display:none; color:var(--muted); font-size:0.9rem; margin-bottom:15px;"></p>
+            <form id="modalForm">
+                <input type="hidden" name="id_c" id="modalId">
+                <div style="margin-bottom: 16px;" id="modalNombreWrapper">
+                    <label for="modalNombre" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Nombre de la categoría</label>
+                    <input type="text" id="modalNombre" name="nombre" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--card-bg); color: var(--text);">
+                </div>
+                <div class="crop-actions" style="display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" id="modalClose" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" id="modalSubmit" class="btn btn-accent"></button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+<!-- SortableJS para Drag and Drop fluido -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+<?php include("./../layout/footerAdmin.php"); ?>
+<style>
+.sortable-ghost {
+    opacity: 0.4;
+    background-color: var(--surface-muted);
+}
+.sortable-drag {
+    background-color: var(--card-bg);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    cursor: grabbing !important;
+}
+</style>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('modal');
@@ -105,16 +165,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalNombre = document.getElementById('modalNombre');
     const modalSubmit = document.getElementById('modalSubmit');
     const modalClose = document.getElementById('modalClose');
+    const modalNombreWrapper = document.getElementById('modalNombreWrapper');
     const btnCrear = document.getElementById('btnCrear');
     if(btnCrear && ACL.crear){
         // Abrir modal de crear
         document.getElementById('btnCrear').addEventListener('click', () => {
-            modalTitle.textContent = "Crear Categoría";
+            modalTitle.innerHTML = '<i class="bi bi-folder-plus"></i> Crear Categoría';
             modalSubmit.textContent = "Crear";
             modalForm.dataset.action = "crear";
             modalId.value = "";
             modalNombre.value = "";
-            modalNombre.parentElement.style.display = "block"; // reset
+            modalConfirmText.style.display = "none";
+            modalNombreWrapper.style.display = "block"; // reset
             modal.style.display = "flex";
         });
     }
@@ -122,12 +184,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Abrir modal de editar
         document.querySelectorAll('.btn-editar').forEach(btn => {
             btn.addEventListener('click', () => {
-                modalTitle.textContent = "Editar Categoría";
+                modalTitle.innerHTML = '<i class="bi bi-pencil-square"></i> Editar Categoría';
                 modalSubmit.textContent = "Actualizar";
                 modalForm.dataset.action = "editar";
                 modalId.value = btn.dataset.id;
                 modalNombre.value = btn.dataset.nombre;
-                modalNombre.parentElement.style.display = "block"; // reset
+                modalConfirmText.style.display = "none";
+                modalNombreWrapper.style.display = "block"; // reset
                 modal.style.display = "flex";
                 });
         });
@@ -135,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(ACL.eliminar){
         document.querySelectorAll('.btn-eliminar').forEach(btn => {
             btn.addEventListener('click', () => {
-                modalTitle.textContent = "Eliminar Categoría";
+                modalTitle.innerHTML = '<i class="bi bi-trash"></i> Eliminar Categoría';
                 modalSubmit.textContent = "Eliminar";
                 modalForm.dataset.action = "eliminar";
                 modalId.value = btn.dataset.id;
@@ -143,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalConfirmText.textContent =
                     `¿Estás seguro de eliminar la categoría "${btn.dataset.nombre}"?`;
                 modalNombre.required = false; // CLAVE
-                modalNombre.parentElement.style.display = "none";
+                modalNombreWrapper.style.display = "none";
                 modal.style.display = "flex";
             });
         });
@@ -151,7 +214,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cerrar modal
     modalClose.addEventListener('click', () => {
         modal.style.display = "none";
-        modalNombre.parentElement.style.display = "block"; // reset
+        modalNombreWrapper.style.display = "block"; // reset
+        modalConfirmText.style.display = "none";
     });
     // Enviar formulario
     modalForm.addEventListener('submit', (e) => {
@@ -185,51 +249,27 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.addEventListener('click', (e) => {
         if(e.target === modal) {
             modal.style.display = "none";
-            modalNombre.parentElement.style.display = "block";
+            modalNombreWrapper.style.display = "block";
+            modalConfirmText.style.display = "none";
         }
     });
 
-    // DRAG AND DROP PARA REORDENAR CATEGORÍAS
-    let draggedRow = null;
-
-    const rows = document.querySelectorAll('.categoria-row');
-    rows.forEach(row => {
-        row.addEventListener('dragstart', (e) => {
-            draggedRow = row;
-            row.style.opacity = '0.5';
-            e.dataTransfer.effectAllowed = 'move';
-        });
-
-        row.addEventListener('dragend', (e) => {
-            row.style.opacity = '1';
-        });
-
-        row.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            if (row !== draggedRow) {
-                row.style.borderTop = '3px solid #EF3363';
-            }
-        });
-
-        row.addEventListener('dragleave', (e) => {
-            row.style.borderTop = '';
-        });
-
-        row.addEventListener('drop', (e) => {
-            e.preventDefault();
-            row.style.borderTop = '';
-            if (row !== draggedRow) {
-                const tbody = document.getElementById('categoriasBody');
-                if (draggedRow.offsetTop < row.offsetTop) {
-                    row.parentNode.insertBefore(draggedRow, row.nextSibling);
-                } else {
-                    row.parentNode.insertBefore(draggedRow, row);
-                }
+    // DRAG AND DROP PARA REORDENAR CATEGORÍAS (Usando SortableJS)
+    const tbody = document.getElementById('categoriasBody');
+    if (tbody) {
+        new Sortable(tbody, {
+            animation: 150, // Animación fluida al reordenar (ms)
+            handle: 'td:first-child', // Restringir el agarre al ícono de mover
+            ghostClass: 'sortable-ghost', // Clase para el elemento fantasma
+            dragClass: 'sortable-drag', // Clase para el elemento arrastrado
+            forceFallback: true, // Desactiva el drag nativo de HTML5 para dar un control total
+            fallbackOnBody: true, // El clon sigue al mouse perfectamente
+            axis: 'y', // BLOQUEA el arrastre para que SOLO sea vertical (no se sale a los lados)
+            onEnd: function () {
                 guardarOrden();
             }
         });
-    });
+    }
 
     function guardarOrden() {
         const rows = document.querySelectorAll('.categoria-row');

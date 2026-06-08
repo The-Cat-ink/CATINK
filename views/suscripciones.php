@@ -28,102 +28,190 @@ $sql2= "SELECT * FROM programacion_correos";
 $resultado2 = mysqli_query($con, $sql2);
 $programacion = mysqli_fetch_all($resultado2, MYSQLI_ASSOC);
 $prog = $programacion[0] ?? ['id_programacion' => '', 'hora' => '', 'estado' => 'inactivo'];
+
+// Stats
+$totalSuscripciones = count($suscripciones);
+$hombres = count(array_filter($suscripciones, fn($s) => strtolower($s['sexo']) == 'masculino'));
+$mujeres = count(array_filter($suscripciones, fn($s) => strtolower($s['sexo']) == 'femenino'));
+$otros = $totalSuscripciones - $hombres - $mujeres;
 ?>
 <div class="container-fluid">
     <?php if($superadmin): ?>
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Programacion de correos</h1>
-        </div>
-        <form action="./../controllers/actualizarcorreos.php" method="POST">
-            <div class="form-card card">
-                <input type="hidden" name="id" value="<?php echo $prog['id_programacion']; ?>">
-                <div class="row">
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="hora">Hora de envio:</label>
-                            <input type="time" name="hora" value="<?php echo $prog['hora']; ?>" required>
+        <div class="card shadow-sm mb-4" style="border: 1px solid var(--border); border-radius: 12px; background: var(--card-bg);">
+            <div class="card-body" style="padding: 20px;">
+                <h2 style="font-size: 1.2rem; margin-top:0; margin-bottom: 15px;"><i class="bi bi-clock-history text-accent"></i> Programación de correos automática</h2>
+                <form action="./../controllers/actualizarcorreos.php" method="POST">
+                    <input type="hidden" name="id" value="<?php echo $prog['id_programacion']; ?>">
+                    <div class="row" style="display:flex; gap:16px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width: 200px;">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; color:var(--text);">Hora de envío:</label>
+                            <input type="time" name="hora" value="<?php echo $prog['hora']; ?>" required style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); font-size:0.9rem;">
                         </div>
-                    </div>
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="estado">Estado:</label>
-                            <select name="estado" id="estado" required>
+                        <div style="flex:1; min-width: 200px;">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; color:var(--text);">Estado:</label>
+                            <select name="estado" id="estado" required style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); font-size:0.9rem;">
                                 <option value="activo" <?php if($prog['estado'] == 'activo') echo 'selected'; ?>>Activo</option>
                                 <option value="inactivo" <?php if($prog['estado'] == 'inactivo') echo 'selected'; ?>>Inactivo</option>
                             </select>
                         </div>
                     </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-accent" name="actualizarProgramacion">
-                        Actualizar programación
-                    </button>
-                </div>
+                    <div style="margin-top: 20px; display:flex; justify-content:flex-end;">
+                        <button type="submit" class="btn btn-accent" name="actualizarProgramacion">
+                            <i class="bi bi-save"></i> Guardar Programación
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
-        <hr>
+        </div>
     <?php endif; ?>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Gestión de Suscripciones</h1>
-        <form method="GET" class="admin-search-form">
+
+    <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 12px;">
+        <h1 style="margin:0;">Gestión de Suscripciones</h1>
+        <form method="GET" class="admin-search-form" style="display:flex; align-items:center; gap:8px;">
             <i class="bi bi-search admin-search-icon"></i>
             <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar por nombre o email..." class="admin-search-input">
             <?php if($q): ?><a href="./suscripciones.php" class="admin-search-clear">&times;</a><?php endif; ?>
         </form>
     </div>
-    <div class="mb-3">
-        <button type="button" class="btn btn-sm btn-secondary" onclick="toggleSelectAll()">
-            <i class="bi bi-check-all"></i> Seleccionar todos
-        </button>
-        <button type="button" class="btn btn-sm btn-warning" onclick="deselectAll()">
-            <i class="bi bi-x-circle"></i> Deseleccionar
-        </button>
-        <button type="button" class="btn btn-sm btn-primary" onclick="sendToSelected()" id="sendSelectedBtn" style="display:none;">
-            <i class="bi bi-envelope"></i> Enviar a seleccionados
-        </button>
+
+    <!-- Estadísticas rápidas -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(99,102,241,0.1); color: #6366f1;"><i class="bi bi-people"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $totalSuscripciones ?></span>
+                <span class="stat-label">Total Suscriptores</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: #10b981;"><i class="bi bi-gender-male"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $hombres ?></span>
+                <span class="stat-label">Hombres</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(239,51,99,0.1); color: #EF3363;"><i class="bi bi-gender-female"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $mujeres ?></span>
+                <span class="stat-label">Mujeres</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(245,158,11,0.1); color: #f59e0b;"><i class="bi bi-gender-ambiguous"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $otros ?></span>
+                <span class="stat-label">Otro / N/A</span>
+            </div>
+        </div>
     </div>
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()"></th>
-                    <th>Nombre</th>
-                    <th>Email</th>
-                    <th>Sexo</th>
-                    <th>Fecha de alta</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach($suscripciones as $suscripcion): ?>
-                <tr>
-                    <td><input type="checkbox" class="subscriber-checkbox" value="<?php echo $suscripcion['id_sub']; ?>" onchange="updateSendButton()"></td>
-                    <td><?php echo $suscripcion['nombre_completo']; ?></td>
-                    <td><?php echo $suscripcion['correo']; ?></td>
-                    <td><?php echo $suscripcion['sexo']; ?></td>
-                    <td><?php echo $suscripcion['fecha']; ?></td>
-                    <td>
-                        <form method="POST" action="./../controllers/enviarCorreoSuscriptor.php" style="display:inline;">
-                            <input type="hidden" name="id" value="<?php echo $suscripcion['id_sub']; ?>">
-                            <button type="submit" class="btn btn-sm btn-primary" title="Enviar correo a este suscriptor">
-                                <i class="bi bi-envelope"></i> Enviar
-                            </button>
-                        </form>
-                        <form method="POST" action="./../controllers/eliminarSuscriptor.php" style="display:inline;">
-                            <input type="hidden" name="id" value="<?php echo $suscripcion['id_sub']; ?>">
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar este suscriptor?');">
-                                <i class="bi bi-trash"></i> Eliminar
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+
+    <!-- Toolbar -->
+    <div class="contenidos-toolbar">
+        <div class="contenidos-tabs" style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="btn btn-outline-secondary" onclick="toggleSelectAll()" style="padding:6px 12px; font-size:0.85rem; border-radius:8px;">
+                <i class="bi bi-check-all"></i> Marcar todos
+            </button>
+            <button type="button" class="btn btn-outline-secondary" onclick="deselectAll()" style="padding:6px 12px; font-size:0.85rem; border-radius:8px;">
+                <i class="bi bi-x-circle"></i> Desmarcar
+            </button>
+        </div>
+        <div class="contenidos-actions">
+            <button type="button" class="btn btn-accent" onclick="sendToSelected()" id="sendSelectedBtn" style="display:none;">
+                <i class="bi bi-envelope"></i> Enviar a seleccionados
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="contenidos-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" style="accent-color:var(--accent); width:16px; height:16px; cursor:pointer;"></th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Sexo</th>
+                            <th>Fecha de alta</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if(empty($suscripciones)): ?>
+                            <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron suscriptores.</td></tr>
+                        <?php else: ?>
+                            <?php foreach($suscripciones as $suscripcion): ?>
+                            <tr>
+                                <td style="text-align:center;"><input type="checkbox" class="subscriber-checkbox" value="<?php echo $suscripcion['id_sub']; ?>" onchange="updateSendButton()" style="accent-color:var(--accent); width:16px; height:16px; cursor:pointer;"></td>
+                                <td><strong class="table-title"><?php echo htmlspecialchars($suscripcion['nombre_completo']); ?></strong></td>
+                                <td><span style="font-size:0.9rem; color:var(--text);"><?php echo htmlspecialchars($suscripcion['correo']); ?></span></td>
+                                <td><span style="font-size:0.85rem; color:var(--muted); text-transform:capitalize;"><?php echo htmlspecialchars($suscripcion['sexo']); ?></span></td>
+                                <td class="table-date"><?php echo date('d/m/Y', strtotime($suscripcion['fecha'])); ?></td>
+                                <td>
+                                    <div class="noticias-actions" style="border-top:none; padding:0; justify-content:flex-start;">
+                                        <form method="POST" action="./../controllers/enviarCorreoSuscriptor.php" style="display:inline;">
+                                            <input type="hidden" name="id" value="<?php echo $suscripcion['id_sub']; ?>">
+                                            <button type="submit" class="btn btn-view" title="Enviar correo a este suscriptor">
+                                                <i class="bi bi-envelope"></i>
+                                            </button>
+                                        </form>
+                                        <?php if($ACL['eliminar']): ?>
+                                            <button type="button" class="btn btn-delete btn-delete-suscriptor" data-id="<?php echo $suscripcion['id_sub']; ?>" title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación para Eliminar -->
+<div id="modalOverlayS" class="crop-modal" style="display: none;">
+    <div class="crop-modal-content">
+        <h3 id="modalTitleS"><i class="bi bi-trash"></i> Confirmar eliminación</h3>
+        <p style="color:var(--muted); font-size:0.9rem; margin-bottom:15px; margin-top:5px;">¿Estás seguro de que deseas eliminar este suscriptor? Esta acción no se puede deshacer.</p>
+        <form id="modalFormS" action="./../controllers/eliminarSuscriptor.php" method="POST">
+            <input type="hidden" name="id" id="modalIdS">
+            <div class="crop-actions" style="display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="btn btn-secondary btn-cancel">Cancelar</button>
+                <button type="submit" class="btn btn-accent">Eliminar</button>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+    const modal = document.getElementById("modalOverlayS");
+    const modalId = document.getElementById("modalIdS");
+    
+    document.querySelectorAll(".btn-delete-suscriptor").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation(); // Evitar que seleccione la fila
+            modalId.value = btn.dataset.id;
+            modal.style.display = "flex";
+        });
+    });
+    
+    document.querySelectorAll(".btn-cancel").forEach(btn => {
+        btn.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+    });
+    
+    window.addEventListener("click", (e) => {
+        if(e.target === modal) modal.style.display = "none";
+    });
+});
+
 function toggleSelectAll() {
     const checkboxes = document.querySelectorAll('.subscriber-checkbox');
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
@@ -153,11 +241,28 @@ function updateSendButton() {
     const sendBtn = document.getElementById('sendSelectedBtn');
     
     if (checkboxes.length > 0) {
-        sendBtn.style.display = 'inline-block';
+        sendBtn.style.display = 'inline-flex';
+        sendBtn.innerHTML = `<i class="bi bi-envelope"></i> Enviar a ${checkboxes.length} seleccionados`;
     } else {
         sendBtn.style.display = 'none';
     }
 }
+
+// Inicializar el evento por si el usuario presiona el checkbox general pero haciendo click en el td entero
+document.querySelectorAll('input[type="checkbox"]').forEach(c => {
+    c.addEventListener('click', e => e.stopPropagation());
+});
+document.querySelectorAll('.contenidos-table tbody tr').forEach(row => {
+    row.addEventListener('click', function(e) {
+        if(e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.tagName === 'I' || e.target.closest('.noticias-actions')) return;
+        const cb = this.querySelector('.subscriber-checkbox');
+        if(cb) {
+            cb.checked = !cb.checked;
+            updateSendButton();
+        }
+    });
+    row.style.cursor = 'pointer';
+});
 
 function sendToSelected() {
     const checkboxes = document.querySelectorAll('.subscriber-checkbox:checked');

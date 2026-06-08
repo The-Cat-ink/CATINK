@@ -427,8 +427,8 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 
   <h1 class="cn-page-title" style="text-align: center;">Alta de noticia</h1>
 
-  <form id="formPublicacion" action="./../controllers/noticiascontroller.php" method="POST" enctype="multipart/form-data">
-    <input type="hidden" name="autor" value="<?= $fila['id_u'] ?? '' ?>">
+  <form id="formPublicacion" enctype="multipart/form-data">
+    <input type="hidden" name="autor" value="<?= $_SESSION['id_u'] ?? '' ?>">
     <input type="hidden" name="crop2" id="crop2">
     <input type="hidden" name="crop3" id="crop3">
     <input type="hidden" name="contenido" id="contenido">
@@ -941,19 +941,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   form?.addEventListener('submit', e => {
-    if (_submitting) { e.preventDefault(); return; }
-    _submitting = true;
-    const publishBtn = document.querySelector('.cn-publish-btn');
-    if (publishBtn) { publishBtn.disabled = true; publishBtn.style.opacity = '0.6'; }
-    if (window.quill) {
-      let html = quill.root.innerHTML;
-      html = html.replace(/<div class="social-embed"[^>]*data-url="([^"]+)"[^>]*>.*?<\/div>/gi,
-                          '<div class="social-embed" data-url="$1"></div>');
-      contenidoHid.value = html;
-    }
-    hiddenFecha.value = schedToggle?.checked
-      ? (schedDate.value + 'T' + schedTime.value).replace('T',' ')
-      : nowLocal().replace('T',' ');
+    e.preventDefault(); 
+    // Todo lo maneja el boton guardarNoticia click event
   });
 
   /* ── Modal hora inválida ── */
@@ -966,10 +955,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (_submitting) return;
     const errors = validateForm();
     if (errors.length) { showToast(errors); return; }
-    if (!schedToggle?.checked) { form.requestSubmit(); return; }
+
+    // Actualizamos valores ocultos
+    if (window.quill) {
+      let html = quill.root.innerHTML;
+      html = html.replace(/<div class="social-embed"[^>]*data-url="([^"]+)"[^>]*>.*?<\/div>/gi,
+                          '<div class="social-embed" data-url="$1"></div>');
+      contenidoHid.value = html;
+    }
+    hiddenFecha.value = schedToggle?.checked
+      ? (schedDate.value + 'T' + schedTime.value).replace('T',' ')
+      : nowLocal().replace('T',' ');
+
+    if (!schedToggle?.checked) { 
+        submitAjax(); 
+        return; 
+    }
     const selected = schedDate.value + ' ' + schedTime.value;
     if (selected < nowLocal().replace('T',' ')) { modalTime.style.display = 'flex'; }
-    else { form.requestSubmit(); }
+    else { submitAjax(); }
   });
 
   autoAdjustBtn?.addEventListener('click', () => {
@@ -977,11 +981,71 @@ document.addEventListener('DOMContentLoaded', () => {
     autoAdjustBtn.disabled = true;
     const l = nowLocal();
     schedDate.value = l.slice(0,10); schedTime.value = l.slice(11,16);
-    modalTime.style.display = 'none'; form.requestSubmit();
+    hiddenFecha.value = schedDate.value + ' ' + schedTime.value;
+    modalTime.style.display = 'none'; 
+    submitAjax();
   });
   manualAdjustBtn?.addEventListener('click', () => { modalTime.style.display = 'none'; });
   document.querySelector('#timeModalOverlay .crop-modal-content')
     ?.addEventListener('click', e => e.stopPropagation());
+
+  // === LA VERDADERA MAGIA AJAX ===
+  function submitAjax() {
+      if (_submitting) return;
+      _submitting = true;
+
+      const publishBtn = document.querySelector('.cn-publish-btn');
+      const originalHtml = publishBtn.innerHTML;
+      publishBtn.disabled = true;
+      publishBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right:8px;"></span> Guardando...';
+
+      const formData = new FormData(form);
+
+      // Limpiamos los arrays raros de categorías para el Ajax (FormData ya los agrupa bien por nombre[] o podemos armarlos manual)
+      // Como ya existen inputs hidden con name="categoria[]" se van bien.
+
+      fetch('./../controllers/noticiascontroller.php', {
+          method: 'POST',
+          body: formData
+      })
+      .then(async response => {
+          const text = await response.text();
+          try {
+              const data = JSON.parse(text);
+              if (data.success) {
+                  // Todo excelente, redirigimos a lista de contenidos (o limpiamos la UI)
+                  window.location.href = './contenidos.php?msg=creado';
+              } else {
+                  // Falló alguna validación interna
+                  showToast(["Error del servidor: " + (data.error || "Datos inválidos")]);
+                  publishBtn.disabled = false;
+                  publishBtn.innerHTML = originalHtml;
+                  _submitting = false;
+              }
+          } catch(e) {
+              // El controlador antiguo (si no lo hemos modificado) hace "header(Location: ...)" 
+              // en lugar de enviar JSON. Por lo tanto, si la URL no fue JSON sino un redirect OK:
+              if (response.ok) {
+                  // Ocurrió la redirección silenciosa, o mandó basura pero código 200 (OK)
+                  // Redirigimos manualmente por seguridad
+                  window.location.href = './contenidos.php?msg=creado';
+              } else {
+                  console.error("Respuesta fallida del servidor:", text);
+                  showToast(["Error fatal de conexión. Revisa los permisos de carpeta."]);
+                  publishBtn.disabled = false;
+                  publishBtn.innerHTML = originalHtml;
+                  _submitting = false;
+              }
+          }
+      })
+      .catch(err => {
+          console.error("Error Fetch:", err);
+          showToast(["Se perdió la conexión. Revisa tu internet."]);
+          publishBtn.disabled = false;
+          publishBtn.innerHTML = originalHtml;
+          _submitting = false;
+      });
+  }
 
   /* ── Toolbar fija al hacer scroll ── */
   (function () {

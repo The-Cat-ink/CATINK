@@ -1734,7 +1734,7 @@ select, input[type="datetime-local"] {
     color: var(--text);
 }
 /* ===============================
-   MODAL RECORTE EDITOR
+   MODAL RECORTE EDITOR Y MODALES NATIVOS
    =============================== */
 .crop-modal {
     position: fixed;
@@ -1754,20 +1754,60 @@ select, input[type="datetime-local"] {
 }
 .crop-modal-content {
     background: var(--card-bg);
-    padding: 20px;
+    color: var(--text);
+    padding: 24px;
     width: 90%;
     max-width: 700px;
     border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 }
 .cropper-container-editor {
     max-height: 400px;
     overflow: hidden;
 }
+.crop-modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.4rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: -0.02em;
+}
+.crop-modal-content h3 i {
+    font-size: 1.3rem;
+    color: var(--muted);
+}
 .crop-actions {
     display: flex;
     gap: 10px;
-    margin-top: 15px;
+    margin-top: 20px;
     justify-content: flex-end;
+}
+.crop-actions .btn {
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-weight: 600;
+}
+.crop-actions .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+.crop-actions .btn-secondary:hover {
+    background: rgba(0,0,0,0.05);
+    border-color: var(--text);
+}
+[data-bs-theme="dark"] .crop-actions .btn-secondary:hover {
+    background: rgba(255,255,255,0.08);
+}
+.crop-modal .card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
 }
 /* Cards */
 .img-card {

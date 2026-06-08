@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Auto-hide navbar on scroll down, show on scroll up
   const navbar = document.querySelector('.navbar');
   if (navbar) {
-    let lastScroll = 0;
+    let lastScroll = window.scrollY;
     window.addEventListener('scroll', () => {
       const curr = window.scrollY;
       if (curr > lastScroll && curr > 80) {

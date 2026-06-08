@@ -25,76 +25,124 @@ if($q !== ''){
     $stmt = $con->prepare("SELECT * FROM usuarios ORDER BY registro DESC");
 }
 $stmt->execute();
-$usuarios = $stmt->get_result();
+$res = $stmt->get_result();
+$usuarios = $res->fetch_all(MYSQLI_ASSOC);
+
+$totalUsuarios = count($usuarios);
+$ultimos7dias = count(array_filter($usuarios, function($u) {
+    return strtotime($u['registro']) >= strtotime('-7 days');
+}));
+$superadmins = count(array_filter($usuarios, fn($u) => $u['id_u'] == 1 || !empty($u['superadmin'])));
 ?>
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Gestión de Usuarios</h1>
-        <form method="GET" class="admin-search-form">
+    <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 12px;">
+        <h1 style="margin:0;">Gestión de Usuarios</h1>
+        <form method="GET" class="admin-search-form" style="display:flex; align-items:center; gap:8px;">
             <i class="bi bi-search admin-search-icon"></i>
             <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar por nombre, usuario o email..." class="admin-search-input">
             <?php if($q): ?><a href="./usuarios.php" class="admin-search-clear">&times;</a><?php endif; ?>
         </form>
     </div>
-    <?php if($ACL['crear']): ?>
-        <a href="./crearu.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear Usuario</a>
-    <?php endif; ?>
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Lista de Usuarios</h5>
+
+    <!-- Estadísticas rápidas -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(99,102,241,0.1); color: #6366f1;"><i class="bi bi-people-fill"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $totalUsuarios ?></span>
+                <span class="stat-label">Total Usuarios</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: #10b981;"><i class="bi bi-person-plus-fill"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $ultimos7dias ?></span>
+                <span class="stat-label">Nuevos (7 días)</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(245,158,11,0.1); color: #f59e0b;"><i class="bi bi-shield-lock-fill"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $superadmins ?></span>
+                <span class="stat-label">Admins</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="contenidos-toolbar">
+        <div class="contenidos-tabs">
+            <span class="tab-btn active">Todos los usuarios</span>
+        </div>
+        <div class="contenidos-actions">
+            <?php if($ACL['crear']): ?>
+                <a href="./crearu.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear Usuario</a>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-striped table-bordered">
+                <table class="contenidos-table">
                     <thead>
                         <tr>
-                            <th scope="col">Nombre</th>
-                            <th scope="col">Usuario</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Fecha Registro</th>
-                            <?php if($ACL['editar'] || $ACL['eliminar']): ?>
-                                <th scope="col">Acciones</th>
+                            <th>Nombre</th>
+                            <th>Usuario</th>
+                            <th>Email</th>
+                            <th>Fecha Registro</th>
+                            <?php if($ACL['editar'] || $ACL['eliminar'] || $ACL['leer']): ?>
+                                <th>Acciones</th>
                             <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach($usuarios as $u): ?>
-                        <tr>
-                            <td><?= $u['nombre'] ?></td>
-                            <td><?= $u['usuario'] ?></td>
-                            <td><?= $u['correo'] ?></td>
-                            <td><?= $u['registro'] ?></td>
-                            <?php if($ACL['editar'] || $ACL['eliminar']): ?>
-                                <td>
-                                    <?php if($ACL['editar']): ?>
-                                        <a href="./editaru.php?id=<?= $u['id_u'] ?>" class="btn btn-secondary" title="Editar Usuario"><i class="bi bi-pencil"></i></a>
-                                    <?php endif; ?>
-                                    <a href="./veru.php?id=<?= $u['id_u'] ?>" class="btn btn-secondary" title="Ver Usuario"><i class="bi bi-eye"></i></a>
-                                    <?php if($ACL['eliminar']): ?>
-                                        <button type="button" class="btn btn-delete-usuario" data-id="<?= $u['id_u'] ?>" data-nombre="<?= $u['nombre'] ?>" title="Eliminar Usuario"><i class="bi bi-trash"></i></button>
-                                    <?php endif; ?>
-                                </td>
-                            <?php endif; ?>
-                        </tr>
-                        <?php endforeach; ?>
+                        <?php if(empty($usuarios)): ?>
+                            <tr><td colspan="5" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron usuarios.</td></tr>
+                        <?php else: ?>
+                            <?php foreach($usuarios as $u): ?>
+                            <tr>
+                                <td><strong class="table-title"><?= htmlspecialchars($u['nombre']) ?></strong></td>
+                                <td><span class="estado-badge estado-programado" style="background:rgba(99,102,241,0.1); color:#6366f1;">@<?= htmlspecialchars($u['usuario']) ?></span></td>
+                                <td><span style="font-size:0.9rem; color:var(--text);"><?= htmlspecialchars($u['correo']) ?></span></td>
+                                <td class="table-date"><?= date('d/m/Y', strtotime($u['registro'])) ?></td>
+                                <?php if($ACL['editar'] || $ACL['eliminar'] || $ACL['leer']): ?>
+                                    <td>
+                                        <div class="noticias-actions" style="border-top:none; padding:0; justify-content:flex-start;">
+                                            <?php if($ACL['editar']): ?>
+                                                <a href="./editaru.php?id=<?= $u['id_u'] ?>" class="btn btn-edit" title="Editar Usuario"><i class="bi bi-pencil-square"></i></a>
+                                            <?php endif; ?>
+                                            <?php if($ACL['leer']): ?>
+                                                <a href="./veru.php?id=<?= $u['id_u'] ?>" class="btn btn-view" title="Ver Usuario"><i class="bi bi-eye"></i></a>
+                                            <?php endif; ?>
+                                            <?php if($ACL['eliminar'] && $u['id_u'] != 1): ?>
+                                                <button type="button" class="btn btn-delete btn-delete-usuario" data-id="<?= $u['id_u'] ?>" data-nombre="<?= htmlspecialchars($u['nombre']) ?>" title="Eliminar Usuario"><i class="bi bi-trash"></i></button>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                <?php endif; ?>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+
 <!-- Modal eliminacion usuario -->
 <div id="modalOverlayU" class="crop-modal" style="display: none;">
-    <div class="card">
-        <div class="crop-modal-content">
-            <h3 id="modalTitleU">Confirmar eliminación</h3>
-            <p>¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.</p>
-            <form id="modalFormU" action="./../controllers/eliminarusuario.php?id=<?= $u['id_u'] ?>" method="POST">
-                <input type="hidden" name="id" id="modalIdU">
-                <div class="crop-actions">
-                    <button type="button" class="btn btn-secondary btn-cancel">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Eliminar</button>
-                </div>
-            </form>
-        </div>
+    <div class="crop-modal-content">
+        <h3 id="modalTitleU"><i class="bi bi-trash"></i> Confirmar eliminación</h3>
+        <p style="color:var(--muted); font-size:0.9rem; margin-bottom:15px; margin-top:5px;">¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.</p>
+        <form id="modalFormU" action="./../controllers/eliminarusuario.php" method="POST">
+            <input type="hidden" name="id" id="modalIdU">
+            <div class="crop-actions" style="display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="btn btn-secondary btn-cancel">Cancelar</button>
+                <button type="submit" class="btn btn-accent">Eliminar</button>
+            </div>
+        </form>
     </div>
 </div>
 <?php include("./../layout/footerAdmin.php"); ?>

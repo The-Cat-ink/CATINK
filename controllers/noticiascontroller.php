@@ -120,7 +120,9 @@ $fecha_publicacion = str_replace('T', ' ', $fecha_publicacion);
 // VALIDACION
 // ============================
 if (empty($titulo) || empty($descripcion) || empty($contenido)) {
-  die("Datos incompletos");
+  header('Content-Type: application/json');
+  echo json_encode(['success' => false, 'error' => 'Datos incompletos. Revisa título, descripción y contenido.']);
+  exit;
 }
 // ============================
 // INSERTAR NOTICIA (YA SIN CATEGORIA)
@@ -129,8 +131,17 @@ $usuario_id = intval($_SESSION['id_u'] ?? 0);
 $sql = "INSERT INTO noticias (titulo, descripcion, autor, contenido, fecha_publicacion, creado_por, editado_por)
         VALUES (?, ?, ?, ?, ?, ?, ?)";
 $stmt = $con->prepare($sql);
+if (!$stmt) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'error' => 'Error de Base de Datos al preparar la noticia.']);
+    exit;
+}
 $stmt->bind_param("ssissii", $titulo, $descripcion, $autor, $contenido, $fecha_publicacion, $usuario_id, $usuario_id);
-$stmt->execute();
+if (!$stmt->execute()) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'error' => 'Error al guardar la noticia en Base de Datos.']);
+    exit;
+}
 $noticiaId = $con->insert_id;
 // ============================
 // GUARDAR IMAGENES
@@ -155,8 +166,9 @@ if (!empty($categorias)) {
   }
 }
 // ============================
-// REDIRECCION
+// REDIRECCION / AJAX RESPONSE
 // ============================
-header("Location: ./../views/contenidos.php");
+header('Content-Type: application/json');
+echo json_encode(['success' => true, 'id' => $noticiaId]);
 exit;
 ?>
