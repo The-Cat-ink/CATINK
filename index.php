@@ -44,7 +44,7 @@ $popularesNoticiasSidebar = array_slice($popularesNoticiasSidebar, 0, 3);
 $slider = array_slice($noticias, 0, 5);
 $ultimasNoticias = $noticias;
 usort($ultimasNoticias, fn($a,$b)=>$b['likes']-$a['likes']);
-$ultimasNoticias = array_slice($ultimasNoticias, 0, 9);
+$ultimasNoticias = array_slice($ultimasNoticias, 0, 7);
 $noticiasMasRecientes = array_slice($noticias, 0, 6);
 $noticiasMasRecientes2 = array_slice($noticias, 7, 11);
 $noticiasMasRecientes3 = array_slice($noticias, 12, 17);
@@ -202,12 +202,6 @@ function topCard($r, $type = 'thumb') {
         <div class="row">
             <div class="col-md-4"><?php topCard($ultimasNoticias[5]); ?></div>
             <div class="col-md-8"><?php topCard($ultimasNoticias[6], 'banner'); ?></div>
-        </div>
-
-        <!-- Fila 4: thumb + banner -->
-        <div class="row">
-            <div class="col-md-4"><?php topCard($ultimasNoticias[7]); ?></div>
-            <div class="col-md-8"><?php topCard($ultimasNoticias[8], 'banner'); ?></div>
         </div>
 
         <!-- ===================== -->
