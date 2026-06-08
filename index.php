@@ -46,7 +46,7 @@ $ultimasNoticias = $noticias;
 usort($ultimasNoticias, fn($a,$b)=>$b['likes']-$a['likes']);
 $ultimasNoticias = array_slice($ultimasNoticias, 0, 7);
 $noticiasMasRecientes = array_slice($noticias, 0, 6);
-$noticiasMasRecientes2 = array_slice($noticias, 7, 11);
+$noticiasMasRecientes2 = array_slice($noticias, 7, 5);
 $noticiasMasRecientes3 = array_slice($noticias, 12, 17);
 //Obtener banner publicidad
 $stmt = $con->prepare("SELECT * FROM publicidad WHERE activo = 1 AND tipo = 1 and fecha_fin >= NOW() ORDER BY RAND() LIMIT 1");
@@ -61,7 +61,7 @@ $stmt = $con->prepare("SELECT * FROM publicidad WHERE activo = 1 AND tipo = 1 OR
 $stmt->execute();
 $publicidadInferior = $stmt->get_result()->fetch_assoc();
 // obtener videos
-$stmt = $con->prepare("SELECT * FROM videos WHERE activo = 1 ORDER BY orden ASC, id_v DESC LIMIT 6");
+$stmt = $con->prepare("SELECT * FROM videos WHERE activo = 1 ORDER BY id_v DESC LIMIT 6");
 $stmt->execute();
 $vid = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 // ==============================
@@ -184,30 +184,63 @@ function topCard($r, $type = 'thumb') {
 ?>
 <div class="container mt-5">
     <div>
-        <h2><i class="bi bi-chat-left-dots"></i>  Top Publicaciones de la Semana</h2><br>
-        <!-- Fila 1: banner + thumb -->
+        <h2><i class="bi bi-award"></i>  Top Semanal</h2><br>
+        <?php
+        // Fila 1 — banner grande + thumb pequeño
+        $f1 = array_values(array_filter([
+            $ultimasNoticias[0] ?? null,
+            $ultimasNoticias[1] ?? null,
+        ]));
+        if ($f1):
+        ?>
         <div class="row">
-            <div class="col-md-8"><?php topCard($ultimasNoticias[0], 'banner'); ?></div>
-            <div class="col-md-4"><?php topCard($ultimasNoticias[1]); ?></div>
+            <div class="<?= isset($f1[1]) ? 'col-md-8' : 'col-12' ?>">
+                <?php topCard($f1[0], 'banner'); ?>
+            </div>
+            <?php if (isset($f1[1])): ?>
+            <div class="col-md-4"><?php topCard($f1[1]); ?></div>
+            <?php endif; ?>
         </div>
+        <?php endif; ?>
 
-        <!-- Fila 2: thumb + thumb + thumb -->
+        <?php
+        // Fila 2 — hasta 3 thumbs; la clase de columna se adapta a los disponibles
+        $f2 = array_values(array_filter([
+            $ultimasNoticias[2] ?? null,
+            $ultimasNoticias[3] ?? null,
+            $ultimasNoticias[4] ?? null,
+        ]));
+        if ($f2):
+            $col2 = match(count($f2)) { 1 => 'col-12', 2 => 'col-12 col-md-6', default => 'col-12 col-md-4' };
+        ?>
         <div class="row">
-            <div class="col-md-4"><?php topCard($ultimasNoticias[2]); ?></div>
-            <div class="col-md-4"><?php topCard($ultimasNoticias[3]); ?></div>
-            <div class="col-md-4"><?php topCard($ultimasNoticias[4]); ?></div>
+            <?php foreach ($f2 as $r): ?>
+            <div class="<?= $col2 ?>"><?php topCard($r); ?></div>
+            <?php endforeach; ?>
         </div>
+        <?php endif; ?>
 
-        <!-- Fila 3: thumb + banner -->
+        <?php
+        // Fila 3 — thumb pequeño + banner grande; se adapta si solo hay 1
+        $f3 = array_values(array_filter([
+            $ultimasNoticias[5] ?? null,
+            $ultimasNoticias[6] ?? null,
+        ]));
+        if ($f3):
+        ?>
         <div class="row">
-            <div class="col-md-4"><?php topCard($ultimasNoticias[5]); ?></div>
-            <div class="col-md-8"><?php topCard($ultimasNoticias[6], 'banner'); ?></div>
+            <div class="<?= isset($f3[1]) ? 'col-md-4' : 'col-12' ?>">
+                <?php topCard($f3[0]); ?>
+            </div>
+            <?php if (isset($f3[1])): ?>
+            <div class="col-md-8"><?php topCard($f3[1], 'banner'); ?></div>
+            <?php endif; ?>
         </div>
-
+        <?php endif; ?>
         <!-- ===================== -->
         <!-- SIDEBAR -->
         <!-- ===================== -->
-        <h2><i class="bi bi-newspaper"></i>  Lo más recientes</h2>
+        <h2><i class="bi bi-lightning-fill"></i>  Lo más recientes</h2>
         <div class="row mt-5">
             <div class="col-md-9">
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidad) : ?>
