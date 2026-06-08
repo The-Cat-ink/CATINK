@@ -185,58 +185,26 @@ function topCard($r, $type = 'thumb') {
 <div class="container mt-5">
     <div>
         <h2><i class="bi bi-chat-left-dots"></i>  Top Publicaciones de la Semana</h2><br>
-        <?php
-        // Fila 1 — banner grande + thumb pequeño
-        $f1 = array_values(array_filter([
-            $ultimasNoticias[0] ?? null,
-            $ultimasNoticias[1] ?? null,
-        ]));
-        if ($f1):
-        ?>
+        <!-- Fila 1: banner + thumb -->
         <div class="row">
-            <div class="<?= isset($f1[1]) ? 'col-md-8' : 'col-12' ?>">
-                <?php topCard($f1[0], 'banner'); ?>
-            </div>
-            <?php if (isset($f1[1])): ?>
-            <div class="col-md-4"><?php topCard($f1[1]); ?></div>
-            <?php endif; ?>
+            <div class="col-md-8"><?php topCard($ultimasNoticias[0], 'banner'); ?></div>
+            <div class="col-md-4"><?php topCard($ultimasNoticias[1]); ?></div>
         </div>
-        <?php endif; ?>
 
-        <?php
-        // Fila 2 — hasta 3 thumbs; la clase de columna se adapta a los disponibles
-        $f2 = array_values(array_filter([
-            $ultimasNoticias[2] ?? null,
-            $ultimasNoticias[3] ?? null,
-            $ultimasNoticias[4] ?? null,
-        ]));
-        if ($f2):
-            $col2 = match(count($f2)) { 1 => 'col-12', 2 => 'col-12 col-md-6', default => 'col-12 col-md-4' };
-        ?>
+        <!-- Fila 2: thumb + thumb + thumb -->
         <div class="row">
-            <?php foreach ($f2 as $r): ?>
-            <div class="<?= $col2 ?>"><?php topCard($r); ?></div>
-            <?php endforeach; ?>
+            <div class="col-md-4"><?php topCard($ultimasNoticias[2]); ?></div>
+            <div class="col-md-4"><?php topCard($ultimasNoticias[3]); ?></div>
+            <div class="col-md-4"><?php topCard($ultimasNoticias[4]); ?></div>
         </div>
-        <?php endif; ?>
 
-        <?php
-        // Fila 3 — thumb pequeño + banner grande; se adapta si solo hay 1
-        $f3 = array_values(array_filter([
-            $ultimasNoticias[5] ?? null,
-            $ultimasNoticias[6] ?? null,
-        ]));
-        if ($f3):
-        ?>
+        <!-- Fila 3: thumb + banner -->
         <div class="row">
-            <div class="<?= isset($f3[1]) ? 'col-md-4' : 'col-12' ?>">
-                <?php topCard($f3[0]); ?>
-            </div>
-            <?php if (isset($f3[1])): ?>
-            <div class="col-md-8"><?php topCard($f3[1], 'banner'); ?></div>
-            <?php endif; ?>
+            <div class="col-md-4"><?php topCard($ultimasNoticias[5]); ?></div>
+            <div class="col-md-8"><?php topCard($ultimasNoticias[6], 'banner'); ?></div>
         </div>
-        <?php endif; ?>
+
+
         <!-- ===================== -->
         <!-- SIDEBAR -->
         <!-- ===================== -->
