@@ -18,98 +18,73 @@
 <script src="<?= basePath() ?>/CSS/scripts.js?v=<?= filemtime(__DIR__ . '/../CSS/scripts.js') ?>"></script>
 <script async src="https://platform.twitter.com/widgets.js"></script>
 <script>
-  const input = document.getElementById('searchInput');
-  const clearBtn = document.getElementById('clearBtn');
-  const searchBtn = document.getElementById('searchBtn');
-  const basePath = '<?= basePath() ?>'; // Inyectado desde PHP
-  
-  function performSearch() {
-    const q = input.value.trim();
-    if (q.length >= 2) {
-      // Redirige a la búsqueda con URL amigable
-      window.location.href = basePath + `/buscar/${encodeURIComponent(q)}`;
-    }
-  }
-  
-  if (input) {
-    // Buscar al presionar Enter
-    input.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        performSearch();
+  const basePath = '<?= basePath() ?>';
+
+  function initSearch(inputId, clearBtnId, searchBtnId, resultsBoxId) {
+    const input = document.getElementById(inputId);
+    const clearBtn = document.getElementById(clearBtnId);
+    const searchBtn = document.getElementById(searchBtnId);
+    const resultsBox = document.getElementById(resultsBoxId);
+
+    if (!input) return;
+
+    function performSearch() {
+      const q = input.value.trim();
+      if (q.length >= 2) {
+        window.location.href = basePath + `/buscar/${encodeURIComponent(q)}`;
       }
+    }
+
+    input.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); performSearch(); }
     });
-  }
-  
-  // Botón limpiar
-  if (clearBtn) {
-    clearBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      input.value = '';
-      input.focus();
-    });
-  }
-  
-  // Botón buscar
-  if (searchBtn) {
-    searchBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      performSearch();
-    });
-  }
-  const resultsBox = document.getElementById('searchResults');
-    let timeout = null;
-    
-    if (input && resultsBox) {
+
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function (e) {
+        e.preventDefault(); input.value = ''; input.focus();
+      });
+    }
+
+    if (searchBtn) {
+      searchBtn.addEventListener('click', function (e) {
+        e.preventDefault(); performSearch();
+      });
+    }
+
+    if (resultsBox) {
+      let timeout = null;
       input.addEventListener('input', function () {
         const q = input.value.trim();
-      
         clearTimeout(timeout);
-      
-        if (q.length < 2) {
-          resultsBox.style.display = 'none';
-          return;
-        }
-      
+        if (q.length < 2) { resultsBox.style.display = 'none'; return; }
         timeout = setTimeout(() => {
           fetch(basePath + `/api/search.php?q=` + encodeURIComponent(q))
             .then(res => res.json())
             .then(data => {
               resultsBox.innerHTML = '';
-      
-              if (data.length === 0) {
-                resultsBox.style.display = 'none';
-                return;
-              }
-      
+              if (data.length === 0) { resultsBox.style.display = 'none'; return; }
               data.forEach(item => {
                 const div = document.createElement('div');
                 div.classList.add('search-item');
-      
-                div.innerHTML = `
-                  <img src="${item.imagen}" alt="" class="img-search">
-                  <span>${item.titulo}</span>
-                `;
-      
-                div.addEventListener('click', () => {
-                  window.location.href = item.url;
-                });
-      
+                div.innerHTML = `<img src="${item.imagen}" alt="" class="img-search"><span>${item.titulo}</span>`;
+                div.addEventListener('click', () => { window.location.href = item.url; });
                 resultsBox.appendChild(div);
               });
-      
               resultsBox.style.display = 'block';
             });
-        }, 300); // debounce
+        }, 300);
       });
     }
 
-    // Ocultar si haces click fuera
     document.addEventListener('click', (e) => {
       if (resultsBox && !e.target.closest('.nav-search')) {
         resultsBox.style.display = 'none';
       }
     });
+  }
+
+  initSearch('searchInput', 'clearBtn', 'searchBtn', 'searchResults');
+  initSearch('searchInputMobile', 'clearBtnMobile', 'searchBtnMobile', 'searchResultsMobile');
 </script>
 <script>
   document.addEventListener("DOMContentLoaded", function(){

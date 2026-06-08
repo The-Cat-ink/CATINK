@@ -102,7 +102,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a class="navbar-brand" href="<?= basePath() . '/' ?>">
       <img id="logo" src="" alt="CatInk Logo">
     </a>
-    <form class="nav-search buscador-desplegable" onsubmit="return false;">
+    <form class="nav-search buscador-desplegable d-none d-md-flex" onsubmit="return false;">
       <input
         type="text"
         id="searchInput"
@@ -123,6 +123,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
+      <div class="d-md-none" style="padding: 10px 12px 4px; width: 100%;">
+        <form class="nav-search" onsubmit="return false;">
+          <input type="text" id="searchInputMobile" placeholder="Buscar noticias..." autocomplete="off" class="search-input">
+          <div id="searchResultsMobile" class="search-results"></div>
+          <button type="button" id="clearBtnMobile" class="search-btn clear-btn btn-oculto" title="Limpiar búsqueda">
+            <i class="bi bi-x-lg"></i>
+          </button>
+          <button type="button" id="searchBtnMobile" class="search-btn btn-lupa" title="Buscar">
+            <i class="bi bi-search"></i>
+          </button>
+        </form>
+      </div>
       <ul class="navbar-nav align-items-center">
         <?php foreach ($categorias as $cat): ?>
           <li class="nav-item">

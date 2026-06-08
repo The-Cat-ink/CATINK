@@ -520,6 +520,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 @media (min-width: 768px) {
   .d-md-block { display: block !important; }
   .d-md-none { display: none !important; }
+  .d-md-flex { display: flex !important; }
 }
 .img-fluid { max-width: 100%; height: auto; display: block; }
 .rounded-start { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
