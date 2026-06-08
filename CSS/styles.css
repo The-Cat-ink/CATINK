@@ -119,7 +119,7 @@ h2 {
 }
 #logo {
   content: url('../img/logo.png');
-  max-height: 50px;
+  max-height: 38px;
   width: auto;
   object-fit: contain;
   display: block;
@@ -704,7 +704,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   }
   /* Logo reducido en móvil */
   #logo {
-    max-height: 26px;
+    max-height: 20px;
   }
   .navbar-toggler {
     margin-left: 0;
