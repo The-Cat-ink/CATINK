@@ -714,7 +714,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   .navbar-brand { flex: 0 0 auto; }
   /* Opciones (tema, perfil, admin, salir) pegadas al logo, hamburger al extremo derecho */
   .nav-actions {
-    gap: 3px;
+    gap: 5px;
     flex-wrap: nowrap;
     justify-content: flex-start;
     order: 1;
@@ -724,40 +724,48 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
     margin-left: 0;
   }
   .nav-actions .btn-outline-secondary {
-    width: 28px; height: 28px;
-    font-size: 0.85rem;
+    width: 34px; height: 34px;
+    font-size: 0.95rem;
     padding: 0;
     flex-shrink: 0;
   }
   .nav-actions .btn-outline-secondary.btn-user {
-    width: 28px;
+    width: 34px;
     padding: 0;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     flex-shrink: 0;
   }
   /* Ocultar nombre de usuario, mostrar solo ícono */
   .btn-username { display: none; }
-  /* Theme switch reducido */
-  .theme-switch-icons { flex-shrink: 0; }
-  .theme-switch-icons-track {
-    width: 10px;
-    height: 10px;
-    padding: 0 3px;
+  /* Theme switch: mismo tamaño que iconos (34×34) y al final de nav-actions */
+  .navbar .theme-switch-icons {
+    width: 34px !important;
+    height: 34px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0;
+    order: 10;
   }
-  .theme-switch-icons-icon {
-    width: 10px;
-    height: 10px;
-    font-size: 9px;
+  .navbar .theme-switch-icons-track {
+    width: 30px !important;
+    height: 18px !important;
+    padding: 0 2px !important;
   }
-  .theme-switch-icons-thumb {
-    width: 16px;
-    height: 16px;
-    top: 3px;
-    left: 3px;
+  .navbar .theme-switch-icons-icon {
+    width: 10px !important;
+    height: 10px !important;
+    font-size: 9px !important;
   }
-  .theme-switch-input:checked + .theme-switch-icons-track .theme-switch-icons-thumb,
-  [data-bs-theme="dark"] .theme-switch-icons-thumb {
-    left: 15px;
+  .navbar .theme-switch-icons-thumb {
+    width: 14px !important;
+    height: 14px !important;
+    top: 2px !important;
+    left: 2px !important;
+  }
+  .navbar .theme-switch-input:checked + .theme-switch-icons-track .theme-switch-icons-thumb,
+  [data-bs-theme="dark"] .navbar .theme-switch-icons-thumb {
+    left: 14px !important;
   }
   .navbar-nav {
     flex-direction: column;
