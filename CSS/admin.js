@@ -446,6 +446,7 @@ if (editorElement) {
       }
     }
   });
+  window.quill = quill;
 
   // convert pasted existing wrapper divs into blot
   quill.clipboard.addMatcher('DIV', function(node, delta) {
