@@ -162,8 +162,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <a href="<?= basePath() . (isset($_SESSION['usuario']) ? '/perfil' : '/login') ?>" class="btn btn-outline-secondary<?= isset($_SESSION['usuario']) ? ' btn-user' : '' ?>">
         <?php
           if(isset($_SESSION['usuario'])){
-            echo "<i class='bi bi-person-fill-check'></i> ";
-            echo htmlspecialchars($_SESSION['usuario']);
+            echo "<i class='bi bi-person-fill-check'></i><span class='btn-username'> " . htmlspecialchars($_SESSION['usuario']) . "</span>";
           }else{
             echo "<span class='bi bi-person-fill'></span>";
           }

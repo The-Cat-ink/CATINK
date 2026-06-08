@@ -697,66 +697,68 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 @media (max-width: 768px) {
   /* Navbar adjustments */
   .navbar .container-fluid {
-    justify-content: flex-start;
-    gap: 8px;
-    padding-left: 24px;
-    padding-right: 24px;
+    justify-content: space-between;
+    gap: 6px;
+    padding-left: 14px;
+    padding-right: 14px;
   }
-  /* Logo más pequeño en móvil para dar espacio a la barra de opciones */
+  /* Logo reducido en móvil */
   #logo {
-    max-height: 34px;
+    max-height: 26px;
   }
   .navbar-toggler {
-    margin-left: auto;
-    padding: 5px 8px;
+    margin-left: 0;
+    padding: 4px 7px;
+    order: 2;
   }
-  /* El buscador va en la fila del logo y ocupa el espacio libre a su lado.
-     flex-basis 0 evita que se calcule por contenido y salte de fila */
-  .navbar .nav-search.buscador-desplegable {
-    flex: 1 1 0%;
-    min-width: 0 !important;
-    width: auto;
-    margin-top: 0;
-    padding: 6px 12px;
-    border: 2px solid var(--border);
-    background: #1a2332;
-  }
-  [data-bs-theme="light"] .navbar .nav-search.buscador-desplegable {
-    background: #f5f5f5;
-    border-color: #e0e0e0;
-  }
-  /* En móvil el input siempre está visible (no desplegable) para aprovechar el espacio */
-  .nav-search.buscador-desplegable .search-input.input-desplegable {
-    width: 100%;
-    opacity: 1;
-    padding: 2px 4px;
-  }
-  .nav-search .search-input { font-size: 13px; }
-  .nav-search .search-input::placeholder { color: var(--muted); }
-  /* El logo no se encoge para no descuadrar el buscador */
   .navbar-brand { flex: 0 0 auto; }
-  /* Barra de opciones (tema, perfil, admin, salir): fila propia debajo,
-     funciona igual con sesión iniciada (más botones) o sin iniciar */
+  /* Opciones (tema, perfil, admin, salir) pegadas al logo, hamburger al extremo derecho */
   .nav-actions {
-    gap: 6px;
+    gap: 3px;
     flex-wrap: nowrap;
     justify-content: flex-start;
-    order: 3;
-    flex-basis: 100%;
-    width: 100%;
-    margin-top: 8px;
+    order: 1;
+    flex-basis: auto;
+    width: auto;
+    margin-top: 0;
+    margin-left: 0;
   }
   .nav-actions .btn-outline-secondary {
-    width: 34px; height: 34px;
-    font-size: 1rem;
+    width: 28px; height: 28px;
+    font-size: 0.85rem;
+    padding: 0;
     flex-shrink: 0;
   }
   .nav-actions .btn-outline-secondary.btn-user {
-    padding: 4px 10px;
-    font-size: 0.8rem;
+    width: 28px;
+    padding: 0;
+    font-size: 0.85rem;
     flex-shrink: 0;
   }
+  /* Ocultar nombre de usuario, mostrar solo ícono */
+  .btn-username { display: none; }
+  /* Theme switch reducido */
   .theme-switch-icons { flex-shrink: 0; }
+  .theme-switch-icons-track {
+    width: 10px;
+    height: 10px;
+    padding: 0 3px;
+  }
+  .theme-switch-icons-icon {
+    width: 10px;
+    height: 10px;
+    font-size: 9px;
+  }
+  .theme-switch-icons-thumb {
+    width: 16px;
+    height: 16px;
+    top: 3px;
+    left: 3px;
+  }
+  .theme-switch-input:checked + .theme-switch-icons-track .theme-switch-icons-thumb,
+  [data-bs-theme="dark"] .theme-switch-icons-thumb {
+    left: 15px;
+  }
   .navbar-nav {
     flex-direction: column;
     align-items: flex-start;
