@@ -20,6 +20,16 @@ RewriteRule ^robots\.txt$ - [L]
 RewriteRule ^sitemap\.xml$ views/sitemap.php [L,QSA]
 
 # =========================
+# LOGIN (ANTES DE "NO REESCRIBIR ARCHIVOS REALES")
+# =========================
+RewriteRule ^login/?$ views/login.php [L,QSA]
+RewriteRule ^acceso/?$ views/login.php [L,QSA]
+RewriteRule ^registro/?$ views/registro.php [L,QSA]
+RewriteRule ^perfil/?$ views/perfil.php [L,QSA]
+RewriteRule ^olvide_contrasena/?$ views/olvide_contrasena.php [L,QSA]
+RewriteRule ^reset_contrasena/?$ views/reset_contrasena.php [L,QSA]
+
+# =========================
 # NO REESCRIBIR ARCHIVOS REALES
 # =========================
 RewriteCond %{REQUEST_FILENAME} -f [OR]
@@ -39,12 +49,6 @@ RewriteRule ^noticia/([a-zA-Z0-9_-]+)/?$ views/news.php?hash=$1 [L,QSA]
 RewriteRule ^news/([a-zA-Z0-9_-]+)/?$ views/news.php?hash=$1 [L,QSA]
 
 RewriteRule ^noticias/?$ views/categoria.php [L,QSA]
-
-# =========================
-# LOGIN
-# =========================
-RewriteRule ^login/?$ views/login.php [L,QSA]
-RewriteRule ^acceso/?$ views/login.php [L,QSA]
 
 # =========================
 # CATEGORIAS

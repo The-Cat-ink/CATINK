@@ -171,3 +171,6 @@ CREATE TABLE IF NOT EXISTS `password_reset_tokens` (
 
 -- 6. Agregar columna de orden a categorías
 ALTER TABLE `categorias` ADD COLUMN IF NOT EXISTS `orden` INT DEFAULT 0 AFTER `nombre`;
+
+-- 7. Agregar columna de orden a videos (para drag & drop de reordenamiento)
+ALTER TABLE `videos` ADD COLUMN IF NOT EXISTS `orden` INT DEFAULT 0 AFTER `activo`;

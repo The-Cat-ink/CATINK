@@ -7,7 +7,7 @@ require_once(__DIR__ . "/../views/helpers/urlhelper.php");
 // =========================
 // Obtener categorías únicas
 // =========================
-$stmtCats = $con->prepare("SELECT nombre FROM categorias");
+$stmtCats = $con->prepare("SELECT nombre FROM categorias ORDER BY orden ASC, nombre ASC");
 $stmtCats->execute();
 $resultCats = $stmtCats->get_result();
 $categorias = $resultCats->fetch_all(MYSQLI_ASSOC);
@@ -73,9 +73,9 @@ $menuJson = [
   <!-- Canonical -->
   <link rel="canonical" href="<?= $canonical ?? 'https://www.catink.com.mx/' ?>">
   <!-- Favicon -->
-  <link rel="icon" href="https://www.catink.com.mx/catink-icon.ico?v=2" type="image/x-icon">
-  <link rel="icon" href="https://www.catink.com.mx/img/catink-icon.png?v=2" type="image/png">
-  <link rel="apple-touch-icon" href="https://www.catink.com.mx/img/catink-icon.png?v=2">
+  <link rel="icon" href="<?= basePath() ?>/catink-icon.ico?v=2" type="image/x-icon">
+  <link rel="icon" href="<?= basePath() ?>/img/catink-icon.png?v=2" type="image/png">
+  <link rel="apple-touch-icon" href="<?= basePath() ?>/img/catink-icon.png?v=2">
   <!-- JSON-LD: Menú -->
   <script type="application/ld+json">
     <?= json_encode($menuJson, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT) ?>

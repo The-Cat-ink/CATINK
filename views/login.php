@@ -7,10 +7,23 @@ if (isset($_SESSION['usuario'])) {
     header('Location: ' . basePath() . '/views/admin.php');
     exit();
 }
-include("./../layout/header.php");
 $showRegistro = isset($_GET['modo']) && $_GET['modo'] === 'registro';
 ?>
-<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; padding:20px;">
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - CatInk</title>
+    <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light');</script>
+    <link rel="stylesheet" href="<?= basePath() ?>/CSS/styles.css">
+    <!-- Favicon -->
+    <link rel="icon" href="<?= basePath() ?>/catink-icon.ico?v=2" type="image/x-icon">
+    <link rel="icon" href="<?= basePath() ?>/img/catink-icon.png?v=2" type="image/png">
+    <link rel="apple-touch-icon" href="<?= basePath() ?>/img/catink-icon.png?v=2">
+</head>
+<body style="display:flex; flex-direction:column; min-height:100vh; background-color: var(--bg-body);">
+<div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
     <a href="<?= basePath() ?>/">
       <img src="<?= imageUrl('img/logo.png') ?>" alt="CatInk" style="width:180px; margin-bottom:24px; border-radius:12px;" loading="lazy" decoding="async">
     </a>
@@ -274,6 +287,5 @@ flatpickr('#fecha_nacimiento', {
   disableMobile: false
 });
 </script>
-<?php
-include("./../layout/footer.php");
-?>
+</body>
+</html>

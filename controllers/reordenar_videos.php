@@ -12,7 +12,7 @@ if (!isset($_SESSION['usuario'])) {
 }
 
 // Verificar permisos
-$ACL = cargarACL('categorias');
+$ACL = cargarACL('videos');
 if (!$ACL['editar']) {
     http_response_code(403);
     echo json_encode(['success' => false, 'error' => 'Sin permisos']);
@@ -22,20 +22,20 @@ if (!$ACL['editar']) {
 // Obtener datos JSON
 $data = json_decode(file_get_contents('php://input'), true);
 
-if (!isset($data['categorias']) || !is_array($data['categorias'])) {
+if (!isset($data['videos']) || !is_array($data['videos'])) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Datos inválidos']);
     exit();
 }
 
 try {
-    // Actualizar orden de cada categoría
-    foreach ($data['categorias'] as $item) {
-        $id_c = intval($item['id_c']);
+    // Actualizar orden de cada video
+    foreach ($data['videos'] as $item) {
+        $id_v = intval($item['id_v']);
         $orden = intval($item['orden']);
         
-        $stmt = $con->prepare("UPDATE categorias SET orden = ? WHERE id_c = ?");
-        $stmt->bind_param("ii", $orden, $id_c);
+        $stmt = $con->prepare("UPDATE videos SET orden = ? WHERE id_v = ?");
+        $stmt->bind_param("ii", $orden, $id_v);
         $stmt->execute();
     }
 

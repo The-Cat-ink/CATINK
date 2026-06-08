@@ -20,7 +20,7 @@ body.dark-mode header {
     border-bottom: 1px solid #333;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html,body { height: 100%; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color: #111; }
+html,body { min-height: 100%; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color: #111; }
 :root {
     --sidebar-width: 220px;
   /* Variables de tema: ajustar colores para modo claro */
@@ -64,7 +64,7 @@ html,body { height: 100%; font-family: system-ui, -apple-system, 'Segoe UI', Rob
   content: url('../img/logo_alt.png');
 }
 /* Layout general: cuerpo como columna flex para sticky footer */
-body { display:flex; flex-direction:column; min-height:100vh; background: var(--bg); color: var(--text); overflow-x: hidden; }
+body { display:flex; flex-direction:column; min-height:100vh; background: var(--bg); color: var(--text); overflow-x: clip; }
 .site-main {
   padding: 0;
   flex: 1;
@@ -91,7 +91,7 @@ h2 {
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 2000;
+  z-index: 9999;
   transition: transform 0.3s ease;
 }
 .navbar.nav-hidden {
