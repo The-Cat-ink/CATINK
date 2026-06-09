@@ -95,17 +95,64 @@ function formatNumberShort($num){
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Bienvenido, <?= htmlspecialchars($fila['usuario']) ?></h1>
     </div>
-    <!-- BOTÓN NUEVA NOTICIA -->
-    <?php if($ACLNoticias['crear']): ?>
-        <a href="crear.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Nueva Noticia</a>
-    <?php endif; ?> 
-    <!-- Botón para abrir el modal -->
-     <?php if($superadmin): ?>
-        <a href="paginas.php" class="btn btn-accent"><i class="bi bi-card-text"></i> Editar Páginas Informativas</a>
-        <button id="btnAbrirModal" class="btn btn-accent" style="font-weight: 525;">
-            <i class="bi bi-gear"></i> Gestionar Estado de Secciones
-        </button>
-    <?php endif; ?>
+    <!-- BOTONES -->
+    <div class="mb-4">
+        <?php if($ACLNoticias['crear']): ?>
+            <a href="crear.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Nueva Noticia</a>
+        <?php endif; ?> 
+         <?php if($superadmin): ?>
+            <a href="paginas.php" class="btn btn-accent"><i class="bi bi-card-text"></i> Editar Páginas Informativas</a>
+            <button id="btnAbrirModal" class="btn btn-accent" style="font-weight: 525;">
+                <i class="bi bi-gear"></i> Gestionar Estado de Secciones
+            </button>
+        <?php endif; ?>
+    </div>
+
+    <!-- ÚLTIMAS NOTICIAS -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light"><h5>Últimas Noticias</h5></div>
+            <div class="card-body">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    <?php foreach($ultimasNoticias as $n):
+                        $desc = mb_strimwidth($n['descripcion'] ?? '', 0, 80, '...');
+                        $img = !empty($n['crop3']) ? "./../".$n['crop3'] : "./../img/placeholder.svg";
+                    ?>
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <small><?= date('d/m/Y H:i', strtotime($n['fecha_publicacion'])) ?></small>
+                                <?php if($ACLNoticias['editar']): ?>
+                                    <a href="editar.php?id=<?= $n['id'] ?>" class="btn btn-sm btn-primary py-0 px-2" title="Editar"><i class="bi bi-pencil"></i></a>
+                                <?php endif; ?>
+                            </div>
+                            <a href="<?= newsUrl($n['id']) ?>" target="_blank" style="display:block;">
+                                <img src="<?= htmlspecialchars($img) ?>" class="card-img-top" style="object-fit:cover; height:200px;">
+                            </a>
+                            <div class="card-body">
+                                <div class="news-tags mb-2">
+                                    <?php foreach(array_filter(array_map('trim', explode(',', $n['categorias'] ?? ''))) as $cat): ?>
+                                        <span class="news-tag"><?= htmlspecialchars($cat) ?></span>
+                                    <?php endforeach; ?>
+                                </div>
+                                <h5 class="card-title text-truncate">
+                                    <a href="<?= newsUrl($n['id']) ?>" target="_blank" class="text-decoration-none text-dark">
+                                        <?= htmlspecialchars($n['titulo']) ?>
+                                    </a>
+                                </h5>
+                                <p class="small text-muted"><?= htmlspecialchars($desc) ?></p>
+                            </div>
+                            <div class="card-footer d-flex card-especial justify-content-between">
+                                <span><i class="bi bi-eye"></i> <?= formatNumberShort($n['vistas']) ?> </span>
+                                <span><i class="bi bi-clock"></i> <?= number_format($n['tiempo_total_stats']/60,0) ?>m </span>
+                                <span><i class="bi bi-heart"></i> <?= formatNumberShort($n['likes']) ?> </span>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+
     <!-- KPIs -->
      <div class="card">
         <div class="card-body">
@@ -184,40 +231,6 @@ function formatNumberShort($num){
             <div class="card-body">
                 <div class="chart-wrapper">
                     <canvas id="globalChartLikesRegion"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- ÚLTIMAS NOTICIAS -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light"><h5>Últimas Noticias</h5></div>
-            <div class="card-body">
-                <div class="row row-cols-1 row-cols-md-3 g-4">
-                    <?php foreach($ultimasNoticias as $n):
-                        $desc = mb_strimwidth($n['descripcion'] ?? '', 0, 80, '...');
-                        $img = !empty($n['crop3']) ? "./../".$n['crop3'] : "./../img/placeholder.svg";
-                    ?>
-                    <div class="col">
-                        <div class="card">
-                            <div class="card-header"><small><?= date('d/m/Y H:i', strtotime($n['fecha_publicacion'])) ?></small></div>
-                            <img src="<?= htmlspecialchars($img) ?>" class="card-img-top">
-                            <div class="card-body">
-                                <div class="news-tags">
-                                    <?php foreach(array_filter(array_map('trim', explode(',', $n['categorias'] ?? ''))) as $cat): ?>
-                                        <span class="news-tag"><?= htmlspecialchars($cat) ?></span>
-                                    <?php endforeach; ?>
-                                </div>
-                                <h5 class="card-title text-truncate"><?= htmlspecialchars($n['titulo']) ?></h5>
-                                <p class="small text-muted"><?= htmlspecialchars($desc) ?></p>
-                            </div>
-                            <div class="card-footer d-flex card-especial">
-                                <span><i class="bi bi-eye"></i> <?= formatNumberShort($n['vistas']) ?> </span>
-                                <span><i class="bi bi-clock"></i> <?= number_format($n['tiempo_total_stats']/60,0) ?>m </span>
-                                <span><i class="bi bi-heart"></i> <?= formatNumberShort($n['likes']) ?> </span>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
