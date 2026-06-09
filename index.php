@@ -276,7 +276,7 @@ function topCard($r, $type = 'thumb') {
         <!-- ===================== -->
         <!-- SIDEBAR -->
         <!-- ===================== -->
-        <h2>Lo más recientes</h2>
+        <h2><i class="bi bi-alarm"></i> Lo más recientes</h2>
         <div class="row mt-5">
             <div class="col-md-9">
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidad) : ?>
