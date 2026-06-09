@@ -628,12 +628,10 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 
 /* Single News View */
 .img-titular {
-  max-width: 100%;
-  max-height: 55vh;
-  width: auto;
+  width: 100%;
   height: auto;
   border-radius: 8px;
-  margin: 0 auto 24px;
+  margin-bottom: 24px;
   display: block;
 }
 .descripcion {

@@ -883,11 +883,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (EXISTING_CROP3_URL) {
     setZonePreviewFromUrl(3, EXISTING_CROP3_URL);
-    // Usar el banner como fuente para re-recortar la miniatura (igual que crear.php,
-    // donde zoneSources[3] apunta a la imagen original completa, no al recorte ya hecho)
-    zoneSources[3] = EXISTING_CROP2_URL
-      ? EXISTING_CROP2_URL
-      : EXISTING_CROP3_URL;
+    zoneSources[3] = EXISTING_CROP2_URL || EXISTING_CROP3_URL;
   }
   if (EXISTING_CROP2_URL || EXISTING_CROP3_URL) {
     document.getElementById('previewSection').style.display = 'block';
