@@ -51,6 +51,12 @@ RewriteRule ^news/([a-zA-Z0-9_-]+)/?$ views/news.php?hash=$1 [L,QSA]
 RewriteRule ^noticias/?$ views/categoria.php [L,QSA]
 
 # =========================
+# TOP Y RECIENTES
+# =========================
+RewriteRule ^top/?$ views/top.php [L,QSA]
+RewriteRule ^recientes/?$ views/recientes.php [L,QSA]
+
+# =========================
 # CATEGORIAS
 # =========================
 RewriteRule ^categoria/(.+)/?$ views/categoria.php?cat=$1 [L,QSA]
