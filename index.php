@@ -16,6 +16,7 @@ $stmt = $con->prepare("
         n.crop3,
         n.fecha_publicacion AS fecha,
         n.likes,
+        n.vistas,
         u.nombre AS nombre_u,
         GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
     FROM noticias n
@@ -42,8 +43,50 @@ usort($popularesNoticiasSidebar, fn($a,$b)=>$b['likes']-$a['likes']);
 $popularesNoticiasSidebar = array_slice($popularesNoticiasSidebar, 0, 3);
 // Noticias principales para slider y últimas
 $slider = array_slice($noticias, 0, 5);
-$ultimasNoticias = $noticias;
-usort($ultimasNoticias, fn($a,$b)=>$b['likes']-$a['likes']);
+
+// 1. Obtener noticias de la semana
+$dias_desde_lunes = date('N') - 1;
+$inicio_semana = strtotime("-$dias_desde_lunes days midnight");
+$noticias_semana = array_filter($noticias, function($n) use ($inicio_semana) {
+    return strtotime($n['fecha']) >= $inicio_semana;
+});
+
+// 2. Determinar si necesitamos rellenar
+$count_semana = count($noticias_semana);
+$topTitulo = "Top Semanal";
+
+if ($count_semana < 7) {
+    // Necesitamos rellenar con noticias del mes
+    $inicio_mes = strtotime('first day of this month midnight');
+    
+    // Obtener noticias del mes (que no sean de esta semana)
+    $noticias_mes = array_filter($noticias, function($n) use ($inicio_mes, $inicio_semana) {
+        $fecha_n = strtotime($n['fecha']);
+        return $fecha_n >= $inicio_mes && $fecha_n < $inicio_semana;
+    });
+    
+    // Ordenar las del mes por vistas para agarrar las más visitadas
+    usort($noticias_mes, fn($a,$b) => $b['vistas'] - $a['vistas']);
+    
+    // Tomar solo las necesarias para completar 7
+    $faltantes = 7 - $count_semana;
+    $relleno = array_slice($noticias_mes, 0, $faltantes);
+    
+    // Combinar semana y relleno
+    $ultimasNoticias = array_merge($noticias_semana, $relleno);
+    
+    // Asignar título adecuado
+    if ($count_semana === 0) {
+        $topTitulo = "Top del Mes";
+    } else {
+        $topTitulo = "Top Semanal/Mes";
+    }
+} else {
+    $ultimasNoticias = $noticias_semana;
+}
+
+// 3. Ordenar el resultado final (sean puras de la semana o combinadas) por vistas
+usort($ultimasNoticias, fn($a,$b) => $b['vistas'] - $a['vistas']);
 $ultimasNoticias = array_slice($ultimasNoticias, 0, 7);
 $noticiasMasRecientes = array_slice($noticias, 0, 6);
 $noticiasMasRecientes2 = array_slice($noticias, 7, 5);
@@ -184,7 +227,7 @@ function topCard($r, $type = 'thumb') {
 ?>
 <div class="container mt-5">
     <div>
-        <h2>Publicaciones de la Semana</h2><br>
+        <h2><i class="bi bi-award"></i>  <?= $topTitulo ?></h2><br>
         <?php
         // Fila 1 — banner grande + thumb pequeño
         $f1 = array_values(array_filter([
