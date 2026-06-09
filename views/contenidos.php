@@ -221,7 +221,7 @@ if ($vista === 'mes') {
                 <a href="?week=<?= $weekOffset ?>&vista=tabla&filtro=<?= $filtro ?><?= $q ? '&q='.urlencode($q) : '' ?><?= $busquedaGlobal ? '&global=1' : '' ?>" class="vista-btn <?= $vista === 'tabla' ? 'active' : '' ?>" title="Vista tabla"><i class="bi bi-list-ul"></i></a>
             </div>
             <?php if (!empty($ACL['crear'])): ?>
-                <a href="crear.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Nueva Noticia</a>
+                <a href="<?= basePath() ?>/contenidos_crear" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Nueva Noticia</a>
             <?php endif; ?>
         </div>
     </div>
