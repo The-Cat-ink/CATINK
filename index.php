@@ -74,13 +74,6 @@ if ($count_semana < 7) {
     
     // Combinar semana y relleno
     $ultimasNoticias = array_merge($noticias_semana, $relleno);
-    
-    // Asignar título adecuado
-    if ($count_semana === 0) {
-        $topTitulo = "Top del Mes";
-    } else {
-        $topTitulo = "Top Semanal";
-    }
 } else {
     $ultimasNoticias = $noticias_semana;
 }
