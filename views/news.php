@@ -157,14 +157,17 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
 ?>
 <style>
   @media (max-width: 768px) {
-    /* Eliminar padding de contenedores */
     .noticias > .container {
       padding-left: 0 !important;
       padding-right: 0 !important;
     }
-    .container > .container-fluid, .container-noticia {
+    .container > .container-fluid {
       padding-left: 0 !important;
       padding-right: 0 !important;
+    }
+    .container-noticia {
+      padding-left: 16px !important;
+      padding-right: 16px !important;
     }
   }
 </style>
