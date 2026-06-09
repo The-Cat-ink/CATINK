@@ -48,6 +48,12 @@ function searchUrlLong($termino){
 function authorUrl($id){
     return basePath() . "/autor/" . intval($id);
 }
+function topUrl(){
+    return basePath() . "/top";
+}
+function recientesUrl(){
+    return basePath() . "/recientes";
+}
 
 // ============================
 // FUNCIÓN PARA SERVIR IMÁGENES

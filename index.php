@@ -220,7 +220,11 @@ function topCard($r, $type = 'thumb') {
 ?>
 <div class="container mt-5">
     <div>
-        <h2><i class="bi bi-award"></i>  <?= $topTitulo ?></h2><br>
+        <h2>
+            <a href="<?= topUrl() ?>" style="text-decoration: none; color: inherit;">
+                <i class="bi bi-award"></i> <?= $topTitulo ?>
+            </a>
+        </h2><br>
         <?php
         // Fila 1 — banner grande + thumb pequeño
         $f1 = array_values(array_filter([
@@ -276,7 +280,11 @@ function topCard($r, $type = 'thumb') {
         <!-- ===================== -->
         <!-- SIDEBAR -->
         <!-- ===================== -->
-        <h2><i class="bi bi-alarm"></i> Lo más recientes</h2>
+        <h2>
+            <a href="<?= recientesUrl() ?>" style="text-decoration: none; color: inherit;">
+                <i class="bi bi-alarm"></i> Lo más recientes
+            </a>
+        </h2>
         <div class="row mt-5">
             <div class="col-md-9">
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidad) : ?>
