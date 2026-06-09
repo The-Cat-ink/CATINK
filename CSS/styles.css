@@ -953,6 +953,31 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   }
   /* Ocultar nombre de usuario, mostrar solo ícono */
   .btn-username { display: none; }
+  .nav-actions .user-dropdown .user-name { display: none; }
+  /* Normalizar user-dropdown a 34×34 como el resto de botones */
+  .nav-actions .user-dropdown {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+    gap: 0;
+  }
+  /* Normalizar btn-admin-panel a 34×34 */
+  .nav-actions .btn-admin-panel {
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+  }
+  /* Normalizar theme-switch-pill: altura total 34px */
+  .nav-actions .theme-switch-pill {
+    padding: 3px;
+  }
+  .nav-actions .theme-switch-pill .theme-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
   /* Theme switch: mismo tamaño que iconos (34×34) y al final de nav-actions */
   .navbar .theme-switch-icons {
     width: 34px !important;
