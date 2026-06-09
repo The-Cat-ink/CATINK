@@ -115,14 +115,14 @@ function formatNumberShort($num){
                 <div class="row row-cols-1 row-cols-md-3 g-4">
                     <?php foreach($ultimasNoticias as $n):
                         $desc = mb_strimwidth($n['descripcion'] ?? '', 0, 80, '...');
-                        $img = !empty($n['crop3']) ? "./../".$n['crop3'] : "./../img/placeholder.svg";
+                        $img = !empty($n['crop3']) ? imageUrl($n['crop3']) : imageUrl('img/placeholder.svg');
                     ?>
                     <div class="col">
                         <div class="card h-100">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <small><?= date('d/m/Y H:i', strtotime($n['fecha_publicacion'])) ?></small>
                                 <?php if($ACLNoticias['editar']): ?>
-                                    <a href="editar.php?id=<?= $n['id'] ?>" class="btn btn-sm btn-primary py-0 px-2" title="Editar"><i class="bi bi-pencil"></i></a>
+                                    <a href="<?= basePath() ?>/views/editar.php?id=<?= $n['id'] ?>" class="btn btn-sm btn-primary py-0 px-2" title="Editar"><i class="bi bi-pencil"></i></a>
                                 <?php endif; ?>
                             </div>
                             <a href="<?= newsUrl($n['id']) ?>" target="_blank" style="display:block;">

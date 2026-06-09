@@ -145,47 +145,44 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <?php endforeach; ?>
       </ul>
     </div>
-    <div class="nav-actions d-flex gap-2 align-items-center">
-      <!-- INTERRUPTOR MODO OSCURO (CON ICONOS) -->
-      <label class="theme-switch-icons" title="Cambiar tema">
-        <input type="checkbox" id="themeToggle" class="theme-switch-input">
-        <span class="theme-switch-icons-track">
-          <span class="theme-switch-icons-icon theme-switch-icons-sun">
-            <i class="bi bi-sun"></i>
-          </span>
-          <span class="theme-switch-icons-icon theme-switch-icons-moon">
-            <i class="bi bi-moon-stars"></i>
-          </span>
-          <span class="theme-switch-icons-thumb"></span>
+    <div class="nav-actions">
+      <!-- SWITCH DE TEMA PILL-SHAPED -->
+      <div class="theme-switch-pill" title="Cambiar tema">
+        <span class="theme-icon active" id="themeIconSun">
+          <i class="bi bi-sun"></i>
         </span>
-      </label>
-      
+        <span class="theme-icon" id="themeIconMoon">
+          <i class="bi bi-moon"></i>
+        </span>
+      </div>
+
       <?php if(isset($_SESSION['usuario'])): ?>
         <?php if(($_SESSION['ACL']['noticias']['crear'] ?? false) || ($_SESSION['superadmin'] ?? false)): ?>
           <a href="<?= basePath() ?>/views/crear.php" class="btn btn-outline-secondary" title="Crear Noticia">
-            <i class="bi bi-pencil-square"></i>
+            <i class="bi bi-pencil"></i>
           </a>
         <?php endif; ?>
-        
+
         <?php if($_SESSION['superadmin'] ?? false): ?>
-          <a href="<?= basePath() ?>/views/admin.php" class="btn btn-outline-secondary" title="Panel Admin">
+          <a href="<?= basePath() ?>/views/admin.php" class="btn-admin-panel" title="Panel de Administración">
             <i class="bi bi-speedometer2"></i>
           </a>
         <?php endif; ?>
 
-        <div class="dropdown d-inline-block" style="position: relative;">
-          <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border:none; padding: 0.375rem 0.5rem; display: flex; align-items: center; gap: 5px;">
-            <i class="bi bi-person-fill-check"></i><span class="btn-username"><?= htmlspecialchars($_SESSION['usuario']) ?></span>
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userDropdown" style="position: absolute; right: 0; min-width: 150px; z-index: 1050; border-radius: 8px;">
-            <li><a class="dropdown-item py-2" href="<?= basePath() ?>/perfil"><i class="bi bi-person-circle me-2"></i> Mi Perfil</a></li>
-            <li><hr class="dropdown-divider m-0"></li>
-            <li><a class="dropdown-item py-2 text-danger" href="<?= basePath() ?>/controllers/logoutcontroller.php"><i class="bi bi-box-arrow-right me-2"></i> Cerrar sesión</a></li>
+        <div class="user-dropdown">
+          <span class="user-avatar">
+            <i class="bi bi-person"></i>
+          </span>
+          <span class="user-name"><?= htmlspecialchars($_SESSION['usuario']) ?></span>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="<?= basePath() ?>/perfil"><i class="bi bi-person-circle"></i> Mi Perfil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="<?= basePath() ?>/controllers/logoutcontroller.php"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a></li>
           </ul>
         </div>
       <?php else: ?>
-        <a href="<?= basePath() ?>/login" class="btn btn-outline-secondary">
-          <span class="bi bi-person-fill"></span>
+        <a href="<?= basePath() ?>/login" class="btn btn-outline-secondary" title="Iniciar sesión">
+          <i class="bi bi-person"></i>
         </a>
       <?php endif; ?>
     </div>

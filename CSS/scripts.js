@@ -27,23 +27,35 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Toggle de tema: interruptor con id 'themeToggle'
-  const themeToggle = document.getElementById('themeToggle');
+  // Toggle de tema: interruptor pill-shaped
+  const themeSwitchPill = document.querySelector('.theme-switch-pill');
+  const themeIconSun = document.getElementById('themeIconSun');
+  const themeIconMoon = document.getElementById('themeIconMoon');
+
   function applyTheme(theme) {
     // Aplica el atributo en el elemento <html> para que CSS use las variables
     document.documentElement.setAttribute('data-bs-theme', theme);
-    // Actualiza el estado del checkbox
-    if (themeToggle) {
-      themeToggle.checked = theme === 'dark';
+    // Actualiza el estado del switch pill-shaped
+    if (themeIconSun && themeIconMoon) {
+      if (theme === 'dark') {
+        themeIconSun.classList.remove('active');
+        themeIconMoon.classList.add('active');
+      } else {
+        themeIconSun.classList.add('active');
+        themeIconMoon.classList.remove('active');
+      }
     }
   }
-  if (themeToggle) {
-    themeToggle.addEventListener('change', () => {
-      const next = themeToggle.checked ? 'dark' : 'light';
+
+  if (themeSwitchPill) {
+    themeSwitchPill.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+      const next = currentTheme === 'dark' ? 'light' : 'dark';
       applyTheme(next);
       localStorage.setItem('theme', next);
     });
   }
+
   const saved = localStorage.getItem('theme') || 'light';
   applyTheme(saved);
 

@@ -91,29 +91,239 @@ h2 {
 /* =========================
    Navbar & Header Styles
    ========================= */
+/* ============================
+   HEADER REDISEÑO - NAVBAR
+   ============================ */
 .navbar {
   background: var(--bg);
-  padding: 12px 0;
+  padding: 16px 0;
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 9999;
   transition: transform 0.3s ease;
 }
+
 .navbar.nav-hidden {
   transform: translateY(-100%);
 }
+
 .navbar .container-fluid {
   max-width: var(--cw);
   margin-left: auto;
   margin-right: auto;
   display: flex;
-  flex-wrap: wrap; /* Importante para móvil: permite que el menú caiga debajo */
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   padding-left: 32px;
   padding-right: 32px;
+}
+
+/* ============================
+   ÍCONOS UNIFICADOS - USAR VARIABLES
+   ============================ */
+.nav-actions .bi,
+.nav-actions i,
+.nav-search .bi,
+.nav-search i {
+  color: var(--text) !important;
+}
+
+/* ============================
+   BOTÓN DE PANEL DE ADMINISTRACIÓN
+   ============================ */
+.nav-actions .btn-admin-panel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 2px solid var(--border, #E2E8F0);
+  background: transparent;
+  color: var(--text) !important;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-actions .btn-admin-panel:hover {
+  background: var(--card-bg, #E2E8F0);
+  border-color: var(--border-hover, #CBD5E0);
+}
+
+.nav-actions .btn-admin-panel:active {
+  transform: translateY(0);
+}
+
+/* ============================
+   SWITCH DE TEMA PILL-SHAPED
+   ============================ */
+.nav-actions .theme-switch-pill {
+  display: inline-flex;
+  align-items: center;
+  background: var(--card-bg, #E2E8F0);
+  border-radius: 24px;
+  padding: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.nav-actions .theme-switch-pill .theme-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--text-muted, #718096);
+  transition: all 0.3s ease;
+  font-size: 16px;
+}
+
+.nav-actions .theme-switch-pill .theme-icon.active {
+  background: var(--bg, #fff);
+  color: var(--text, #1A202C);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================
+   BOTONES DE ACCIÓN UNIFICADOS
+   ============================ */
+.nav-actions .btn-outline-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 2px solid var(--border, #E2E8F0);
+  background: transparent;
+  color: var(--text) !important;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-actions .btn-outline-secondary:hover {
+  background: var(--card-bg, #E2E8F0);
+  border-color: var(--border-hover, #CBD5E0);
+}
+
+/* ============================
+   DROPDOWN DEL USUARIO
+   ============================ */
+.nav-actions .user-dropdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 24px;
+  background: var(--card-bg, #F7FAFC);
+  border: 1px solid var(--border, #E2E8F0);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-actions .user-dropdown:hover {
+  background: var(--hover-bg, #EDF2F7);
+  border-color: var(--border-hover, #CBD5E0);
+}
+
+.nav-actions .user-dropdown .user-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent, #4299E1);
+  color: #fff;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.nav-actions .user-dropdown .user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.nav-actions .dropdown-menu {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  top: calc(100% + 8px);
+  min-width: 180px;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border, #E2E8F0);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 10000;
+  padding: 8px 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+  list-style: none;
+  margin: 0;
+}
+
+.nav-actions .user-dropdown:hover .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.nav-actions .dropdown-item {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: var(--text);
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+}
+
+.nav-actions .dropdown-item i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.nav-actions .dropdown-item:hover {
+  background: var(--hover-bg, #F7FAFC);
+}
+
+.nav-actions .dropdown-item.text-danger {
+  color: #E53E3E;
+}
+
+.nav-actions .dropdown-item.text-danger:hover {
+  background: #FED7D7;
+}
+
+.nav-actions .dropdown-divider {
+  height: 1px;
+  margin: 8px 0;
+  background-color: var(--border, #E2E8F0);
+  border: none;
+}
+
+/* ============================
+   ESPACIADO Y ALINEACIÓN
+   ============================ */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
 }
 .navbar-brand {
   display: flex;
@@ -340,7 +550,7 @@ h2 {
   .nav-actions {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 12px;
     flex-shrink: 0;
   }
   .nav-search:not(.buscador-desplegable) {
@@ -2454,4 +2664,79 @@ body, .nav-link, .btn, .card, .site-main {
 
 [data-bs-theme="dark"] .theme-switch-icons-thumb {
   left: 31px;
+}
+
+/* DROPDOWN DEL USUARIO (HEADER) */
+.nav-actions .dropdown {
+  position: relative;
+}
+
+.nav-actions .dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 5px);
+  min-width: 160px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 10000;
+  padding: 6px 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+  list-style: none;
+  margin: 0;
+}
+
+[data-bs-theme="dark"] .nav-actions .dropdown-menu {
+  background: #2a2a3e;
+  border-color: #3a3a4e;
+}
+
+.nav-actions .dropdown:hover .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.nav-actions .dropdown-item {
+  display: block;
+  padding: 10px 16px;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+}
+
+[data-bs-theme="dark"] .nav-actions .dropdown-item {
+  color: #fff;
+}
+
+.nav-actions .dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+[data-bs-theme="dark"] .nav-actions .dropdown-item:hover {
+  background-color: #3a3a4e;
+}
+
+.nav-actions .dropdown-item.text-danger {
+  color: #dc3545;
+}
+
+.nav-actions .dropdown-item.text-danger:hover {
+  background-color: #f8d7da;
+}
+
+.nav-actions .dropdown-divider {
+  height: 1px;
+  margin: 6px 0;
+  background-color: #e0e0e0;
+  border: none;
+}
+
+[data-bs-theme="dark"] .nav-actions .dropdown-divider {
+  background-color: #3a3a4e;
 }
