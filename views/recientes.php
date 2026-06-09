@@ -82,7 +82,7 @@ $ultimas = $stmtUltimas->get_result();
 $stmtPopulares = $con->prepare("
     SELECT id, titulo, crop3
     FROM noticias
-    ORDER BY likes DESC
+    ORDER BY vistas DESC, likes DESC
     LIMIT 3
 ");
 $stmtPopulares->execute();
@@ -256,7 +256,11 @@ if ($q !== '') {
                 </div>
             <?php endif; ?>
             <div class="card-body">
-              <h3><i class="bi bi-alarm"></i> Lo más nuevo</h3>
+              <h3>
+                <a href="<?= recientesUrl() ?>" style="text-decoration: none; color: inherit;">
+                  <i class="bi bi-alarm"></i> Lo más nuevo
+                </a>
+              </h3>
               <br>
               <ul class="list-group list-group-flush mb-3">
                 <?php while ($row = $ultimas->fetch_assoc()): ?>
@@ -273,7 +277,11 @@ if ($q !== '') {
                     <br>
                 <?php endwhile; ?>
               </ul>
-              <h3>Lo más popular</h3>
+              <h3>
+                <a href="<?= topUrl() ?>" style="text-decoration: none; color: inherit;">
+                  Lo más popular
+                </a>
+              </h3>
               <br>
               <ul class="list-group list-group-flush">
                 <?php while ($row = $populares->fetch_assoc()): ?>
