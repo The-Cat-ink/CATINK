@@ -213,7 +213,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .upload-zone.has-image .cn-zone-icon,
 .upload-zone.has-image > :not(.preview-img):not(.zone-overlay):not(.zone-actions) { display: none; }
 .cn-zone-banner { aspect-ratio: 21/6; height: auto; min-height: 60px; }
-.cn-zone-mini { aspect-ratio: 7/5; height: auto; max-width: min(100%, 520px); margin: 0 auto; }
+.cn-zone-mini { aspect-ratio: 16/9; height: auto; max-width: min(100%, 520px); margin: 0 auto; }
 .zone-actions { position: absolute; bottom: 6px; right: 6px; display: none; gap: 5px; z-index: 3; }
 .upload-zone.has-image .zone-actions { display: flex; }
 .zone-btn { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 5px; border: none; cursor: pointer; line-height: 1.5; backdrop-filter: blur(4px); }
@@ -1048,10 +1048,39 @@ function initCropper(num) {
   const maxW     = cropArea.clientWidth || 640;
   const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
   cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
+
+  const cropRatioOverride = { 2: 21 / 6, 3: 16 / 9 };
+  const effectiveRatio = cropRatioOverride[num] ?? CROP_RATIOS[num];
+
   cropperInstance = new Cropper(cropImg, {
-    aspectRatio: CROP_RATIOS[num], viewMode: 1, autoCropArea: 0.98,
-    movable: false, zoomable: false, cropBoxResizable: true,
-    dragMode: 'move', responsive: true, guides: true, background: false
+    aspectRatio: effectiveRatio,
+    viewMode: 1,
+    autoCropArea: 0.98,
+    movable: false,
+    zoomable: false,
+    cropBoxResizable: true,
+    dragMode: 'move',
+    responsive: true,
+    guides: true,
+    background: false,
+    ready() {
+      if (num === 2 || num === 3) {
+        const imgData = cropperInstance.getImageData();
+        const ratio = cropRatioOverride[num];
+        let cbH = imgData.height;
+        let cbW = cbH * ratio;
+        if (cbW > imgData.width) {
+          cbW = imgData.width;
+          cbH = cbW / ratio;
+        }
+        cropperInstance.setCropBoxData({
+          width:  cbW,
+          height: cbH,
+          left:   imgData.left + (imgData.width  - cbW) / 2,
+          top:    imgData.top  + (imgData.height - cbH) / 2
+        });
+      }
+    }
   });
 }
 
@@ -1144,11 +1173,19 @@ function setZonePreviewFromUrl(zoneId, url) {
 function confirmCrop() {
   if (!cropperInstance) return;
   const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 2560, maxHeight: 2560 });
-  const data64 = canvas.toDataURL('image/png');
-  document.getElementById('crop' + activeCrop).value = data64;
-  setZonePreview(activeCrop, data64);
-  // NO sobrescribir zoneSources con el recorte: así al re-editar se parte de la
-  // fuente original (igual que crear.php) y puedes corregir el recorte libremente.
+
+  // toBlob sin compresión (igual que crear.php)
+  canvas.toBlob(function(blob) {
+    const reader = new FileReader();
+    reader.onloadend = function() {
+      const data64 = reader.result;
+      document.getElementById('crop' + activeCrop).value = data64;
+      setZonePreview(activeCrop, data64);
+    };
+    reader.readAsDataURL(blob);
+  }, 'image/png', 1.0);
+  // NO sobrescribir zoneSources con el recorte: al re-editar se parte de la
+  // fuente original y se puede corregir el recorte libremente.
 
   if (activeCrop === 2 && !document.getElementById('crop3').value)
     autoFillMiniature(document.getElementById('cropImg').src);

@@ -219,7 +219,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .cn-zone-banner { aspect-ratio: 21/6; height: auto; min-height: 60px; }
 /* Miniatura: ratio 16:9, acotada a un ancho cómodo centrada */
 .cn-zone-mini {
-  aspect-ratio: 7/5; height: auto;
+  aspect-ratio: 16/9; height: auto;
   max-width: min(100%, 520px); margin: 0 auto;
 }
 .zone-actions {
@@ -1110,8 +1110,7 @@ function initCropper(num) {
   const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
   cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
 
-  // ratios de recorte por plantilla: banner usa 21/6, miniatura usa 1.6 (ligeramente más angosto que 16:9)
-  const cropRatioOverride = { 2: 21 / 6, 3: 1.4 };
+  const cropRatioOverride = { 2: 21 / 6, 3: 16 / 9 };
   const effectiveRatio = cropRatioOverride[num] ?? CROP_RATIOS[num];
 
   cropperInstance = new Cropper(cropImg, {
@@ -1241,7 +1240,7 @@ function autoFillMiniature(srcDataUrl) {
   zoneSources[3] = srcDataUrl;
   const tmpImg = new Image();
   tmpImg.onload = function () {
-    const ratio = 1.4;
+    const ratio = 16 / 9;
     let sw = tmpImg.width, sh = tmpImg.height;
     if (sw / sh > ratio) { sw = sh * ratio; } else { sh = sw / ratio; }
     const sx = (tmpImg.width  - sw) / 2;
