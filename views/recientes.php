@@ -11,24 +11,10 @@ if ($pagina < 1) $pagina = 1;
 $offset = ($pagina - 1) * $porPagina;
 
 // ==============================
-// PARÁMETROS
-// ==============================
-$q         = trim(urldecode($_GET['q'] ?? $_GET['query'] ?? $_GET['search'] ?? ''));
-$categoria = trim(urldecode($_GET['cat'] ?? $_GET['category'] ?? $_GET['categoria'] ?? ''));
-
-// ==============================
 // SEO DINÁMICO
 // ==============================
-if ($q !== '') {
-    $pageTitle = "Resultados para: $q";
-    $pageDescription = "Busca noticias de anime y manga sobre $q en CatInk.";
-} elseif ($categoria !== '') {
-    $pageTitle = "Noticias de $categoria";
-    $pageDescription = "Últimas noticias de $categoria en CatInk.";
-} else {
-    $pageTitle = "Últimas noticias de anime y manga";
-    $pageDescription = "Descubre las últimas noticias del mundo del anime y manga.";
-}
+$pageTitle = "Noticias Recientes";
+$pageDescription = "Explora todo el contenido de CatInk ordenado desde lo más nuevo a lo más antiguo.";
 
 if ($pagina > 1) {
     $pageTitle .= " - Página $pagina";
@@ -38,13 +24,7 @@ if ($pagina > 1) {
 // ==============================
 // CANONICAL
 // ==============================
-$canonical = "https://www.catink.com.mx";
-
-if ($categoria !== '') {
-    $canonical .= "/categoria/" . urlencode($categoria);
-} elseif ($q !== '') {
-    $canonical .= "/buscar/" . urlencode($q);
-}
+$canonical = "https://www.catink.com.mx/recientes";
 
 if ($pagina > 1) {
     $canonical .= "?page=" . $pagina;
@@ -58,52 +38,18 @@ include("./../layout/header.php");
 // ==============================
 // CONSULTA PRINCIPAL
 // ==============================
-if ($q !== '') {
-    $stmt = $con->prepare("
-        SELECT n.id, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion,
-               GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
-        FROM noticias n
-        LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
-        LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-        WHERE n.fecha_publicacion <= NOW()
-          AND (n.titulo LIKE ? OR n.descripcion LIKE ? OR n.contenido LIKE ?)
-        GROUP BY n.id
-        ORDER BY n.fecha_publicacion DESC
-        LIMIT ? OFFSET ?
-    ");
-    $like = "%$q%";
-    $stmt->bind_param("sssii", $like, $like, $like, $porPagina, $offset);
-
-} elseif ($categoria !== '') {
-    $stmt = $con->prepare("
-        SELECT n.id, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion,
-               GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
-        FROM noticias n
-        INNER JOIN noticia_categoria nc_filter ON n.id = nc_filter.noticia_id
-        INNER JOIN categorias c_filter ON nc_filter.categoria_id = c_filter.id_c AND c_filter.nombre = ?
-        LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
-        LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-        WHERE n.fecha_publicacion <= NOW()
-        GROUP BY n.id
-        ORDER BY n.fecha_publicacion DESC
-        LIMIT ? OFFSET ?
-    ");
-    $stmt->bind_param("sii", $categoria, $porPagina, $offset);
-
-} else {
-    $stmt = $con->prepare("
-        SELECT n.id, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion,
-               GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
-        FROM noticias n
-        LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
-        LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-        WHERE n.fecha_publicacion <= NOW()
-        GROUP BY n.id
-        ORDER BY n.fecha_publicacion DESC
-        LIMIT ? OFFSET ?
-    ");
-    $stmt->bind_param("ii", $porPagina, $offset);
-}
+$stmt = $con->prepare("
+    SELECT n.id, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion,
+           GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+    FROM noticias n
+    LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
+    LEFT JOIN categorias c ON nc.categoria_id = c.id_c
+    WHERE n.fecha_publicacion <= NOW()
+    GROUP BY n.id
+    ORDER BY n.fecha_publicacion DESC
+    LIMIT ? OFFSET ?
+");
+$stmt->bind_param("ii", $porPagina, $offset);
 
 $stmt->execute();
 $result = $stmt->get_result();
@@ -111,34 +57,10 @@ $result = $stmt->get_result();
 // ==============================
 // TOTAL
 // ==============================
-if ($q !== '') {
-    $stmtTotal = $con->prepare("
-        SELECT COUNT(DISTINCT n.id) as total
-        FROM noticias n
-        LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
-        LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-        WHERE n.fecha_publicacion <= NOW()
-        AND (n.titulo LIKE ? OR n.descripcion LIKE ? OR n.contenido LIKE ?)
-    ");
-    $stmtTotal->bind_param("sss", $like, $like, $like);
-
-} elseif ($categoria !== '') {
-    $stmtTotal = $con->prepare("
-        SELECT COUNT(DISTINCT n.id) as total
-        FROM noticias n
-        INNER JOIN noticia_categoria nc ON n.id = nc.noticia_id
-        INNER JOIN categorias c ON nc.categoria_id = c.id_c
-        WHERE n.fecha_publicacion <= NOW()
-        AND c.nombre = ?
-    ");
-    $stmtTotal->bind_param("s", $categoria);
-
-} else {
-    $stmtTotal = $con->prepare("
-        SELECT COUNT(*) as total FROM noticias
-        WHERE fecha_publicacion <= NOW()
-    ");
-}
+$stmtTotal = $con->prepare("
+    SELECT COUNT(*) as total FROM noticias
+    WHERE fecha_publicacion <= NOW()
+");
 
 $stmtTotal->execute();
 $totalNoticias = $stmtTotal->get_result()->fetch_assoc()['total'];
@@ -220,13 +142,11 @@ if ($q !== '') {
 <div class="container mt-5">
   <div class="container-fluid">
 
-    <!-- TITULO CONTEXTUAL -->
-    <?php if ($q !== ''): ?>
-      <h4>Resultados para: <strong><?= htmlspecialchars($q) ?></strong></h4>
-    <?php elseif ($categoria !== ''): ?>
-      <h4>Categoría: <strong><?= htmlspecialchars($categoria) ?></strong></h4>
-    <?php endif; ?>
-    <br>
+      <!-- Encabezado de resultados -->
+      <div class="mb-4">
+          <h1 style="font-weight: 800; font-size: 2rem;">Lo más reciente</h1>
+          <p class="text-muted" style="font-size: 1.1rem;">Todo el contenido publicado de manera cronológica</p>
+      </div>
     <div class="row">
 
       <!-- MAIN -->
@@ -291,26 +211,30 @@ if ($q !== '') {
           </div>
         <?php endwhile; ?>
 
+          <?php
+            // Calcular páginas para el enlace base (sin query string)
+            $baseUrl = recientesUrl() . "?";
+          ?>
         <!-- PAGINACIÓN -->
         <div class="pagination-wrapper">
             <ul class="pagination">
                 <?php if ($pagina > 1): ?>
                     <li>
-                        <a href="?page=<?= $pagina-1 ?>&q=<?= urlencode($q) ?>&cat=<?= urlencode($categoria) ?>">
+                        <a href="<?= $baseUrl ?>page=<?= $pagina-1 ?>">
                             « Anterior
                         </a>
                     </li>
                 <?php endif; ?>
                 <?php for ($i = 1; $i <= $totalpaginas; $i++): ?>
                     <li class="<?= $i == $pagina ? 'active' : '' ?>">
-                        <a href="?page=<?= $i ?>&q=<?= urlencode($q) ?>&cat=<?= urlencode($categoria) ?>">
+                        <a href="<?= $baseUrl ?>page=<?= $i ?>">
                             <?= $i ?>
                         </a>
                     </li>
                 <?php endfor; ?>
                 <?php if ($pagina < $totalpaginas): ?>
                     <li>
-                        <a href="?page=<?= $pagina+1 ?>&q=<?= urlencode($q) ?>&cat=<?= urlencode($categoria) ?>">
+                        <a href="<?= $baseUrl ?>page=<?= $pagina+1 ?>">
                             Siguiente »
                         </a>
                     </li>

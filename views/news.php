@@ -90,7 +90,7 @@ $ultimas = $stmtUltimas->get_result();
 $stmtPopulares = $con->prepare("
     SELECT id, titulo, crop1, crop2, crop3
     FROM noticias
-    ORDER BY likes DESC
+    ORDER BY vistas DESC, likes DESC
     LIMIT 3
 ");
 $stmtPopulares->execute();
@@ -182,7 +182,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
             <img src="<?= htmlspecialchars($img) ?>" alt="" class="img-titular">
             <!-- Categorías -->
             <?php foreach ($cats as $cat): ?>
-              <span class="news-tag"><?= htmlspecialchars($cat) ?></span>
+              <a href="<?= categoryUrl($cat) ?>" class="news-tag"><?= htmlspecialchars($cat) ?></a>
             <?php endforeach; ?>
             <h1><?= htmlspecialchars($noticia['titulo']) ?></h1>
             <p class="descripcion"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
@@ -370,7 +370,11 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 </div>
               <?php endif; ?>
               <div class="card-body">
-                <h3><i class="bi bi-alarm"></i> Lo más nuevo</h3>
+                <h3>
+                  <a href="<?= recientesUrl() ?>" style="text-decoration: none; color: inherit;">
+                    <i class="bi bi-alarm"></i> Lo más nuevo
+                  </a>
+                </h3>
                 <br>
                 <ul class="list-group list-group-flush mb-3">
                   <?php while ($row = $ultimas->fetch_assoc()): ?>
@@ -387,7 +391,11 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                     <br>
                   <?php endwhile; ?>
                 </ul>
-                <h3>Lo más popular</h3>
+                <h3>
+                  <a href="<?= popularUrl() ?>" style="text-decoration: none; color: inherit;">
+                    Lo más popular
+                  </a>
+                </h3>
                 <br>
                 <ul class="list-group list-group-flush">
                   <?php while ($row = $populares->fetch_assoc()): ?>

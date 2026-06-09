@@ -37,9 +37,9 @@ if(empty($noticias)){
 }
 // Últimas 3 noticias para sidebar
 $ultimasNoticiasSidebar = array_slice($noticias, 0, 3);
-// Noticias más populares (por likes)
+// Noticias más populares (por vistas)
 $popularesNoticiasSidebar = $noticias;
-usort($popularesNoticiasSidebar, fn($a,$b)=>$b['likes']-$a['likes']);
+usort($popularesNoticiasSidebar, fn($a,$b)=>$b['vistas']-$a['vistas']);
 $popularesNoticiasSidebar = array_slice($popularesNoticiasSidebar, 0, 3);
 // Noticias principales para slider y últimas
 $slider = array_slice($noticias, 0, 5);
@@ -220,7 +220,11 @@ function topCard($r, $type = 'thumb') {
 ?>
 <div class="container mt-5">
     <div>
-        <h2><i class="bi bi-award"></i>  <?= $topTitulo ?></h2><br>
+        <h2>
+            <a href="<?= topUrl() ?>" style="text-decoration: none; color: inherit;">
+                <i class="bi bi-award"></i> <?= $topTitulo ?>
+            </a>
+        </h2><br>
         <?php
         // Fila 1 — banner grande + thumb pequeño
         $f1 = array_values(array_filter([
@@ -276,7 +280,11 @@ function topCard($r, $type = 'thumb') {
         <!-- ===================== -->
         <!-- SIDEBAR -->
         <!-- ===================== -->
-        <h2><i class="bi bi-alarm"></i> Lo más recientes</h2>
+        <h2>
+            <a href="<?= recientesUrl() ?>" style="text-decoration: none; color: inherit;">
+                <i class="bi bi-alarm"></i> Lo más recientes
+            </a>
+        </h2>
         <div class="row mt-5">
             <div class="col-md-9">
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidad) : ?>
@@ -436,7 +444,11 @@ function topCard($r, $type = 'thumb') {
                             <?php endif; ?>
                         </div>
                         <div class="card-body">
-                            <h3><i class="bi bi-alarm"></i> Lo más nuevo</h3>
+                            <h3>
+                                <a href="<?= recientesUrl() ?>" style="text-decoration: none; color: inherit;">
+                                    <i class="bi bi-alarm"></i> Lo más nuevo
+                                </a>
+                            </h3>
                             <br>
                             <div class="sidebar-news-list">
                                 <?php foreach($ultimasNoticiasSidebar as $row): ?>
@@ -453,7 +465,11 @@ function topCard($r, $type = 'thumb') {
                                     <br>
                                 <?php endforeach; ?>
                             </div>
-                            <h3>Lo más popular</h3>
+                            <h3>
+                                <a href="<?= popularUrl() ?>" style="text-decoration: none; color: inherit;">
+                                    Lo más popular
+                                </a>
+                            </h3>
                             <br>
                             <div class="sidebar-news-list">
                                 <?php foreach($popularesNoticiasSidebar as $row): ?>

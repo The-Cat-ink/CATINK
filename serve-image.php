@@ -17,7 +17,7 @@ if (empty($file) || strpos($file, '..') !== false || strpos($file, '/') === 0) {
 // En local: c:\xampp\htdocs\CATINK\uploads\
 // En producción Hostinger: /home/usuario/uploads/ (fuera de public_html)
 // Detectar si estamos en producción o local
-$isProduction = strpos($_SERVER['HTTP_HOST'], 'localhost') === false;
+$isProduction = strpos($_SERVER['HTTP_HOST'], 'localhost') === false && strpos($_SERVER['HTTP_HOST'], 'catink.test') === false;
 
 $uploadsDir = null;
 

@@ -106,7 +106,7 @@ $_SESSION['id_u'] = $fila['id_u'];
         <?php endif; ?>
         <?php if (($_SESSION['ACL']['noticias']['crear']?? false)): ?>
             <li class="sidebar-menu-item">
-                <a href="./contenidos_crear.php" class="sidebar-menu-link" data-tooltip="Crear Noticia">
+                <a href="<?= basePath() ?>/views/crear.php" class="sidebar-menu-link" data-tooltip="Crear Noticia">
                     <i class="bi bi-pencil-square"></i> <span class="sb-label">Crear Noticia</span>
                 </a>
             </li>

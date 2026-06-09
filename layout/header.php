@@ -159,23 +159,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span class="theme-switch-icons-thumb"></span>
         </span>
       </label>
-      <a href="<?= basePath() . (isset($_SESSION['usuario']) ? '/perfil' : '/login') ?>" class="btn btn-outline-secondary<?= isset($_SESSION['usuario']) ? ' btn-user' : '' ?>">
-        <?php
-          if(isset($_SESSION['usuario'])){
-            echo "<i class='bi bi-person-fill-check'></i><span class='btn-username'> " . htmlspecialchars($_SESSION['usuario']) . "</span>";
-          }else{
-            echo "<span class='bi bi-person-fill'></span>";
-          }
-        ?>
-      </a>
+      
       <?php if(isset($_SESSION['usuario'])): ?>
+        <?php if(($_SESSION['ACL']['noticias']['crear'] ?? false) || ($_SESSION['superadmin'] ?? false)): ?>
+          <a href="<?= basePath() ?>/views/crear.php" class="btn btn-outline-secondary" title="Crear Noticia">
+            <i class="bi bi-pencil-square"></i>
+          </a>
+        <?php endif; ?>
+        
         <?php if($_SESSION['superadmin'] ?? false): ?>
           <a href="<?= basePath() ?>/views/admin.php" class="btn btn-outline-secondary" title="Panel Admin">
             <i class="bi bi-speedometer2"></i>
           </a>
         <?php endif; ?>
-        <a href="<?= basePath() ?>/controllers/logoutcontroller.php" class="btn btn-outline-secondary" title="Cerrar sesión">
-          <i class="bi bi-box-arrow-right"></i>
+
+        <div class="dropdown d-inline-block" style="position: relative;">
+          <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border:none; padding: 0.375rem 0.5rem; display: flex; align-items: center; gap: 5px;">
+            <i class="bi bi-person-fill-check"></i><span class="btn-username"><?= htmlspecialchars($_SESSION['usuario']) ?></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userDropdown" style="position: absolute; right: 0; min-width: 150px; z-index: 1050; border-radius: 8px;">
+            <li><a class="dropdown-item py-2" href="<?= basePath() ?>/perfil"><i class="bi bi-person-circle me-2"></i> Mi Perfil</a></li>
+            <li><hr class="dropdown-divider m-0"></li>
+            <li><a class="dropdown-item py-2 text-danger" href="<?= basePath() ?>/controllers/logoutcontroller.php"><i class="bi bi-box-arrow-right me-2"></i> Cerrar sesión</a></li>
+          </ul>
+        </div>
+      <?php else: ?>
+        <a href="<?= basePath() ?>/login" class="btn btn-outline-secondary">
+          <span class="bi bi-person-fill"></span>
         </a>
       <?php endif; ?>
     </div>
