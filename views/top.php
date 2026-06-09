@@ -298,7 +298,7 @@ if ($q !== '') {
                 <?php endwhile; ?>
               </ul>
               <h3>
-                <a href="<?= topUrl() ?>" style="text-decoration: none; color: inherit;">
+                <a href="<?= popularUrl() ?>" style="text-decoration: none; color: inherit;">
                   Lo más popular
                 </a>
               </h3>

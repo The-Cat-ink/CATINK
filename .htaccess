@@ -55,6 +55,7 @@ RewriteRule ^noticias/?$ views/categoria.php [L,QSA]
 # =========================
 RewriteRule ^top/?$ views/top.php [L,QSA]
 RewriteRule ^recientes/?$ views/recientes.php [L,QSA]
+RewriteRule ^popular/?$ views/popular.php [L,QSA]
 
 # =========================
 # CATEGORIAS

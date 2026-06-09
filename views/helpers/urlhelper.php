@@ -54,6 +54,9 @@ function topUrl(){
 function recientesUrl(){
     return basePath() . "/recientes";
 }
+function popularUrl(){
+    return basePath() . "/popular";
+}
 
 // ============================
 // FUNCIÓN PARA SERVIR IMÁGENES
