@@ -96,7 +96,7 @@ while($row = $categoriasResult->fetch_assoc()) $categorias[] = $row;
 /* Cuerpo colapsable */
 .cn-section-body {
   overflow: hidden;
-  max-height: 3000px;
+  max-height: 60000px;
   opacity: 1;
   transition: max-height .35s ease, opacity .25s ease;
   padding: 18px;

@@ -117,7 +117,7 @@ $crop3Url = imageUrl($noticia['crop3'] ?? '');
 }
 .cn-section.collapsed .cn-section-toggle { transform: rotate(-90deg); }
 .cn-section-body {
-  overflow: hidden; max-height: 3000px; opacity: 1;
+  overflow: hidden; max-height: 60000px; opacity: 1;
   transition: max-height .35s ease, opacity .25s ease;
   padding: 18px;
 }
