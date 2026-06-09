@@ -182,7 +182,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
             <img src="<?= htmlspecialchars($img) ?>" alt="" class="img-titular">
             <!-- Categorías -->
             <?php foreach ($cats as $cat): ?>
-              <span class="news-tag"><?= htmlspecialchars($cat) ?></span>
+              <a href="<?= categoryUrl($cat) ?>" class="news-tag"><?= htmlspecialchars($cat) ?></a>
             <?php endforeach; ?>
             <h1><?= htmlspecialchars($noticia['titulo']) ?></h1>
             <p class="descripcion"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
