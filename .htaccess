@@ -102,7 +102,6 @@ RewriteRule ^contacto/?$ views/contactanos.php [L]
 # =========================
 RewriteRule ^olvide_contrasena/?$ views/olvide_contrasena.php [L,QSA]
 RewriteRule ^reset_contrasena/?$ views/reset_contrasena.php [L,QSA]
-RewriteRule ^contenidos_crear/?$ views/contenidos_crear.php [L,QSA]
 # =========================
 # 404
 # =========================
