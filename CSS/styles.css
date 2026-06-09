@@ -1022,19 +1022,24 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
     display: block;
     width: 100%;
   }
-  /* Slider reducido a media pantalla en móvil */
-  .carousel, .carousel-inner, .carousel-item {
-    height: 50vh;
-    min-height: 300px;
+  /* Slider en móvil: ratio 16/9 para coincidir con crop3 y evitar zoom/upscale */
+  .carousel {
+    height: auto;
+    min-height: unset;
+    aspect-ratio: 16 / 9;
+  }
+  .carousel-inner, .carousel-item {
+    height: 100%;
+    min-height: unset;
   }
   .carousel-item {
     position: absolute;
     overflow: hidden;
   }
-  .carousel-item.active{
+  .carousel-item.active {
     position: relative;
   }
-  /* Imagen del carrusel sin zoom: se muestra tal cual cubriendo el contenedor */
+  /* Imagen ocupa el contenedor 16/9 sin zoom extra */
   .carousel-item img {
     position: absolute;
     inset: 0;
