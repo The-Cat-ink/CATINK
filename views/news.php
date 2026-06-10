@@ -29,7 +29,7 @@ if(isset($_GET['slug'])){
 // Obtener noticia con autor y categorías
 // ==============================
 $sql = "
-    SELECT n.*, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto,
+    SELECT n.*, COALESCE(n.slug, n.id) as slug, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto,
            GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
     FROM noticias n
     LEFT JOIN usuarios u ON n.autor = u.id_u
@@ -54,7 +54,7 @@ $recomendadas = [];
 if(!empty($cats)){
     $placeholders = implode(',', array_fill(0, count($cats), '?'));
     $sqlRec = "
-        SELECT DISTINCT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion
+        SELECT DISTINCT n.id, COALESCE(n.slug, n.id) as slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion
         FROM noticias n
         JOIN noticia_categoria nc ON n.id = nc.noticia_id
         JOIN categorias c ON nc.categoria_id = c.id_c
@@ -75,7 +75,7 @@ if(!empty($cats)){
 // NOTICIAS RECIENTES
 // ==============================
 $stmtRecientes = $con->prepare("
-    SELECT id, slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion
+    SELECT id, COALESCE(slug, id) as slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion
     FROM noticias
     WHERE fecha_publicacion <= NOW()
     AND id != ?
@@ -89,7 +89,7 @@ $recientes = $stmtRecientes->get_result();
 // Últimas y Populares
 // ==============================
 $stmtUltimas = $con->prepare("
-    SELECT id, slug, titulo, crop1, crop2, crop3
+    SELECT id, COALESCE(slug, id) as slug, titulo, crop1, crop2, crop3
     FROM noticias
     WHERE fecha_publicacion <= NOW()
     ORDER BY fecha_publicacion DESC
@@ -98,7 +98,7 @@ $stmtUltimas = $con->prepare("
 $stmtUltimas->execute();
 $ultimas = $stmtUltimas->get_result();
 $stmtPopulares = $con->prepare("
-    SELECT id, slug, titulo, crop1, crop2, crop3
+    SELECT id, COALESCE(slug, id) as slug, titulo, crop1, crop2, crop3
     FROM noticias
     ORDER BY vistas DESC, likes DESC
     LIMIT 3

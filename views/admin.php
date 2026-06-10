@@ -57,7 +57,7 @@ $tiempoTotal = $con->query("
 $resultNoticias = $con->query("
     SELECT
         n.id,
-        n.slug,
+        COALESCE(n.slug, n.id) as slug,
         n.titulo,
         n.descripcion,
         n.crop3,

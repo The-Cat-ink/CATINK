@@ -33,40 +33,37 @@ function generateSlug($titulo){
     return $slug;
 }
 // URLs para noticias - soporta múltiples formatos
-function newsUrl($slug){
+function newsUrl($slugOrId){
     // Formato corto y principal: /n/{slug}
-    // Fallback a ID codificado si slug es NULL (noticias existentes)
-    if ($slug === null || $slug === '') {
-        // Intentar obtener ID del contexto global si existe
-        global $noticia;
-        if (isset($noticia['id'])) {
-            return basePath() . "/n/" . encodeId($noticia['id']);
-        }
+    // Si es un ID numérico (fallback de noticias sin slug), codificarlo
+    if ($slugOrId === null || $slugOrId === '') {
         return basePath() . "/n/";
     }
-    return basePath() . "/n/" . $slug;
+    // Si es un número (ID sin slug), codificarlo como base64 URL-safe
+    if (is_numeric($slugOrId)) {
+        return basePath() . "/n/" . encodeId(intval($slugOrId));
+    }
+    return basePath() . "/n/" . $slugOrId;
 }
-function newsUrlLong($slug){
+function newsUrlLong($slugOrId){
     // Formato largo más legible: /noticia/{slug}
-    if ($slug === null || $slug === '') {
-        global $noticia;
-        if (isset($noticia['id'])) {
-            return basePath() . "/noticia/" . encodeId($noticia['id']);
-        }
+    if ($slugOrId === null || $slugOrId === '') {
         return basePath() . "/noticia/";
     }
-    return basePath() . "/noticia/" . $slug;
+    if (is_numeric($slugOrId)) {
+        return basePath() . "/noticia/" . encodeId(intval($slugOrId));
+    }
+    return basePath() . "/noticia/" . $slugOrId;
 }
-function newsUrlAlt($slug){
+function newsUrlAlt($slugOrId){
     // Formato alternativo: /news/{slug}
-    if ($slug === null || $slug === '') {
-        global $noticia;
-        if (isset($noticia['id'])) {
-            return basePath() . "/news/" . encodeId($noticia['id']);
-        }
+    if ($slugOrId === null || $slugOrId === '') {
         return basePath() . "/news/";
     }
-    return basePath() . "/news/" . $slug;
+    if (is_numeric($slugOrId)) {
+        return basePath() . "/news/" . encodeId(intval($slugOrId));
+    }
+    return basePath() . "/news/" . $slugOrId;
 }
 // URLs para categorías - soporta múltiples formatos
 function categoryUrl($nombre){

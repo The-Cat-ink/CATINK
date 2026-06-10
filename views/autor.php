@@ -34,7 +34,7 @@ if (!$editor) {
 // Obtener artículos del editor
 // ==============================
 $stmtNews = $con->prepare("
-    SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop3, n.fecha_publicacion,
+    SELECT n.id, COALESCE(n.slug, n.id) as slug, n.titulo, n.descripcion, n.crop1, n.crop3, n.fecha_publicacion,
            GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
     FROM noticias n
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id

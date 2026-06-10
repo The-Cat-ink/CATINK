@@ -22,7 +22,7 @@ require_once(__DIR__ . '/../data/env.php');
 $con = @new mysqli(env('DB_HOST','localhost'), env('DB_USER','root'), env('DB_PASS',''), env('DB_NAME','u780114275_cat_ink'));
 if (!$con->connect_error) {
     $con->set_charset('utf8mb4');
-    $newsQuery = $con->prepare('SELECT id, slug, fecha_publicacion FROM noticias WHERE fecha_publicacion <= NOW() ORDER BY fecha_publicacion DESC');
+    $newsQuery = $con->prepare('SELECT id, COALESCE(slug, id) as slug, fecha_publicacion FROM noticias WHERE fecha_publicacion <= NOW() ORDER BY fecha_publicacion DESC');
     if ($newsQuery && $newsQuery->execute()) {
         $newsResult = $newsQuery->get_result();
         while ($row = $newsResult->fetch_assoc()) {

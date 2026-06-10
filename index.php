@@ -105,7 +105,7 @@ $vid = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 // ==============================
 $recomendadas = [];
 $sqlRec = "
-    SELECT id, slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion, nombre
+    SELECT id, COALESCE(slug, id) as slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion, nombre
     FROM noticias, usuarios
     WHERE noticias.autor = usuarios.id_u and fecha_publicacion <= NOW()
     ORDER BY likes DESC, vistas DESC, fecha_publicacion DESC
@@ -118,7 +118,7 @@ $recomendadas = $stmtRec->get_result();
 // NOTICIAS RECIENTES
 // ==============================
 $stmtRecientes = $con->prepare("
-    SELECT id, slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion, nombre
+    SELECT id, COALESCE(slug, id) as slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion, nombre
     FROM noticias, usuarios
     WHERE noticias.autor = usuarios.id_u and fecha_publicacion <= NOW()
     ORDER BY fecha_publicacion DESC

@@ -39,7 +39,7 @@ include("./../layout/header.php");
 // CONSULTA PRINCIPAL
 // ==============================
 $stmt = $con->prepare("
-    SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion,
+    SELECT n.id, COALESCE(n.slug, n.id) as slug, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion,
            GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
     FROM noticias n
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
@@ -70,7 +70,7 @@ $totalpaginas = ceil($totalNoticias / $porPagina);
 // SIDEBAR
 // ==============================
 $stmtUltimas = $con->prepare("
-    SELECT id, slug, titulo, crop3
+    SELECT id, COALESCE(slug, id) as slug, titulo, crop3
     FROM noticias
     WHERE fecha_publicacion <= NOW()
     ORDER BY fecha_publicacion DESC
@@ -80,7 +80,7 @@ $stmtUltimas->execute();
 $ultimas = $stmtUltimas->get_result();
 
 $stmtPopulares = $con->prepare("
-    SELECT id, slug, titulo, crop3
+    SELECT id, COALESCE(slug, id) as slug, titulo, crop3
     FROM noticias
     ORDER BY vistas DESC, likes DESC
     LIMIT 3
