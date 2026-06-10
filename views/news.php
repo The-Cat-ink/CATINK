@@ -7,24 +7,9 @@ require_once("./helpers/urlhelper.php");
 // Soportar múltiples formas de acceso a noticias
 if(isset($_GET['slug'])){
     $slug = $_GET['slug'];
-    // Verificar si es un ID codificado en base64 (no contiene guiones, solo alfanumérico)
-    if (preg_match('/^[a-zA-Z0-9=]+$/', $slug) && !preg_match('/-/', $slug)) {
-        // Intentar decodificar como ID
-        $decodedId = decodeId($slug);
-        if ($decodedId > 0) {
-            // Es un ID codificado, buscar por ID
-            $where_clause = "n.id = ?";
-            $param = $decodedId;
-        } else {
-            // Es un slug real, buscar por slug
-            $where_clause = "n.slug = ?";
-            $param = $slug;
-        }
-    } else {
-        // Es un slug real (contiene guiones), buscar por slug
-        $where_clause = "n.slug = ?";
-        $param = $slug;
-    }
+    // Primero intentar buscar por slug
+    $where_clause = "n.slug = ?";
+    $param = $slug;
 } elseif(isset($_GET['hash'])){
     // Formato anterior: hash codificado en base64
     $id = decodeId($_GET['hash']);
@@ -58,6 +43,29 @@ $stmt->bind_param("s", $param);
 $stmt->execute();
 $result = $stmt->get_result();
 $noticia = $result->fetch_assoc();
+// Si no se encontró por slug, intentar decodificar como ID y buscar por ID
+if (!$noticia && isset($_GET['slug'])) {
+    $decodedId = decodeId($_GET['slug']);
+    if ($decodedId > 0) {
+        $where_clause = "n.id = ?";
+        $param = $decodedId;
+        $sql = "
+            SELECT n.*, COALESCE(n.slug, n.id) as slug, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto,
+                   GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+            FROM noticias n
+            LEFT JOIN usuarios u ON n.autor = u.id_u
+            LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
+            LEFT JOIN categorias c ON nc.categoria_id = c.id_c
+            WHERE $where_clause AND n.fecha_publicacion <= NOW()
+            GROUP BY n.id
+        ";
+        $stmt = $con->prepare($sql);
+        $stmt->bind_param("s", $param);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $noticia = $result->fetch_assoc();
+    }
+}
 if (!$noticia) die("Noticia no encontrada");
 // Parsear categorías
 $cats = !empty($noticia['categorias']) ? explode(',', $noticia['categorias']) : [];
