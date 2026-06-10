@@ -7,8 +7,9 @@ require_once(__DIR__ . "/views/helpers/urlhelper.php");
 // Obtener todas las noticias con sus categorías
 // =====================
 $stmt = $con->prepare("
-    SELECT 
+    SELECT
         n.id,
+        COALESCE(n.slug, n.id) as slug,
         n.titulo,
         n.descripcion,
         n.crop1,
