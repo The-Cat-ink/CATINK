@@ -5,15 +5,25 @@ include("./helpers/videoEmbed.php");
 include("./helpers/socialEmbed.php");
 require_once("./helpers/urlhelper.php");
 // Soportar múltiples formas de acceso a noticias
-if(isset($_GET['hash'])){
-    // Formato actual: hash codificado en base64
+if(isset($_GET['slug'])){
+    // Formato nuevo: slug amigable
+    $slug = $_GET['slug'];
+    $where_clause = "n.slug = ?";
+    $param = $slug;
+} elseif(isset($_GET['hash'])){
+    // Formato anterior: hash codificado en base64
     $id = decodeId($_GET['hash']);
+    $where_clause = "n.id = ?";
+    $param = $id;
 } elseif(isset($_GET['id'])){
     // Formato alternativo: ID numérico directo
     $id = intval($_GET['id']);
+    $where_clause = "n.id = ?";
+    $param = $id;
 } else {
     // Fallback a ID 1 si no hay parámetro
-    $id = 1;
+    $where_clause = "n.id = ?";
+    $param = 1;
 }
 // ==============================
 // Obtener noticia con autor y categorías
@@ -25,11 +35,11 @@ $sql = "
     LEFT JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-    WHERE n.id = ? AND n.fecha_publicacion <= NOW()
+    WHERE $where_clause AND n.fecha_publicacion <= NOW()
     GROUP BY n.id
 ";
 $stmt = $con->prepare($sql);
-$stmt->bind_param("i", $id);
+$stmt->bind_param("s", $param);
 $stmt->execute();
 $result = $stmt->get_result();
 $noticia = $result->fetch_assoc();
@@ -44,7 +54,7 @@ $recomendadas = [];
 if(!empty($cats)){
     $placeholders = implode(',', array_fill(0, count($cats), '?'));
     $sqlRec = "
-        SELECT DISTINCT n.id, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion
+        SELECT DISTINCT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion
         FROM noticias n
         JOIN noticia_categoria nc ON n.id = nc.noticia_id
         JOIN categorias c ON nc.categoria_id = c.id_c
@@ -65,7 +75,7 @@ if(!empty($cats)){
 // NOTICIAS RECIENTES
 // ==============================
 $stmtRecientes = $con->prepare("
-    SELECT id, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion
+    SELECT id, slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion
     FROM noticias
     WHERE fecha_publicacion <= NOW()
     AND id != ?
@@ -79,7 +89,7 @@ $recientes = $stmtRecientes->get_result();
 // Últimas y Populares
 // ==============================
 $stmtUltimas = $con->prepare("
-    SELECT id, titulo, crop1, crop2, crop3
+    SELECT id, slug, titulo, crop1, crop2, crop3
     FROM noticias
     WHERE fecha_publicacion <= NOW()
     ORDER BY fecha_publicacion DESC
@@ -88,7 +98,7 @@ $stmtUltimas = $con->prepare("
 $stmtUltimas->execute();
 $ultimas = $stmtUltimas->get_result();
 $stmtPopulares = $con->prepare("
-    SELECT id, titulo, crop1, crop2, crop3
+    SELECT id, slug, titulo, crop1, crop2, crop3
     FROM noticias
     ORDER BY vistas DESC, likes DESC
     LIMIT 3
@@ -215,19 +225,19 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
             <hr>
             <h2 align="center"><i class="bi bi-share-fill"></i> Compartir</h2>
             <div class="share-bar">
-                <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode("https://www.catink.com.mx/".newsUrl($id)) ?>" target="_blank" class="share-btn facebook">
+                <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode("https://www.catink.com.mx/".newsUrl($noticia['slug'])) ?>" target="_blank" class="share-btn facebook">
                     <i class="bi bi-facebook"></i>
                 </a>
                 <!--<a href="#" onclick="copyLink()" class="share-btn instagram">
                     <i class="bi bi-instagram"></i>
                 </a>-->
-                <a href="https://wa.me/?text=<?= urlencode("https://www.catink.com.mx/".newsUrl($id)) ?>" target="_blank" class="share-btn whatsapp">
+                <a href="https://wa.me/?text=<?= urlencode("https://www.catink.com.mx/".newsUrl($noticia['slug'])) ?>" target="_blank" class="share-btn whatsapp">
                     <i class="bi bi-whatsapp"></i>
                 </a>
-                <a href="https://twitter.com/intent/tweet?text=<?= urlencode("https://www.catink.com.mx/".newsUrl($id)) ?>" target="_blank" class="share-btn twitter">
+                <a href="https://twitter.com/intent/tweet?text=<?= urlencode("https://www.catink.com.mx/".newsUrl($noticia['slug'])) ?>" target="_blank" class="share-btn twitter">
                     <i class="bi bi-twitter-x"></i>
                 </a>
-                <!--<a href="https://www.linkedin.com/sharing/share-offsite/?url=<?= urlencode("https://www.catink.com.mx/".newsUrl($id)) ?>" target="_blank" class="share-btn linkedin">
+                <!--<a href="https://www.linkedin.com/sharing/share-offsite/?url=<?= urlencode("https://www.catink.com.mx/".newsUrl($noticia['slug'])) ?>" target="_blank" class="share-btn linkedin">
                     <i class="bi bi-linkedin"></i>
                 </a>-->
                 <a href="#" onclick="shareMessenger()" class="share-btn messenger">
@@ -387,7 +397,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                         </div>
                         <div class="col-md-8">
                           <div class="card-body">
-                            <a href="<?= newsUrl($row['id']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
+                            <a href="<?= newsUrl($row['slug']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
                           </div>
                         </div>
                     </div>
@@ -408,7 +418,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                         </div>
                         <div class="col-md-8">
                           <div class="card-body">
-                            <a href="<?= newsUrl($row['id']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
+                            <a href="<?= newsUrl($row['slug']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
                           </div>
                         </div>
                     </div>
@@ -443,10 +453,10 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 $img = imageUrl($imgSrc ?? 'img/placeholder.svg');
             ?>
               <div class="col">
-                  <div class="card h-100" data-url="<?= newsUrl($r['id']) ?>">
+                  <div class="card h-100" data-url="<?= newsUrl($r['slug']) ?>">
                       <img src="<?= $img ?>" class="card-img-top" loading="lazy" decoding="async">
                       <div class="card-body">
-                          <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-2">
+                          <a href="<?= newsUrl($r['slug']) ?>" class="news-link title-limit-2">
                               <?= htmlspecialchars($r['titulo']) ?>
                           </a>
                           <small class="desc-limit-3">
@@ -474,10 +484,10 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 $img = imageUrl($imgSrc ?? 'img/placeholder.svg');
             ?>
               <div class="col">
-                  <div class="card h-100" data-url="<?= newsUrl($r['id']) ?>">
+                  <div class="card h-100" data-url="<?= newsUrl($r['slug']) ?>">
                       <img src="<?= $img ?>" class="card-img-top" loading="lazy" decoding="async">
                       <div class="card-body">
-                          <a href="<?= newsUrl($r['id']) ?>" class="news-link title-limit-2">
+                          <a href="<?= newsUrl($r['slug']) ?>" class="news-link title-limit-2">
                               <?= htmlspecialchars($r['titulo']) ?>
                           </a>
                           <small class="desc-limit-3">
@@ -760,12 +770,12 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
 </script>
 <script>
   function copyLink(){
-    const link = "https://www.catink.com.mx/<?= newsUrl($id) ?>";
+    const link = "https://www.catink.com.mx/<?= newsUrl($noticia['slug']) ?>";
     navigator.clipboard.writeText(link);
     window.open("https://www.instagram.com/direct/inbox/", "_blank");
   }
   function shareMessenger() {
-    const url = "https://www.catink.com.mx/<?= newsUrl($id) ?>";
+    const url = "https://www.catink.com.mx/<?= newsUrl($noticia['slug']) ?>";
     const encoded = encodeURIComponent(url);
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     if(isMobile){

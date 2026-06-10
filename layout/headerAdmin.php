@@ -19,6 +19,7 @@ $mapVistaModulo = [
     'usuarios' => 'usuarios',
     'correos' => 'correos',
     'videos' => 'videos'
+                                                                                                                  
 ];
 $superadmin = $_SESSION['superadmin'] ?? false;
 // cargar acl globalmente

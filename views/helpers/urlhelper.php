@@ -14,18 +14,36 @@ function encodeId($id){
 function decodeId($hash){
     return base64_decode(strtr($hash, '-_', '+/'));
 }
+
+// Generar slug a partir de un título (URL amigable)
+function generateSlug($titulo){
+    // Convertir a minúsculas
+    $slug = mb_strtolower($titulo, 'UTF-8');
+    // Reemplazar caracteres especiales y espacios con guiones
+    $slug = preg_replace('/[áàäâã]/u', 'a', $slug);
+    $slug = preg_replace('/[éèëê]/u', 'e', $slug);
+    $slug = preg_replace('/[íìïî]/u', 'i', $slug);
+    $slug = preg_replace('/[óòöôõ]/u', 'o', $slug);
+    $slug = preg_replace('/[úùüû]/u', 'u', $slug);
+    $slug = preg_replace('/[ñ]/u', 'n', $slug);
+    $slug = preg_replace('/[ç]/u', 'c', $slug);
+    $slug = preg_replace('/[^a-z0-9\s-]/u', '', $slug);
+    $slug = preg_replace('/[\s-]+/', '-', $slug);
+    $slug = trim($slug, '-');
+    return $slug;
+}
 // URLs para noticias - soporta múltiples formatos
-function newsUrl($id){
-    // Formato corto y principal: /n/{hash}
-    return basePath() . "/n/" . encodeId($id);
+function newsUrl($slug){
+    // Formato corto y principal: /n/{slug}
+    return basePath() . "/n/" . $slug;
 }
-function newsUrlLong($id){
-    // Formato largo más legible: /noticia/{hash}
-    return basePath() . "/noticia/" . encodeId($id);
+function newsUrlLong($slug){
+    // Formato largo más legible: /noticia/{slug}
+    return basePath() . "/noticia/" . $slug;
 }
-function newsUrlAlt($id){
-    // Formato alternativo: /news/{hash}
-    return basePath() . "/news/" . encodeId($id);
+function newsUrlAlt($slug){
+    // Formato alternativo: /news/{slug}
+    return basePath() . "/news/" . $slug;
 }
 // URLs para categorías - soporta múltiples formatos
 function categoryUrl($nombre){

@@ -44,9 +44,9 @@ RewriteRule ^home/?$ index.php [L]
 # =========================
 # NOTICIAS
 # =========================
-RewriteRule ^n/([a-zA-Z0-9_-]+)/?$ views/news.php?hash=$1 [L,QSA]
-RewriteRule ^noticia/([a-zA-Z0-9_-]+)/?$ views/news.php?hash=$1 [L,QSA]
-RewriteRule ^news/([a-zA-Z0-9_-]+)/?$ views/news.php?hash=$1 [L,QSA]
+RewriteRule ^n/([a-zA-Z0-9_-]+)/?$ views/news.php?slug=$1 [L,QSA]
+RewriteRule ^noticia/([a-zA-Z0-9_-]+)/?$ views/news.php?slug=$1 [L,QSA]
+RewriteRule ^news/([a-zA-Z0-9_-]+)/?$ views/news.php?slug=$1 [L,QSA]
 
 RewriteRule ^noticias/?$ views/categoria.php [L,QSA]
 

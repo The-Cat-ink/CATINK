@@ -174,3 +174,7 @@ ALTER TABLE `categorias` ADD COLUMN IF NOT EXISTS `orden` INT DEFAULT 0 AFTER `n
 
 -- 7. Agregar columna de orden a videos (para drag & drop de reordenamiento)
 ALTER TABLE `videos` ADD COLUMN IF NOT EXISTS `orden` INT DEFAULT 0 AFTER `activo`;
+
+-- 8. Agregar columna slug para URLs amigables en noticias
+ALTER TABLE `noticias` ADD COLUMN IF NOT EXISTS `slug` VARCHAR(255) DEFAULT NULL AFTER `titulo`;
+ALTER TABLE `noticias` ADD INDEX IF NOT EXISTS `idx_slug` (`slug`);

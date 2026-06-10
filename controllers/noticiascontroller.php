@@ -98,6 +98,7 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 100
 // CONEXION
 // ============================
 include("../data/conexion.php");
+require_once("../views/helpers/urlhelper.php");
 // ============================
 // DATOS FORMULARIO
 // ============================
@@ -106,6 +107,7 @@ $descripcion = $_POST['descripcion'] ?? '';
 $categorias = $_POST['categoria'] ?? [];
 $autor = $_POST['autor'] ?? '';
 $contenido = $_POST['contenido'] ?? '';
+$slug = generateSlug($titulo);
 // limpiar posibles scripts y conservar solo el placeholder
 $contenido = preg_replace('/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/i', '', $contenido);
 // convertir posibles embed html a div.social-embed (blockquote generados por Quill/JS)
@@ -128,15 +130,15 @@ if (empty($titulo) || empty($descripcion) || empty($contenido)) {
 // INSERTAR NOTICIA (YA SIN CATEGORIA)
 // ============================
 $usuario_id = intval($_SESSION['id_u'] ?? 0);
-$sql = "INSERT INTO noticias (titulo, descripcion, autor, contenido, fecha_publicacion, creado_por, editado_por)
-        VALUES (?, ?, ?, ?, ?, ?, ?)";
+$sql = "INSERT INTO noticias (titulo, slug, descripcion, autor, contenido, fecha_publicacion, creado_por, editado_por)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 $stmt = $con->prepare($sql);
 if (!$stmt) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'error' => 'Error de Base de Datos al preparar la noticia.']);
     exit;
 }
-$stmt->bind_param("ssissii", $titulo, $descripcion, $autor, $contenido, $fecha_publicacion, $usuario_id, $usuario_id);
+$stmt->bind_param("ssissiii", $titulo, $slug, $descripcion, $autor, $contenido, $fecha_publicacion, $usuario_id, $usuario_id);
 if (!$stmt->execute()) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'error' => 'Error al guardar la noticia en Base de Datos.']);
