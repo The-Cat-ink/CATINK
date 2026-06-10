@@ -138,7 +138,7 @@ $update = $con->prepare("
 // Asegurarse de que creado_por y usuario_id son integers
 $creado_por = intval($creado_por);
 $usuario_id = intval($usuario_id);
-$update->bind_param("ssssssiii", $titulo, $slug, $descripcion, $contenido, $fecha_publicacion, $creado_por, $usuario_id, $id);
+$update->bind_param("sssssiii", $titulo, $slug, $descripcion, $contenido, $fecha_publicacion, $creado_por, $usuario_id, $id);
 $result = $update->execute();
 // ============================
 // OBTENER IMAGENES ACTUALES
