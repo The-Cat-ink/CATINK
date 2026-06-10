@@ -2635,6 +2635,20 @@ hr{
   .comentario-acciones { gap: 8px; flex-wrap: wrap; }
   .comentario-acciones button { font-size: 0.8rem; }
 }
+@media (max-width: 768px) {
+  .section-separator {
+    justify-content: center;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .section-separator::before {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: var(--accent);
+  }
+  .section-separator-line { display: block; }
+}
 /* Toast notifications */
 .toast-container {
   position: fixed; top: 20px; right: 20px; z-index: 99999;
