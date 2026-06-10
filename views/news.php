@@ -7,24 +7,9 @@ require_once("./helpers/urlhelper.php");
 // Soportar múltiples formas de acceso a noticias
 if(isset($_GET['slug'])){
     $slug = $_GET['slug'];
-    // Verificar si es un ID codificado en base64 (no contiene guiones, solo alfanumérico)
-    if (preg_match('/^[a-zA-Z0-9=]+$/', $slug) && !preg_match('/-/', $slug)) {
-        // Intentar decodificar como ID
-        $decodedId = decodeId($slug);
-        if ($decodedId > 0) {
-            // Es un ID codificado, buscar por ID
-            $where_clause = "n.id = ?";
-            $param = $decodedId;
-        } else {
-            // Es un slug real, buscar por slug
-            $where_clause = "n.slug = ?";
-            $param = $slug;
-        }
-    } else {
-        // Es un slug real (contiene guiones), buscar por slug
-        $where_clause = "n.slug = ?";
-        $param = $slug;
-    }
+    // Primero intentar buscar por slug
+    $where_clause = "n.slug = ?";
+    $param = $slug;
 } elseif(isset($_GET['hash'])){
     // Formato anterior: hash codificado en base64
     $id = decodeId($_GET['hash']);
@@ -44,7 +29,7 @@ if(isset($_GET['slug'])){
 // Obtener noticia con autor y categorías
 // ==============================
 $sql = "
-    SELECT n.*, COALESCE(n.slug, n.id) as slug, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto,
+    SELECT n.*, n.slug, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto,
            GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
     FROM noticias n
     LEFT JOIN usuarios u ON n.autor = u.id_u
@@ -58,6 +43,29 @@ $stmt->bind_param("s", $param);
 $stmt->execute();
 $result = $stmt->get_result();
 $noticia = $result->fetch_assoc();
+// Si no se encontró por slug, intentar decodificar como ID y buscar por ID
+if (!$noticia && isset($_GET['slug'])) {
+    $decodedId = decodeId($_GET['slug']);
+    if ($decodedId > 0) {
+        $where_clause = "n.id = ?";
+        $param = $decodedId;
+        $sql = "
+            SELECT n.*, n.slug, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto,
+                   GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+            FROM noticias n
+            LEFT JOIN usuarios u ON n.autor = u.id_u
+            LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
+            LEFT JOIN categorias c ON nc.categoria_id = c.id_c
+            WHERE $where_clause AND n.fecha_publicacion <= NOW()
+            GROUP BY n.id
+        ";
+        $stmt = $con->prepare($sql);
+        $stmt->bind_param("i", $param);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $noticia = $result->fetch_assoc();
+    }
+}
 if (!$noticia) die("Noticia no encontrada");
 // Asegurar que $id siempre tenga el ID numérico de la noticia
 $id = $noticia['id'];
@@ -71,7 +79,7 @@ $recomendadas = [];
 if(!empty($cats)){
     $placeholders = implode(',', array_fill(0, count($cats), '?'));
     $sqlRec = "
-        SELECT DISTINCT n.id, COALESCE(n.slug, n.id) as slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion
+        SELECT DISTINCT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion
         FROM noticias n
         JOIN noticia_categoria nc ON n.id = nc.noticia_id
         JOIN categorias c ON nc.categoria_id = c.id_c
@@ -92,7 +100,7 @@ if(!empty($cats)){
 // NOTICIAS RECIENTES
 // ==============================
 $stmtRecientes = $con->prepare("
-    SELECT id, COALESCE(slug, id) as slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion
+    SELECT id, slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion
     FROM noticias
     WHERE fecha_publicacion <= NOW()
     AND id != ?
@@ -106,7 +114,7 @@ $recientes = $stmtRecientes->get_result();
 // Últimas y Populares
 // ==============================
 $stmtUltimas = $con->prepare("
-    SELECT id, COALESCE(slug, id) as slug, titulo, crop1, crop2, crop3
+    SELECT id, slug, titulo, crop1, crop2, crop3
     FROM noticias
     WHERE fecha_publicacion <= NOW()
     ORDER BY fecha_publicacion DESC
@@ -115,7 +123,7 @@ $stmtUltimas = $con->prepare("
 $stmtUltimas->execute();
 $ultimas = $stmtUltimas->get_result();
 $stmtPopulares = $con->prepare("
-    SELECT id, COALESCE(slug, id) as slug, titulo, crop1, crop2, crop3
+    SELECT id, slug, titulo, crop1, crop2, crop3
     FROM noticias
     ORDER BY vistas DESC, likes DESC
     LIMIT 3
@@ -414,7 +422,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                         </div>
                         <div class="col-md-8">
                           <div class="card-body">
-                            <a href="<?= newsUrl($row['slug']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
+                            <a href="<?= newsUrlFromRow($row) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
                           </div>
                         </div>
                     </div>
@@ -435,7 +443,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                         </div>
                         <div class="col-md-8">
                           <div class="card-body">
-                            <a href="<?= newsUrl($row['slug']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
+                            <a href="<?= newsUrlFromRow($row) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
                           </div>
                         </div>
                     </div>
@@ -470,10 +478,10 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 $img = imageUrl($imgSrc ?? 'img/placeholder.svg');
             ?>
               <div class="col">
-                  <div class="card h-100" data-url="<?= newsUrl($r['slug']) ?>">
+                  <div class="card h-100" data-url="<?= newsUrlFromRow($r) ?>">
                       <img src="<?= $img ?>" class="card-img-top" loading="lazy" decoding="async">
                       <div class="card-body">
-                          <a href="<?= newsUrl($r['slug']) ?>" class="news-link title-limit-2">
+                          <a href="<?= newsUrlFromRow($r) ?>" class="news-link title-limit-2">
                               <?= htmlspecialchars($r['titulo']) ?>
                           </a>
                           <small class="desc-limit-3">
@@ -501,10 +509,10 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 $img = imageUrl($imgSrc ?? 'img/placeholder.svg');
             ?>
               <div class="col">
-                  <div class="card h-100" data-url="<?= newsUrl($r['slug']) ?>">
+                  <div class="card h-100" data-url="<?= newsUrlFromRow($r) ?>">
                       <img src="<?= $img ?>" class="card-img-top" loading="lazy" decoding="async">
                       <div class="card-body">
-                          <a href="<?= newsUrl($r['slug']) ?>" class="news-link title-limit-2">
+                          <a href="<?= newsUrlFromRow($r) ?>" class="news-link title-limit-2">
                               <?= htmlspecialchars($r['titulo']) ?>
                           </a>
                           <small class="desc-limit-3">
