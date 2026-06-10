@@ -113,10 +113,17 @@ hr {
   }
   .sidebar {
     transform: translateX(-100%);
+    width: var(--sidebar-width);
     box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
   }
   .sidebar.active {
     transform: translateX(0);
+  }
+  .sidebar.active .sb-label {
+    opacity: 1;
+    pointer-events: auto;
+    position: static;
   }
   body.has-sidebar .site-main,
   body.has-sidebar .site-footer {
