@@ -34,7 +34,7 @@ if (!$editor) {
 // Obtener artículos del editor
 // ==============================
 $stmtNews = $con->prepare("
-    SELECT n.id, n.titulo, n.descripcion, n.crop1, n.crop3, n.fecha_publicacion,
+    SELECT n.id, COALESCE(n.slug, n.id) as slug, n.titulo, n.descripcion, n.crop1, n.crop3, n.fecha_publicacion,
            GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
     FROM noticias n
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
@@ -131,7 +131,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                         $imgArt = !empty($art['crop3']) ? $art['crop3'] : (!empty($art['crop1']) ? $art['crop1'] : 'img/placeholder.svg');
                         $cats = !empty($art['categorias']) ? array_map('trim', explode(',', $art['categorias'])) : [];
                     ?>
-                    <a href="<?= newsUrl($art['id']) ?>" class="autor-article-card">
+                    <a href="<?= newsUrl($art['slug']) ?>" class="autor-article-card">
                         <img src="<?= imageUrl($imgArt) ?>" alt="" class="autor-article-img" loading="lazy" decoding="async">
                         <div class="autor-article-body">
                             <div class="autor-article-tags">

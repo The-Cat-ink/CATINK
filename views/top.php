@@ -58,7 +58,7 @@ if ($countSemana < 7) {
 // CONSULTA PRINCIPAL
 // ==============================
 $stmt = $con->prepare("
-    SELECT n.id, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion,
+    SELECT n.id, COALESCE(n.slug, n.id) as slug, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion,
            GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
     FROM noticias n
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
@@ -90,7 +90,7 @@ $totalpaginas = ceil($totalNoticias / $porPagina);
 // SIDEBAR
 // ==============================
 $stmtUltimas = $con->prepare("
-    SELECT id, titulo, crop3
+    SELECT id, COALESCE(slug, id) as slug, titulo, crop3
     FROM noticias
     WHERE fecha_publicacion <= NOW()
     ORDER BY fecha_publicacion DESC
@@ -100,7 +100,7 @@ $stmtUltimas->execute();
 $ultimas = $stmtUltimas->get_result();
 
 $stmtPopulares = $con->prepare("
-    SELECT id, titulo, crop3
+    SELECT id, COALESCE(slug, id) as slug, titulo, crop3
     FROM noticias
     ORDER BY vistas DESC, likes DESC
     LIMIT 3
@@ -189,7 +189,7 @@ if ($q !== '') {
             $img = imageUrl($row['crop3']);
           ?>
 
-          <div class="card mb-3" data-url="<?= newsUrl($row['id']) ?>">
+          <div class="card mb-3" data-url="<?= newsUrl($row['slug']) ?>">
             <div class="row row-no-gap">
 
               <div class="col-md-4">
@@ -204,7 +204,7 @@ if ($q !== '') {
                   <?php endforeach; ?>
 
                   <h5 class="card-title">
-                    <a href="<?= newsUrl($row['id']) ?>" class="news-link">
+                    <a href="<?= newsUrl($row['slug']) ?>" class="news-link">
                       <?= htmlspecialchars($row['titulo']) ?>
                     </a>
                   </h5>
@@ -290,7 +290,7 @@ if ($q !== '') {
                         </div>
                         <div class="col-md-8">
                             <div class="card-body">
-                                <a href="<?= newsUrl($row['id']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
+                                <a href="<?= newsUrl($row['slug']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
                             </div>
                         </div>
                     </div>
@@ -311,7 +311,7 @@ if ($q !== '') {
                         </div>
                         <div class="col-md-8">
                             <div class="card-body">
-                                <a href="<?= newsUrl($row['id']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
+                                <a href="<?= newsUrl($row['slug']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
                             </div>
                         </div>
                     </div>

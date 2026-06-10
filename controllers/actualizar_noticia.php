@@ -3,6 +3,7 @@ session_start();
 include("./aclcontroller.php");
 proteger('noticias','editar');
 include("../data/conexion.php");
+require_once("../views/helpers/urlhelper.php");
 // ============================
 // FUNCION GUARDAR IMAGEN BASE64
 // ============================
@@ -100,6 +101,7 @@ $titulo = $_POST['titulo'] ?? '';
 $descripcion = $_POST['descripcion'] ?? '';
 $categorias = $_POST['categoria'] ?? []; // IDs ahora
 $contenido = $_POST['contenido'] ?? '';
+$slug = generateSlug($titulo);
 // sanitize as above
 $contenido = preg_replace('/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/i', '', $contenido);
 $contenido = preg_replace_callback(
@@ -130,13 +132,13 @@ $creado_por = $resCreado['creado_por'] ?? $usuario_id;
 
 $update = $con->prepare("
   UPDATE noticias
-  SET titulo = ?, descripcion = ?, contenido = ?, fecha_publicacion = ?, creado_por = ?, editado_por = ?
+  SET titulo = ?, slug = ?, descripcion = ?, contenido = ?, fecha_publicacion = ?, creado_por = ?, editado_por = ?
   WHERE id = ?
 ");
 // Asegurarse de que creado_por y usuario_id son integers
 $creado_por = intval($creado_por);
 $usuario_id = intval($usuario_id);
-$update->bind_param("ssssiii", $titulo, $descripcion, $contenido, $fecha_publicacion, $creado_por, $usuario_id, $id);
+$update->bind_param("ssssssiii", $titulo, $slug, $descripcion, $contenido, $fecha_publicacion, $creado_por, $usuario_id, $id);
 $result = $update->execute();
 // ============================
 // OBTENER IMAGENES ACTUALES
