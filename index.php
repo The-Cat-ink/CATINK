@@ -221,11 +221,12 @@ function topCard($r, $type = 'thumb') {
 ?>
 <div class="container mt-5">
     <div>
-        <h2>
-            <a href="<?= topUrl() ?>" style="text-decoration: none; color: inherit;">
+        <div class="section-separator">
+            <a href="<?= topUrl() ?>" class="section-separator-label">
                 <i class="bi bi-award"></i> <?= $topTitulo ?>
             </a>
-        </h2><br>
+            <div class="section-separator-line"></div>
+        </div>
         <?php
         // Fila 1 — banner grande + thumb pequeño
         $f1 = array_values(array_filter([
@@ -281,12 +282,13 @@ function topCard($r, $type = 'thumb') {
         <!-- ===================== -->
         <!-- SIDEBAR -->
         <!-- ===================== -->
-        <h2>
-            <a href="<?= recientesUrl() ?>" style="text-decoration: none; color: inherit;">
+        <div class="section-separator">
+            <a href="<?= recientesUrl() ?>" class="section-separator-label">
                 <i class="bi bi-alarm"></i> Lo más recientes
             </a>
-        </h2>
-        <div class="row mt-5">
+            <div class="section-separator-line"></div>
+        </div>
+        <div class="row mt-4">
             <div class="col-md-9">
                 <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidad) : ?>
                     <div class="ad-container">
@@ -335,7 +337,12 @@ function topCard($r, $type = 'thumb') {
                     </div>
                 <?php endforeach; ?>
                 <?php if($secciones['videos']['estado'] == 1) : ?>
-                    <h3><i class="bi bi-camera-video"></i> Videos Destacados</h3>
+                    <div class="section-separator">
+                        <div class="section-separator-label">
+                            <i class="bi bi-camera-video"></i> Videos Destacados
+                        </div>
+                        <div class="section-separator-line"></div>
+                    </div>
                     <div class="video-carousel <?php echo count($vid) == 1? 'single-video':''; ?>">
                         <?php foreach($vid as $video): ?>
                             <div class="video-slide">
@@ -505,10 +512,13 @@ function topCard($r, $type = 'thumb') {
             </div>
         </div>
         <br>
-        <div>
-              <h3><i class="bi bi-stars"></i> Recomendados para ti</h3>
-              <br>
-              <div class="row">
+        <div class="section-separator">
+            <div class="section-separator-label">
+                <i class="bi bi-stars"></i> Recomendados para ti
+            </div>
+            <div class="section-separator-line"></div>
+        </div>
+        <div class="row mt-4">
                 <?php while($r = $recomendadas->fetch_assoc()):
                     $img = img([$r['crop3'], $r['crop2'], $r['crop1']]);
                 ?>
@@ -533,10 +543,13 @@ function topCard($r, $type = 'thumb') {
               </div>
             </div>
         <br>
-        <div>
-              <h3><i class="bi bi-lightning-fill"></i> Noticias recientes</h3>
-              <br>
-              <div class="row">
+        <div class="section-separator">
+            <div class="section-separator-label">
+                <i class="bi bi-lightning-fill"></i> Noticias recientes
+            </div>
+            <div class="section-separator-line"></div>
+        </div>
+        <div class="row mt-4">
                 <?php while($r = $recientes->fetch_assoc()):
                     $img = img([$r['crop3'], $r['crop2'], $r['crop1']]);
                 ?>
