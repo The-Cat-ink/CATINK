@@ -9,7 +9,7 @@ require_once(__DIR__ . "/views/helpers/urlhelper.php");
 $stmt = $con->prepare("
     SELECT
         n.id,
-        COALESCE(n.slug, n.id) as slug,
+        n.slug,
         n.titulo,
         n.descripcion,
         n.crop1,

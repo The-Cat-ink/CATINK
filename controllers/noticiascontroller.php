@@ -138,7 +138,7 @@ if (!$stmt) {
     echo json_encode(['success' => false, 'error' => 'Error de Base de Datos al preparar la noticia.']);
     exit;
 }
-$stmt->bind_param("ssissiii", $titulo, $slug, $descripcion, $autor, $contenido, $fecha_publicacion, $usuario_id, $usuario_id);
+$stmt->bind_param("sssissii", $titulo, $slug, $descripcion, $autor, $contenido, $fecha_publicacion, $usuario_id, $usuario_id);
 if (!$stmt->execute()) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'error' => 'Error al guardar la noticia en Base de Datos.']);
