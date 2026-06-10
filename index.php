@@ -105,7 +105,7 @@ $vid = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 // ==============================
 $recomendadas = [];
 $sqlRec = "
-    SELECT id, COALESCE(slug, id) as slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion, nombre
+    SELECT id, slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion, nombre
     FROM noticias, usuarios
     WHERE noticias.autor = usuarios.id_u and fecha_publicacion <= NOW()
     ORDER BY likes DESC, vistas DESC, fecha_publicacion DESC
@@ -118,7 +118,7 @@ $recomendadas = $stmtRec->get_result();
 // NOTICIAS RECIENTES
 // ==============================
 $stmtRecientes = $con->prepare("
-    SELECT id, COALESCE(slug, id) as slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion, nombre
+    SELECT id, slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion, nombre
     FROM noticias, usuarios
     WHERE noticias.autor = usuarios.id_u and fecha_publicacion <= NOW()
     ORDER BY fecha_publicacion DESC
@@ -158,7 +158,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
     </div>
     <div class="carousel-inner">
         <?php foreach($slider as $i => $row): ?>
-            <div class="carousel-item <?= $i==0?'active':'' ?>" data-url="<?= newsUrl($row['slug']) ?>">
+            <div class="carousel-item <?= $i==0?'active':'' ?>" data-url="<?= newsUrlFromRow($row) ?>">
                 <picture>
                     <!-- MÓVIL: miniatura (16:9) con animación de paneo -->
                     <source
@@ -174,7 +174,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
                     <?php foreach(array_filter(array_map('trim', explode(',', $row['categorias'] ?? ''))) as $cat): ?>
                         <a href="<?= categoryUrl($cat) ?>" class="carousel-tag"><?= htmlspecialchars($cat) ?></a>
                     <?php endforeach; ?>
-                    <h5><a href="<?= newsUrl($row['slug']) ?>" class="carousel-link"><?= htmlspecialchars($row['titulo']) ?></a></h5>
+                    <h5><a href="<?= newsUrlFromRow($row) ?>" class="carousel-link"><?= htmlspecialchars($row['titulo']) ?></a></h5>
                     <p><?= htmlspecialchars($row['descripcion']) ?></p>
                 </div>
             </div>
@@ -188,7 +188,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
 // Macro local para renderizar una news-card con overlay
 function topCard($r, $type = 'thumb') {
     $isBanner = $type === 'banner';
-    $url  = newsUrl($r['slug']);
+    $url  = newsUrlFromRow($r);
     $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
     $tagsHtml = '';
     foreach ($cats as $c) {
@@ -296,7 +296,7 @@ function topCard($r, $type = 'thumb') {
                     </div>
                 <?php endif; ?>
                 <?php foreach($noticiasMasRecientes as $row): ?>
-                    <div class="card mb-3" data-url="<?= newsUrl($row['slug']) ?>">
+                    <div class="card mb-3" data-url="<?= newsUrlFromRow($row) ?>">
                         <div class="row row-no-gap">
                             <div class="col-md-4">
                                 <img src="<?= img([$row['crop3'], $row['crop2'], $row['crop1']]) ?>" alt="" class="card-img-left" loading="lazy" decoding="async">
@@ -307,7 +307,7 @@ function topCard($r, $type = 'thumb') {
                                         <a href="<?= categoryUrl($cat) ?>" class="tag-news"><?= htmlspecialchars($cat) ?></a>
                                     <?php endforeach; ?>
                                     <h4 class="card-title">
-                                        <a href="<?= newsUrl($row['slug']) ?>" class="news-link"><?= htmlspecialchars($row['titulo']) ?></a>
+                                        <a href="<?= newsUrlFromRow($row) ?>" class="news-link"><?= htmlspecialchars($row['titulo']) ?></a>
                                     </h4>
                                     <p class="card-text"><?= htmlspecialchars($row['descripcion']) ?></p>
                                     <span class="text-muted"> 
@@ -345,7 +345,7 @@ function topCard($r, $type = 'thumb') {
                 <?php endif; ?>
                 <br>
                 <?php foreach($noticiasMasRecientes2 as $row): ?>
-                    <div class="card mb-3" data-url="<?= newsUrl($row['slug']) ?>">
+                    <div class="card mb-3" data-url="<?= newsUrlFromRow($row) ?>">
                         <div class="row row-no-gap">
                             <div class="col-md-4">
                                 <img src="<?= img([$row['crop3'], $row['crop2'], $row['crop1']]) ?>" alt="" class="card-img-left" loading="lazy" decoding="async">
@@ -356,7 +356,7 @@ function topCard($r, $type = 'thumb') {
                                         <a href="<?= categoryUrl($cat) ?>" class="tag-news"><?= htmlspecialchars($cat) ?></a>
                                     <?php endforeach; ?>
                                     <h4 class="card-title">
-                                        <a href="<?= newsUrl($row['slug']) ?>" class="news-link"><?= htmlspecialchars($row['titulo']) ?></a>
+                                        <a href="<?= newsUrlFromRow($row) ?>" class="news-link"><?= htmlspecialchars($row['titulo']) ?></a>
                                     </h4>
                                     <p class="card-text"><?= htmlspecialchars($row['descripcion']) ?></p>
                                     <span class="text-muted"> 
@@ -385,7 +385,7 @@ function topCard($r, $type = 'thumb') {
                 <div class="news-carousel">
                     <?php foreach($noticiasMasRecientes3 as $row): ?>
                         <div class="news-slide">
-                            <div class="news-card card-thumb" data-url="<?= newsUrl($row['slug']) ?>">
+                            <div class="news-card card-thumb" data-url="<?= newsUrlFromRow($row) ?>">
                                 <img src="<?= img([$row['crop3'], $row['crop2'], $row['crop1']]) ?>" alt="" loading="lazy" decoding="async">
                                 <div class="news-overlay">
                                     <div class="news-tags">
@@ -394,7 +394,7 @@ function topCard($r, $type = 'thumb') {
                                         <?php endforeach; ?>
                                     </div>
                                     <div class="news-content">
-                                        <a href="<?= newsUrl($row['slug']) ?>" class="news-link-card"><?= htmlspecialchars($row['titulo']) ?></a>
+                                        <a href="<?= newsUrlFromRow($row) ?>" class="news-link-card"><?= htmlspecialchars($row['titulo']) ?></a>
                                         <span class="text-muted">
                                             <?php
                                                 $fecha_pub = strtotime($row['fecha']); // convierte la fecha de la BD a timestamp
@@ -458,7 +458,7 @@ function topCard($r, $type = 'thumb') {
                                             </div>
                                             <div class="col-md-8">
                                                 <div class="card-body">
-                                                    <a href="<?= newsUrl($row['slug']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
+                                                    <a href="<?= newsUrlFromRow($row) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
                                                 </div>
                                             </div>
                                         </div>
@@ -479,7 +479,7 @@ function topCard($r, $type = 'thumb') {
                                             </div>
                                             <div class="col-md-8">
                                                 <div class="card-body">
-                                                    <a href="<?= newsUrl($row['slug']) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
+                                                    <a href="<?= newsUrlFromRow($row) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
                                                 </div>
                                             </div>
                                         </div>
@@ -512,10 +512,10 @@ function topCard($r, $type = 'thumb') {
                     $img = img([$r['crop3'], $r['crop2'], $r['crop1']]);
                 ?>
                   <div class="col">
-                      <div class="card h-100" data-url="<?= newsUrl($r['slug']) ?>">
+                      <div class="card h-100" data-url="<?= newsUrlFromRow($r) ?>">
                           <img src="<?= $img ?>" class="card-img-top">
                           <div class="card-body">
-                              <a href="<?= newsUrl($r['slug']) ?>" class="news-link title-limit-1">
+                              <a href="<?= newsUrlFromRow($r) ?>" class="news-link title-limit-1">
                                   <?= htmlspecialchars($r['titulo']) ?>
                               </a>
                               <small class="desc-limit-3">
@@ -540,10 +540,10 @@ function topCard($r, $type = 'thumb') {
                     $img = img([$r['crop3'], $r['crop2'], $r['crop1']]);
                 ?>
                   <div class="col">
-                      <div class="card h-100" data-url="<?= newsUrl($r['slug']) ?>">
+                      <div class="card h-100" data-url="<?= newsUrlFromRow($r) ?>">
                           <img src="<?= $img ?>" class="card-img-top" loading="lazy" decoding="async">
                           <div class="card-body">
-                              <a href="<?= newsUrl($r['slug']) ?>" class="news-link title-limit-1">
+                              <a href="<?= newsUrlFromRow($r) ?>" class="news-link title-limit-1">
                                   <?= htmlspecialchars($r['titulo']) ?>
                               </a>
                               <small class="desc-limit-3">

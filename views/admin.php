@@ -57,7 +57,7 @@ $tiempoTotal = $con->query("
 $resultNoticias = $con->query("
     SELECT
         n.id,
-        COALESCE(n.slug, n.id) as slug,
+        n.slug,
         n.titulo,
         n.descripcion,
         n.crop3,
@@ -126,7 +126,7 @@ function formatNumberShort($num){
                                     <a href="<?= basePath() ?>/views/editar.php?id=<?= $n['id'] ?>" class="btn btn-sm btn-primary py-0 px-2" title="Editar"><i class="bi bi-pencil"></i></a>
                                 <?php endif; ?>
                             </div>
-                            <a href="<?= newsUrl($n['slug']) ?>" target="_blank" style="display:block;">
+                            <a href="<?= newsUrlFromRow($n) ?>" target="_blank" style="display:block;">
                                 <img src="<?= htmlspecialchars($img) ?>" class="card-img-top" style="object-fit:cover; height:200px;">
                             </a>
                             <div class="card-body">
@@ -136,7 +136,7 @@ function formatNumberShort($num){
                                     <?php endforeach; ?>
                                 </div>
                                 <h5 class="card-title text-truncate">
-                                    <a href="<?= newsUrl($n['slug']) ?>" target="_blank" class="text-decoration-none text-dark">
+                                    <a href="<?= newsUrlFromRow($n) ?>" target="_blank" class="text-decoration-none text-dark">
                                         <?= htmlspecialchars($n['titulo']) ?>
                                     </a>
                                 </h5>

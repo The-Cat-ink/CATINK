@@ -45,6 +45,20 @@ function newsUrl($slugOrId){
     }
     return basePath() . "/n/" . $slugOrId;
 }
+// Helper para generar URL desde una fila completa de noticia
+function newsUrlFromRow($row){
+    $slug = $row['slug'] ?? null;
+    $id = $row['id'] ?? null;
+    // Si existe slug, usarlo
+    if ($slug !== null && $slug !== '') {
+        return basePath() . "/n/" . $slug;
+    }
+    // Si no, usar ID codificado
+    if ($id !== null) {
+        return basePath() . "/n/" . encodeId($id);
+    }
+    return basePath() . "/n/";
+}
 function newsUrlLong($slugOrId){
     // Formato largo más legible: /noticia/{slug}
     if ($slugOrId === null || $slugOrId === '') {
