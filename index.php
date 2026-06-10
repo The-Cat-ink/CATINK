@@ -343,12 +343,14 @@ function topCard($r, $type = 'thumb') {
                         </div>
                         <div class="section-separator-line"></div>
                     </div>
-                    <div class="video-carousel <?php echo count($vid) == 1? 'single-video':''; ?>">
+                    <div class="videos-destacados-container">
+                        <div class="video-carousel <?php echo count($vid) == 1? 'single-video':''; ?>">
                         <?php foreach($vid as $video): ?>
                             <div class="video-slide">
                                 <?php echo bloquearEmbeds(renderizarVideo($video['url_v'])); ?>
                             </div>
                         <?php endforeach; ?>
+                        </div>
                     </div>
                 <?php endif; ?>
                 <br>

@@ -1249,6 +1249,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .news-overlay p { order: 2;}
 .news-overlay p, .news-overlay h3 {
   margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 /* TAG */
 .news-tag {
@@ -2941,38 +2942,72 @@ body, .nav-link, .btn, .card, .site-main {
 /* SECTION SEPARATOR */
 .section-separator {
   display: flex;
+  flex-direction: row;
   align-items: center;
   margin-bottom: 20px;
+  margin-left: -15px;
+  margin-right: -15px;
   position: relative;
 }
 
 .section-separator-label {
   background: var(--accent);
   color: #fff;
-  font-weight: 700;
-  font-size: 1.1rem;
-  padding: 10px 20px 10px 15px;
-  clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%);
-  -webkit-clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%);
+  font-weight: 500;
+  font-size: 1.3rem;
+  font-family: 'Baloo 2', 'Nunito', 'Quicksand', sans-serif;
+  padding: 10px 20px;
+  border-radius: 50px;
   white-space: nowrap;
   z-index: 1;
-  box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.15);
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .section-separator-label:hover {
   text-decoration: none;
   color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 2px 4px 12px rgba(0,0,0,0.2);
+  transition: all 0.2s ease;
 }
 
 .section-separator-line {
   flex: 1;
   height: 2px;
-  background: #dc3545;
-  margin-left: -10px;
+  background: var(--accent);
+  margin-left: 0;
   z-index: 0;
 }
 
 [data-bs-theme="dark"] .section-separator-label {
-  box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+}
+
+[data-bs-theme="dark"] .section-separator-label:hover {
+  box-shadow: 2px 4px 12px rgba(0,0,0,0.4);
+}
+
+/* VIDEOS DESTACADOS CONTAINER */
+.videos-destacados-container {
+  background: #f5f5f5;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.videos-destacados-container .section-separator-label {
+  background: var(--accent);
+  color: #fff;
+}
+
+.videos-destacados-container .section-separator-line {
+  background: var(--accent);
+}
+
+[data-bs-theme="dark"] .videos-destacados-container {
+  background: #2a2a3e;
 }
