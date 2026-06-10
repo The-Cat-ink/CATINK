@@ -60,7 +60,7 @@ if (!$noticia && isset($_GET['slug'])) {
             GROUP BY n.id
         ";
         $stmt = $con->prepare($sql);
-        $stmt->bind_param("s", $param);
+        $stmt->bind_param("i", $param);
         $stmt->execute();
         $result = $stmt->get_result();
         $noticia = $result->fetch_assoc();
