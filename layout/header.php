@@ -81,6 +81,9 @@ $menuJson = [
     <?= json_encode($menuJson, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT) ?>
   </script>
   <!-- CSS / JS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= basePath() ?>/CSS/styles.css?v=<?= filemtime(__DIR__ . '/../CSS/styles.css') ?>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
@@ -182,11 +185,58 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </a>
         <?php endif; ?>
 
-        <a href="<?= basePath() ?>/perfil" class="user-avatar-link" title="Mi Perfil">
-          <span class="user-avatar">
-            <i class="bi bi-person"></i>
-          </span>
-        </a>
+        <div class="user-dropdown">
+          <button class="user-avatar-link" id="userDropdownBtn" title="Mi Perfil">
+            <span class="user-avatar">
+              <i class="bi bi-person"></i>
+            </span>
+          </button>
+          <div class="user-dropdown-menu" id="userDropdownMenu">
+            <a href="<?= basePath() ?>/perfil" class="dropdown-item">
+              <i class="bi bi-person-circle"></i> Mi Perfil
+            </a>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-label">Categorías</div>
+            <?php foreach($categorias as $cat): ?>
+              <a href="<?= basePath() ?>/categoria/<?= urlencode($cat['nombre']) ?>" class="dropdown-item">
+                <i class="bi bi-tag"></i> <?= htmlspecialchars($cat['nombre']) ?>
+              </a>
+            <?php endforeach; ?>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-label">Enlaces de interés</div>
+            <a href="<?= basePath() ?>/nosotros" class="dropdown-item">
+              <i class="bi bi-building-fill"></i> Nosotros
+            </a>
+            <a href="<?= basePath() ?>/terminos" class="dropdown-item">
+              <i class="bi bi-file-earmark-text-fill"></i> Términos y Condiciones
+            </a>
+            <a href="<?= basePath() ?>/privacidad" class="dropdown-item">
+              <i class="bi bi-file-lock-fill"></i> Aviso de privacidad
+            </a>
+            <a href="<?= basePath() ?>/solicitud" class="dropdown-item">
+              <i class="bi bi-briefcase-fill"></i> Únete a nuestro equipo
+            </a>
+            <a href="<?= basePath() ?>/suscripcion" class="dropdown-item">
+              <i class="bi bi-bookmark-star-fill"></i> Suscríbete
+            </a>
+            <a href="<?= basePath() ?>/contactanos" class="dropdown-item">
+              <i class="bi bi-envelope-fill"></i> Contáctanos
+            </a>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-label">Síguenos</div>
+            <div class="dropdown-social-links">
+              <a href="https://www.facebook.com/TheCatink?locale=es_LA" aria-label="Facebook" target="_blank"><i class="bi bi-facebook"></i></a>
+              <a href="https://x.com/The_Catink/" aria-label="Twitter / X" target="_blank"><i class="bi bi-twitter-x"></i></a>
+              <a href="https://www.instagram.com/the.catink/" aria-label="Instagram" target="_blank"><i class="bi bi-instagram"></i></a>
+              <a href="https://www.youtube.com/@thecatink" aria-label="YouTube" target="_blank"><i class="bi bi-youtube"></i></a>
+              <a href="https://www.tiktok.com/@thecatink" aria-label="TikTok" target="_blank"><i class="bi bi-tiktok"></i></a>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="<?= basePath() ?>/controllers/logoutcontroller.php" class="dropdown-item dropdown-logout">
+              <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+            </a>
+          </div>
+        </div>
       <?php else: ?>
         <a href="<?= basePath() ?>/login" class="btn btn-outline-secondary" title="Iniciar sesión">
           <i class="bi bi-person"></i>

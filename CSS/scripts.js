@@ -157,3 +157,28 @@ if (videoCarousel && prevBtn) {
         videoCarousel.scrollBy({ left: -videoCarousel.offsetWidth, behavior: "smooth" });
     });
 }
+
+// User dropdown toggle
+const userDropdownBtn = document.getElementById('userDropdownBtn');
+const userDropdownMenu = document.getElementById('userDropdownMenu');
+
+if (userDropdownBtn && userDropdownMenu) {
+  userDropdownBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    userDropdownMenu.classList.toggle('show');
+  });
+
+  // Cerrar menú al hacer click fuera
+  document.addEventListener('click', function(e) {
+    if (!userDropdownBtn.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+      userDropdownMenu.classList.remove('show');
+    }
+  });
+
+  // Cerrar menú al presionar Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      userDropdownMenu.classList.remove('show');
+    }
+  });
+}

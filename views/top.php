@@ -163,9 +163,11 @@ if ($q !== '') {
   <div class="container-fluid">
 
       <!-- Encabezado de resultados -->
-      <div class="mb-4">
-          <h1 style="font-weight: 800; font-size: 2rem;">Top Semanal</h1>
-          <p class="text-muted" style="font-size: 1.1rem;">Las noticias más populares y visitadas</p>
+      <div class="section-separator">
+          <div class="section-separator-label">
+              <i class="bi bi-trophy"></i> Top Semanal
+          </div>
+          <div class="section-separator-line"></div>
       </div>
     <div class="row">
 
