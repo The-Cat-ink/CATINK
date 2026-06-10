@@ -975,8 +975,9 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
     padding: 4px 7px;
     order: 2;
   }
-  .navbar-brand { flex: 0 0 auto; }
-  /* Opciones (tema, perfil, admin, salir) pegadas al logo, hamburger al extremo derecho */
+  .navbar-brand { flex: 0 0 auto; order: 0; }
+  /* Collapse siempre por debajo de la barra de iconos */
+  .navbar-collapse { order: 10; }
   .nav-actions {
     gap: 5px;
     flex-wrap: nowrap;

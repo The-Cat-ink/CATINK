@@ -150,6 +150,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <i class="bi bi-box-arrow-right"></i> Cerrar sesión
           </a>
         </div>
+      <?php else: ?>
+        <div class="nav-logout-mobile">
+          <a class="nav-link" href="<?= basePath() ?>/login">
+            <i class="bi bi-person"></i> Iniciar sesión
+          </a>
+        </div>
       <?php endif; ?>
     </div>
     <div class="nav-actions">
