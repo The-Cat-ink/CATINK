@@ -1145,15 +1145,17 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
     display: flex;
     flex-direction: row;
     justify-content: center;
-    gap: 10px;
-    padding: 10px 0 4px;
+    gap: 8px;
+    padding: 6px 0 4px;
     width: 100%;
     background: var(--bg);
   }
   .indicator-avatar {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
   }
+  /* Reducir margen superior del contenedor principal en móvil */
+  .mt-5 { margin-top: 1.2rem; }
   .news-tag:not(:first-of-type){
     display: none !important;
   }
