@@ -964,6 +964,17 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
     justify-content: center;
     gap: 0;
   }
+  /* En móvil: desactivar :hover (se queda pegado tras tap) — solo JS controla la apertura */
+  .nav-actions .user-dropdown:hover .dropdown-menu {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  .nav-actions .user-dropdown.open .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
   /* Normalizar btn-admin-panel a 34×34 */
   .nav-actions .btn-admin-panel {
     width: 34px;
