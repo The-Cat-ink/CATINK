@@ -6,10 +6,25 @@ include("./helpers/socialEmbed.php");
 require_once("./helpers/urlhelper.php");
 // Soportar múltiples formas de acceso a noticias
 if(isset($_GET['slug'])){
-    // Formato nuevo: slug amigable
     $slug = $_GET['slug'];
-    $where_clause = "n.slug = ?";
-    $param = $slug;
+    // Verificar si es un ID codificado en base64 (no contiene guiones, solo alfanumérico)
+    if (preg_match('/^[a-zA-Z0-9=]+$/', $slug) && !preg_match('/-/', $slug)) {
+        // Intentar decodificar como ID
+        $decodedId = decodeId($slug);
+        if ($decodedId > 0) {
+            // Es un ID codificado, buscar por ID
+            $where_clause = "n.id = ?";
+            $param = $decodedId;
+        } else {
+            // Es un slug real, buscar por slug
+            $where_clause = "n.slug = ?";
+            $param = $slug;
+        }
+    } else {
+        // Es un slug real (contiene guiones), buscar por slug
+        $where_clause = "n.slug = ?";
+        $param = $slug;
+    }
 } elseif(isset($_GET['hash'])){
     // Formato anterior: hash codificado en base64
     $id = decodeId($_GET['hash']);
