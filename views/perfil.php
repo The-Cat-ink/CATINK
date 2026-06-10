@@ -70,6 +70,9 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
           <span class="perfil-meta-value"><?= $fechaRegistro ?></span>
         </div>
       </div>
+      <a href="<?= basePath() ?>/controllers/logoutcontroller.php" class="perfil-logout-btn">
+        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+      </a>
     </div>
     <!-- COLUMNA DERECHA: Formulario -->
     <div class="perfil-form">
@@ -234,6 +237,24 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
 .perfil-drop-text { font-size: 0.95rem; color: var(--muted); }
 .perfil-drop-text span { color: var(--accent); font-weight: 600; text-decoration: underline; }
 .perfil-drop-hint { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+.perfil-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.perfil-logout-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
 </style>
 
 <script>
