@@ -318,6 +318,53 @@ h2 {
 }
 
 /* ============================
+   ENLACE DIRECTO AL PERFIL (reemplaza user-dropdown)
+   ============================ */
+.nav-actions .user-avatar-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--card-bg, #F7FAFC);
+  border: 1px solid var(--border, #E2E8F0);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.nav-actions .user-avatar-link:hover {
+  background: var(--hover-bg, #EDF2F7);
+  border-color: var(--border-hover, #CBD5E0);
+}
+
+/* ============================
+   CERRAR SESIÓN EN MENÚ HAMBURGUESA
+   ============================ */
+.nav-logout-mobile {
+  display: none;
+  width: 100%;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding-top: 8px;
+}
+.nav-logout-link {
+  color: #E53E3E !important;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+}
+.nav-logout-link:hover {
+  background: rgba(229, 62, 62, 0.08);
+}
+@media (max-width: 1024px) {
+  .nav-logout-mobile { display: block; }
+}
+
+/* ============================
    ESPACIADO Y ALINEACIÓN
    ============================ */
 .nav-actions {
@@ -954,26 +1001,15 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   }
   /* Ocultar nombre de usuario, mostrar solo ícono */
   .btn-username { display: none; }
-  .nav-actions .user-dropdown .user-name { display: none; }
-  /* Normalizar user-dropdown a 34×34 como el resto de botones */
-  .nav-actions .user-dropdown {
+  /* Normalizar user-avatar-link a 34×34 como el resto de botones */
+  .nav-actions .user-avatar-link {
     width: 34px;
     height: 34px;
-    padding: 0;
-    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    gap: 0;
-  }
-  /* En móvil: desactivar :hover (se queda pegado tras tap) — solo JS controla la apertura */
-  .nav-actions .user-dropdown:hover .dropdown-menu {
-    opacity: 0;
-    visibility: hidden;
-    transform: translateX(-50%) translateY(-10px);
-  }
-  .nav-actions .user-dropdown.open .dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
+    flex-shrink: 0;
+    text-decoration: none;
   }
   /* Normalizar btn-admin-panel a 34×34 */
   .nav-actions .btn-admin-panel {

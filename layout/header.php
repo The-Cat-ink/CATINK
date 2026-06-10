@@ -144,6 +144,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </li>
         <?php endforeach; ?>
       </ul>
+      <?php if(isset($_SESSION['usuario'])): ?>
+        <div class="nav-logout-mobile">
+          <a class="nav-link nav-logout-link" href="<?= basePath() ?>/controllers/logoutcontroller.php">
+            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+          </a>
+        </div>
+      <?php endif; ?>
     </div>
     <div class="nav-actions">
       <!-- SWITCH DE TEMA PILL-SHAPED -->
@@ -169,17 +176,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </a>
         <?php endif; ?>
 
-        <div class="user-dropdown">
+        <a href="<?= basePath() ?>/perfil" class="user-avatar-link" title="Mi Perfil">
           <span class="user-avatar">
             <i class="bi bi-person"></i>
           </span>
-          <span class="user-name"><?= htmlspecialchars($_SESSION['usuario']) ?></span>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="<?= basePath() ?>/perfil"><i class="bi bi-person-circle"></i> Mi Perfil</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="<?= basePath() ?>/controllers/logoutcontroller.php"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a></li>
-          </ul>
-        </div>
+        </a>
       <?php else: ?>
         <a href="<?= basePath() ?>/login" class="btn btn-outline-secondary" title="Iniciar sesión">
           <i class="bi bi-person"></i>

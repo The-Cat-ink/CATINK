@@ -27,17 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Toggle del dropdown de usuario: abrir/cerrar al hacer click en el icono
-  const userDropdown = document.querySelector('.nav-actions .user-dropdown');
-  if (userDropdown) {
-    userDropdown.addEventListener('click', function(e) {
-      e.stopPropagation();
-      userDropdown.classList.toggle('open');
-    });
-    document.addEventListener('click', function() {
-      userDropdown.classList.remove('open');
-    });
-  }
 
   // Toggle de tema: interruptor pill-shaped
   const themeSwitchPill = document.querySelector('.theme-switch-pill');
