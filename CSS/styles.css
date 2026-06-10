@@ -761,6 +761,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .carousel-tag { text-transform:uppercase; font-size:.85rem; font-weight:600; opacity:.8; margin-bottom:10px; margin-top: 10px; background-color:#EF3363; border-radius:8px; padding:4px 8px; display:inline-block; text-decoration: none; color:#fff;}
 .carousel-link {display:inline-block; text-decoration:none; color: #fff; position: relative; z-index: 5;}
 .carousel-link:hover { color:#EF3363; }
+.carousel-wrapper { position: relative; }
 .custom-indicators { position:absolute; left:calc(max(0px, (100% - var(--cw)) / 2) + 16px); bottom:28px; top:auto; transform:none; display:flex; flex-direction:row; gap:12px; z-index:10; justify-content:flex-start; }
 .custom-indicators button { background:none; border:none; padding:0; cursor:pointer; }
 .indicator-avatar { position:relative; width:72px; height:72px; }
@@ -1100,12 +1101,11 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   }
   /* Caption adjustments for mobile */
   .carousel-caption {
-    display: flex !important; /* Force show on mobile overriding caption-md */
-    padding: 16px 16px 56px;
-    padding-right: 16px; /* Quitar el margen derecho grande */
-    /* Degradado más corto: solo cubre la franja inferior para no tapar la imagen */
-    background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 30%, rgba(0,0,0,0) 60%);
-    align-items: flex-start; /* Alinea los elementos (incluyendo tags) a la izquierda */
+    display: flex !important;
+    padding: 16px;
+    margin-top: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0) 75%);
+    align-items: flex-start;
     justify-content: flex-end;
   }
   .carousel-tag:not(:first-of-type){
@@ -1127,24 +1127,22 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   }
   .carousel-caption p {
     font-size: 0.9rem;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
   }
   /* Custom indicators mobile: vuelven a abajo horizontal */
+  /* En móvil: indicadores fuera de la imagen, entre carousel y Top Semanal */
   .custom-indicators {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
     display: flex;
     flex-direction: row;
-    top: auto;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding-left: 0;
-    gap: 8px;
-    width: 100%;
     justify-content: center;
+    gap: 10px;
+    padding: 10px 0 4px;
+    width: 100%;
+    background: var(--bg);
   }
   .indicator-avatar {
     width: 48px;
@@ -2049,13 +2047,18 @@ hr{
     min-height: 300px;
   }
   .carousel-caption {
-    padding: 14px 12px 56px;
+    padding: 14px 12px 14px;
+    justify-content: flex-end;
   }
   .carousel-caption h5 {
     font-size: 1.35rem;
   }
   .carousel-caption p {
     font-size: 0.85rem;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    display: block;
+    overflow: visible;
   }
   .custom-indicators {
     gap: 6px;

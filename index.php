@@ -146,25 +146,16 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
 <!-- ===================== -->
 <!-- SLIDER PRINCIPAL -->
 <!-- ===================== -->
+<div class="carousel-wrapper">
 <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000">
-    <div class="carousel-indicators custom-indicators">
-        <?php foreach($slider as $i => $row): ?>
-            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="<?= $i ?>" class="<?= $i==0?'active':'' ?>">
-                <div class="indicator-avatar">
-                    <img src="<?= img([$row['crop3'], $row['crop2'], $row['crop1']]) ?>" alt="<?= htmlspecialchars($row['titulo']) ?>">
-                    <svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="16"></circle></svg>
-                </div>
-            </button>
-        <?php endforeach; ?>
-    </div>
     <div class="carousel-inner">
         <?php foreach($slider as $i => $row): ?>
             <div class="carousel-item <?= $i==0?'active':'' ?>" data-url="<?= newsUrlFromRow($row) ?>">
                 <picture>
-                    <!-- MÓVIL: miniatura (16:9) con animación de paneo -->
+                    <!-- MÓVIL: crop 16:9; fallback a original (no al 21:6 que causa zoom extremo) -->
                     <source
                         media="(max-width:768px)"
-                        srcset="<?= img([$row['crop3'], $row['crop2']]) ?>">
+                        srcset="<?= img([$row['crop3'], $row['crop1']]) ?>">
                     <!-- DESKTOP: banner (21:6) -->
                     <img
                         src="<?= img([$row['crop2'], $row['crop1']]) ?>"
@@ -181,6 +172,17 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
             </div>
         <?php endforeach; ?>
     </div>
+</div>
+<div class="carousel-indicators custom-indicators" id="carouselIndicatorsOuter">
+    <?php foreach($slider as $i => $row): ?>
+        <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="<?= $i ?>" class="<?= $i==0?'active':'' ?>">
+            <div class="indicator-avatar">
+                <img src="<?= img([$row['crop3'], $row['crop2'], $row['crop1']]) ?>" alt="<?= htmlspecialchars($row['titulo']) ?>">
+                <svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="16"></circle></svg>
+            </div>
+        </button>
+    <?php endforeach; ?>
+</div>
 </div>
 <!-- ===================== -->
 <!-- TOP NOTICIAS -->
