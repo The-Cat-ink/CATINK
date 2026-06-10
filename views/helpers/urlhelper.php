@@ -35,14 +35,37 @@ function generateSlug($titulo){
 // URLs para noticias - soporta múltiples formatos
 function newsUrl($slug){
     // Formato corto y principal: /n/{slug}
+    // Fallback a ID codificado si slug es NULL (noticias existentes)
+    if ($slug === null || $slug === '') {
+        // Intentar obtener ID del contexto global si existe
+        global $noticia;
+        if (isset($noticia['id'])) {
+            return basePath() . "/n/" . encodeId($noticia['id']);
+        }
+        return basePath() . "/n/";
+    }
     return basePath() . "/n/" . $slug;
 }
 function newsUrlLong($slug){
     // Formato largo más legible: /noticia/{slug}
+    if ($slug === null || $slug === '') {
+        global $noticia;
+        if (isset($noticia['id'])) {
+            return basePath() . "/noticia/" . encodeId($noticia['id']);
+        }
+        return basePath() . "/noticia/";
+    }
     return basePath() . "/noticia/" . $slug;
 }
 function newsUrlAlt($slug){
     // Formato alternativo: /news/{slug}
+    if ($slug === null || $slug === '') {
+        global $noticia;
+        if (isset($noticia['id'])) {
+            return basePath() . "/news/" . encodeId($noticia['id']);
+        }
+        return basePath() . "/news/";
+    }
     return basePath() . "/news/" . $slug;
 }
 // URLs para categorías - soporta múltiples formatos
