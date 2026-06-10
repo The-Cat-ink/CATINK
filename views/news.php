@@ -59,6 +59,8 @@ $stmt->execute();
 $result = $stmt->get_result();
 $noticia = $result->fetch_assoc();
 if (!$noticia) die("Noticia no encontrada");
+// Asegurar que $id siempre tenga el ID numérico de la noticia
+$id = $noticia['id'];
 // Parsear categorías
 $cats = !empty($noticia['categorias']) ? explode(',', $noticia['categorias']) : [];
 $cats = array_map('trim', $cats);
