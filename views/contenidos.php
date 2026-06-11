@@ -823,6 +823,67 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
             hideTimeoutId = hideTooltip(tooltip, 400);
             dayColumn._tooltip = null;
         });
+
+        // Adjuntar tooltip de noticias a cada autor directamente (evita mouseover global)
+        tooltip.querySelectorAll('.tooltip-author').forEach(authorEl => {
+            const autorId   = authorEl.dataset.authorId;
+            const date      = authorEl.dataset.date;
+            const autorData = newsByAuthorAndDate[autorId]?.[date];
+            if (!autorData?.news?.length) return;
+
+            let newsHideId = null;
+
+            authorEl.addEventListener('mouseenter', () => {
+                if (newsHideId) { clearTimeout(newsHideId); newsHideId = null; }
+                if (authorEl._newsTooltip) return;
+
+                const newsTooltip = document.createElement('div');
+                newsTooltip.className = 'news-tooltip';
+
+                let html = `<div class="tooltip-header">Noticias de ${autorData.nombre}</div><div class="tooltip-news">`;
+                autorData.news.forEach(news => {
+                    const img = news.crop3
+                        ? `<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(news.crop3)}`
+                        : '<?= basePath() ?>/img/placeholder.svg';
+                    html += `<div class="tooltip-news-item">
+                                <img src="${img}" alt="${news.titulo}" class="news-thumb">
+                                <span class="news-title">${news.titulo}</span>
+                             </div>`;
+                });
+                html += '</div>';
+                newsTooltip.innerHTML = html;
+                document.body.appendChild(newsTooltip);
+
+                const rect = authorEl.getBoundingClientRect();
+                let left = rect.right + 8;
+                const top = rect.top;
+                const tw  = newsTooltip.offsetWidth || 220;
+                if (left + tw > window.innerWidth - 10) left = rect.left - tw - 8;
+
+                newsTooltip.style.left = left + 'px';
+                newsTooltip.style.top  = top  + 'px';
+
+                authorEl._newsTooltip = newsTooltip;
+                requestAnimationFrame(() => newsTooltip.classList.add('visible'));
+
+                newsTooltip.addEventListener('mouseenter', () => {
+                    if (newsHideId) { clearTimeout(newsHideId); newsHideId = null; }
+                });
+                newsTooltip.addEventListener('mouseleave', () => {
+                    newsHideId = hideTooltip(newsTooltip, 400);
+                    authorEl._newsTooltip = null;
+                });
+            });
+
+            authorEl.addEventListener('mouseleave', (e) => {
+                const newsTooltip = authorEl._newsTooltip;
+                if (!newsTooltip) return;
+                const related = e.relatedTarget;
+                if (related && (related === newsTooltip || newsTooltip.contains(related))) return;
+                newsHideId = hideTooltip(newsTooltip, 400);
+                authorEl._newsTooltip = null;
+            });
+        });
     });
 
     header.addEventListener('mouseleave', function(e) {
@@ -833,70 +894,6 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         hideTimeoutId = hideTooltip(tooltip, 400);
         dayColumn._tooltip = null;
     });
-});
-
-// Tooltip para autores - mostrar sus noticias
-document.addEventListener('mouseover', function(e) {
-    const authorEl = e.target.closest('.tooltip-author');
-    if (!authorEl) return;
-    if (authorEl._newsTooltip) return;
-
-    const autorId  = authorEl.dataset.authorId;
-    const date     = authorEl.dataset.date;
-    const autorData = newsByAuthorAndDate[autorId]?.[date];
-    if (!autorData?.news?.length) return;
-
-    const tooltip = document.createElement('div');
-    tooltip.className = 'news-tooltip';
-
-    let html = `<div class="tooltip-header">Noticias de ${autorData.nombre}</div><div class="tooltip-news">`;
-    autorData.news.forEach(news => {
-        const img = news.crop3
-            ? `<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(news.crop3)}`
-            : '<?= basePath() ?>/img/placeholder.svg';
-        html += `<div class="tooltip-news-item">
-                    <img src="${img}" alt="${news.titulo}" class="news-thumb">
-                    <span class="news-title">${news.titulo}</span>
-                 </div>`;
-    });
-    html += '</div>';
-    tooltip.innerHTML = html;
-    document.body.appendChild(tooltip);
-
-    // Posicionar a la derecha del autor, ajustando si se sale de pantalla
-    const rect = authorEl.getBoundingClientRect();
-    let left = rect.right + 8;
-    let top  = rect.top;
-    const tw = tooltip.offsetWidth || 220;
-    if (left + tw > window.innerWidth - 10) left = rect.left - tw - 8;
-
-    tooltip.style.left = left + 'px';
-    tooltip.style.top  = top  + 'px';
-
-    authorEl._newsTooltip = tooltip;
-    let newsHideId = null;
-
-    requestAnimationFrame(() => tooltip.classList.add('visible'));
-
-    tooltip.addEventListener('mouseenter', () => {
-        if (newsHideId) { clearTimeout(newsHideId); newsHideId = null; }
-    });
-    tooltip.addEventListener('mouseleave', () => {
-        newsHideId = hideTooltip(tooltip, 400);
-        authorEl._newsTooltip = null;
-    });
-});
-
-document.addEventListener('mouseout', function(e) {
-    const authorEl = e.target.closest('.tooltip-author');
-    if (!authorEl?._newsTooltip) return;
-
-    const related = e.relatedTarget;
-    const tooltip = authorEl._newsTooltip;
-    if (related && (related === tooltip || tooltip.contains(related))) return;
-
-    hideTooltip(tooltip, 400);
-    authorEl._newsTooltip = null;
 });
 
 // Cerrar tooltips al hacer click fuera
