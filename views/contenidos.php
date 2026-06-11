@@ -762,35 +762,33 @@ function hideTooltip(tooltip, delay) {
     }, delay);
 }
 
-// Tooltip para días - mostrar autores
+// Tooltip para días - mostrar autores (solo en el badge .day-count)
 document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
+    const badge = dayColumn.querySelector('.day-count');
+    if (!badge) return; // sin noticias → sin tooltip
+
     let hideTimeoutId = null;
 
     function cancelHide() {
-        if (hideTimeoutId) {
-            clearTimeout(hideTimeoutId);
-            hideTimeoutId = null;
-        }
+        if (hideTimeoutId) { clearTimeout(hideTimeoutId); hideTimeoutId = null; }
     }
 
-    dayColumn.addEventListener('mouseenter', function() {
+    badge.addEventListener('mouseenter', function() {
         cancelHide();
+        if (dayColumn._tooltip) return;
 
-        // Si ya hay tooltip activo no recrear
-        if (this._tooltip) return;
-
-        const authors = JSON.parse(this.dataset.authors || '{}');
+        const authors = JSON.parse(dayColumn.dataset.authors || '{}');
         if (Object.keys(authors).length === 0) return;
 
         // Cerrar cualquier otro tooltip de día abierto
         document.querySelectorAll('.authors-tooltip').forEach(t => t.remove());
-        document.querySelectorAll('.day-column').forEach(d => { if (d !== this) d._tooltip = null; });
+        document.querySelectorAll('.day-column').forEach(d => { if (d !== dayColumn) d._tooltip = null; });
 
         const tooltip = document.createElement('div');
         tooltip.className = 'authors-tooltip';
 
         let html = '<div class="tooltip-header">Autores del día</div><div class="tooltip-authors">';
-        const currentDate = this.dataset.date;
+        const currentDate = dayColumn.dataset.date;
         for (const [autorId, autor] of Object.entries(authors)) {
             const foto = autor.foto ? `<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(autor.foto)}` : null;
             html += `
@@ -804,20 +802,17 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         tooltip.innerHTML = html;
         document.body.appendChild(tooltip);
 
-        // Posicionar debajo del .day-header, no encima de toda la columna
-        const header = this.querySelector('.day-header');
-        const rect = (header || this).getBoundingClientRect();
+        // Posicionar debajo del badge
+        const rect = this.getBoundingClientRect();
         let left = rect.left;
-        const top  = rect.bottom + 5;
-
-        // Evitar que se salga por la derecha
+        const top = rect.bottom + 6;
         const tw = tooltip.offsetWidth || 250;
         if (left + tw > window.innerWidth - 10) left = window.innerWidth - tw - 10;
 
         tooltip.style.left = left + 'px';
         tooltip.style.top  = top  + 'px';
 
-        this._tooltip = tooltip;
+        dayColumn._tooltip = tooltip;
         requestAnimationFrame(() => tooltip.classList.add('visible'));
 
         tooltip.addEventListener('mouseenter', cancelHide);
@@ -827,16 +822,13 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         });
     });
 
-    dayColumn.addEventListener('mouseleave', function(e) {
-        const tooltip = this._tooltip;
+    badge.addEventListener('mouseleave', function(e) {
+        const tooltip = dayColumn._tooltip;
         if (!tooltip) return;
-
-        // Si el cursor va hacia el propio tooltip, no ocultar
         const related = e.relatedTarget;
         if (related && (related === tooltip || tooltip.contains(related))) return;
-
         hideTimeoutId = hideTooltip(tooltip, 400);
-        this._tooltip = null;
+        dayColumn._tooltip = null;
     });
 });
 
