@@ -776,8 +776,8 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         document.body.appendChild(tooltip);
         
         const rect = this.getBoundingClientRect();
-        tooltip.style.left = rect.left + 'px';
-        tooltip.style.top = (rect.bottom + 5) + 'px';
+        tooltip.style.left = (rect.right + 5) + 'px';
+        tooltip.style.top = rect.top + 'px';
         
         this._tooltip = tooltip;
     });
