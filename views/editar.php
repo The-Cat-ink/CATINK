@@ -1035,8 +1035,16 @@ const CROP_TITLES = {
 };
 let activeCrop = null, cropperInstance = null;
 const zoneSources = {};
+const zoneCropData = {};
+let _chainNextCrop = false;
 
-function openCrop(num) { activeCrop = num; document.getElementById('fileInput').click(); }
+function openCrop(num) {
+  activeCrop = num;
+  _chainNextCrop = true;
+  delete zoneCropData[num];
+  delete zoneCropData[num === 2 ? 3 : 2];
+  document.getElementById('fileInput').click();
+}
 
 function initCropper(num) {
   const cropImg  = document.getElementById('cropImg');
@@ -1061,20 +1069,28 @@ function initCropper(num) {
     background: false,
     ready() {
       if (num === 2 || num === 3) {
-        const imgData = cropperInstance.getImageData();
-        const ratio = cropRatioOverride[num];
-        let cbH = imgData.height;
-        let cbW = cbH * ratio;
-        if (cbW > imgData.width) {
-          cbW = imgData.width;
-          cbH = cbW / ratio;
+        if (zoneCropData[num]) {
+          cropperInstance.setData(zoneCropData[num]);
+        } else {
+          const imgData = cropperInstance.getImageData();
+          const ratio = cropRatioOverride[num];
+          let cbH = imgData.height;
+          let cbW = cbH * ratio;
+          if (cbW > imgData.width) {
+            cbW = imgData.width;
+            cbH = cbW / ratio;
+          }
+          const availX = imgData.width - cbW;
+          const leftOffset = num === 3
+            ? imgData.left + availX * 0.85
+            : imgData.left + availX / 2;
+          cropperInstance.setCropBoxData({
+            width:  cbW,
+            height: cbH,
+            left:   leftOffset,
+            top:    imgData.top  + (imgData.height - cbH) / 2
+          });
         }
-        cropperInstance.setCropBoxData({
-          width:  cbW,
-          height: cbH,
-          left:   imgData.left + (imgData.width  - cbW) / 2,
-          top:    imgData.top  + (imgData.height - cbH) / 2
-        });
       }
     }
   });
@@ -1083,6 +1099,7 @@ function initCropper(num) {
 function adjustCrop(num) {
   if (!zoneSources[num]) return;
   activeCrop = num;
+  _chainNextCrop = false;
   const cropImg  = document.getElementById('cropImg');
   if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
   const cropArea = document.querySelector('.crop-area');
@@ -1098,6 +1115,7 @@ function removeCrop(num) {
   const clearZone = n => {
     document.getElementById('crop' + n).value = '';
     delete zoneSources[n];
+    delete zoneCropData[n];
     const z = document.getElementById('zone' + n);
     z.querySelectorAll('.preview-img').forEach(el => el.remove());
     z.classList.remove('has-image');
@@ -1168,81 +1186,42 @@ function setZonePreviewFromUrl(zoneId, url) {
 
 function confirmCrop() {
   if (!cropperInstance) return;
-  const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 2560, maxHeight: 2560 });
+  const canvas      = cropperInstance.getCroppedCanvas({ maxWidth: 2560, maxHeight: 2560 });
+  const srcForAuto  = document.getElementById('cropImg').src;
+  const cropNum     = activeCrop;
+  const chain       = _chainNextCrop;
+  _chainNextCrop    = false;
+  zoneCropData[cropNum] = cropperInstance.getData();
+  closeCrop();
 
-  // toBlob sin compresión (igual que crear.php)
   canvas.toBlob(function(blob) {
     const reader = new FileReader();
     reader.onloadend = function() {
       const data64 = reader.result;
-      document.getElementById('crop' + activeCrop).value = data64;
-      setZonePreview(activeCrop, data64);
+      document.getElementById('crop' + cropNum).value = data64;
+      setZonePreview(cropNum, data64);
+
+      if (chain) {
+        const nextNum = cropNum === 2 ? 3 : 2;
+        activeCrop = nextNum;
+        zoneSources[nextNum] = srcForAuto;
+        const cropImg  = document.getElementById('cropImg');
+        const cropArea = document.querySelector('.crop-area');
+        if (!cropArea.contains(cropImg)) cropArea.appendChild(cropImg);
+        cropImg.src = '';
+        document.getElementById('cropModalTitle').textContent = CROP_TITLES[nextNum];
+        document.getElementById('cropModal').classList.add('open');
+        cropImg.onload = () => initCropper(nextNum);
+        cropImg.src = srcForAuto;
+      } else {
+        const c2 = document.getElementById('crop2').value;
+        const c3 = document.getElementById('crop3').value;
+        document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
+        updateAllPreviews();
+      }
     };
     reader.readAsDataURL(blob);
   }, 'image/png', 1.0);
-  // NO sobrescribir zoneSources con el recorte: al re-editar se parte de la
-  // fuente original y se puede corregir el recorte libremente.
-
-  if (activeCrop === 2 && !document.getElementById('crop3').value)
-    autoFillMiniature(document.getElementById('cropImg').src);
-  if (activeCrop === 3 && !document.getElementById('crop2').value)
-    autoFillBanner(document.getElementById('cropImg').src);
-
-  const c2 = document.getElementById('crop2').value;
-  const c3 = document.getElementById('crop3').value;
-  document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
-  updateAllPreviews();
-  closeCrop();
-}
-
-function autoFillMiniature(srcDataUrl) {
-  zoneSources[3] = srcDataUrl;
-  const tmpImg = new Image();
-  tmpImg.onload = function () {
-    const ratio = 16 / 9;
-    let sw = tmpImg.width, sh = tmpImg.height;
-    if (sw / sh > ratio) { sw = sh * ratio; } else { sh = sw / ratio; }
-    const sx = (tmpImg.width  - sw) / 2;
-    const sy = (tmpImg.height - sh) / 2;
-    const canvas = document.createElement('canvas');
-    canvas.width  = Math.min(Math.round(sw), 1920);
-    canvas.height = Math.round(canvas.width / ratio);
-    const ctx3 = canvas.getContext('2d');
-    ctx3.imageSmoothingEnabled = true;
-    ctx3.imageSmoothingQuality = 'high';
-    ctx3.drawImage(tmpImg, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
-    const data64 = canvas.toDataURL('image/png');
-    document.getElementById('crop3').value = data64;
-    setZonePreview(3, data64);
-    document.getElementById('previewSection').style.display = 'block';
-    updateAllPreviews();
-  };
-  tmpImg.src = srcDataUrl;
-}
-
-function autoFillBanner(srcDataUrl) {
-  zoneSources[2] = srcDataUrl;
-  const tmpImg = new Image();
-  tmpImg.onload = function () {
-    const ratio = 21 / 6;
-    let sw = tmpImg.width, sh = tmpImg.height;
-    if (sw / sh > ratio) { sw = sh * ratio; } else { sh = sw / ratio; }
-    const sx = (tmpImg.width  - sw) / 2;
-    const sy = (tmpImg.height - sh) / 2;
-    const canvas = document.createElement('canvas');
-    canvas.width  = Math.min(Math.round(sw), 2560);
-    canvas.height = Math.round(canvas.width / ratio);
-    const ctx2 = canvas.getContext('2d');
-    ctx2.imageSmoothingEnabled = true;
-    ctx2.imageSmoothingQuality = 'high';
-    ctx2.drawImage(tmpImg, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
-    const data64 = canvas.toDataURL('image/png');
-    document.getElementById('crop2').value = data64;
-    setZonePreview(2, data64);
-    document.getElementById('previewSection').style.display = 'block';
-    updateAllPreviews();
-  };
-  tmpImg.src = srcDataUrl;
 }
 
 /* ── VISTA PREVIA ── */
