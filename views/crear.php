@@ -1220,9 +1220,9 @@ function confirmCrop() {
       document.getElementById('crop' + cropNum).value = data64;
       setZonePreview(cropNum, data64);
 
-      if (cropNum === 2 && !document.getElementById('crop3').value)
+      if (cropNum === 2)
         autoFillMiniature(srcForAuto);
-      if (cropNum === 3 && !document.getElementById('crop2').value)
+      if (cropNum === 3)
         autoFillBanner(srcForAuto);
 
       const c2 = document.getElementById('crop2').value;
