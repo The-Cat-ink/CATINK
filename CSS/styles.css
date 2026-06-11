@@ -3037,3 +3037,10 @@ body, .nav-link, .btn, .card, .site-main {
 [data-bs-theme="dark"] .videos-destacados-container {
   background: #2a2a3e;
 }
+
+@media (max-width: 768px) {
+  .section-separator-label {
+    font-size: 1rem;
+    padding: 8px 16px;
+  }
+}
