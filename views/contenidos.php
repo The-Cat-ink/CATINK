@@ -762,10 +762,14 @@ function hideTooltip(tooltip, delay) {
     }, delay);
 }
 
-// Tooltip para días - mostrar autores (solo en el badge .day-count)
+// Tooltip para días - mostrar autores
+// Trigger: .day-header completo (área amplia); posición: debajo del badge .day-count
 document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
-    const badge = dayColumn.querySelector('.day-count');
-    if (!badge) return; // sin noticias → sin tooltip
+    const authors = JSON.parse(dayColumn.dataset.authors || '{}');
+    if (Object.keys(authors).length === 0) return; // sin autores → sin tooltip
+
+    const header = dayColumn.querySelector('.day-header');
+    if (!header) return;
 
     let hideTimeoutId = null;
 
@@ -773,12 +777,9 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         if (hideTimeoutId) { clearTimeout(hideTimeoutId); hideTimeoutId = null; }
     }
 
-    badge.addEventListener('mouseenter', function() {
+    header.addEventListener('mouseenter', function() {
         cancelHide();
         if (dayColumn._tooltip) return;
-
-        const authors = JSON.parse(dayColumn.dataset.authors || '{}');
-        if (Object.keys(authors).length === 0) return;
 
         // Cerrar cualquier otro tooltip de día abierto
         document.querySelectorAll('.authors-tooltip').forEach(t => t.remove());
@@ -802,8 +803,10 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         tooltip.innerHTML = html;
         document.body.appendChild(tooltip);
 
-        // Posicionar debajo del badge
-        const rect = this.getBoundingClientRect();
+        // Posicionar debajo del .day-count badge (o debajo del header si no existe)
+        const badge  = dayColumn.querySelector('.day-count');
+        const anchor = badge || this;
+        const rect   = anchor.getBoundingClientRect();
         let left = rect.left;
         const top = rect.bottom + 6;
         const tw = tooltip.offsetWidth || 250;
@@ -822,7 +825,7 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         });
     });
 
-    badge.addEventListener('mouseleave', function(e) {
+    header.addEventListener('mouseleave', function(e) {
         const tooltip = dayColumn._tooltip;
         if (!tooltip) return;
         const related = e.relatedTarget;
