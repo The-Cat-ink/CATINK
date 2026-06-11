@@ -753,9 +753,10 @@ document.addEventListener('DOMContentLoaded', () => {
 const newsByAuthorAndDate = <?= json_encode($newsByAuthorAndDate) ?>;
 
 // Oculta el tooltip DESPUÉS del delay y luego lo elimina del DOM
-function hideTooltip(tooltip, delay) {
+function hideTooltip(tooltip, delay, onHide) {
     return setTimeout(() => {
         tooltip.classList.remove('visible');
+        if (onHide) onHide();
         setTimeout(() => {
             if (tooltip.parentNode) tooltip.remove();
         }, 200); // tiempo de la transición CSS
@@ -820,8 +821,7 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
 
         tooltip.addEventListener('mouseenter', cancelHide);
         tooltip.addEventListener('mouseleave', () => {
-            hideTimeoutId = hideTooltip(tooltip, 400);
-            dayColumn._tooltip = null;
+            hideTimeoutId = hideTooltip(tooltip, 400, () => { dayColumn._tooltip = null; });
         });
 
         // Adjuntar tooltip de noticias a cada autor directamente (evita mouseover global)
@@ -870,8 +870,7 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
                     if (newsHideId) { clearTimeout(newsHideId); newsHideId = null; }
                 });
                 newsTooltip.addEventListener('mouseleave', () => {
-                    newsHideId = hideTooltip(newsTooltip, 400);
-                    authorEl._newsTooltip = null;
+                    newsHideId = hideTooltip(newsTooltip, 400, () => { authorEl._newsTooltip = null; });
                 });
             });
 
@@ -880,8 +879,7 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
                 if (!newsTooltip) return;
                 const related = e.relatedTarget;
                 if (related && (related === newsTooltip || newsTooltip.contains(related))) return;
-                newsHideId = hideTooltip(newsTooltip, 400);
-                authorEl._newsTooltip = null;
+                newsHideId = hideTooltip(newsTooltip, 400, () => { authorEl._newsTooltip = null; });
             });
         });
     });
@@ -891,8 +889,7 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         if (!tooltip) return;
         const related = e.relatedTarget;
         if (related && (related === tooltip || tooltip.contains(related))) return;
-        hideTimeoutId = hideTooltip(tooltip, 400);
-        dayColumn._tooltip = null;
+        hideTimeoutId = hideTooltip(tooltip, 400, () => { dayColumn._tooltip = null; });
     });
 });
 
