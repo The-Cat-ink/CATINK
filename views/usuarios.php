@@ -1,13 +1,21 @@
 <?php
+error_log("DEBUG usuarios.php: Iniciando carga");
 include("./../layout/headerAdmin.php");
 include("./../views/helpers/urlhelper.php");
+
+error_log("DEBUG usuarios.php: Header cargado");
+
 $ACL = $_SESSION['ACL']['usuarios'] ?? [
     'crear' => true,
     'leer' => true,
     'editar' => true,
     'eliminar' => true,
 ];
+
+error_log("DEBUG usuarios.php: ACL: " . json_encode($ACL));
+
 if (!$ACL['leer']) {
+    error_log("DEBUG usuarios.php: Sin permisos de lectura, redirigiendo");
     header("Location: admin.php");
     exit();
 }
@@ -17,6 +25,8 @@ if (!$ACL['leer']) {
 </script>
 <?php
 include("./../data/conexion.php");
+error_log("DEBUG usuarios.php: Conexión establecida");
+
 $q = trim($_GET['q'] ?? '');
 if($q !== ''){
     $like = "%$q%";
@@ -25,9 +35,13 @@ if($q !== ''){
 } else {
     $stmt = $con->prepare("SELECT u.*, a.imagen as avatar_img FROM usuarios u LEFT JOIN avatares_perfil a ON u.avatar_id = a.id_avatar ORDER BY u.registro DESC");
 }
+
+error_log("DEBUG usuarios.php: Ejecutando consulta");
 $stmt->execute();
 $res = $stmt->get_result();
 $usuarios = $res->fetch_all(MYSQLI_ASSOC);
+
+error_log("DEBUG usuarios.php: Usuarios encontrados: " . count($usuarios));
 
 $totalUsuarios = count($usuarios);
 $ultimos7dias = count(array_filter($usuarios, function($u) {
