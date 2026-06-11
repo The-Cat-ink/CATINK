@@ -22,7 +22,7 @@ $showRegistro = isset($_GET['modo']) && $_GET['modo'] === 'registro';
     <link rel="icon" href="<?= basePath() ?>/img/catink-icon.png?v=2" type="image/png">
     <link rel="apple-touch-icon" href="<?= basePath() ?>/img/catink-icon.png?v=2">
 </head>
-<body style="display:flex; flex-direction:column; min-height:100vh; background-color: var(--bg-body);">
+<body style="display:flex; flex-direction:column; min-height:100vh; background: var(--bg);">
 <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
     <a href="<?= basePath() ?>/">
       <img src="<?= imageUrl('img/logo.png') ?>" alt="CatInk" style="width:180px; margin-bottom:24px; border-radius:12px;" loading="lazy" decoding="async">
