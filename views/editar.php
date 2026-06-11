@@ -56,6 +56,7 @@ while ($row = $resCat->fetch_assoc()) $categoriasSeleccionadas[] = $row;
 $fechaExistente = date('Y-m-d\TH:i', strtotime($noticia['fecha_publicacion']));
 
 // URLs de imágenes usando imageUrl() para servir correctamente
+$crop1Url = !empty($noticia['crop1']) ? imageUrl($noticia['crop1']) : '';
 $crop2Url = imageUrl($noticia['crop2'] ?? '');
 $crop3Url = imageUrl($noticia['crop3'] ?? '');
 ?>
@@ -738,6 +739,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 <script>
 // Datos PHP → JS
 const BASE_PATH          = '<?= basePath() ?>';
+const EXISTING_CROP1_URL = '<?= addslashes($crop1Url) ?>';
 const EXISTING_CROP2_URL = '<?= addslashes($crop2Url) ?>';
 const EXISTING_CROP3_URL = '<?= addslashes($crop3Url) ?>';
 const FECHA_EXISTENTE    = '<?= $fechaExistente ?>';
@@ -879,11 +881,11 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Pre-cargar zonas con imágenes existentes ── */
   if (EXISTING_CROP2_URL) {
     setZonePreviewFromUrl(2, EXISTING_CROP2_URL);
-    zoneSources[2] = EXISTING_CROP2_URL;
+    zoneSources[2] = EXISTING_CROP1_URL || EXISTING_CROP2_URL;
   }
   if (EXISTING_CROP3_URL) {
     setZonePreviewFromUrl(3, EXISTING_CROP3_URL);
-    zoneSources[3] = EXISTING_CROP2_URL || EXISTING_CROP3_URL;
+    zoneSources[3] = EXISTING_CROP1_URL || EXISTING_CROP3_URL;
   }
   if (EXISTING_CROP2_URL || EXISTING_CROP3_URL) {
     document.getElementById('previewSection').style.display = 'block';
@@ -1124,6 +1126,7 @@ function removeCrop(num) {
   if (num === 2) clearZone(3); else clearZone(2);
   const c2 = document.getElementById('crop2').value;
   const c3 = document.getElementById('crop3').value;
+  if (!c2 && !c3) document.getElementById('crop1').value = '';
   document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
 }
 
@@ -1132,7 +1135,25 @@ function onFileSelected(e) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
-    zoneSources[activeCrop] = ev.target.result;
+    const fullSrc = ev.target.result;
+
+    const origImg = new Image();
+    origImg.onload = function() {
+      const MAX = 1920;
+      let w = origImg.naturalWidth, h = origImg.naturalHeight;
+      if (w > MAX || h > MAX) {
+        if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+        else        { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const tmpC = document.createElement('canvas');
+      tmpC.width = w; tmpC.height = h;
+      tmpC.getContext('2d').drawImage(origImg, 0, 0, w, h);
+      document.getElementById('crop1').value = tmpC.toDataURL('image/jpeg', 0.92);
+    };
+    origImg.src = fullSrc;
+
+    zoneSources[2] = fullSrc;
+    zoneSources[3] = fullSrc;
     const cropImg  = document.getElementById('cropImg');
     if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
     const cropArea = document.querySelector('.crop-area');
@@ -1141,7 +1162,7 @@ function onFileSelected(e) {
     document.getElementById('cropModalTitle').textContent = CROP_TITLES[activeCrop];
     document.getElementById('cropModal').classList.add('open');
     cropImg.onload = () => initCropper(activeCrop);
-    cropImg.src = ev.target.result;
+    cropImg.src = fullSrc;
   };
   reader.readAsDataURL(file);
   e.target.value = '';

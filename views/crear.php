@@ -429,6 +429,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 
   <form id="formPublicacion" enctype="multipart/form-data">
     <input type="hidden" name="autor" value="<?= $_SESSION['id_u'] ?? '' ?>">
+    <input type="hidden" name="crop1" id="crop1">
     <input type="hidden" name="crop2" id="crop2">
     <input type="hidden" name="crop3" id="crop3">
     <input type="hidden" name="contenido" id="contenido">
@@ -1182,6 +1183,7 @@ function removeCrop(num) {
   };
   clearZone(num);
   clearZone(num === 2 ? 3 : 2);
+  document.getElementById('crop1').value = '';
   document.getElementById('previewSection').style.display = 'none';
 }
 function onFileSelected(e) {
@@ -1189,7 +1191,25 @@ function onFileSelected(e) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
-    zoneSources[activeCrop] = ev.target.result;
+    const fullSrc = ev.target.result;
+
+    // Guardar original escalado en crop1 para que editar.php pueda re-recortar desde el original
+    const origImg = new Image();
+    origImg.onload = function() {
+      const MAX = 1920;
+      let w = origImg.naturalWidth, h = origImg.naturalHeight;
+      if (w > MAX || h > MAX) {
+        if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const tmpC = document.createElement('canvas');
+      tmpC.width = w; tmpC.height = h;
+      tmpC.getContext('2d').drawImage(origImg, 0, 0, w, h);
+      document.getElementById('crop1').value = tmpC.toDataURL('image/jpeg', 0.92);
+    };
+    origImg.src = fullSrc;
+
+    zoneSources[activeCrop] = fullSrc;
     const cropImg = document.getElementById('cropImg');
     if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
     const cropArea = document.querySelector('.crop-area');
@@ -1198,7 +1218,7 @@ function onFileSelected(e) {
     document.getElementById('cropModalTitle').textContent = CROP_TITLES[activeCrop];
     document.getElementById('cropModal').classList.add('open');
     cropImg.onload = () => initCropper(activeCrop);
-    cropImg.src = ev.target.result;
+    cropImg.src = fullSrc;
   };
   reader.readAsDataURL(file);
   e.target.value = '';
