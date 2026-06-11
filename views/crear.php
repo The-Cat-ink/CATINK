@@ -1097,9 +1097,11 @@ const CROP_TITLES = {
 };
 let activeCrop = null, cropperInstance = null;
 const zoneSources = {};
+let _chainNextCrop = false;
 
 function openCrop(num) {
   activeCrop = num;
+  _chainNextCrop = true;
   document.getElementById('fileInput').click();
 }
 function initCropper(num) {
@@ -1147,6 +1149,7 @@ function initCropper(num) {
 function adjustCrop(num) {
   if (!zoneSources[num]) return;
   activeCrop = num;
+  _chainNextCrop = false;
   const cropImg = document.getElementById('cropImg');
   if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
   const cropArea = document.querySelector('.crop-area');
@@ -1208,9 +1211,11 @@ function setZonePreview(zoneId, data64) {
 }
 function confirmCrop() {
   if (!cropperInstance) return;
-  const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 2560, maxHeight: 2560 });
+  const canvas    = cropperInstance.getCroppedCanvas({ maxWidth: 2560, maxHeight: 2560 });
   const srcForAuto = document.getElementById('cropImg').src;
-  const cropNum    = activeCrop;
+  const cropNum   = activeCrop;
+  const chain     = _chainNextCrop;
+  _chainNextCrop  = false;
   closeCrop();
 
   canvas.toBlob(function(blob) {
@@ -1220,15 +1225,25 @@ function confirmCrop() {
       document.getElementById('crop' + cropNum).value = data64;
       setZonePreview(cropNum, data64);
 
-      if (cropNum === 2)
-        autoFillMiniature(srcForAuto);
-      if (cropNum === 3)
-        autoFillBanner(srcForAuto);
-
-      const c2 = document.getElementById('crop2').value;
-      const c3 = document.getElementById('crop3').value;
-      document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
-      updateAllPreviews();
+      if (chain) {
+        // Abrir recortador para el otro formato con la misma imagen fuente
+        const nextNum = cropNum === 2 ? 3 : 2;
+        activeCrop = nextNum;
+        zoneSources[nextNum] = srcForAuto;
+        const cropImg  = document.getElementById('cropImg');
+        const cropArea = document.querySelector('.crop-area');
+        if (!cropArea.contains(cropImg)) cropArea.appendChild(cropImg);
+        cropImg.src = '';
+        document.getElementById('cropModalTitle').textContent = CROP_TITLES[nextNum];
+        document.getElementById('cropModal').classList.add('open');
+        cropImg.onload = () => initCropper(nextNum);
+        cropImg.src = srcForAuto;
+      } else {
+        const c2 = document.getElementById('crop2').value;
+        const c3 = document.getElementById('crop3').value;
+        document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
+        updateAllPreviews();
+      }
     };
     reader.readAsDataURL(blob);
   }, 'image/png', 1.0);
