@@ -1208,32 +1208,30 @@ function setZonePreview(zoneId, data64) {
 }
 function confirmCrop() {
   if (!cropperInstance) return;
-  // NO usar canvas.toDataURL() porque comprime
-  // En su lugar, obtener la imagen original sin procesar
   const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 2560, maxHeight: 2560 });
-  
-  // Convertir canvas a blob sin compresión
+  const srcForAuto = document.getElementById('cropImg').src;
+  const cropNum    = activeCrop;
+  closeCrop();
+
   canvas.toBlob(function(blob) {
-    // Convertir blob a base64 sin compresión
     const reader = new FileReader();
     reader.onloadend = function() {
       const data64 = reader.result;
-      document.getElementById('crop' + activeCrop).value = data64;
-      setZonePreview(activeCrop, data64);
+      document.getElementById('crop' + cropNum).value = data64;
+      setZonePreview(cropNum, data64);
+
+      if (cropNum === 2 && !document.getElementById('crop3').value)
+        autoFillMiniature(srcForAuto);
+      if (cropNum === 3 && !document.getElementById('crop2').value)
+        autoFillBanner(srcForAuto);
+
+      const c2 = document.getElementById('crop2').value;
+      const c3 = document.getElementById('crop3').value;
+      document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
+      updateAllPreviews();
     };
     reader.readAsDataURL(blob);
-  }, 'image/png', 1.0);  // 1.0 = máxima calidad sin compresión
-
-  if (activeCrop === 2 && !document.getElementById('crop3').value)
-    autoFillMiniature(document.getElementById('cropImg').src);
-  if (activeCrop === 3 && !document.getElementById('crop2').value)
-    autoFillBanner(document.getElementById('cropImg').src);
-
-  const c2 = document.getElementById('crop2').value;
-  const c3 = document.getElementById('crop3').value;
-  document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
-  updateAllPreviews();
-  closeCrop();
+  }, 'image/png', 1.0);
 }
 
 function autoFillMiniature(srcDataUrl) {
