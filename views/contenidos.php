@@ -787,6 +787,23 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         tooltip.style.top = (rect.top - tooltip.offsetHeight - 5) + 'px';
         
         this._tooltip = tooltip;
+        
+        // Prevenir que el tooltip desaparezca cuando el cursor está sobre él
+        tooltip.addEventListener('mouseenter', function() {
+            if (hideTimeout) {
+                clearTimeout(hideTimeout);
+                hideTimeout = null;
+            }
+        });
+        
+        tooltip.addEventListener('mouseleave', function() {
+            hideTimeout = setTimeout(() => {
+                if (dayColumn._tooltip) {
+                    dayColumn._tooltip.remove();
+                    dayColumn._tooltip = null;
+                }
+            }, 300);
+        });
     });
     
     dayColumn.addEventListener('mouseleave', function() {
@@ -832,16 +849,35 @@ document.addEventListener('mouseover', function(e) {
     tooltip.style.top = rect.top + 'px';
     
     authorEl._newsTooltip = tooltip;
+    
+    // Prevenir que el tooltip desaparezca cuando el cursor está sobre él
+    tooltip.addEventListener('mouseenter', function() {
+        if (authorEl._hideTimeout) {
+            clearTimeout(authorEl._hideTimeout);
+            authorEl._hideTimeout = null;
+        }
+    });
+    
+    tooltip.addEventListener('mouseleave', function() {
+        authorEl._hideTimeout = setTimeout(() => {
+            if (authorEl._newsTooltip) {
+                authorEl._newsTooltip.remove();
+                authorEl._newsTooltip = null;
+            }
+        }, 300);
+    });
 });
 
 document.addEventListener('mouseout', function(e) {
     const authorEl = e.target.closest('.tooltip-author');
     if (!authorEl) return;
     
-    if (authorEl._newsTooltip) {
-        authorEl._newsTooltip.remove();
-        authorEl._newsTooltip = null;
-    }
+    authorEl._hideTimeout = setTimeout(() => {
+        if (authorEl._newsTooltip) {
+            authorEl._newsTooltip.remove();
+            authorEl._newsTooltip = null;
+        }
+    }, 300);
 });
 </script>
 
