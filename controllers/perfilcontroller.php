@@ -185,7 +185,11 @@ if($tipo === 'admin'){
 $stmt->bind_param($tipos, ...$valores);
 
 if($stmt->execute()){
-    header('Location: ' . basePath() . '/perfil?ok=1');
+    $redirectUrl = basePath() . '/perfil?ok=1';
+    if($foto_personal){
+        $redirectUrl .= '&foto_ruta=' . urlencode($foto_personal);
+    }
+    header('Location: ' . $redirectUrl);
 } else {
     header('Location: ' . basePath() . '/perfil?error=2');
 }

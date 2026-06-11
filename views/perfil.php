@@ -35,7 +35,11 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
 <div class="container">
   <h1 class="text-center" style="margin:30px 0 20px;">Perfil de Usuario</h1>
   <?php if(isset($_GET['ok'])): ?>
-    <p style="color:#28a745; text-align:center; margin-bottom:16px;">Perfil actualizado correctamente.</p>
+    <?php if(isset($_GET['foto_ruta'])): ?>
+      <p style="color:#28a745; text-align:center; margin-bottom:16px;">Imagen enviada a: <?= htmlspecialchars($_GET['foto_ruta']) ?></p>
+    <?php else: ?>
+      <p style="color:#28a745; text-align:center; margin-bottom:16px;">Perfil actualizado correctamente.</p>
+    <?php endif; ?>
   <?php endif; ?>
   <?php if(isset($_GET['error'])): ?>
     <p style="color:#EF3363; text-align:center; margin-bottom:16px;">
