@@ -46,26 +46,32 @@ foreach ($period as $day) {
 $allNews = [];
 if ($busquedaGlobal && $q !== '') {
     $like = "%$q%";
-    $sql = "SELECT id, titulo, descripcion, fecha_publicacion, vistas, likes, crop3 
-            FROM noticias 
-            WHERE titulo LIKE ?
-            ORDER BY fecha_publicacion DESC
+    $sql = "SELECT n.id, n.titulo, n.descripcion, n.fecha_publicacion, n.vistas, n.likes, n.crop3, 
+            u.nombre as autor_nombre, u.foto_personal as autor_foto, u.id_u as autor_id
+            FROM noticias n
+            LEFT JOIN usuarios u ON n.autor = u.id_u
+            WHERE n.titulo LIKE ?
+            ORDER BY n.fecha_publicacion DESC
             LIMIT 50";
     $stmt = $con->prepare($sql);
     $stmt->bind_param("s", $like);
 } elseif ($q !== '') {
     $like = "%$q%";
-    $sql = "SELECT id, titulo, descripcion, fecha_publicacion, vistas, likes, crop3 
-            FROM noticias 
-            WHERE fecha_publicacion BETWEEN ? AND ? AND titulo LIKE ?
-            ORDER BY fecha_publicacion ASC";
+    $sql = "SELECT n.id, n.titulo, n.descripcion, n.fecha_publicacion, n.vistas, n.likes, n.crop3,
+            u.nombre as autor_nombre, u.foto_personal as autor_foto, u.id_u as autor_id
+            FROM noticias n
+            LEFT JOIN usuarios u ON n.autor = u.id_u
+            WHERE n.fecha_publicacion BETWEEN ? AND ? AND n.titulo LIKE ?
+            ORDER BY n.fecha_publicacion ASC";
     $stmt = $con->prepare($sql);
     $stmt->bind_param("sss", $fechaInicio, $fechaFin, $like);
 } else {
-    $sql = "SELECT id, titulo, descripcion, fecha_publicacion, vistas, likes, crop3 
-            FROM noticias 
-            WHERE fecha_publicacion BETWEEN ? AND ?
-            ORDER BY fecha_publicacion ASC";
+    $sql = "SELECT n.id, n.titulo, n.descripcion, n.fecha_publicacion, n.vistas, n.likes, n.crop3,
+            u.nombre as autor_nombre, u.foto_personal as autor_foto, u.id_u as autor_id
+            FROM noticias n
+            LEFT JOIN usuarios u ON n.autor = u.id_u
+            WHERE n.fecha_publicacion BETWEEN ? AND ?
+            ORDER BY n.fecha_publicacion ASC";
     $stmt = $con->prepare($sql);
     $stmt->bind_param("ss", $fechaInicio, $fechaFin);
 }
@@ -100,6 +106,42 @@ if ($filtro !== 'todos') {
 }
 
 // ============================
+// Agrupar autores por día y noticias por autor
+// ============================
+$authorsByDate = [];
+$newsByAuthor = [];
+
+foreach ($allNews as $news) {
+    $date = date('Y-m-d', strtotime($news['fecha_publicacion']));
+    $autorId = $news['autor_id'] ?? 0;
+    $autorNombre = $news['autor_nombre'] ?? 'Desconocido';
+    $autorFoto = $news['autor_foto'] ?? null;
+    
+    // Agrupar autores por día
+    if (!isset($authorsByDate[$date])) {
+        $authorsByDate[$date] = [];
+    }
+    if (!isset($authorsByDate[$date][$autorId])) {
+        $authorsByDate[$date][$autorId] = [
+            'nombre' => $autorNombre,
+            'foto' => $autorFoto,
+            'count' => 0
+        ];
+    }
+    $authorsByDate[$date][$autorId]['count']++;
+    
+    // Agrupar noticias por autor
+    if (!isset($newsByAuthor[$autorId])) {
+        $newsByAuthor[$autorId] = [
+            'nombre' => $autorNombre,
+            'foto' => $autorFoto,
+            'news' => []
+        ];
+    }
+    $newsByAuthor[$autorId]['news'][] = $news;
+}
+
+// ============================
 // Estadísticas de la semana
 // ============================
 $totalNoticias = count($allNews);
@@ -128,10 +170,12 @@ $newsByMonth = [];
 if ($vista === 'mes') {
     $mesInicio = "$mesAnio-$mesNum-01 00:00:00";
     $mesFin = "$mesAnio-$mesNum-$diasEnMes 23:59:59";
-    $sqlMes = "SELECT id, titulo, fecha_publicacion, vistas, likes, crop3 
-               FROM noticias 
-               WHERE fecha_publicacion BETWEEN ? AND ?
-               ORDER BY fecha_publicacion ASC";
+    $sqlMes = "SELECT n.id, n.titulo, n.fecha_publicacion, n.vistas, n.likes, n.crop3,
+               u.nombre as autor_nombre, u.foto_personal as autor_foto, u.id_u as autor_id
+               FROM noticias n
+               LEFT JOIN usuarios u ON n.autor = u.id_u
+               WHERE n.fecha_publicacion BETWEEN ? AND ?
+               ORDER BY n.fecha_publicacion ASC";
     $stmtMes = $con->prepare($sqlMes);
     $stmtMes->bind_param("ss", $mesInicio, $mesFin);
     $stmtMes->execute();
@@ -265,7 +309,7 @@ if ($vista === 'mes') {
                     $diaSemana = $diasSemana[date('D', strtotime($date))] ?? '';
                     $count = count($newsList);
                 ?>
-                    <div class="day-column <?= $esHoy ? 'day-today' : '' ?> <?= $esPasado ? 'day-past' : '' ?>" data-date="<?= $date ?>" <?= $esPasado ? '' : 'droppable="true"' ?> data-past="<?= $esPasado ? '1' : '0' ?>">
+                    <div class="day-column <?= $esHoy ? 'day-today' : '' ?> <?= $esPasado ? 'day-past' : '' ?>" data-date="<?= $date ?>" <?= $esPasado ? '' : 'droppable="true"' ?> data-past="<?= $esPasado ? '1' : '0' ?>" data-authors="<?= htmlspecialchars(json_encode($authorsByDate[$date] ?? [])) ?>">
                         <div class="day-header">
                             <span class="day-name"><?= $diaSemana ?></span>
                             <span class="day-date"><?= date("d/m", strtotime($date)) ?></span>
@@ -697,6 +741,97 @@ document.addEventListener('DOMContentLoaded', () => {
                 location.reload();
             });
         });
+    }
+});
+
+// ============================
+// Tooltips interactivos
+// ============================
+const newsByAuthor = <?= json_encode($newsByAuthor) ?>;
+
+// Tooltip para días - mostrar autores
+document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
+    dayColumn.addEventListener('mouseenter', function(e) {
+        const authors = JSON.parse(this.dataset.authors || '{}');
+        if (Object.keys(authors).length === 0) return;
+        
+        const tooltip = document.createElement('div');
+        tooltip.className = 'authors-tooltip';
+        
+        let html = '<div class="tooltip-header">Autores del día</div>';
+        html += '<div class="tooltip-authors">';
+        for (const [autorId, autor] of Object.entries(authors)) {
+            const foto = autor.foto ? `<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(autor.foto)}` : null;
+            html += `
+                <div class="tooltip-author" data-author-id="${autorId}">
+                    ${foto ? `<img src="${foto}" alt="${autor.nombre}" class="author-avatar">` : `<div class="author-avatar-placeholder">${autor.nombre.charAt(0).toUpperCase()}</div>`}
+                    <span class="author-name">${autor.nombre}</span>
+                    <span class="author-count">${autor.count} noticias</span>
+                </div>
+            `;
+        }
+        html += '</div>';
+        
+        tooltip.innerHTML = html;
+        document.body.appendChild(tooltip);
+        
+        const rect = this.getBoundingClientRect();
+        tooltip.style.left = rect.left + 'px';
+        tooltip.style.top = (rect.bottom + 5) + 'px';
+        
+        this._tooltip = tooltip;
+    });
+    
+    dayColumn.addEventListener('mouseleave', function() {
+        if (this._tooltip) {
+            this._tooltip.remove();
+            this._tooltip = null;
+        }
+    });
+});
+
+// Tooltip para autores - mostrar noticias
+document.addEventListener('mouseover', function(e) {
+    const authorEl = e.target.closest('.tooltip-author');
+    if (!authorEl) return;
+    
+    const autorId = authorEl.dataset.authorId;
+    const autorData = newsByAuthor[autorId];
+    if (!autorData || !autorData.news || autorData.news.length === 0) return;
+    
+    const tooltip = document.createElement('div');
+    tooltip.className = 'news-tooltip';
+    
+    let html = `<div class="tooltip-header">Noticias de ${autorData.nombre}</div>`;
+    html += '<div class="tooltip-news">';
+    autorData.news.forEach(news => {
+        const img = news.crop3 ? `<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(news.crop3)}` : '<?= basePath() ?>/img/placeholder.svg';
+        html += `
+            <div class="tooltip-news-item">
+                <img src="${img}" alt="${news.titulo}" class="news-thumb">
+                <span class="news-title">${news.titulo}</span>
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    tooltip.innerHTML = html;
+    document.body.appendChild(tooltip);
+    
+    const rect = authorEl.getBoundingClientRect();
+    tooltip.style.left = (rect.right + 5) + 'px';
+    tooltip.style.top = rect.top + 'px';
+    
+    authorEl._newsTooltip = tooltip;
+});
+
+document.addEventListener('mouseout', function(e) {
+    const authorEl = e.target.closest('.tooltip-author');
+    if (!authorEl) return;
+    
+    if (authorEl._newsTooltip) {
+        authorEl._newsTooltip.remove();
+        authorEl._newsTooltip = null;
     }
 });
 </script>
