@@ -817,13 +817,13 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         });
         
         tooltip.addEventListener('mouseleave', function() {
-            hideTooltip(dayColumn, tooltip, 500);
+            hideTooltip(dayColumn, tooltip, 1000);
         });
     });
     
     dayColumn.addEventListener('mouseleave', function() {
         if (this._tooltip) {
-            hideTooltip(this, this._tooltip, 500);
+            hideTooltip(this, this._tooltip, 1000);
         }
     });
 });
@@ -895,7 +895,7 @@ document.addEventListener('mouseover', function(e) {
     
     // Cuando el cursor sale del tooltip, ocultar con animación
     tooltip.addEventListener('mouseleave', function() {
-        hideTooltip(authorEl, tooltip, 500);
+        hideTooltip(authorEl, tooltip, 1000);
     });
 });
 
@@ -904,7 +904,7 @@ document.addEventListener('mouseout', function(e) {
     const authorEl = e.target.closest('.tooltip-author');
     if (!authorEl || !authorEl._newsTooltip) return;
     
-    hideTooltip(authorEl, authorEl._newsTooltip, 500);
+    hideTooltip(authorEl, authorEl._newsTooltip, 1000);
 });
 
 // Cerrar tooltips al hacer click fuera
