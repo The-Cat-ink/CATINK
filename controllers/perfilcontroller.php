@@ -120,7 +120,10 @@ if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_persona
         if($imageInfo !== false && $imageInfo[0] <= 2000 && $imageInfo[1] <= 2000){
             $imagen = imagecreatefromstring(file_get_contents($file['tmp_name']));
             if($imagen){
-                $dir = dirname(__DIR__) . '/uploads/editores/';
+                // En producción: /home/u780114275/uploads/editores/ (afuera de public_html)
+                // En local: c:\xampp\htdocs\CATINK\uploads\editores\
+                $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+                $dir = ($isLocal ? dirname(__DIR__) : '/home/u780114275') . '/uploads/editores/';
                 if(!is_dir($dir)) mkdir($dir, 0755, true);
                 // Obtener id_u para nombre de archivo
                 $stmtId = $con->prepare("SELECT id_u, foto_personal FROM usuarios WHERE usuario = ?");
@@ -132,8 +135,8 @@ if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_persona
                     $fotoPath = $rowId['foto_personal'];
                     // Validar que la ruta no contenga path traversal
                     if(strpos($fotoPath, '..') === false && strpos($fotoPath, '/') !== 0){
-                        $fullPath = dirname(__DIR__) . '/' . $fotoPath;
-                        if(file_exists($fullPath) && strpos(realpath($fullPath), realpath(dirname(__DIR__) . '/uploads/editores/')) === 0){
+                        $fullPath = ($isLocal ? dirname(__DIR__) : '/home/u780114275') . '/' . $fotoPath;
+                        if(file_exists($fullPath) && strpos(realpath($fullPath), realpath(($isLocal ? dirname(__DIR__) : '/home/u780114275') . '/uploads/editores/')) === 0){
                             unlink($fullPath);
                         }
                     }
