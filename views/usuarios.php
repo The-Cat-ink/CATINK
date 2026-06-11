@@ -10,10 +10,10 @@ if (empty($ACL['leer'])) {
 $q = trim($_GET['q'] ?? '');
 if ($q !== '') {
     $like = "%$q%";
-    $stmt = $con->prepare("SELECT u.*, a.imagen as avatar_img FROM usuarios u LEFT JOIN avatares_perfil a ON u.avatar_id = a.id_avatar WHERE u.nombre LIKE ? OR u.usuario LIKE ? OR u.correo LIKE ? ORDER BY u.registro DESC");
+    $stmt = $con->prepare("SELECT * FROM usuarios WHERE nombre LIKE ? OR usuario LIKE ? OR correo LIKE ? ORDER BY registro DESC");
     $stmt->bind_param("sss", $like, $like, $like);
 } else {
-    $stmt = $con->prepare("SELECT u.*, a.imagen as avatar_img FROM usuarios u LEFT JOIN avatares_perfil a ON u.avatar_id = a.id_avatar ORDER BY u.registro DESC");
+    $stmt = $con->prepare("SELECT * FROM usuarios ORDER BY registro DESC");
 }
 $stmt->execute();
 $usuarios = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -93,8 +93,8 @@ $superadmins   = count(array_filter($usuarios, fn($u) => $u['id_u'] == 1 || !emp
                             <?php foreach ($usuarios as $u): ?>
                             <tr>
                                 <td>
-                                    <?php if (!empty($u['avatar_img'])): ?>
-                                        <img src="<?= imageUrl($u['avatar_img']) ?>" alt="Avatar" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                                    <?php if (!empty($u['foto_personal'])): ?>
+                                        <img src="<?= imageUrl($u['foto_personal']) ?>" alt="Foto de perfil" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
                                     <?php else: ?>
                                         <div style="width:40px; height:40px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold;">
                                             <?= strtoupper(mb_substr($u['nombre'], 0, 1)) ?>
