@@ -1,14 +1,20 @@
 <?php
-    include("./../controllers/aclcontroller.php");
-    proteger('usuarios', 'eliminar');
-    include ('../data/conexion.php');
-    $id = $_POST['id'];
-    $sql = "DELETE FROM usuarios WHERE id_u = $id";
-    $resultado = mysqli_query($con, $sql);
-    if($resultado){
-        echo "Usuario eliminado correctamente";
-        header("Location: ./../views/usuarios.php");
-    }else{
-        echo "Error al eliminar el usuario";
-        header("Location: ./../views/usuarios.php?error=1");
-    }
+include("./../controllers/aclcontroller.php");
+proteger('usuarios', 'eliminar');
+include('../data/conexion.php');
+header('Content-Type: application/json');
+
+$id = intval($_POST['id'] ?? 0);
+if (!$id) {
+    echo json_encode(['error' => 'ID inválido']);
+    exit;
+}
+
+$stmt = $con->prepare("DELETE FROM usuarios WHERE id_u = ?");
+$stmt->bind_param("i", $id);
+
+if ($stmt->execute()) {
+    echo json_encode(['success' => 'Usuario eliminado correctamente']);
+} else {
+    echo json_encode(['error' => 'Error al eliminar el usuario']);
+}

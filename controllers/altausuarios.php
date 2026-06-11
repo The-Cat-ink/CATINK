@@ -90,21 +90,8 @@ $alt->bind_param(
     $perm_videos
 );
 
-if($alt->execute()){
-    echo json_encode([
-        'success' => 'Usuario creado correctamente',
-        'permisos' => [
-            'publicidad' => $perm_publicidad,
-            'noticias' => $perm_noticias,
-            'categorias' => $perm_categorias,
-            'suscripciones' => $perm_suscripciones,
-            'usuarios' => $perm_usuarios,
-            'correos' => $perm_correos,
-            'videos' => $perm_videos
-        ]
-    ]);
-    header("Location: ./../views/usuarios.php");
-    exit;
+if ($alt->execute()) {
+    echo json_encode(['success' => 'Usuario creado correctamente']);
 } else {
     echo json_encode(['error' => 'Error al registrar usuario']);
 }

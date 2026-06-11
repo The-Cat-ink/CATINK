@@ -2,6 +2,7 @@
 include("./../controllers/aclcontroller.php");
 proteger('usuarios', 'editar');
 include("./../data/conexion.php");
+header('Content-Type: application/json');
 
 // ========================
 // DATOS
@@ -72,8 +73,8 @@ if(empty($password)){
 // ========================
 // EJECUTAR
 // ========================
-if($stmt->execute()){
-    header("Location: ./../views/usuarios.php?update=ok");
+if ($stmt->execute()) {
+    echo json_encode(['success' => 'Usuario actualizado correctamente']);
 } else {
-    die("Error al actualizar: " . $stmt->error);
+    echo json_encode(['error' => 'Error al actualizar: ' . $stmt->error]);
 }
