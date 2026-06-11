@@ -159,7 +159,7 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
           <label class="perfil-drop-zone" id="fotoDropZone">
             <input type="file" name="foto_personal" id="fotoFileInput" accept="image/jpeg,image/png,image/webp" hidden>
             <?php if(!empty($user['foto_personal'])): ?>
-              <img id="fotoPreview" src="<?= basePath() ?>/<?= htmlspecialchars($user['foto_personal']) ?>" style="max-width:100%; max-height:150px; border-radius:8px; object-fit:cover;">
+              <img id="fotoPreview" src="<?= imageUrl($user['foto_personal']) ?>" style="max-width:100%; max-height:150px; border-radius:8px; object-fit:cover;">
               <div class="perfil-drop-icon" style="display:none;"><i class="bi bi-cloud-arrow-up"></i></div>
               <div class="perfil-drop-text" style="display:none;">Arrastra una imagen o <span>haz clic aquí</span></div>
             <?php else: ?>

@@ -70,7 +70,7 @@ $nombre = 'avatar_' . time() . '_' . mt_rand(1000,9999) . '.' . $ext;
 $destino = $dir . $nombre;
 
 if(move_uploaded_file($file['tmp_name'], $destino)){
-    // Guardar ruta relativa consistente
+    // Guardar ruta relativa consistente con la ruta física (uploads/avatares/)
     $rutaRelativa = 'uploads/avatares/' . $nombre;
     $stmt = $con->prepare("INSERT INTO avatares_perfil (imagen) VALUES (?)");
     $stmt->bind_param("s", $rutaRelativa);
