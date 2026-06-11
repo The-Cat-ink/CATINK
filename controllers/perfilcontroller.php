@@ -2,6 +2,7 @@
 session_start();
 include("../data/conexion.php");
 include("../views/helpers/urlhelper.php");
+include("../views/helpers/filtrohelper.php");
 
 if(!isset($_SESSION['usuario'])){
     header('Location: ' . basePath() . '/login');

@@ -1,5 +1,6 @@
 <?php
 include("./../layout/headerAdmin.php");
+include("./../views/helpers/urlhelper.php");
 $ACL = $_SESSION['ACL']['usuarios'] ?? [
     'crear' => true,
     'leer' => true,
@@ -19,10 +20,10 @@ include("./../data/conexion.php");
 $q = trim($_GET['q'] ?? '');
 if($q !== ''){
     $like = "%$q%";
-    $stmt = $con->prepare("SELECT * FROM usuarios WHERE nombre LIKE ? OR usuario LIKE ? OR correo LIKE ? ORDER BY registro DESC");
+    $stmt = $con->prepare("SELECT u.*, a.imagen as avatar_img FROM usuarios u LEFT JOIN avatares_perfil a ON u.avatar_id = a.id_avatar WHERE u.nombre LIKE ? OR u.usuario LIKE ? OR u.correo LIKE ? ORDER BY u.registro DESC");
     $stmt->bind_param("sss", $like, $like, $like);
 } else {
-    $stmt = $con->prepare("SELECT * FROM usuarios ORDER BY registro DESC");
+    $stmt = $con->prepare("SELECT u.*, a.imagen as avatar_img FROM usuarios u LEFT JOIN avatares_perfil a ON u.avatar_id = a.id_avatar ORDER BY u.registro DESC");
 }
 $stmt->execute();
 $res = $stmt->get_result();
@@ -87,6 +88,7 @@ $superadmins = count(array_filter($usuarios, fn($u) => $u['id_u'] == 1 || !empty
                 <table class="contenidos-table">
                     <thead>
                         <tr>
+                            <th>Avatar</th>
                             <th>Nombre</th>
                             <th>Usuario</th>
                             <th>Email</th>
@@ -98,10 +100,19 @@ $superadmins = count(array_filter($usuarios, fn($u) => $u['id_u'] == 1 || !empty
                     </thead>
                     <tbody>
                         <?php if(empty($usuarios)): ?>
-                            <tr><td colspan="5" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron usuarios.</td></tr>
+                            <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron usuarios.</td></tr>
                         <?php else: ?>
                             <?php foreach($usuarios as $u): ?>
                             <tr>
+                                <td>
+                                    <?php if(!empty($u['avatar_img'])): ?>
+                                        <img src="<?= imageUrl('img/avatares/' . $u['avatar_img']) ?>" alt="Avatar" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                                    <?php else: ?>
+                                        <div style="width:40px; height:40px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                                            <?= strtoupper(mb_substr($u['nombre'], 0, 1)) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </td>
                                 <td><strong class="table-title"><?= htmlspecialchars($u['nombre']) ?></strong></td>
                                 <td><span class="estado-badge estado-programado" style="background:rgba(99,102,241,0.1); color:#6366f1;">@<?= htmlspecialchars($u['usuario']) ?></span></td>
                                 <td><span style="font-size:0.9rem; color:var(--text);"><?= htmlspecialchars($u['correo']) ?></span></td>
