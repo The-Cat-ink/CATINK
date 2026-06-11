@@ -211,9 +211,19 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
         <span>Subir foto personal</span>
         <input type="file" id="modalFotoInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
       </label>
-      <div id="modalFotoPreview" style="display:none; margin-top:8px;">
-        <img id="modalFotoImg" style="max-width:100%; max-height:100px; border-radius:8px; object-fit:cover;">
+      <div id="modalFotoPreview" style="display:none; margin-top:12px;">
+        <div style="max-height:300px; overflow:hidden; border-radius:8px;">
+          <img id="modalFotoImg" style="max-width:100%; display:block;">
+        </div>
+        <div style="margin-top:8px; display:flex; gap:8px;">
+          <button type="button" id="confirmCropBtn" class="btn-perfil-save" style="flex:1; font-size:0.9rem;">Confirmar recorte</button>
+          <button type="button" id="cancelCropBtn" style="flex:1; padding:8px 16px; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:8px; cursor:pointer;">Cancelar</button>
+        </div>
       </div>
+      <input type="hidden" id="cropX" name="crop_x">
+      <input type="hidden" id="cropY" name="crop_y">
+      <input type="hidden" id="cropWidth" name="crop_width">
+      <input type="hidden" id="cropHeight" name="crop_height">
     </div>
     <?php endif; ?>
     <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
@@ -353,7 +363,7 @@ document.querySelectorAll('.avatar-option').forEach(el => {
   });
 })();
 
-// Modal foto personal upload
+// Modal foto personal upload con cropper
 (() => {
   const modalInput = document.getElementById('modalFotoInput');
   const modalPreview = document.getElementById('modalFotoPreview');
@@ -362,8 +372,16 @@ document.querySelectorAll('.avatar-option').forEach(el => {
   const mainPreview = document.getElementById('fotoPreview');
   const mainIcon = document.querySelector('.perfil-drop-icon');
   const mainText = document.querySelector('.perfil-drop-text');
+  const confirmCropBtn = document.getElementById('confirmCropBtn');
+  const cancelCropBtn = document.getElementById('cancelCropBtn');
+  const cropX = document.getElementById('cropX');
+  const cropY = document.getElementById('cropY');
+  const cropWidth = document.getElementById('cropWidth');
+  const cropHeight = document.getElementById('cropHeight');
 
   if (!modalInput || !mainInput) return;
+
+  let cropper = null;
 
   modalInput.addEventListener('change', () => {
     if (modalInput.files[0]) {
@@ -372,22 +390,69 @@ document.querySelectorAll('.avatar-option').forEach(el => {
       reader.onload = (e) => {
         modalImg.src = e.target.result;
         modalPreview.style.display = 'block';
+        
+        // Destruir cropper anterior si existe
+        if (cropper) {
+          cropper.destroy();
+        }
+        
+        // Inicializar cropper
+        cropper = new Cropper(modalImg, {
+          aspectRatio: 1,
+          viewMode: 1,
+          dragMode: 'move',
+          autoCropArea: 0.8,
+          restore: false,
+          guides: true,
+          center: true,
+          highlight: true,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          toggleDragModeOnDblclick: false,
+        });
       };
       reader.readAsDataURL(file);
-
-      // Copiar al input principal usando DataTransfer
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(file);
-      mainInput.files = dataTransfer.files;
-      
-      // Mostrar preview en el formulario principal
-      if (mainPreview && mainIcon && mainText) {
-        mainPreview.src = e.target.result;
-        mainPreview.style.display = 'block';
-        mainIcon.style.display = 'none';
-        mainText.style.display = 'none';
-      }
     }
+  });
+
+  confirmCropBtn.addEventListener('click', () => {
+    if (cropper) {
+      const canvas = cropper.getCroppedCanvas({
+        width: 500,
+        height: 500,
+      });
+      
+      canvas.toBlob((blob) => {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(new File([blob], 'cropped_photo.webp', { type: 'image/webp' }));
+        mainInput.files = dataTransfer.files;
+        
+        // Mostrar preview en el formulario principal
+        if (mainPreview && mainIcon && mainText) {
+          mainPreview.src = URL.createObjectURL(blob);
+          mainPreview.style.display = 'block';
+          mainIcon.style.display = 'none';
+          mainText.style.display = 'none';
+        }
+        
+        // Cerrar modal
+        document.getElementById('avatarModal').style.display = 'none';
+        
+        // Destruir cropper
+        cropper.destroy();
+        cropper = null;
+        modalPreview.style.display = 'none';
+      }, 'image/webp', 0.92);
+    }
+  });
+
+  cancelCropBtn.addEventListener('click', () => {
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
+    modalPreview.style.display = 'none';
+    modalInput.value = '';
   });
 })();
 </script>

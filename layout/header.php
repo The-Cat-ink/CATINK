@@ -87,8 +87,10 @@ $menuJson = [
   <link rel="stylesheet" href="<?= basePath() ?>/CSS/styles.css?v=<?= filemtime(__DIR__ . '/../CSS/styles.css') ?>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
   <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
   <script src="https://unpkg.com/quill-image-resize-module/image-resize.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script async src="https://www.instagram.com/embed.js"></script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8588111729852920"
      crossorigin="anonymous"></script>
