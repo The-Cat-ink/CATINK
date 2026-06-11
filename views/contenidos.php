@@ -802,7 +802,7 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
                     dayColumn._tooltip.remove();
                     dayColumn._tooltip = null;
                 }
-            }, 300);
+            }, 200);
         });
     });
     
@@ -812,7 +812,7 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
                 this._tooltip.remove();
                 this._tooltip = null;
             }
-        }, 300);
+        }, 200);
     });
 });
 
@@ -862,14 +862,14 @@ document.addEventListener('mouseover', function(e) {
         }
     });
     
-    // Cuando el cursor sale del tooltip, ocultarlo después de 300ms
+    // Cuando el cursor sale del tooltip, ocultar después de 200ms
     tooltip.addEventListener('mouseleave', function() {
         authorEl._hideTimeout = setTimeout(() => {
             if (authorEl._newsTooltip) {
                 authorEl._newsTooltip.remove();
                 authorEl._newsTooltip = null;
             }
-        }, 300);
+        }, 200);
     });
 });
 
@@ -883,7 +883,7 @@ document.addEventListener('mouseout', function(e) {
             authorEl._newsTooltip.remove();
             authorEl._newsTooltip = null;
         }
-    }, 300);
+    }, 200);
 });
 </script>
 
