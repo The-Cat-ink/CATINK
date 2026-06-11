@@ -751,7 +751,14 @@ const newsByAuthor = <?= json_encode($newsByAuthor) ?>;
 
 // Tooltip para días - mostrar autores
 document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
+    let hideTimeout = null;
+    
     dayColumn.addEventListener('mouseenter', function(e) {
+        if (hideTimeout) {
+            clearTimeout(hideTimeout);
+            hideTimeout = null;
+        }
+        
         const authors = JSON.parse(this.dataset.authors || '{}');
         if (Object.keys(authors).length === 0) return;
         
@@ -783,10 +790,12 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
     });
     
     dayColumn.addEventListener('mouseleave', function() {
-        if (this._tooltip) {
-            this._tooltip.remove();
-            this._tooltip = null;
-        }
+        hideTimeout = setTimeout(() => {
+            if (this._tooltip) {
+                this._tooltip.remove();
+                this._tooltip = null;
+            }
+        }, 300);
     });
 });
 
