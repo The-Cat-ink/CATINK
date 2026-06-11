@@ -821,6 +821,9 @@ document.addEventListener('mouseover', function(e) {
     const authorEl = e.target.closest('.tooltip-author');
     if (!authorEl) return;
     
+    // Si ya existe un tooltip, no crear otro
+    if (authorEl._newsTooltip) return;
+    
     const autorId = authorEl.dataset.authorId;
     const autorData = newsByAuthor[autorId];
     if (!autorData || !autorData.news || autorData.news.length === 0) return;
@@ -871,6 +874,15 @@ document.addEventListener('mouseover', function(e) {
 document.addEventListener('mouseout', function(e) {
     const authorEl = e.target.closest('.tooltip-author');
     if (!authorEl) return;
+    
+    // Verificar que el cursor no esté yendo al tooltip
+    const tooltip = authorEl._newsTooltip;
+    if (tooltip) {
+        const relatedTarget = e.relatedTarget;
+        if (relatedTarget && (tooltip.contains(relatedTarget) || relatedTarget === tooltip)) {
+            return;
+        }
+    }
     
     authorEl._hideTimeout = setTimeout(() => {
         if (authorEl._newsTooltip) {
