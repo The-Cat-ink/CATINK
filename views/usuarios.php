@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 error_log("DEBUG usuarios.php: Iniciando carga");
 include("./../layout/headerAdmin.php");
 include("./../views/helpers/urlhelper.php");
