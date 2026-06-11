@@ -156,6 +156,23 @@
 .cn-publish-btn:hover { background: #d42a55; transform: translateY(-2px); }
 .cn-publish-btn:active { transform: translateY(0); }
 
+/* ── TOAST VALIDACIÓN ── */
+.cn-toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  background: #1a1a2e; color: #fff; border: 1.5px solid var(--accent);
+  border-radius: 10px; padding: 13px 20px; z-index: 9999;
+  font-size: 13px; min-width: 270px; max-width: 400px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.5); display: none;
+}
+.cn-toast.show { display: block; animation: toastIn .22s ease; }
+@keyframes toastIn {
+  from { opacity:0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity:1; transform: translateX(-50%) translateY(0); }
+}
+.cn-toast-title { font-weight: 700; color: var(--accent); margin-bottom: 7px; }
+.cn-toast ul { margin: 0; padding-left: 16px; }
+.cn-toast li { margin: 3px 0; }
+
 /* ── BOTONES SECUNDARIOS ── */
 .cn-btn-secondary {
   padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
@@ -181,7 +198,7 @@
 
   <h1 class="cn-page-title">Nueva Publicidad</h1>
 
-  <form action="./../../controllers/guardar_publicidad.php" method="POST" enctype="multipart/form-data">
+  <form id="formPublicidad" action="./../../controllers/guardar_publicidad.php" method="POST" enctype="multipart/form-data">
     <input type="hidden" name="autor" value="<?= $fila['id_u'] ?? '' ?>">
     <input type="hidden" name="imagenCrop" id="imagenCrop" value="">
 
@@ -351,6 +368,12 @@
 
 </div>
 
+<!-- ── TOAST VALIDACIÓN ── -->
+<div class="cn-toast" id="cnToast">
+  <div class="cn-toast-title"><i class="bi bi-exclamation-circle"></i> Faltan campos requeridos:</div>
+  <ul id="cnToastList"></ul>
+</div>
+
 <script>
 let cropper = null;
 
@@ -428,6 +451,53 @@ document.querySelectorAll('.cn-section-header').forEach(header => {
         if (e.target.closest('input, select, button, a')) return;
         header.closest('.cn-section').classList.toggle('collapsed');
     });
+});
+
+/* ── Validación ── */
+function showToast(errors) {
+    const toast = document.getElementById('cnToast');
+    const list  = document.getElementById('cnToastList');
+    list.innerHTML = errors.map(e => `<li>${e}</li>`).join('');
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 5000);
+}
+
+function validateForm() {
+    const errors = [];
+
+    const titulo = document.getElementById('Titulo').value.trim();
+    if (!titulo) errors.push('Título de la publicidad');
+
+    const url = document.getElementById('url').value.trim();
+    if (!url) {
+        errors.push('URL de destino');
+    } else {
+        try { new URL(url); } catch (_) { errors.push('URL de destino no es válida (debe empezar con https://)'); }
+    }
+
+    const inicio = document.getElementById('fechaInicio').value;
+    if (!inicio) errors.push('Fecha de inicio');
+
+    const fin = document.getElementById('fechaFin').value;
+    if (!fin) {
+        errors.push('Fecha de fin');
+    } else if (inicio && fin <= inicio) {
+        errors.push('La fecha de fin debe ser posterior a la de inicio');
+    }
+
+    const imagen = document.getElementById('imagenCrop').value;
+    if (!imagen) errors.push('Imagen (sube y confirma el recorte)');
+
+    return errors;
+}
+
+document.getElementById('formPublicidad').addEventListener('submit', function(e) {
+    const errors = validateForm();
+    if (errors.length) {
+        e.preventDefault();
+        showToast(errors);
+    }
 });
 </script>
 

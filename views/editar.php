@@ -885,7 +885,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (EXISTING_CROP3_URL) {
     setZonePreviewFromUrl(3, EXISTING_CROP3_URL);
-    zoneSources[3] = EXISTING_CROP1_URL || EXISTING_CROP3_URL;
+    // Para noticias antiguas sin crop1 (original), usar el banner (21:6) como
+    // fuente del recortador en lugar de la miniatura ya recortada (16:9),
+    // porque recortar 16:9→16:9 no da margen de maniobra en el cropper.
+    zoneSources[3] = EXISTING_CROP1_URL || EXISTING_CROP2_URL || EXISTING_CROP3_URL;
   }
   if (EXISTING_CROP2_URL || EXISTING_CROP3_URL) {
     document.getElementById('previewSection').style.display = 'block';
