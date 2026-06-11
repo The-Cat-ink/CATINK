@@ -2,11 +2,11 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-error_log("DEBUG usuarios.php: Iniciando carga");
+echo "<!-- DEBUG: Iniciando usuarios.php -->";
 include("./../layout/headerAdmin.php");
+echo "<!-- DEBUG: Header cargado -->";
 include("./../views/helpers/urlhelper.php");
-
-error_log("DEBUG usuarios.php: Header cargado");
+echo "<!-- DEBUG: urlhelper cargado -->";
 
 $ACL = $_SESSION['ACL']['usuarios'] ?? [
     'crear' => true,
@@ -15,10 +15,10 @@ $ACL = $_SESSION['ACL']['usuarios'] ?? [
     'eliminar' => true,
 ];
 
-error_log("DEBUG usuarios.php: ACL: " . json_encode($ACL));
+echo "<!-- DEBUG: ACL: " . json_encode($ACL) . " -->";
 
 if (!$ACL['leer']) {
-    error_log("DEBUG usuarios.php: Sin permisos de lectura, redirigiendo");
+    echo "<!-- DEBUG: Sin permisos, redirigiendo -->";
     header("Location: admin.php");
     exit();
 }
@@ -28,7 +28,7 @@ if (!$ACL['leer']) {
 </script>
 <?php
 include("./../data/conexion.php");
-error_log("DEBUG usuarios.php: Conexión establecida");
+echo "<!-- DEBUG: Conexión establecida -->";
 
 $q = trim($_GET['q'] ?? '');
 if($q !== ''){
@@ -39,12 +39,13 @@ if($q !== ''){
     $stmt = $con->prepare("SELECT u.*, a.imagen as avatar_img FROM usuarios u LEFT JOIN avatares_perfil a ON u.avatar_id = a.id_avatar ORDER BY u.registro DESC");
 }
 
-error_log("DEBUG usuarios.php: Ejecutando consulta");
+echo "<!-- DEBUG: Ejecutando consulta -->";
 $stmt->execute();
 $res = $stmt->get_result();
 $usuarios = $res->fetch_all(MYSQLI_ASSOC);
 
-error_log("DEBUG usuarios.php: Usuarios encontrados: " . count($usuarios));
+echo "<!-- DEBUG: Usuarios encontrados: " . count($usuarios) . " -->";
+echo "<!-- DEBUG: Iniciando HTML -->";
 
 $totalUsuarios = count($usuarios);
 $ultimos7dias = count(array_filter($usuarios, function($u) {
