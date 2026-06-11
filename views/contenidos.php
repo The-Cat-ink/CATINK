@@ -752,35 +752,44 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================
 const newsByAuthorAndDate = <?= json_encode($newsByAuthorAndDate) ?>;
 
-// Limpiar tooltips existentes antes de crear nuevos
-function clearExistingTooltips() {
-    document.querySelectorAll('.authors-tooltip').forEach(t => t.remove());
-    document.querySelectorAll('.news-tooltip').forEach(t => t.remove());
-    document.querySelectorAll('.day-column').forEach(d => d._tooltip = null);
-    document.querySelectorAll('.tooltip-author').forEach(a => a._newsTooltip = null);
+// Oculta el tooltip DESPUÉS del delay y luego lo elimina del DOM
+function hideTooltip(tooltip, delay) {
+    return setTimeout(() => {
+        tooltip.classList.remove('visible');
+        setTimeout(() => {
+            if (tooltip.parentNode) tooltip.remove();
+        }, 200); // tiempo de la transición CSS
+    }, delay);
 }
 
 // Tooltip para días - mostrar autores
 document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
-    let hideTimeout = null;
-    
-    dayColumn.addEventListener('mouseenter', function(e) {
-        if (hideTimeout) {
-            clearTimeout(hideTimeout);
-            hideTimeout = null;
+    let hideTimeoutId = null;
+
+    function cancelHide() {
+        if (hideTimeoutId) {
+            clearTimeout(hideTimeoutId);
+            hideTimeoutId = null;
         }
-        
-        // Limpiar tooltips existentes
-        clearExistingTooltips();
-        
+    }
+
+    dayColumn.addEventListener('mouseenter', function() {
+        cancelHide();
+
+        // Si ya hay tooltip activo no recrear
+        if (this._tooltip) return;
+
         const authors = JSON.parse(this.dataset.authors || '{}');
         if (Object.keys(authors).length === 0) return;
-        
+
+        // Cerrar cualquier otro tooltip de día abierto
+        document.querySelectorAll('.authors-tooltip').forEach(t => t.remove());
+        document.querySelectorAll('.day-column').forEach(d => { if (d !== this) d._tooltip = null; });
+
         const tooltip = document.createElement('div');
         tooltip.className = 'authors-tooltip';
-        
-        let html = '<div class="tooltip-header">Autores del día</div>';
-        html += '<div class="tooltip-authors">';
+
+        let html = '<div class="tooltip-header">Autores del día</div><div class="tooltip-authors">';
         const currentDate = this.dataset.date;
         for (const [autorId, autor] of Object.entries(authors)) {
             const foto = autor.foto ? `<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(autor.foto)}` : null;
@@ -789,152 +798,126 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
                     ${foto ? `<img src="${foto}" alt="${autor.nombre}" class="author-avatar">` : `<div class="author-avatar-placeholder">${autor.nombre.charAt(0).toUpperCase()}</div>`}
                     <span class="author-name">${autor.nombre}</span>
                     <span class="author-count">${autor.count} noticias</span>
-                </div>
-            `;
+                </div>`;
         }
         html += '</div>';
-        
         tooltip.innerHTML = html;
         document.body.appendChild(tooltip);
-        
-        const rect = this.getBoundingClientRect();
-        tooltip.style.left = rect.left + 'px';
-        tooltip.style.top = (rect.top - tooltip.offsetHeight - 5) + 'px';
-        
+
+        // Posicionar debajo del .day-header, no encima de toda la columna
+        const header = this.querySelector('.day-header');
+        const rect = (header || this).getBoundingClientRect();
+        let left = rect.left;
+        const top  = rect.bottom + 5;
+
+        // Evitar que se salga por la derecha
+        const tw = tooltip.offsetWidth || 250;
+        if (left + tw > window.innerWidth - 10) left = window.innerWidth - tw - 10;
+
+        tooltip.style.left = left + 'px';
+        tooltip.style.top  = top  + 'px';
+
         this._tooltip = tooltip;
-        
-        // Activar animación después de un pequeño delay
-        requestAnimationFrame(() => {
-            tooltip.classList.add('visible');
-        });
-        
-        // Prevenir que el tooltip desaparezca cuando el cursor está sobre él
-        tooltip.addEventListener('mouseenter', function() {
-            if (hideTimeout) {
-                clearTimeout(hideTimeout);
-                hideTimeout = null;
-            }
-        });
-        
-        tooltip.addEventListener('mouseleave', function() {
-            hideTooltip(dayColumn, tooltip, 1000);
+        requestAnimationFrame(() => tooltip.classList.add('visible'));
+
+        tooltip.addEventListener('mouseenter', cancelHide);
+        tooltip.addEventListener('mouseleave', () => {
+            hideTimeoutId = hideTooltip(tooltip, 400);
+            dayColumn._tooltip = null;
         });
     });
-    
+
     dayColumn.addEventListener('mouseleave', function(e) {
-        // Verificar si el cursor está yendo al tooltip
         const tooltip = this._tooltip;
-        if (tooltip) {
-            const relatedTarget = e.relatedTarget;
-            if (relatedTarget && (tooltip.contains(relatedTarget) || relatedTarget === tooltip)) {
-                return;
-            }
-        }
-        
-        if (this._tooltip) {
-            hideTooltip(this, this._tooltip, 1000);
-        }
+        if (!tooltip) return;
+
+        // Si el cursor va hacia el propio tooltip, no ocultar
+        const related = e.relatedTarget;
+        if (related && (related === tooltip || tooltip.contains(related))) return;
+
+        hideTimeoutId = hideTooltip(tooltip, 400);
+        this._tooltip = null;
     });
 });
 
-// Función para ocultar tooltip con animación
-function hideTooltip(element, tooltip, delay) {
-    tooltip.classList.remove('visible');
-    setTimeout(() => {
-        if (tooltip.parentNode) {
-            tooltip.remove();
-        }
-        if (element._tooltip === tooltip) {
-            element._tooltip = null;
-        }
-    }, delay + 200); // Esperar animación + delay
-}
-
-// Tooltip para autores - mostrar noticias
+// Tooltip para autores - mostrar sus noticias
 document.addEventListener('mouseover', function(e) {
     const authorEl = e.target.closest('.tooltip-author');
     if (!authorEl) return;
-    
-    // Si ya existe un tooltip, no crear otro
     if (authorEl._newsTooltip) return;
-    
-    const autorId = authorEl.dataset.authorId;
-    const date = authorEl.dataset.date;
+
+    const autorId  = authorEl.dataset.authorId;
+    const date     = authorEl.dataset.date;
     const autorData = newsByAuthorAndDate[autorId]?.[date];
-    if (!autorData || !autorData.news || autorData.news.length === 0) return;
-    
+    if (!autorData?.news?.length) return;
+
     const tooltip = document.createElement('div');
     tooltip.className = 'news-tooltip';
-    
-    let html = `<div class="tooltip-header">Noticias de ${autorData.nombre}</div>`;
-    html += '<div class="tooltip-news">';
+
+    let html = `<div class="tooltip-header">Noticias de ${autorData.nombre}</div><div class="tooltip-news">`;
     autorData.news.forEach(news => {
-        const img = news.crop3 ? `<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(news.crop3)}` : '<?= basePath() ?>/img/placeholder.svg';
-        html += `
-            <div class="tooltip-news-item">
-                <img src="${img}" alt="${news.titulo}" class="news-thumb">
-                <span class="news-title">${news.titulo}</span>
-            </div>
-        `;
+        const img = news.crop3
+            ? `<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(news.crop3)}`
+            : '<?= basePath() ?>/img/placeholder.svg';
+        html += `<div class="tooltip-news-item">
+                    <img src="${img}" alt="${news.titulo}" class="news-thumb">
+                    <span class="news-title">${news.titulo}</span>
+                 </div>`;
     });
     html += '</div>';
-    
     tooltip.innerHTML = html;
     document.body.appendChild(tooltip);
-    
+
+    // Posicionar a la derecha del autor, ajustando si se sale de pantalla
     const rect = authorEl.getBoundingClientRect();
-    tooltip.style.left = (rect.right + 5) + 'px';
-    tooltip.style.top = rect.top + 'px';
-    
+    let left = rect.right + 8;
+    let top  = rect.top;
+    const tw = tooltip.offsetWidth || 220;
+    if (left + tw > window.innerWidth - 10) left = rect.left - tw - 8;
+
+    tooltip.style.left = left + 'px';
+    tooltip.style.top  = top  + 'px';
+
     authorEl._newsTooltip = tooltip;
-    authorEl._hideTimeout = null;
-    
-    // Activar animación
-    requestAnimationFrame(() => {
-        tooltip.classList.add('visible');
+    let newsHideId = null;
+
+    requestAnimationFrame(() => tooltip.classList.add('visible'));
+
+    tooltip.addEventListener('mouseenter', () => {
+        if (newsHideId) { clearTimeout(newsHideId); newsHideId = null; }
     });
-    
-    // Cuando el cursor entra al tooltip, cancelar el timeout
-    tooltip.addEventListener('mouseenter', function() {
-        if (authorEl._hideTimeout) {
-            clearTimeout(authorEl._hideTimeout);
-            authorEl._hideTimeout = null;
-        }
-    });
-    
-    // Cuando el cursor sale del tooltip, ocultar con animación
-    tooltip.addEventListener('mouseleave', function() {
-        hideTooltip(authorEl, tooltip, 1000);
+    tooltip.addEventListener('mouseleave', () => {
+        newsHideId = hideTooltip(tooltip, 400);
+        authorEl._newsTooltip = null;
     });
 });
 
-// Cuando el cursor sale del autor, ocultar con animación
 document.addEventListener('mouseout', function(e) {
     const authorEl = e.target.closest('.tooltip-author');
-    if (!authorEl || !authorEl._newsTooltip) return;
-    
-    hideTooltip(authorEl, authorEl._newsTooltip, 1000);
+    if (!authorEl?._newsTooltip) return;
+
+    const related = e.relatedTarget;
+    const tooltip = authorEl._newsTooltip;
+    if (related && (related === tooltip || tooltip.contains(related))) return;
+
+    hideTooltip(tooltip, 400);
+    authorEl._newsTooltip = null;
 });
 
 // Cerrar tooltips al hacer click fuera
 document.addEventListener('click', function(e) {
-    // Cerrar tooltip de autores del día
     document.querySelectorAll('.day-column').forEach(dayColumn => {
-        if (dayColumn._tooltip) {
-            const tooltip = dayColumn._tooltip;
-            if (!tooltip.contains(e.target) && !dayColumn.contains(e.target)) {
-                hideTooltip(dayColumn, tooltip, 0);
-            }
+        const tooltip = dayColumn._tooltip;
+        if (tooltip && !tooltip.contains(e.target) && !dayColumn.contains(e.target)) {
+            hideTooltip(tooltip, 0);
+            dayColumn._tooltip = null;
         }
     });
-    
-    // Cerrar tooltip de noticias del autor
     document.querySelectorAll('.tooltip-author').forEach(authorEl => {
-        if (authorEl._newsTooltip) {
-            const tooltip = authorEl._newsTooltip;
-            if (!tooltip.contains(e.target) && !authorEl.contains(e.target)) {
-                hideTooltip(authorEl, tooltip, 0);
-            }
+        const tooltip = authorEl._newsTooltip;
+        if (tooltip && !tooltip.contains(e.target) && !authorEl.contains(e.target)) {
+            hideTooltip(tooltip, 0);
+            authorEl._newsTooltip = null;
         }
     });
 });
