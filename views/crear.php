@@ -1097,11 +1097,14 @@ const CROP_TITLES = {
 };
 let activeCrop = null, cropperInstance = null;
 const zoneSources = {};
+const zoneCropData = {};
 let _chainNextCrop = false;
 
 function openCrop(num) {
   activeCrop = num;
   _chainNextCrop = true;
+  delete zoneCropData[num];
+  delete zoneCropData[num === 2 ? 3 : 2];
   document.getElementById('fileInput').click();
 }
 function initCropper(num) {
@@ -1128,24 +1131,28 @@ function initCropper(num) {
     background: false,
     ready() {
       if (num === 2 || num === 3) {
-        const imgData = cropperInstance.getImageData();
-        const ratio = cropRatioOverride[num];
-        let cbH = imgData.height;
-        let cbW = cbH * ratio;
-        if (cbW > imgData.width) {
-          cbW = imgData.width;
-          cbH = cbW / ratio;
+        if (zoneCropData[num]) {
+          cropperInstance.setData(zoneCropData[num]);
+        } else {
+          const imgData = cropperInstance.getImageData();
+          const ratio = cropRatioOverride[num];
+          let cbH = imgData.height;
+          let cbW = cbH * ratio;
+          if (cbW > imgData.width) {
+            cbW = imgData.width;
+            cbH = cbW / ratio;
+          }
+          const availX = imgData.width - cbW;
+          const leftOffset = num === 3
+            ? imgData.left + availX * 0.85
+            : imgData.left + availX / 2;
+          cropperInstance.setCropBoxData({
+            width:  cbW,
+            height: cbH,
+            left:   leftOffset,
+            top:    imgData.top  + (imgData.height - cbH) / 2
+          });
         }
-        const availX = imgData.width - cbW;
-        const leftOffset = num === 3
-          ? imgData.left + availX * 0.85
-          : imgData.left + availX / 2;
-        cropperInstance.setCropBoxData({
-          width:  cbW,
-          height: cbH,
-          left:   leftOffset,
-          top:    imgData.top  + (imgData.height - cbH) / 2
-        });
       }
     }
   });
@@ -1168,6 +1175,7 @@ function removeCrop(num) {
   const clearZone = n => {
     document.getElementById('crop' + n).value = '';
     delete zoneSources[n];
+    delete zoneCropData[n];
     const z = document.getElementById('zone' + n);
     z.querySelectorAll('.preview-img').forEach(el => el.remove());
     z.classList.remove('has-image');
@@ -1220,6 +1228,7 @@ function confirmCrop() {
   const cropNum   = activeCrop;
   const chain     = _chainNextCrop;
   _chainNextCrop  = false;
+  zoneCropData[cropNum] = cropperInstance.getData();
   closeCrop();
 
   canvas.toBlob(function(blob) {
