@@ -885,6 +885,31 @@ document.addEventListener('mouseout', function(e) {
         }
     }, 200);
 });
+
+// Cerrar tooltips al hacer click fuera
+document.addEventListener('click', function(e) {
+    // Cerrar tooltip de autores del día
+    document.querySelectorAll('.day-column').forEach(dayColumn => {
+        if (dayColumn._tooltip) {
+            const tooltip = dayColumn._tooltip;
+            if (!tooltip.contains(e.target) && !dayColumn.contains(e.target)) {
+                tooltip.remove();
+                dayColumn._tooltip = null;
+            }
+        }
+    });
+    
+    // Cerrar tooltip de noticias del autor
+    document.querySelectorAll('.tooltip-author').forEach(authorEl => {
+        if (authorEl._newsTooltip) {
+            const tooltip = authorEl._newsTooltip;
+            if (!tooltip.contains(e.target) && !authorEl.contains(e.target)) {
+                tooltip.remove();
+                authorEl._newsTooltip = null;
+            }
+        }
+    });
+});
 </script>
 
 <!-- Modal para reprogramar fecha y hora -->
