@@ -204,6 +204,18 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
       <h3 style="margin:0;">Elige tu avatar</h3>
       <button id="closeAvatarModal" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text);">&times;</button>
     </div>
+    <?php if($tipoUsuario === 'admin'): ?>
+    <div style="margin-bottom:16px; padding:12px; background:rgba(239,51,99,0.1); border-radius:8px; border:1px solid var(--accent);">
+      <label class="avatar-upload-btn" style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--accent); font-weight:600;">
+        <i class="bi bi-cloud-arrow-up"></i>
+        <span>Subir foto personal</span>
+        <input type="file" id="modalFotoInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+      </label>
+      <div id="modalFotoPreview" style="display:none; margin-top:8px;">
+        <img id="modalFotoImg" style="max-width:100%; max-height:100px; border-radius:8px; object-fit:cover;">
+      </div>
+    </div>
+    <?php endif; ?>
     <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
       <?php if(empty($avatares)): ?>
         <p style="grid-column:1/-1; color:var(--muted); text-align:center;">No hay avatares disponibles aún.</p>
@@ -337,6 +349,42 @@ document.querySelectorAll('.avatar-option').forEach(el => {
     if (e.dataTransfer.files[0]) {
       input.files = e.dataTransfer.files;
       showPreview(e.dataTransfer.files[0]);
+    }
+  });
+})();
+
+// Modal foto personal upload
+(() => {
+  const modalInput = document.getElementById('modalFotoInput');
+  const modalPreview = document.getElementById('modalFotoPreview');
+  const modalImg = document.getElementById('modalFotoImg');
+  const mainInput = document.getElementById('fotoFileInput');
+  const mainPreview = document.getElementById('fotoPreview');
+  const mainIcon = document.querySelector('.perfil-drop-icon');
+  const mainText = document.querySelector('.perfil-drop-text');
+
+  if (!modalInput || !mainInput) return;
+
+  modalInput.addEventListener('change', () => {
+    if (modalInput.files[0]) {
+      const file = modalInput.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        modalImg.src = e.target.result;
+        modalPreview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+
+      // Copiar al input principal
+      mainInput.files = modalInput.files;
+      
+      // Mostrar preview en el formulario principal
+      if (mainPreview && mainIcon && mainText) {
+        mainPreview.src = e.target.result;
+        mainPreview.style.display = 'block';
+        mainIcon.style.display = 'none';
+        mainText.style.display = 'none';
+      }
     }
   });
 })();
