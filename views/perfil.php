@@ -396,7 +396,11 @@ document.querySelectorAll('.avatar-option').forEach(el => {
         cropper = new Cropper(modalImg, {
           aspectRatio: 1,
           viewMode: 1,
-          dragMode: 'move',
+          dragMode: 'none',
+          movable: false,
+          zoomable: false,
+          rotatable: false,
+          scalable: false,
           autoCropArea: 0.8,
           restore: false,
           guides: true,
