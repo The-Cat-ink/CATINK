@@ -1251,8 +1251,8 @@ function confirmCrop() {
 /* ── VISTA PREVIA ── */
 function cropUrl(val) {
   if (!val) return '';
-  if (val.startsWith('data:')) return val;
-  return BASE_PATH + '/' + val;
+  if (val.startsWith('data:') || val.startsWith('http')) return val;
+  return BASE_PATH + '/serve-image.php?file=' + encodeURIComponent(val);
 }
 function setPvBg(id, val) {
   const el = document.getElementById(id);
