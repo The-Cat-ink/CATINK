@@ -802,6 +802,11 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         
         this._tooltip = tooltip;
         
+        // Activar animación después de un pequeño delay
+        requestAnimationFrame(() => {
+            tooltip.classList.add('visible');
+        });
+        
         // Prevenir que el tooltip desaparezca cuando el cursor está sobre él
         tooltip.addEventListener('mouseenter', function() {
             if (hideTimeout) {
@@ -811,24 +816,29 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         });
         
         tooltip.addEventListener('mouseleave', function() {
-            hideTimeout = setTimeout(() => {
-                if (dayColumn._tooltip) {
-                    dayColumn._tooltip.remove();
-                    dayColumn._tooltip = null;
-                }
-            }, 200);
+            hideTooltip(dayColumn, tooltip, 200);
         });
     });
     
     dayColumn.addEventListener('mouseleave', function() {
-        hideTimeout = setTimeout(() => {
-            if (this._tooltip) {
-                this._tooltip.remove();
-                this._tooltip = null;
-            }
-        }, 200);
+        if (this._tooltip) {
+            hideTooltip(this, this._tooltip, 200);
+        }
     });
 });
+
+// Función para ocultar tooltip con animación
+function hideTooltip(element, tooltip, delay) {
+    tooltip.classList.remove('visible');
+    setTimeout(() => {
+        if (tooltip.parentNode) {
+            tooltip.remove();
+        }
+        if (element._tooltip === tooltip) {
+            element._tooltip = null;
+        }
+    }, delay + 200); // Esperar animación + delay
+}
 
 // Tooltip para autores - mostrar noticias
 document.addEventListener('mouseover', function(e) {
@@ -869,6 +879,11 @@ document.addEventListener('mouseover', function(e) {
     authorEl._newsTooltip = tooltip;
     authorEl._hideTimeout = null;
     
+    // Activar animación
+    requestAnimationFrame(() => {
+        tooltip.classList.add('visible');
+    });
+    
     // Cuando el cursor entra al tooltip, cancelar el timeout
     tooltip.addEventListener('mouseenter', function() {
         if (authorEl._hideTimeout) {
@@ -877,28 +892,18 @@ document.addEventListener('mouseover', function(e) {
         }
     });
     
-    // Cuando el cursor sale del tooltip, ocultar después de 200ms
+    // Cuando el cursor sale del tooltip, ocultar con animación
     tooltip.addEventListener('mouseleave', function() {
-        authorEl._hideTimeout = setTimeout(() => {
-            if (authorEl._newsTooltip) {
-                authorEl._newsTooltip.remove();
-                authorEl._newsTooltip = null;
-            }
-        }, 200);
+        hideTooltip(authorEl, tooltip, 200);
     });
 });
 
-// Cuando el cursor sale del autor, iniciar timeout para ocultar
+// Cuando el cursor sale del autor, ocultar con animación
 document.addEventListener('mouseout', function(e) {
     const authorEl = e.target.closest('.tooltip-author');
     if (!authorEl || !authorEl._newsTooltip) return;
     
-    authorEl._hideTimeout = setTimeout(() => {
-        if (authorEl._newsTooltip) {
-            authorEl._newsTooltip.remove();
-            authorEl._newsTooltip = null;
-        }
-    }, 200);
+    hideTooltip(authorEl, authorEl._newsTooltip, 200);
 });
 
 // Cerrar tooltips al hacer click fuera
@@ -908,8 +913,7 @@ document.addEventListener('click', function(e) {
         if (dayColumn._tooltip) {
             const tooltip = dayColumn._tooltip;
             if (!tooltip.contains(e.target) && !dayColumn.contains(e.target)) {
-                tooltip.remove();
-                dayColumn._tooltip = null;
+                hideTooltip(dayColumn, tooltip, 0);
             }
         }
     });
@@ -919,8 +923,7 @@ document.addEventListener('click', function(e) {
         if (authorEl._newsTooltip) {
             const tooltip = authorEl._newsTooltip;
             if (!tooltip.contains(e.target) && !authorEl.contains(e.target)) {
-                tooltip.remove();
-                authorEl._newsTooltip = null;
+                hideTooltip(authorEl, tooltip, 0);
             }
         }
     });
