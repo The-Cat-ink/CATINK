@@ -38,7 +38,7 @@ if(!empty($biografia)){
 // ============================
 // Validar Twitter/X
 if(!empty($link_twitter)){
-    if(!preg_match('/^https:\/\/(x\.com|twitter\.com)\/[a-zA-Z0-9_]{1,15}(\/.*)?$/', $link_twitter)){
+    if(!preg_match('/^https?:\/\/(www\.)?(x\.com|twitter\.com)\/[a-zA-Z0-9_\-\.]+/', $link_twitter)){
         header('Location: ' . basePath() . '/perfil?error=twitter_invalido');
         exit;
     }
@@ -46,7 +46,7 @@ if(!empty($link_twitter)){
 
 // Validar Instagram
 if(!empty($link_instagram)){
-    if(!preg_match('/^https:\/\/instagram\.com\/[a-zA-Z0-9_.]{1,30}(\/.*)?$/', $link_instagram)){
+    if(!preg_match('/^https?:\/\/(www\.)?instagram\.com\/[a-zA-Z0-9_\-\.]+/', $link_instagram)){
         header('Location: ' . basePath() . '/perfil?error=instagram_invalido');
         exit;
     }
