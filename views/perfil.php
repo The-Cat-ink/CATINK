@@ -53,7 +53,7 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
           <?php if($tipoUsuario === 'admin' && !empty($user['foto_personal'])): ?>
             <img src="<?= imageUrl($user['foto_personal']) ?>" alt="Foto personal">
           <?php elseif($avatarActual): ?>
-            <img src="<?= imageUrl('img/avatares/' . $avatarActual) ?>" alt="Avatar">
+            <img src="<?= imageUrl($avatarActual) ?>" alt="Avatar">
           <?php else: ?>
             <span id="perfilInitials"><?= htmlspecialchars($iniciales) ?></span>
           <?php endif; ?>
@@ -157,7 +157,7 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
         <div class="form-group">
           <label>Foto Personal</label>
           <label class="perfil-drop-zone" id="fotoDropZone">
-            <input type="file" name="foto_personal" id="fotoFileInput" accept="image/jpeg,image/png,image/webp" hidden>
+            <input type="file" name="foto_personal" id="fotoFileInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
             <?php if(!empty($user['foto_personal'])): ?>
               <img id="fotoPreview" src="<?= imageUrl($user['foto_personal']) ?>" style="max-width:100%; max-height:150px; border-radius:8px; object-fit:cover;">
               <div class="perfil-drop-icon" style="display:none;"><i class="bi bi-cloud-arrow-up"></i></div>
@@ -200,13 +200,35 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
       <h3 style="margin:0;">Elige tu avatar</h3>
       <button id="closeAvatarModal" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text);">&times;</button>
     </div>
+    <?php if($tipoUsuario === 'admin'): ?>
+    <div style="margin-bottom:16px; padding:12px; background:rgba(239,51,99,0.1); border-radius:8px; border:1px solid var(--accent);">
+      <label class="avatar-upload-btn" style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--accent); font-weight:600;">
+        <i class="bi bi-cloud-arrow-up"></i>
+        <span>Subir foto personal</span>
+        <input type="file" id="modalFotoInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+      </label>
+      <div id="modalFotoPreview" style="display:none; margin-top:12px;">
+        <div style="max-height:300px; overflow:hidden; border-radius:8px;">
+          <img id="modalFotoImg" style="max-width:100%; display:block;">
+        </div>
+        <div style="margin-top:8px; display:flex; gap:8px;">
+          <button type="button" id="confirmCropBtn" class="btn-perfil-save" style="flex:1; font-size:0.9rem;">Confirmar recorte</button>
+          <button type="button" id="cancelCropBtn" style="flex:1; padding:8px 16px; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:8px; cursor:pointer;">Cancelar</button>
+        </div>
+      </div>
+      <input type="hidden" id="cropX" name="crop_x">
+      <input type="hidden" id="cropY" name="crop_y">
+      <input type="hidden" id="cropWidth" name="crop_width">
+      <input type="hidden" id="cropHeight" name="crop_height">
+    </div>
+    <?php endif; ?>
     <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
       <?php if(empty($avatares)): ?>
         <p style="grid-column:1/-1; color:var(--muted); text-align:center;">No hay avatares disponibles aún.</p>
       <?php endif; ?>
       <?php foreach($avatares as $av): ?>
         <div class="avatar-option <?= ($user['avatar_id'] ?? 0) == $av['id_avatar'] ? 'avatar-selected' : '' ?>" data-id="<?= $av['id_avatar'] ?>" style="cursor:pointer; border-radius:12px; overflow:hidden; border:3px solid transparent; transition:border-color 0.2s;">
-          <img src="<?= imageUrl('img/avatares/' . $av['imagen']) ?>" style="width:100%; height:100px; object-fit:cover; display:block;">
+          <img src="<?= imageUrl($av['imagen']) ?>" style="width:100%; height:100px; object-fit:cover; display:block;">
         </div>
       <?php endforeach; ?>
     </div>
@@ -334,6 +356,127 @@ document.querySelectorAll('.avatar-option').forEach(el => {
       input.files = e.dataTransfer.files;
       showPreview(e.dataTransfer.files[0]);
     }
+  });
+})();
+
+// Modal foto personal upload con cropper
+(() => {
+  const modalInput = document.getElementById('modalFotoInput');
+  const modalPreview = document.getElementById('modalFotoPreview');
+  const modalImg = document.getElementById('modalFotoImg');
+  const mainInput = document.getElementById('fotoFileInput');
+  const mainPreview = document.getElementById('fotoPreview');
+  const mainIcon = document.querySelector('.perfil-drop-icon');
+  const mainText = document.querySelector('.perfil-drop-text');
+  const confirmCropBtn = document.getElementById('confirmCropBtn');
+  const cancelCropBtn = document.getElementById('cancelCropBtn');
+  const cropX = document.getElementById('cropX');
+  const cropY = document.getElementById('cropY');
+  const cropWidth = document.getElementById('cropWidth');
+  const cropHeight = document.getElementById('cropHeight');
+
+  if (!modalInput || !mainInput) return;
+
+  let cropper = null;
+
+  modalInput.addEventListener('change', () => {
+    if (modalInput.files[0]) {
+      const file = modalInput.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        modalImg.src = e.target.result;
+        modalPreview.style.display = 'block';
+        
+        // Destruir cropper anterior si existe
+        if (cropper) {
+          cropper.destroy();
+        }
+        
+        // Inicializar cropper
+        cropper = new Cropper(modalImg, {
+          aspectRatio: 1,
+          viewMode: 1,
+          dragMode: 'none',
+          movable: false,
+          zoomable: false,
+          rotatable: false,
+          scalable: false,
+          autoCropArea: 0.8,
+          restore: false,
+          guides: true,
+          center: true,
+          highlight: true,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          toggleDragModeOnDblclick: false,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  confirmCropBtn.addEventListener('click', async () => {
+    if (cropper) {
+      const canvas = cropper.getCroppedCanvas({
+        width: 500,
+        height: 500,
+      });
+      
+      canvas.toBlob(async (blob) => {
+        const formData = new FormData();
+        formData.append('foto_personal', new File([blob], 'cropped_photo.webp', { type: 'image/webp' }));
+        
+        try {
+          const response = await fetch('<?= basePath() ?>/controllers/subir_foto_personal.php', {
+            method: 'POST',
+            body: formData
+          });
+          
+          const result = await response.json();
+          
+          if (result.ok) {
+            // Actualizar avatar en sidebar
+            const perfilAvatar = document.getElementById('perfilAvatar');
+            if (perfilAvatar) {
+              const imgUrl = '<?= basePath() ?>/serve-image.php?file=' + encodeURIComponent(result.imagen);
+              perfilAvatar.innerHTML = `<img src="${imgUrl}" alt="Foto personal">`;
+            }
+            
+            // Mostrar mensaje de éxito
+            const successMsg = document.createElement('div');
+            successMsg.style.cssText = 'color:#28a745; text-align:center; margin-bottom:16px;';
+            successMsg.textContent = 'Foto actualizada correctamente';
+            document.querySelector('.container').insertBefore(successMsg, document.querySelector('.container').firstChild);
+            
+            // Cerrar modal
+            document.getElementById('avatarModal').style.display = 'none';
+            
+            // Destruir cropper
+            cropper.destroy();
+            cropper = null;
+            modalPreview.style.display = 'none';
+            
+            // Ocultar foto personal en formulario principal
+            if (mainPreview) mainPreview.style.display = 'none';
+            if (mainIcon) mainIcon.style.display = 'block';
+            if (mainText) mainText.style.display = 'block';
+          } else {
+            alert('Error al subir foto: ' + (result.error || 'Error desconocido'));
+          }
+        } catch (error) {
+          alert('Error al subir foto: ' + error.message);
+        }
+      }, 'image/webp', 0.92);
+    }
+  });
+
+  cancelCropBtn.addEventListener('click', () => {
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
+    modalPreview.style.display = 'none';
+    modalInput.value = '';
   });
 })();
 </script>

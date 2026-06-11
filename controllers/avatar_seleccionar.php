@@ -27,20 +27,25 @@ if($stmt->get_result()->num_rows === 0){
 $tipo = $_SESSION['tipo'] ?? 'lector';
 $usuario = $_SESSION['usuario'];
 
+error_log("DEBUG avatar_seleccionar: tipo=$tipo, usuario=$usuario, avatar_id=$avatar_id");
+
 if($tipo === 'admin'){
     $stmt = $con->prepare("UPDATE usuarios SET avatar_id = ? WHERE usuario = ?");
     $stmt->bind_param("is", $avatar_id, $usuario);
     $stmt->execute();
+    error_log("DEBUG: Updated usuarios, affected_rows=" . $stmt->affected_rows);
 } else {
     // Intentar en lectores primero
     $stmt = $con->prepare("UPDATE lectores SET avatar_id = ? WHERE usuario = ?");
     $stmt->bind_param("is", $avatar_id, $usuario);
     $stmt->execute();
+    error_log("DEBUG: Updated lectores, affected_rows=" . $stmt->affected_rows);
     // Fallback: si no se actualizó ninguna fila, buscar en usuarios (sesión legacy)
     if($stmt->affected_rows === 0){
         $stmt = $con->prepare("UPDATE usuarios SET avatar_id = ? WHERE usuario = ?");
         $stmt->bind_param("is", $avatar_id, $usuario);
         $stmt->execute();
+        error_log("DEBUG: Fallback to usuarios, affected_rows=" . $stmt->affected_rows);
     }
 }
 

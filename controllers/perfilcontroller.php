@@ -38,7 +38,7 @@ if(!empty($biografia)){
 // ============================
 // Validar Twitter/X
 if(!empty($link_twitter)){
-    if(!preg_match('/^https:\/\/(x\.com|twitter\.com)\/[a-zA-Z0-9_]{1,15}(\/.*)?$/', $link_twitter)){
+    if(!preg_match('/^https?:\/\/(www\.)?(x\.com|twitter\.com)\/[a-zA-Z0-9_\-\.]+/', $link_twitter)){
         header('Location: ' . basePath() . '/perfil?error=twitter_invalido');
         exit;
     }
@@ -46,7 +46,7 @@ if(!empty($link_twitter)){
 
 // Validar Instagram
 if(!empty($link_instagram)){
-    if(!preg_match('/^https:\/\/instagram\.com\/[a-zA-Z0-9_.]{1,30}(\/.*)?$/', $link_instagram)){
+    if(!preg_match('/^https?:\/\/(www\.)?instagram\.com\/[a-zA-Z0-9_\-\.]+/', $link_instagram)){
         header('Location: ' . basePath() . '/perfil?error=instagram_invalido');
         exit;
     }
@@ -79,8 +79,27 @@ if(!empty($pass_actual)){
 // FOTO PERSONAL (solo admin/editor)
 // ============================
 $foto_personal = null;
+error_log("DEBUG: Tipo usuario = " . $tipo);
+error_log("DEBUG: \$_FILES['foto_personal'] existe = " . (isset($_FILES['foto_personal']) ? 'YES' : 'NO'));
+if(isset($_FILES['foto_personal'])) {
+    error_log("DEBUG: error code = " . $_FILES['foto_personal']['error']);
+}
+
 if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_personal']['error'] === UPLOAD_ERR_OK){
+    // Aumentar límites para procesamiento de imagen
+    set_time_limit(300); // 5 minutos
+    ini_set('memory_limit', '256M');
+    
     $file = $_FILES['foto_personal'];
+    
+    // LOG: Debug de archivo recibido
+    error_log("DEBUG foto_personal: " . print_r([
+        'name' => $file['name'],
+        'type' => $file['type'],
+        'size' => $file['size'],
+        'error' => $file['error'],
+        'tmp_name' => $file['tmp_name']
+    ], true));
     
     // ============================
     // VALIDAR TAMAÑO (máximo 5MB)
@@ -95,13 +114,36 @@ if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_persona
     $permitidos = ['image/jpeg', 'image/png', 'image/webp'];
     if(in_array($mime, $permitidos)){
         // ============================
-        // VALIDAR DIMENSIONES
+        // REDIMENSIONAR SI ES NECESARIO
         // ============================
         $imageInfo = getimagesize($file['tmp_name']);
-        if($imageInfo !== false && $imageInfo[0] <= 2000 && $imageInfo[1] <= 2000){
+        if($imageInfo !== false){
             $imagen = imagecreatefromstring(file_get_contents($file['tmp_name']));
             if($imagen){
-                $dir = dirname(__DIR__) . '/uploads/editores/';
+                // Redimensionar si excede 2000x2000
+                $maxSize = 2000;
+                $width = imagesx($imagen);
+                $height = imagesy($imagen);
+                
+                if($width > $maxSize || $height > $maxSize){
+                    // Calcular nuevas dimensiones manteniendo aspect ratio
+                    $ratio = min($maxSize / $width, $maxSize / $height);
+                    $newWidth = intval($width * $ratio);
+                    $newHeight = intval($height * $ratio);
+                    
+                    // Crear nueva imagen redimensionada
+                    $nuevaImagen = imagecreatetruecolor($newWidth, $newHeight);
+                    imagealphablending($nuevaImagen, false);
+                    imagesavealpha($nuevaImagen, true);
+                    imagecopyresampled($nuevaImagen, $imagen, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                    imagedestroy($imagen);
+                    $imagen = $nuevaImagen;
+                }
+                
+                // En producción: /home/u780114275/uploads/editores/ (afuera de public_html)
+                // En local: c:\xampp\htdocs\CATINK\uploads\editores\
+                $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+                $dir = ($isLocal ? dirname(__DIR__) : '/home/u780114275') . '/uploads/editores/';
                 if(!is_dir($dir)) mkdir($dir, 0755, true);
                 // Obtener id_u para nombre de archivo
                 $stmtId = $con->prepare("SELECT id_u, foto_personal FROM usuarios WHERE usuario = ?");
@@ -113,8 +155,8 @@ if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_persona
                     $fotoPath = $rowId['foto_personal'];
                     // Validar que la ruta no contenga path traversal
                     if(strpos($fotoPath, '..') === false && strpos($fotoPath, '/') !== 0){
-                        $fullPath = dirname(__DIR__) . '/' . $fotoPath;
-                        if(file_exists($fullPath) && strpos(realpath($fullPath), realpath(dirname(__DIR__) . '/uploads/editores/')) === 0){
+                        $fullPath = ($isLocal ? dirname(__DIR__) : '/home/u780114275') . '/' . $fotoPath;
+                        if(file_exists($fullPath) && strpos(realpath($fullPath), realpath(($isLocal ? dirname(__DIR__) : '/home/u780114275') . '/uploads/editores/')) === 0){
                             unlink($fullPath);
                         }
                     }
@@ -166,7 +208,11 @@ if($tipo === 'admin'){
 $stmt->bind_param($tipos, ...$valores);
 
 if($stmt->execute()){
-    header('Location: ' . basePath() . '/perfil?ok=1');
+    $redirectUrl = basePath() . '/perfil?ok=1';
+    if($foto_personal){
+        $redirectUrl .= '&foto_ruta=' . urlencode($foto_personal);
+    }
+    header('Location: ' . $redirectUrl);
 } else {
     header('Location: ' . basePath() . '/perfil?error=2');
 }
