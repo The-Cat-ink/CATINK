@@ -157,7 +157,7 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
         <div class="form-group">
           <label>Foto Personal</label>
           <label class="perfil-drop-zone" id="fotoDropZone">
-            <input type="file" name="foto_personal" id="fotoFileInput" accept="image/jpeg,image/png,image/webp" hidden>
+            <input type="file" name="foto_personal" id="fotoFileInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
             <?php if(!empty($user['foto_personal'])): ?>
               <img id="fotoPreview" src="<?= imageUrl($user['foto_personal']) ?>" style="max-width:100%; max-height:150px; border-radius:8px; object-fit:cover;">
               <div class="perfil-drop-icon" style="display:none;"><i class="bi bi-cloud-arrow-up"></i></div>
@@ -206,7 +206,7 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
       <?php endif; ?>
       <?php foreach($avatares as $av): ?>
         <div class="avatar-option <?= ($user['avatar_id'] ?? 0) == $av['id_avatar'] ? 'avatar-selected' : '' ?>" data-id="<?= $av['id_avatar'] ?>" style="cursor:pointer; border-radius:12px; overflow:hidden; border:3px solid transparent; transition:border-color 0.2s;">
-          <img src="<?= imageUrl('img/avatares/' . $av['imagen']) ?>" style="width:100%; height:100px; object-fit:cover; display:block;">
+          <img src="<?= imageUrl($av['imagen']) ?>" style="width:100%; height:100px; object-fit:cover; display:block;">
         </div>
       <?php endforeach; ?>
     </div>

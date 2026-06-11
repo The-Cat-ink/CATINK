@@ -80,6 +80,10 @@ if(!empty($pass_actual)){
 // ============================
 $foto_personal = null;
 if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_personal']['error'] === UPLOAD_ERR_OK){
+    // Aumentar límites para procesamiento de imagen
+    set_time_limit(300); // 5 minutos
+    ini_set('memory_limit', '256M');
+    
     $file = $_FILES['foto_personal'];
     
     // ============================
