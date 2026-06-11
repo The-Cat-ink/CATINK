@@ -114,12 +114,32 @@ if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_persona
     $permitidos = ['image/jpeg', 'image/png', 'image/webp'];
     if(in_array($mime, $permitidos)){
         // ============================
-        // VALIDAR DIMENSIONES
+        // REDIMENSIONAR SI ES NECESARIO
         // ============================
         $imageInfo = getimagesize($file['tmp_name']);
-        if($imageInfo !== false && $imageInfo[0] <= 2000 && $imageInfo[1] <= 2000){
+        if($imageInfo !== false){
             $imagen = imagecreatefromstring(file_get_contents($file['tmp_name']));
             if($imagen){
+                // Redimensionar si excede 2000x2000
+                $maxSize = 2000;
+                $width = imagesx($imagen);
+                $height = imagesy($imagen);
+                
+                if($width > $maxSize || $height > $maxSize){
+                    // Calcular nuevas dimensiones manteniendo aspect ratio
+                    $ratio = min($maxSize / $width, $maxSize / $height);
+                    $newWidth = intval($width * $ratio);
+                    $newHeight = intval($height * $ratio);
+                    
+                    // Crear nueva imagen redimensionada
+                    $nuevaImagen = imagecreatetruecolor($newWidth, $newHeight);
+                    imagealphablending($nuevaImagen, false);
+                    imagesavealpha($nuevaImagen, true);
+                    imagecopyresampled($nuevaImagen, $imagen, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                    imagedestroy($imagen);
+                    $imagen = $nuevaImagen;
+                }
+                
                 // En producción: /home/u780114275/uploads/editores/ (afuera de public_html)
                 // En local: c:\xampp\htdocs\CATINK\uploads\editores\
                 $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;

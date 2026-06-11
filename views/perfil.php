@@ -375,8 +375,10 @@ document.querySelectorAll('.avatar-option').forEach(el => {
       };
       reader.readAsDataURL(file);
 
-      // Copiar al input principal
-      mainInput.files = modalInput.files;
+      // Copiar al input principal usando DataTransfer
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      mainInput.files = dataTransfer.files;
       
       // Mostrar preview en el formulario principal
       if (mainPreview && mainIcon && mainText) {
