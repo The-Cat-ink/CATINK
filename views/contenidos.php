@@ -821,7 +821,16 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         });
     });
     
-    dayColumn.addEventListener('mouseleave', function() {
+    dayColumn.addEventListener('mouseleave', function(e) {
+        // Verificar si el cursor está yendo al tooltip
+        const tooltip = this._tooltip;
+        if (tooltip) {
+            const relatedTarget = e.relatedTarget;
+            if (relatedTarget && (tooltip.contains(relatedTarget) || relatedTarget === tooltip)) {
+                return;
+            }
+        }
+        
         if (this._tooltip) {
             hideTooltip(this, this._tooltip, 1000);
         }
