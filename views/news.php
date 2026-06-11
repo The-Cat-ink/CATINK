@@ -180,9 +180,11 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
     }
 }
 
-// Verificar si el usuario actual es el autor de la noticia
+// Verificar si el usuario actual es el autor de la noticia o es admin
 $esAutor = false;
+$esAdmin = false;
 if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION['usuario'])) {
+    $esAdmin = true;
     $stmtAutor = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ?");
     $stmtAutor->bind_param("s", $_SESSION['usuario']);
     $stmtAutor->execute();
@@ -232,7 +234,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
               <button id="likeBtn" class="like-btn" data-id="<?= $id ?>">
                 <i class="bi bi-heart-fill" style="color: red;"></i> Like <span id="likeCount"><?= $noticia['likes'] ?></span>
               </button>
-              <?php if ($esAutor): ?>
+              <?php if ($esAutor || $esAdmin): ?>
                 <a href="<?= basePath() ?>/views/editar.php?id=<?= $id ?>" class="like-btn" style="background: var(--accent); color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                   <i class="bi bi-pencil-square"></i> Editar
                 </a>
