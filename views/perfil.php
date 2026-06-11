@@ -434,7 +434,8 @@ document.querySelectorAll('.avatar-option').forEach(el => {
             // Actualizar avatar en sidebar
             const perfilAvatar = document.getElementById('perfilAvatar');
             if (perfilAvatar) {
-              perfilAvatar.innerHTML = `<img src="${imageUrl(result.imagen)}" alt="Foto personal">`;
+              const imgUrl = '<?= basePath() ?>/serve-image.php?file=' + encodeURIComponent(result.imagen);
+              perfilAvatar.innerHTML = `<img src="${imgUrl}" alt="Foto personal">`;
             }
             
             // Mostrar mensaje de éxito
