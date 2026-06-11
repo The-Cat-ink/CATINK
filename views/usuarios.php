@@ -106,7 +106,7 @@ $superadmins = count(array_filter($usuarios, fn($u) => $u['id_u'] == 1 || !empty
                             <tr>
                                 <td>
                                     <?php if(!empty($u['avatar_img'])): ?>
-                                        <img src="<?= imageUrl('img/avatares/' . $u['avatar_img']) ?>" alt="Avatar" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                                        <img src="<?= imageUrl($u['avatar_img']) ?>" alt="Avatar" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
                                     <?php else: ?>
                                         <div style="width:40px; height:40px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold;">
                                             <?= strtoupper(mb_substr($u['nombre'], 0, 1)) ?>

@@ -77,7 +77,7 @@ $inactivos = $totalAvatares - $activos;
                 <?php endif; ?>
                 <?php foreach($avatares as $av): ?>
                     <div class="avatar-card <?= $av['activo'] ? '' : 'avatar-disabled' ?>" id="avatar-<?= $av['id_avatar'] ?>">
-                        <img src="<?= imageUrl('img/avatares/' . $av['imagen']) ?>" alt="Avatar" loading="lazy" decoding="async">
+                        <img src="<?= imageUrl($av['imagen']) ?>" alt="Avatar" loading="lazy" decoding="async">
                         <div class="avatar-actions">
                             <button class="btn-toggle-avatar" data-id="<?= $av['id_avatar'] ?>" data-estado="<?= $av['activo'] ?>" title="<?= $av['activo'] ? 'Ocultar a usuarios' : 'Mostrar a usuarios' ?>">
                                 <i class="bi <?= $av['activo'] ? 'bi-eye-fill' : 'bi-eye-slash' ?>"></i>

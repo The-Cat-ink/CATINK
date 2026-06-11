@@ -304,7 +304,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
               <div class="comentario-form">
                 <div class="comentario-form-avatar">
                   <?php if ($avatarComentario): ?>
-                    <img src="<?= imageUrl('img/avatares/' . $avatarComentario) ?>" alt="" class="comentario-avatar" loading="lazy" decoding="async">
+                    <img src="<?= imageUrl($avatarComentario) ?>" alt="" class="comentario-avatar" loading="lazy" decoding="async">
                   <?php else: ?>
                     <div class="comentario-avatar-placeholder"><i class="bi bi-person"></i></div>
                   <?php endif; ?>
@@ -329,7 +329,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                   <div class="comentario-item" data-id="<?= $com['id_comentario'] ?>">
                     <div class="comentario-avatar-col">
                       <?php if (!empty($com['avatar_img'])): ?>
-                        <img src="<?= imageUrl('img/avatares/' . $com['avatar_img']) ?>" alt="" class="comentario-avatar" loading="lazy" decoding="async">
+                        <img src="<?= imageUrl($com['avatar_img']) ?>" alt="" class="comentario-avatar" loading="lazy" decoding="async">
                       <?php else: ?>
                         <div class="comentario-avatar-placeholder"><?= strtoupper(mb_substr($com['nombre'], 0, 1)) ?></div>
                       <?php endif; ?>
