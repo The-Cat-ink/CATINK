@@ -35,11 +35,7 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
 <div class="container">
   <h1 class="text-center" style="margin:30px 0 20px;">Perfil de Usuario</h1>
   <?php if(isset($_GET['ok'])): ?>
-    <?php if(isset($_GET['foto_ruta'])): ?>
-      <p style="color:#28a745; text-align:center; margin-bottom:16px;">Imagen enviada a: <?= htmlspecialchars($_GET['foto_ruta']) ?></p>
-    <?php else: ?>
-      <p style="color:#28a745; text-align:center; margin-bottom:16px;">Perfil actualizado correctamente.</p>
-    <?php endif; ?>
+    <p style="color:#28a745; text-align:center; margin-bottom:16px;">Perfil actualizado correctamente.</p>
   <?php endif; ?>
   <?php if(isset($_GET['error'])): ?>
     <p style="color:#EF3363; text-align:center; margin-bottom:16px;">
@@ -415,33 +411,56 @@ document.querySelectorAll('.avatar-option').forEach(el => {
     }
   });
 
-  confirmCropBtn.addEventListener('click', () => {
+  confirmCropBtn.addEventListener('click', async () => {
     if (cropper) {
       const canvas = cropper.getCroppedCanvas({
         width: 500,
         height: 500,
       });
       
-      canvas.toBlob((blob) => {
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(new File([blob], 'cropped_photo.webp', { type: 'image/webp' }));
-        mainInput.files = dataTransfer.files;
+      canvas.toBlob(async (blob) => {
+        const formData = new FormData();
+        formData.append('foto_personal', new File([blob], 'cropped_photo.webp', { type: 'image/webp' }));
         
-        // Mostrar preview en el formulario principal
-        if (mainPreview && mainIcon && mainText) {
-          mainPreview.src = URL.createObjectURL(blob);
-          mainPreview.style.display = 'block';
-          mainIcon.style.display = 'none';
-          mainText.style.display = 'none';
+        try {
+          const response = await fetch('<?= basePath() ?>/controllers/subir_foto_personal.php', {
+            method: 'POST',
+            body: formData
+          });
+          
+          const result = await response.json();
+          
+          if (result.ok) {
+            // Actualizar avatar en sidebar
+            const perfilAvatar = document.getElementById('perfilAvatar');
+            if (perfilAvatar) {
+              perfilAvatar.innerHTML = `<img src="${imageUrl(result.imagen)}" alt="Foto personal">`;
+            }
+            
+            // Mostrar mensaje de éxito
+            const successMsg = document.createElement('div');
+            successMsg.style.cssText = 'color:#28a745; text-align:center; margin-bottom:16px;';
+            successMsg.textContent = 'Foto actualizada correctamente';
+            document.querySelector('.container').insertBefore(successMsg, document.querySelector('.container').firstChild);
+            
+            // Cerrar modal
+            document.getElementById('avatarModal').style.display = 'none';
+            
+            // Destruir cropper
+            cropper.destroy();
+            cropper = null;
+            modalPreview.style.display = 'none';
+            
+            // Ocultar foto personal en formulario principal
+            if (mainPreview) mainPreview.style.display = 'none';
+            if (mainIcon) mainIcon.style.display = 'block';
+            if (mainText) mainText.style.display = 'block';
+          } else {
+            alert('Error al subir foto: ' + (result.error || 'Error desconocido'));
+          }
+        } catch (error) {
+          alert('Error al subir foto: ' + error.message);
         }
-        
-        // Cerrar modal
-        document.getElementById('avatarModal').style.display = 'none';
-        
-        // Destruir cropper
-        cropper.destroy();
-        cropper = null;
-        modalPreview.style.display = 'none';
       }, 'image/webp', 0.92);
     }
   });
