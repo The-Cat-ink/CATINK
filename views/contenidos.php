@@ -106,10 +106,10 @@ if ($filtro !== 'todos') {
 }
 
 // ============================
-// Agrupar autores por día y noticias por autor
+// Agrupar autores por día y noticias por autor y fecha
 // ============================
 $authorsByDate = [];
-$newsByAuthor = [];
+$newsByAuthorAndDate = [];
 
 foreach ($allNews as $news) {
     $date = date('Y-m-d', strtotime($news['fecha_publicacion']));
@@ -130,15 +130,18 @@ foreach ($allNews as $news) {
     }
     $authorsByDate[$date][$autorId]['count']++;
     
-    // Agrupar noticias por autor
-    if (!isset($newsByAuthor[$autorId])) {
-        $newsByAuthor[$autorId] = [
+    // Agrupar noticias por autor y fecha
+    if (!isset($newsByAuthorAndDate[$autorId])) {
+        $newsByAuthorAndDate[$autorId] = [];
+    }
+    if (!isset($newsByAuthorAndDate[$autorId][$date])) {
+        $newsByAuthorAndDate[$autorId][$date] = [
             'nombre' => $autorNombre,
             'foto' => $autorFoto,
             'news' => []
         ];
     }
-    $newsByAuthor[$autorId]['news'][] = $news;
+    $newsByAuthorAndDate[$autorId][$date]['news'][] = $news;
 }
 
 // ============================
@@ -747,7 +750,15 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================
 // Tooltips interactivos
 // ============================
-const newsByAuthor = <?= json_encode($newsByAuthor) ?>;
+const newsByAuthorAndDate = <?= json_encode($newsByAuthorAndDate) ?>;
+
+// Limpiar tooltips existentes antes de crear nuevos
+function clearExistingTooltips() {
+    document.querySelectorAll('.authors-tooltip').forEach(t => t.remove());
+    document.querySelectorAll('.news-tooltip').forEach(t => t.remove());
+    document.querySelectorAll('.day-column').forEach(d => d._tooltip = null);
+    document.querySelectorAll('.tooltip-author').forEach(a => a._newsTooltip = null);
+}
 
 // Tooltip para días - mostrar autores
 document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
@@ -758,6 +769,9 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
             clearTimeout(hideTimeout);
             hideTimeout = null;
         }
+        
+        // Limpiar tooltips existentes
+        clearExistingTooltips();
         
         const authors = JSON.parse(this.dataset.authors || '{}');
         if (Object.keys(authors).length === 0) return;
@@ -770,7 +784,7 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         for (const [autorId, autor] of Object.entries(authors)) {
             const foto = autor.foto ? `<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(autor.foto)}` : null;
             html += `
-                <div class="tooltip-author" data-author-id="${autorId}">
+                <div class="tooltip-author" data-author-id="${autorId}" data-date="<?= $date ?>">
                     ${foto ? `<img src="${foto}" alt="${autor.nombre}" class="author-avatar">` : `<div class="author-avatar-placeholder">${autor.nombre.charAt(0).toUpperCase()}</div>`}
                     <span class="author-name">${autor.nombre}</span>
                     <span class="author-count">${autor.count} noticias</span>
@@ -825,7 +839,8 @@ document.addEventListener('mouseover', function(e) {
     if (authorEl._newsTooltip) return;
     
     const autorId = authorEl.dataset.authorId;
-    const autorData = newsByAuthor[autorId];
+    const date = authorEl.dataset.date;
+    const autorData = newsByAuthorAndDate[autorId]?.[date];
     if (!autorData || !autorData.news || autorData.news.length === 0) return;
     
     const tooltip = document.createElement('div');
