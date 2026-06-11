@@ -781,10 +781,11 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         
         let html = '<div class="tooltip-header">Autores del día</div>';
         html += '<div class="tooltip-authors">';
+        const currentDate = this.dataset.date;
         for (const [autorId, autor] of Object.entries(authors)) {
             const foto = autor.foto ? `<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(autor.foto)}` : null;
             html += `
-                <div class="tooltip-author" data-author-id="${autorId}" data-date="<?= $date ?>">
+                <div class="tooltip-author" data-author-id="${autorId}" data-date="${currentDate}">
                     ${foto ? `<img src="${foto}" alt="${autor.nombre}" class="author-avatar">` : `<div class="author-avatar-placeholder">${autor.nombre.charAt(0).toUpperCase()}</div>`}
                     <span class="author-name">${autor.nombre}</span>
                     <span class="author-count">${autor.count} noticias</span>
