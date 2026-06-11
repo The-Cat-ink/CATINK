@@ -24,6 +24,34 @@ while($row = $result->fetch_assoc()) {
 // Defaults para secciones no configuradas
 if(!isset($secciones['publicidad'])) $secciones['publicidad'] = ['estado' => 0];
 if(!isset($secciones['videos'])) $secciones['videos'] = ['estado' => 0];
+
+// =========================
+// Obtener datos del usuario actual
+// =========================
+$usuarioActual = null;
+$fotoPersonal = null;
+$avatarActual = null;
+if(isset($_SESSION['usuario']) && isset($_SESSION['tipo'])){
+    $tipo = $_SESSION['tipo'];
+    $usuario = $_SESSION['usuario'];
+    
+    if($tipo === 'admin'){
+        $stmtUser = $con->prepare("SELECT u.*, a.imagen as avatar_imagen FROM usuarios u LEFT JOIN avatares_perfil a ON u.avatar_id = a.id_avatar WHERE u.usuario = ?");
+        $stmtUser->bind_param("s", $usuario);
+        $stmtUser->execute();
+        $usuarioActual = $stmtUser->get_result()->fetch_assoc();
+    } else {
+        $stmtUser = $con->prepare("SELECT l.*, a.imagen as avatar_imagen FROM lectores l LEFT JOIN avatares_perfil a ON l.avatar_id = a.id_avatar WHERE l.usuario = ?");
+        $stmtUser->bind_param("s", $usuario);
+        $stmtUser->execute();
+        $usuarioActual = $stmtUser->get_result()->fetch_assoc();
+    }
+    
+    if($usuarioActual){
+        $fotoPersonal = $usuarioActual['foto_personal'] ?? null;
+        $avatarActual = $usuarioActual['avatar_imagen'] ?? null;
+    }
+}
 // =========================
 // Generar JSON-LD del menú
 // =========================
@@ -190,7 +218,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="user-dropdown">
           <button class="user-avatar-link" id="userDropdownBtn" title="Mi Perfil">
             <span class="user-avatar">
-              <i class="bi bi-person"></i>
+              <?php if($fotoPersonal): ?>
+                <img src="<?= imageUrl($fotoPersonal) ?>" alt="Foto personal" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+              <?php elseif($avatarActual): ?>
+                <img src="<?= imageUrl($avatarActual) ?>" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+              <?php else: ?>
+                <i class="bi bi-person"></i>
+              <?php endif; ?>
             </span>
           </button>
           <div class="user-dropdown-menu" id="userDropdownMenu">
