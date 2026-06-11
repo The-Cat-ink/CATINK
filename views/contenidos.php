@@ -852,8 +852,9 @@ document.addEventListener('mouseover', function(e) {
     tooltip.style.top = rect.top + 'px';
     
     authorEl._newsTooltip = tooltip;
+    authorEl._hideTimeout = null;
     
-    // Prevenir que el tooltip desaparezca cuando el cursor está sobre él
+    // Cuando el cursor entra al tooltip, cancelar el timeout
     tooltip.addEventListener('mouseenter', function() {
         if (authorEl._hideTimeout) {
             clearTimeout(authorEl._hideTimeout);
@@ -861,6 +862,7 @@ document.addEventListener('mouseover', function(e) {
         }
     });
     
+    // Cuando el cursor sale del tooltip, ocultarlo después de 300ms
     tooltip.addEventListener('mouseleave', function() {
         authorEl._hideTimeout = setTimeout(() => {
             if (authorEl._newsTooltip) {
@@ -871,18 +873,10 @@ document.addEventListener('mouseover', function(e) {
     });
 });
 
+// Cuando el cursor sale del autor, iniciar timeout para ocultar
 document.addEventListener('mouseout', function(e) {
     const authorEl = e.target.closest('.tooltip-author');
-    if (!authorEl) return;
-    
-    // Verificar que el cursor no esté yendo al tooltip
-    const tooltip = authorEl._newsTooltip;
-    if (tooltip) {
-        const relatedTarget = e.relatedTarget;
-        if (relatedTarget && (tooltip.contains(relatedTarget) || relatedTarget === tooltip)) {
-            return;
-        }
-    }
+    if (!authorEl || !authorEl._newsTooltip) return;
     
     authorEl._hideTimeout = setTimeout(() => {
         if (authorEl._newsTooltip) {
