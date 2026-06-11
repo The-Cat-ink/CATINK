@@ -851,6 +851,10 @@ document.addEventListener('mouseover', function(e) {
     
     const autorId = authorEl.dataset.authorId;
     const date = authorEl.dataset.date;
+    console.log('DEBUG: autorId', autorId, 'date', date);
+    console.log('DEBUG: newsByAuthorAndDate', newsByAuthorAndDate);
+    console.log('DEBUG: autorData', newsByAuthorAndDate[autorId]?.[date]);
+    
     const autorData = newsByAuthorAndDate[autorId]?.[date];
     if (!autorData || !autorData.news || autorData.news.length === 0) return;
     
