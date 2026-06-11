@@ -352,10 +352,10 @@ function topCard($r, $type = 'thumb') {
                     </div>
                 <?php endforeach; ?>
                 <?php if($secciones['videos']['estado'] == 1) : ?>
-                    <div class="section-separator">
-                        <div class="section-separator-label">
+                    <div class="section-separator" id="videos-destacados">
+                        <a href="#videos-destacados" class="section-separator-label">
                             <i class="bi bi-camera-video"></i> Videos Destacados
-                        </div>
+                        </a>
                         <div class="section-separator-line"></div>
                     </div>
                     <div class="videos-destacados-container">
@@ -529,10 +529,10 @@ function topCard($r, $type = 'thumb') {
             </div>
         </div>
         <br>
-        <div class="section-separator">
-            <div class="section-separator-label">
+        <div class="section-separator" id="recomendados">
+            <a href="#recomendados" class="section-separator-label">
                 <i class="bi bi-stars"></i> Recomendados para ti
-            </div>
+            </a>
             <div class="section-separator-line"></div>
         </div>
         <div class="row mt-4">
@@ -561,9 +561,9 @@ function topCard($r, $type = 'thumb') {
             </div>
         <br>
         <div class="section-separator">
-            <div class="section-separator-label">
+            <a href="<?= recientesUrl() ?>" class="section-separator-label">
                 <i class="bi bi-lightning-fill"></i> Noticias recientes
-            </div>
+            </a>
             <div class="section-separator-line"></div>
         </div>
         <div class="row mt-4">

@@ -2970,9 +2970,8 @@ body, .nav-link, .btn, .card, .site-main {
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-bottom: 20px;
-  margin-left: -15px;
-  margin-right: -15px;
+  margin-top: 16px;
+  margin-bottom: 16px;
   position: relative;
 }
 
