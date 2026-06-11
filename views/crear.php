@@ -1136,10 +1136,14 @@ function initCropper(num) {
           cbW = imgData.width;
           cbH = cbW / ratio;
         }
+        const availX = imgData.width - cbW;
+        const leftOffset = num === 3
+          ? imgData.left + availX * 0.85
+          : imgData.left + availX / 2;
         cropperInstance.setCropBoxData({
           width:  cbW,
           height: cbH,
-          left:   imgData.left + (imgData.width  - cbW) / 2,
+          left:   leftOffset,
           top:    imgData.top  + (imgData.height - cbH) / 2
         });
       }
