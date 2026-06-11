@@ -777,7 +777,7 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         
         const rect = this.getBoundingClientRect();
         tooltip.style.left = rect.left + 'px';
-        tooltip.style.top = (rect.bottom + 5) + 'px';
+        tooltip.style.top = (rect.top - tooltip.offsetHeight - 5) + 'px';
         
         this._tooltip = tooltip;
     });
