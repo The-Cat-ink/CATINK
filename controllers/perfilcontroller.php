@@ -79,12 +79,27 @@ if(!empty($pass_actual)){
 // FOTO PERSONAL (solo admin/editor)
 // ============================
 $foto_personal = null;
+error_log("DEBUG: Tipo usuario = " . $tipo);
+error_log("DEBUG: \$_FILES['foto_personal'] existe = " . (isset($_FILES['foto_personal']) ? 'YES' : 'NO'));
+if(isset($_FILES['foto_personal'])) {
+    error_log("DEBUG: error code = " . $_FILES['foto_personal']['error']);
+}
+
 if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_personal']['error'] === UPLOAD_ERR_OK){
     // Aumentar límites para procesamiento de imagen
     set_time_limit(300); // 5 minutos
     ini_set('memory_limit', '256M');
     
     $file = $_FILES['foto_personal'];
+    
+    // LOG: Debug de archivo recibido
+    error_log("DEBUG foto_personal: " . print_r([
+        'name' => $file['name'],
+        'type' => $file['type'],
+        'size' => $file['size'],
+        'error' => $file['error'],
+        'tmp_name' => $file['tmp_name']
+    ], true));
     
     // ============================
     // VALIDAR TAMAÑO (máximo 5MB)
