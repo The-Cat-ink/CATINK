@@ -93,12 +93,23 @@ $superadmins   = count(array_filter($usuarios, fn($u) => $u['id_u'] == 1 || !emp
                             <?php foreach ($usuarios as $u): ?>
                             <tr>
                                 <td>
-                                    <?php if (!empty($u['foto_personal'])): ?>
-                                        <img src="<?= imageUrl($u['foto_personal']) ?>" alt="Foto de perfil" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-                                    <?php else: ?>
-                                        <div style="width:40px; height:40px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold;">
-                                            <?= strtoupper(mb_substr($u['nombre'], 0, 1)) ?>
-                                        </div>
+                                    <?php if ($ACL['editar']): ?>
+                                    <div class="avatar-wrap" data-id="<?= $u['id_u'] ?>"
+                                         data-nombre="<?= htmlspecialchars($u['nombre'], ENT_QUOTES) ?>"
+                                         data-foto="<?= htmlspecialchars($u['foto_personal'] ?? '', ENT_QUOTES) ?>"
+                                         title="Cambiar foto" style="cursor:pointer; position:relative; display:inline-block;">
+                                    <?php endif; ?>
+                                        <?php if (!empty($u['foto_personal'])): ?>
+                                            <img src="<?= imageUrl($u['foto_personal']) ?>" alt="Foto de perfil"
+                                                 style="width:40px; height:40px; border-radius:50%; object-fit:cover; display:block;">
+                                        <?php else: ?>
+                                            <div style="width:40px; height:40px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                                                <?= strtoupper(mb_substr($u['nombre'], 0, 1)) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if ($ACL['editar']): ?>
+                                            <div class="avatar-overlay"><i class="bi bi-camera-fill"></i></div>
+                                    </div>
                                     <?php endif; ?>
                                 </td>
                                 <td><strong class="table-title"><?= htmlspecialchars($u['nombre']) ?></strong></td>
@@ -133,6 +144,35 @@ $superadmins   = count(array_filter($usuarios, fn($u) => $u['id_u'] == 1 || !emp
     </div>
 </div>
 
+<!-- Modal foto de perfil -->
+<div id="modalFoto" class="crop-modal" style="display:none;">
+    <div class="card" style="max-width:380px; width:100%;">
+        <div class="crop-modal-content">
+            <h3><i class="bi bi-camera-fill"></i> Foto de perfil — <span id="fotoNombre"></span></h3>
+            <div style="text-align:center; margin:16px 0;">
+                <div id="fotoPreviewWrap" style="width:100px; height:100px; border-radius:50%; overflow:hidden; margin:0 auto; background:var(--accent); display:flex; align-items:center; justify-content:center;">
+                    <img id="fotoPreview" src="" alt="" style="width:100%; height:100%; object-fit:cover; display:none;">
+                    <span id="fotoInicial" style="color:#fff; font-size:2rem; font-weight:bold;"></span>
+                </div>
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; color:var(--text);">Subir nueva foto</label>
+                <input type="file" id="fotoInput" accept="image/*"
+                       style="width:100%; padding:8px; border:1px solid var(--border); border-radius:8px; font-size:0.85rem; background:var(--card-bg); color:var(--text);">
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:8px;">
+                <button type="button" id="btnEliminarFoto" class="btn btn-delete" style="display:none;">
+                    <i class="bi bi-trash"></i> Eliminar foto
+                </button>
+                <div style="display:flex; gap:8px; margin-left:auto;">
+                    <button type="button" id="modalFotoClose" class="btn btn-secondary">Cancelar</button>
+                    <button type="button" id="btnGuardarFoto" class="btn btn-accent" disabled>Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal eliminación usuario -->
 <div id="modalOverlayU" class="crop-modal" style="display: none;">
     <div class="crop-modal-content">
@@ -148,8 +188,102 @@ $superadmins   = count(array_filter($usuarios, fn($u) => $u['id_u'] == 1 || !emp
 
 <?php include("./../layout/footerAdmin.php"); ?>
 
+<style>
+.avatar-wrap:hover .avatar-overlay { opacity: 1; }
+.avatar-overlay {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.45);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1rem;
+    opacity: 0; transition: opacity .2s;
+    pointer-events: none;
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+
+    // ── Modal foto de perfil ─────────────────────────────────────
+    const modalFoto    = document.getElementById('modalFoto');
+    const fotoInput    = document.getElementById('fotoInput');
+    const fotoPreview  = document.getElementById('fotoPreview');
+    const fotoInicial  = document.getElementById('fotoInicial');
+    const btnGuardar   = document.getElementById('btnGuardarFoto');
+    const btnEliminar  = document.getElementById('btnEliminarFoto');
+    let fotoUserId = null;
+
+    document.querySelectorAll('.avatar-wrap').forEach(wrap => {
+        wrap.addEventListener('click', () => {
+            fotoUserId = wrap.dataset.id;
+            const foto = wrap.dataset.foto;
+            const nombre = wrap.dataset.nombre;
+
+            document.getElementById('fotoNombre').textContent = nombre;
+            fotoInput.value = '';
+            btnGuardar.disabled = true;
+
+            if (foto) {
+                fotoPreview.src = `<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(foto)}`;
+                fotoPreview.style.display = 'block';
+                fotoInicial.style.display = 'none';
+                btnEliminar.style.display = 'inline-flex';
+            } else {
+                fotoPreview.style.display = 'none';
+                fotoInicial.textContent = nombre.charAt(0).toUpperCase();
+                fotoInicial.style.display = 'block';
+                btnEliminar.style.display = 'none';
+            }
+
+            modalFoto.style.display = 'flex';
+        });
+    });
+
+    fotoInput.addEventListener('change', () => {
+        const file = fotoInput.files[0];
+        if (!file) { btnGuardar.disabled = true; return; }
+        btnGuardar.disabled = false;
+        const reader = new FileReader();
+        reader.onload = e => {
+            fotoPreview.src = e.target.result;
+            fotoPreview.style.display = 'block';
+            fotoInicial.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    });
+
+    btnGuardar.addEventListener('click', () => {
+        const fd = new FormData();
+        fd.append('id_u', fotoUserId);
+        fd.append('foto', fotoInput.files[0]);
+        fetch('./../controllers/cambiar_foto_usuario.php', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) { showToast(d.success, 'success'); setTimeout(() => location.reload(), 900); }
+                else showToast(d.error || 'Error', 'error');
+            })
+            .catch(() => showToast('Error en la petición', 'error'));
+        modalFoto.style.display = 'none';
+    });
+
+    btnEliminar.addEventListener('click', () => {
+        const fd = new FormData();
+        fd.append('id_u', fotoUserId);
+        fd.append('eliminar', '1');
+        fetch('./../controllers/cambiar_foto_usuario.php', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) { showToast(d.success, 'success'); setTimeout(() => location.reload(), 900); }
+                else showToast(d.error || 'Error', 'error');
+            })
+            .catch(() => showToast('Error en la petición', 'error'));
+        modalFoto.style.display = 'none';
+    });
+
+    document.getElementById('modalFotoClose').addEventListener('click', () => { modalFoto.style.display = 'none'; });
+    modalFoto.addEventListener('click', e => { if (e.target === modalFoto) modalFoto.style.display = 'none'; });
+
+    // ── Modal eliminación usuario ────────────────────────────────
     const modal = document.getElementById('modalOverlayU');
 
     document.querySelectorAll('.btn-delete-usuario').forEach(btn => {
