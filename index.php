@@ -26,7 +26,8 @@ $stmt = $con->prepare("
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
     WHERE n.fecha_publicacion <= NOW()
     GROUP BY n.id
-    ORDER BY n.fecha_publicacion DESC;
+    ORDER BY n.fecha_publicacion DESC
+    LIMIT 50;
 ");
 $stmt->execute();
 $result = $stmt->get_result();
@@ -85,18 +86,30 @@ $ultimasNoticias = array_slice($ultimasNoticias, 0, 7);
 $noticiasMasRecientes = array_slice($noticias, 0, 6);
 $noticiasMasRecientes2 = array_slice($noticias, 7, 5);
 $noticiasMasRecientes3 = array_slice($noticias, 12, 17);
-//Obtener banner publicidad
-$stmt = $con->prepare("SELECT * FROM publicidad WHERE activo = 1 AND tipo = 1 and fecha_fin >= NOW() ORDER BY RAND() LIMIT 1");
+//Obtener publicidad (banner, cuadro e inferior) en una sola consulta
+$stmt = $con->prepare("
+    (SELECT *, 'banner' as tipo_pub FROM publicidad WHERE activo = 1 AND tipo = 1 AND fecha_fin >= NOW() ORDER BY RAND() LIMIT 1)
+    UNION ALL
+    (SELECT *, 'cuadro' as tipo_pub FROM publicidad WHERE activo = 1 AND tipo = 2 AND fecha_fin >= NOW() ORDER BY RAND() LIMIT 1)
+    UNION ALL
+    (SELECT *, 'inferior' as tipo_pub FROM publicidad WHERE activo = 1 AND tipo = 1 ORDER BY RAND() LIMIT 1)
+");
 $stmt->execute();
-$publicidad = $stmt->get_result()->fetch_assoc();
-//Obtener cuadro publicitario
-$stmt = $con->prepare("SELECT * FROM publicidad WHERE activo = 1 AND tipo = 2 and fecha_fin >= NOW() ORDER BY RAND() LIMIT 1");
-$stmt->execute();
-$publicidadCuadro = $stmt->get_result()->fetch_assoc();
-//obtener publicidad inferior
-$stmt = $con->prepare("SELECT * FROM publicidad WHERE activo = 1 AND tipo = 1 ORDER BY RAND() LIMIT 1");
-$stmt->execute();
-$publicidadInferior = $stmt->get_result()->fetch_assoc();
+$publicidadResult = $stmt->get_result();
+
+$publicidad = null;
+$publicidadCuadro = null;
+$publicidadInferior = null;
+
+while ($row = $publicidadResult->fetch_assoc()) {
+    if ($row['tipo_pub'] === 'banner') {
+        $publicidad = $row;
+    } elseif ($row['tipo_pub'] === 'cuadro') {
+        $publicidadCuadro = $row;
+    } elseif ($row['tipo_pub'] === 'inferior') {
+        $publicidadInferior = $row;
+    }
+}
 // obtener videos
 $stmt = $con->prepare("SELECT * FROM videos WHERE activo = 1 ORDER BY id_v DESC LIMIT 6");
 $stmt->execute();
