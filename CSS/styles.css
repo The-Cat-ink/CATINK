@@ -3101,10 +3101,9 @@ body, .nav-link, .btn, .card, .site-main {
 }
 
 /* ==================================================
-   NAVBAR HERO MODE & READING PROGRESS BAR
+   READING PROGRESS BAR
    ================================================== */
 
-/* 1. Progress Bar de Lectura */
 .reading-progress-container {
   position: fixed;
   top: 0;
@@ -3112,7 +3111,7 @@ body, .nav-link, .btn, .card, .site-main {
   width: 100%;
   height: 4px;
   background-color: transparent;
-  z-index: 100001; /* Debe estar por encima de la navbar */
+  z-index: 100001;
   pointer-events: none;
 }
 .reading-progress-bar {
@@ -3120,56 +3119,4 @@ body, .nav-link, .btn, .card, .site-main {
   height: 100%;
   background-color: var(--accent);
   transition: width 0.1s ease;
-}
-
-/* 2. Navbar Hero Mode (Transparente) */
-.navbar.navbar-hero {
-  background: transparent !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
-  position: absolute !important;
-  width: 100%;
-  left: 0;
-  right: 0;
-}
-
-/* Forzar color claro en los elementos del menú transparente */
-.navbar.navbar-hero .nav-link,
-.navbar.navbar-hero .btn-outline-secondary,
-.navbar.navbar-hero .btn-admin-panel,
-.navbar.navbar-hero .user-avatar-link,
-.navbar.navbar-hero .theme-icon i {
-  color: #ffffff !important;
-}
-
-.navbar.navbar-hero .navbar-brand #logo {
-  content: url('../img/logo_alt.png') !important;
-}
-
-.navbar.navbar-hero .nav-link::after {
-  background-color: #ffffff !important;
-}
-
-.navbar.navbar-hero .navbar-toggler-icon {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
-}
-
-/* Buscador en la navbar transparente */
-.navbar.navbar-hero .nav-search.buscador-desplegable {
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  background-color: rgba(255, 255, 255, 0.12) !important;
-}
-.navbar.navbar-hero .nav-search.buscador-desplegable .search-input {
-  color: #ffffff !important;
-}
-.navbar.navbar-hero .nav-search.buscador-desplegable .search-input::placeholder {
-  color: rgba(255, 255, 255, 0.65) !important;
-}
-.navbar.navbar-hero .nav-search.buscador-desplegable .search-btn {
-  color: #ffffff !important;
-}
-
-/* Avatar del usuario en navbar transparente */
-.navbar.navbar-hero .user-avatar {
-  border-color: rgba(255, 255, 255, 0.3) !important;
 }
