@@ -81,6 +81,7 @@ RewriteRule ^autor/([0-9]+)/?$ views/autor.php?id=$1 [L,QSA]
 # =========================
 # PAGINAS ESTATICAS
 # =========================
+RewriteRule ^nosotros/?$ views/nosotros.php [L]
 RewriteRule ^sobre-nosotros/?$ views/nosotros.php [L]
 RewriteRule ^acerca-de/?$ views/nosotros.php [L]
 RewriteRule ^terminos-condiciones/?$ views/terminos.php [L]
