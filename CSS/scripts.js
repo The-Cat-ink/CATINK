@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Animación de progreso de indicadores: dibuja stroke-dashoffset en los círculos SVG
   const indicators = document.querySelectorAll('.indicator-avatar circle');
-  const duration = 10000;
+  const duration = parseInt(carousel?.getAttribute('data-bs-interval')) || 7000;
   function startProgress(index) {
     indicators.forEach(circle => {
       circle.style.transition = 'none';
