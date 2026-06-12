@@ -160,7 +160,7 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
 <!-- SLIDER PRINCIPAL -->
 <!-- ===================== -->
 <div class="carousel-wrapper">
-<div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000">
+<div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel" data-bs-interval="7000">
     <div class="carousel-inner">
         <?php foreach($slider as $i => $row): ?>
             <div class="carousel-item <?= $i==0?'active':'' ?>" data-url="<?= newsUrlFromRow($row) ?>">
