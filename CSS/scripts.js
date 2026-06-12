@@ -60,12 +60,29 @@ document.addEventListener('DOMContentLoaded', function() {
   const saved = localStorage.getItem('theme') || 'light';
   applyTheme(saved);
 
-  // Auto-hide navbar on scroll down, show on scroll up
+  // Auto-hide navbar on scroll down, show on scroll up + transparent hero mode on index page
   const navbar = document.querySelector('.navbar');
+  const isIndexPage = document.querySelector('.carousel-wrapper') !== null;
+
   if (navbar) {
+    // Si estamos en la home y al tope, iniciar transparente
+    if (isIndexPage && window.scrollY < 50) {
+      navbar.classList.add('navbar-hero');
+    }
+
     let lastScroll = window.scrollY;
     window.addEventListener('scroll', () => {
       const curr = window.scrollY;
+
+      // Toggle transparente al inicio
+      if (isIndexPage) {
+        if (curr > 50) {
+          navbar.classList.remove('navbar-hero');
+        } else {
+          navbar.classList.add('navbar-hero');
+        }
+      }
+
       if (curr > lastScroll && curr > 80) {
         navbar.classList.add('nav-hidden');
       } else {

@@ -688,9 +688,9 @@ h2 {
   - .card, .card-body, .card-title, .card-text
   - Uso: entradas principales y sidebars
 */
-.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 6px 18px rgba(11,11,11,0.04); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 6px 18px rgba(11,11,11,0.04); transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.25s cubic-bezier(0.25, 0.8, 0.25, 1); }
 .card[data-url] { cursor: pointer; }
-.card[data-url]:hover { transform: scale(1.02); box-shadow: 0 10px 28px rgba(11,11,11,0.1); }
+.card[data-url]:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(11,11,11,0.08); }
 .card-body { padding: 16px; }
 .card-title { font-size: 1.125rem; font-weight: 700; margin-bottom: 8px; color: var(--text); }
 .card-text { color: var(--text); font-size: 0.95rem; }
@@ -787,6 +787,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   .d-md-block { display: block !important; }
   .d-md-none { display: none !important; }
   .d-md-flex { display: flex !important; }
+  .card .row-no-gap.flex-md-row-reverse { flex-direction: row-reverse !important; }
 }
 .img-fluid { max-width: 100%; height: auto; display: block; }
 .rounded-start { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
@@ -957,7 +958,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 }
 /* Sidebar Wrapper */
 .sidebar-wrapper {
-  position: sticky;
+  position: relative;
   top: 20px;
 }
 @media (max-width: 768px) {
@@ -1208,14 +1209,14 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   margin: 6px 0;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 /* Tarjetas que respetan el ratio exacto del crop — sin recorte adicional */
 .news-card.card-banner { height: auto; aspect-ratio: 32/9; }
 .news-card.card-thumb  { height: auto; aspect-ratio: 16/9; }
 .news-card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
 }
 .news-card picture {
   display: block;
@@ -1228,9 +1229,9 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   object-fit: cover;
   display: block;
 }
-.news-link {display: block; text-decoration:none; color: var(--text); position: relative; z-index: 3;}
+.news-link {display: block; text-decoration:none; color: var(--text); position: relative; z-index: 3; transition: color 0.2s ease;}
 .news-link:hover { color:#EF3363; }
-.news-link-card {display: block; text-decoration:none; color: #fff; position: relative; z-index: 3;}
+.news-link-card {display: block; text-decoration:none; color: #fff; position: relative; z-index: 3; transition: color 0.2s ease;}
 .news-link-card:hover { color:#EF3363; }
 /* Gradiente oscuro — solo cubre la zona inferior donde va el texto */
 .news-card::before {
@@ -3017,25 +3018,81 @@ body, .nav-link, .btn, .card, .site-main {
   box-shadow: 2px 4px 12px rgba(0,0,0,0.4);
 }
 
-/* VIDEOS DESTACADOS CONTAINER */
+/* 1. Contenedor que ocupa todo el ancho de la página */
 .videos-destacados-container {
-  background: #f5f5f5;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 20px;
+    position: relative;
+    width: 100vw;
+    left: 0;
+    margin-left: var(--video-bleed-left, 0px);
+    margin-right: var(--video-bleed-right, 0px);
+    margin-bottom: 40px;
+    margin-top: 40px;
+    padding: 20px 16px 40px;
+    display: flex;
+    flex-direction: column; /* Apila elementos verticalmente */
+    align-items: center;
+    z-index: 1; /* Asegura que los videos queden por encima */
+    background: #202124; /* Fondo ahora directo en el contenedor */
+}
+
+/* Modo oscuro para el contenedor */
+[data-bs-theme="dark"] .videos-destacados-container {
+    background: #0B1220;
+}
+
+/* 2. El carrusel se centra con límite de ancho */
+.videos-destacados-container .video-carousel {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+    max-width: var(--cw); /* Usa el ancho de contenido definido */
+}
+
+/* 3. Título principal del bloque de videos */
+.videos-destacados-titulo {
+  width: 100%;
+  max-width: var(--cw);
+  text-align: center;
+  color: #ffffff;
+  font-size: 2.8rem;
+  font-weight: 700;
+  font-family: 'Baloo 2', 'Nunito', 'Quicksand', sans-serif;
+  margin-bottom: 30px;
+  letter-spacing: 0.02em;
+}
+
+.videos-destacados-titulo i {
+  margin-right: 10px;
+  opacity: 0.85;
+}
+
+/* 3. El separador dentro del contenedor de ancho completo */
+.videos-destacados-container .section-separator {
+    width: 100%;
+    max-width: var(--cw);
+    margin-bottom: 30px;
 }
 
 .videos-destacados-container .section-separator-label {
-  background: var(--accent);
-  color: #fff;
+  background: #ffffff;
+  color: var(--accent);
+  box-shadow: 2px 2px 8px rgba(239, 51, 99, 0.18);
+}
+
+.videos-destacados-container .section-separator-label:hover {
+  color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 2px 4px 12px rgba(239, 51, 99, 0.28);
+}
+
+[data-bs-theme="dark"] .videos-destacados-container .section-separator-label {
+  background: #ffffff;
+  color: var(--accent);
 }
 
 .videos-destacados-container .section-separator-line {
-  background: var(--accent);
-}
-
-[data-bs-theme="dark"] .videos-destacados-container {
-  background: #2a2a3e;
+  background: #ffffff;
 }
 
 @media (max-width: 768px) {
@@ -3043,4 +3100,78 @@ body, .nav-link, .btn, .card, .site-main {
     font-size: 1rem;
     padding: 8px 16px;
   }
+}
+
+/* ==================================================
+   NAVBAR HERO MODE & READING PROGRESS BAR
+   ================================================== */
+
+/* 1. Progress Bar de Lectura */
+.reading-progress-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: transparent;
+  z-index: 100001; /* Debe estar por encima de la navbar */
+  pointer-events: none;
+}
+.reading-progress-bar {
+  width: 0%;
+  height: 100%;
+  background-color: var(--accent);
+  transition: width 0.1s ease;
+}
+
+/* 2. Navbar Hero Mode (Transparente) */
+.navbar.navbar-hero {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  position: absolute !important;
+  width: 100%;
+  left: 0;
+  right: 0;
+}
+
+/* Forzar color claro en los elementos del menú transparente */
+.navbar.navbar-hero .nav-link,
+.navbar.navbar-hero .btn-outline-secondary,
+.navbar.navbar-hero .btn-admin-panel,
+.navbar.navbar-hero .user-avatar-link,
+.navbar.navbar-hero .theme-icon i {
+  color: #ffffff !important;
+}
+
+.navbar.navbar-hero .navbar-brand #logo {
+  content: url('../img/logo_alt.png') !important;
+}
+
+.navbar.navbar-hero .nav-link::after {
+  background-color: #ffffff !important;
+}
+
+.navbar.navbar-hero .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/* Buscador en la navbar transparente */
+.navbar.navbar-hero .nav-search.buscador-desplegable {
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+.navbar.navbar-hero .nav-search.buscador-desplegable .search-input {
+  color: #ffffff !important;
+}
+.navbar.navbar-hero .nav-search.buscador-desplegable .search-input::placeholder {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+.navbar.navbar-hero .nav-search.buscador-desplegable .search-btn {
+  color: #ffffff !important;
+}
+
+/* Avatar del usuario en navbar transparente */
+.navbar.navbar-hero .user-avatar {
+  border-color: rgba(255, 255, 255, 0.3) !important;
 }
