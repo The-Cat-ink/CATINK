@@ -30,13 +30,13 @@ if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'])) {
 
 $nombre = trim($_POST['nombre'] ?? '');
 
-// Fecha de expiración (opcional) — se espera "YYYY-MM-DD" desde el input type="date"
-$fechaRaw   = trim($_POST['fecha_expiracion'] ?? '');
-$fechaExp   = null;
-if ($fechaRaw !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaRaw)) {
+// Fecha+hora de expiración (opcional) — se espera "YYYY-MM-DD HH:MM:SS" desde el JS
+$fechaRaw = trim($_POST['fecha_expiracion'] ?? '');
+$fechaExp = null;
+if ($fechaRaw !== '' && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $fechaRaw)) {
     $ts = strtotime($fechaRaw);
     if ($ts && $ts > time()) {
-        $fechaExp = date('Y-m-d 23:59:59', $ts); // vence al final del día elegido
+        $fechaExp = $fechaRaw;
     }
 }
 

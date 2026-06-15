@@ -181,8 +181,17 @@
         <input type="text" id="logoNombre" class="cn-input">
       </div>
       <div class="cn-field" style="margin-top:12px;">
-        <label for="logoExpiracion" style="font-size:13px;font-weight:600;">Visible hasta <span style="color:var(--muted);font-weight:400;">(opcional — se retira automáticamente al vencer)</span></label>
-        <input type="date" id="logoExpiracion" class="cn-input" min="<?= date('Y-m-d', strtotime('+1 day')) ?>">
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Visible hasta <span style="color:var(--muted);font-weight:400;">(opcional — se retira automáticamente al vencer)</span></label>
+        <div class="logo-exp-fields">
+          <div class="cn-date-input">
+            <i class="bi bi-calendar3"></i>
+            <input type="date" id="logoExpFecha" min="<?= date('Y-m-d', strtotime('+1 day')) ?>">
+          </div>
+          <div class="cn-date-input">
+            <i class="bi bi-clock"></i>
+            <input type="time" id="logoExpHora" value="23:59">
+          </div>
+        </div>
       </div>
       <div style="display:flex;justify-content:flex-end;">
         <button type="button" id="btnSubirLogo" class="btn btn-accent"><i class="bi bi-upload"></i> Subir Logo</button>
@@ -292,6 +301,20 @@
 }
 .btn-delete-logo:hover { background: #d42a55; }
 
+/* Inputs fecha + hora de expiración */
+.logo-exp-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cn-date-input {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--bg); color: var(--text); font-size: 13px;
+}
+.cn-date-input i { color: var(--muted); font-size: 15px; flex-shrink: 0; }
+.cn-date-input input[type="date"],
+.cn-date-input input[type="time"] {
+  border: none; background: none; color: var(--text);
+  font-size: 13px; padding: 0; outline: none; width: 100%; font-family: inherit;
+}
+
 /* Badge de expiración */
 .logo-exp-badge {
   font-size: 10px;
@@ -318,14 +341,15 @@
 const BASE_PATH = '<?= basePath() ?>';
 document.addEventListener('DOMContentLoaded', () => {
     // ── Logo upload ──────────────────────────────
-    const logoFile       = document.getElementById('logoFile');
-    const logoDropZone   = document.getElementById('logoDropZone');
-    const logoPreview    = document.getElementById('logoPreview');
-    const logoNombre     = document.getElementById('logoNombre');
-    const logoExpiracion = document.getElementById('logoExpiracion');
-    const btnSubirLogo   = document.getElementById('btnSubirLogo');
-    const logoMsg        = document.getElementById('logoMsg');
-    const logosGrid      = document.getElementById('logosGrid');
+    const logoFile     = document.getElementById('logoFile');
+    const logoDropZone = document.getElementById('logoDropZone');
+    const logoPreview  = document.getElementById('logoPreview');
+    const logoNombre   = document.getElementById('logoNombre');
+    const logoExpFecha = document.getElementById('logoExpFecha');
+    const logoExpHora  = document.getElementById('logoExpHora');
+    const btnSubirLogo = document.getElementById('btnSubirLogo');
+    const logoMsg      = document.getElementById('logoMsg');
+    const logosGrid    = document.getElementById('logosGrid');
 
     logoFile.addEventListener('change', () => {
         const f = logoFile.files[0];
@@ -356,7 +380,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const fd = new FormData();
         fd.append('imagen', logoFile.files[0]);
         fd.append('nombre', logoNombre.value.trim());
-        fd.append('fecha_expiracion', logoExpiracion.value.trim());
+        const expFecha = logoExpFecha.value.trim();
+        const expHora  = logoExpHora.value.trim() || '23:59';
+        fd.append('fecha_expiracion', expFecha ? `${expFecha} ${expHora}:00` : '');
         btnSubirLogo.disabled = true;
         logoMsg.style.color = 'var(--muted)';
         logoMsg.textContent = 'Subiendo…';
@@ -376,7 +402,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Reset form
                     logoFile.value = '';
                     logoNombre.value = '';
-                    logoExpiracion.value = '';
+                    logoExpFecha.value = '';
+                    logoExpHora.value  = '23:59';
                     logoPreview.style.display = 'none';
                     logoDropZone.querySelector('.file-drop-icon').style.display = '';
                     logoDropZone.querySelector('.file-drop-text').style.display = '';
