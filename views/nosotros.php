@@ -3,7 +3,7 @@ include("./../layout/header.php");
 include("./../data/conexion.php");
 
 $row  = $con->query("SELECT contenido_pag FROM paginas WHERE nombre_pag='nosotros'")->fetch_assoc();
-$logos = $con->query("SELECT * FROM logos_marcas WHERE activo=1 ORDER BY creado ASC")->fetch_all(MYSQLI_ASSOC);
+$logos = $con->query("SELECT * FROM logos_marcas WHERE activo=1 AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW()) ORDER BY creado ASC")->fetch_all(MYSQLI_ASSOC);
 
 // Configuración de 4 filas horizontales
 // Cada fila lleva todos los logos (duplicados para loop) con stagger de posición

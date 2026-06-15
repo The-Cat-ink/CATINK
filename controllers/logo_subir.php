@@ -30,6 +30,16 @@ if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'])) {
 
 $nombre = trim($_POST['nombre'] ?? '');
 
+// Fecha de expiración (opcional) — se espera "YYYY-MM-DD" desde el input type="date"
+$fechaRaw   = trim($_POST['fecha_expiracion'] ?? '');
+$fechaExp   = null;
+if ($fechaRaw !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaRaw)) {
+    $ts = strtotime($fechaRaw);
+    if ($ts && $ts > time()) {
+        $fechaExp = date('Y-m-d 23:59:59', $ts); // vence al final del día elegido
+    }
+}
+
 $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
 $dir = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . '/uploads/logos/';
 if (!is_dir($dir)) mkdir($dir, 0755, true);
@@ -39,11 +49,11 @@ $destino = $dir . $archivo;
 
 if (move_uploaded_file($file['tmp_name'], $destino)) {
     $rutaRelativa = 'uploads/logos/' . $archivo;
-    $stmt = $con->prepare("INSERT INTO logos_marcas (imagen, nombre) VALUES (?, ?)");
-    $stmt->bind_param("ss", $rutaRelativa, $nombre);
+    $stmt = $con->prepare("INSERT INTO logos_marcas (imagen, nombre, fecha_expiracion) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", $rutaRelativa, $nombre, $fechaExp);
     $stmt->execute();
     $id = $con->insert_id;
-    echo json_encode(['ok' => true, 'id' => $id, 'imagen' => $rutaRelativa, 'nombre' => $nombre]);
+    echo json_encode(['ok' => true, 'id' => $id, 'imagen' => $rutaRelativa, 'nombre' => $nombre, 'fecha_expiracion' => $fechaExp]);
 } else {
     echo json_encode(['ok' => false, 'error' => 'Error al guardar el archivo.']);
 }

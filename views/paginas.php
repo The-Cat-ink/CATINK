@@ -178,7 +178,11 @@
       </label>
       <div class="cn-field" style="margin-top:12px;">
         <label for="logoNombre" style="font-size:13px;font-weight:600;">Nombre de la marca <span style="color:var(--muted);font-weight:400;">(opcional)</span></label>
-        <input type="text" id="logoNombre" class="cn-input" placeholder="Ej: Google, Netflix...">
+        <input type="text" id="logoNombre" class="cn-input">
+      </div>
+      <div class="cn-field" style="margin-top:12px;">
+        <label for="logoExpiracion" style="font-size:13px;font-weight:600;">Visible hasta <span style="color:var(--muted);font-weight:400;">(opcional — se retira automáticamente al vencer)</span></label>
+        <input type="date" id="logoExpiracion" class="cn-input" min="<?= date('Y-m-d', strtotime('+1 day')) ?>">
       </div>
       <div style="display:flex;justify-content:flex-end;">
         <button type="button" id="btnSubirLogo" class="btn btn-accent"><i class="bi bi-upload"></i> Subir Logo</button>
@@ -194,14 +198,27 @@
         <?php if (empty($logos)): ?>
           <p style="color:var(--muted);text-align:center;grid-column:1/-1;padding:20px;" id="logosEmpty">No hay logos. Sube el primero.</p>
         <?php endif; ?>
-        <?php foreach ($logos as $logo): ?>
-          <div class="logo-card" id="logo-<?= $logo['id_logo'] ?>">
+        <?php foreach ($logos as $logo):
+            $exp       = $logo['fecha_expiracion'] ?? null;
+            $vencido   = $exp && strtotime($exp) < time();
+            $expBadge  = '';
+            if ($exp) {
+                if ($vencido) {
+                    $expBadge = '<div class="logo-exp-badge logo-exp-vencido"><i class="bi bi-clock-history"></i> Vencido</div>';
+                } else {
+                    $dias     = (int) ceil((strtotime($exp) - time()) / 86400);
+                    $expBadge = '<div class="logo-exp-badge logo-exp-activo"><i class="bi bi-calendar-check"></i> ' . $dias . 'd restantes</div>';
+                }
+            }
+        ?>
+          <div class="logo-card <?= $vencido ? 'logo-card-vencida' : '' ?>" id="logo-<?= $logo['id_logo'] ?>">
             <div class="logo-img-wrap">
               <img src="<?= imageUrl($logo['imagen']) ?>" alt="<?= htmlspecialchars($logo['nombre']) ?>" loading="lazy">
             </div>
             <?php if ($logo['nombre']): ?>
               <div class="logo-nombre"><?= htmlspecialchars($logo['nombre']) ?></div>
             <?php endif; ?>
+            <?= $expBadge ?>
             <div class="logo-actions">
               <button class="btn-delete-logo" data-id="<?= $logo['id_logo'] ?>" title="Eliminar">
                 <i class="bi bi-trash-fill"></i>
@@ -274,19 +291,41 @@
   transition: background .2s;
 }
 .btn-delete-logo:hover { background: #d42a55; }
+
+/* Badge de expiración */
+.logo-exp-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  padding: 3px 0;
+  letter-spacing: .02em;
+}
+.logo-exp-activo {
+  color: #10b981;
+}
+.logo-exp-vencido {
+  color: #fff;
+  background: rgba(239,51,99,.85);
+  padding: 4px 0;
+}
+.logo-card-vencida {
+  opacity: .55;
+  border-color: rgba(239,51,99,.4);
+}
 </style>
 
 <script>
 const BASE_PATH = '<?= basePath() ?>';
 document.addEventListener('DOMContentLoaded', () => {
     // ── Logo upload ──────────────────────────────
-    const logoFile     = document.getElementById('logoFile');
-    const logoDropZone = document.getElementById('logoDropZone');
-    const logoPreview  = document.getElementById('logoPreview');
-    const logoNombre   = document.getElementById('logoNombre');
-    const btnSubirLogo = document.getElementById('btnSubirLogo');
-    const logoMsg      = document.getElementById('logoMsg');
-    const logosGrid    = document.getElementById('logosGrid');
+    const logoFile       = document.getElementById('logoFile');
+    const logoDropZone   = document.getElementById('logoDropZone');
+    const logoPreview    = document.getElementById('logoPreview');
+    const logoNombre     = document.getElementById('logoNombre');
+    const logoExpiracion = document.getElementById('logoExpiracion');
+    const btnSubirLogo   = document.getElementById('btnSubirLogo');
+    const logoMsg        = document.getElementById('logoMsg');
+    const logosGrid      = document.getElementById('logosGrid');
 
     logoFile.addEventListener('change', () => {
         const f = logoFile.files[0];
@@ -317,6 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fd = new FormData();
         fd.append('imagen', logoFile.files[0]);
         fd.append('nombre', logoNombre.value.trim());
+        fd.append('fecha_expiracion', logoExpiracion.value.trim());
         btnSubirLogo.disabled = true;
         logoMsg.style.color = 'var(--muted)';
         logoMsg.textContent = 'Subiendo…';
@@ -330,12 +370,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const empty = document.getElementById('logosEmpty');
                     if (empty) empty.remove();
                     // Prepend new card
-                    const card = buildLogoCard(data.id, data.imagen, data.nombre);
+                    const card = buildLogoCard(data.id, data.imagen, data.nombre, data.fecha_expiracion);
                     logosGrid.insertAdjacentHTML('afterbegin', card);
                     attachDeleteBtn(logosGrid.firstElementChild.querySelector('.btn-delete-logo'));
                     // Reset form
                     logoFile.value = '';
                     logoNombre.value = '';
+                    logoExpiracion.value = '';
                     logoPreview.style.display = 'none';
                     logoDropZone.querySelector('.file-drop-icon').style.display = '';
                     logoDropZone.querySelector('.file-drop-text').style.display = '';
@@ -349,12 +390,21 @@ document.addEventListener('DOMContentLoaded', () => {
             .finally(() => { btnSubirLogo.disabled = false; });
     });
 
-    function buildLogoCard(id, imagen, nombre) {
-        const imgSrc = BASE_PATH + '/serve-image.php?file=' + encodeURIComponent(imagen);
+    function buildLogoCard(id, imagen, nombre, fechaExp) {
+        const imgSrc     = BASE_PATH + '/serve-image.php?file=' + encodeURIComponent(imagen);
         const nombreHtml = nombre ? `<div class="logo-nombre">${escapeHtml(nombre)}</div>` : '';
+        let expBadge = '';
+        if (fechaExp) {
+            const ms   = new Date(fechaExp) - new Date();
+            const dias = Math.ceil(ms / 86400000);
+            expBadge = dias > 0
+                ? `<div class="logo-exp-badge logo-exp-activo"><i class="bi bi-calendar-check"></i> ${dias}d restantes</div>`
+                : `<div class="logo-exp-badge logo-exp-vencido"><i class="bi bi-clock-history"></i> Vencido</div>`;
+        }
         return `<div class="logo-card" id="logo-${id}">
             <div class="logo-img-wrap"><img src="${imgSrc}" alt="${escapeHtml(nombre)}" loading="lazy"></div>
             ${nombreHtml}
+            ${expBadge}
             <div class="logo-actions">
                 <button class="btn-delete-logo" data-id="${id}" title="Eliminar"><i class="bi bi-trash-fill"></i></button>
             </div>
