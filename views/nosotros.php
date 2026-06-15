@@ -5,27 +5,22 @@ include("./../data/conexion.php");
 $row  = $con->query("SELECT contenido_pag FROM paginas WHERE nombre_pag='nosotros'")->fetch_assoc();
 $logos = $con->query("SELECT * FROM logos_marcas WHERE activo=1 AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW()) ORDER BY orden ASC, creado ASC")->fetch_all(MYSQLI_ASSOC);
 
-// Dividir en grupos de 7 (máximo 3 filas)
+// Dividir en grupos de 7 — sin límite de filas: crecen/decrecen automáticamente
 $card_w   = 200;
 $card_gap = 12;
 $px_per_s = 60;
-$dirs     = ['row-left', 'row-right', 'row-left'];
 
-$filas = array_slice(array_chunk($logos, 7), 0, 3);
+$filas = array_chunk($logos, 7);
 
-// Calcular cuántas copias necesita cada fila para llenar la pantalla sin huecos.
-// Asumimos viewport máximo de 1800px; necesitamos que la pista mida ≥ 2× eso.
 $rows_cfg = [];
 foreach ($filas as $i => $fila_logos) {
-    $set_w  = count($fila_logos) * ($card_w + $card_gap);
-    // Copias suficientes para que total_width > 2 × 1800px (sin huecos en cualquier pantalla).
-    $copies = max(4, (int)ceil(3600 / $set_w));
-    if ($copies % 2 !== 0) $copies++; // debe ser par para que -50% sea exactamente N sets
-    // Duración proporcional al ancho real que recorre la animación (copies/2 sets)
+    $set_w    = count($fila_logos) * ($card_w + $card_gap);
+    $copies   = max(4, (int)ceil(3600 / $set_w));
+    if ($copies % 2 !== 0) $copies++;
     $duration = max(8, round(($copies / 2) * $set_w / $px_per_s, 1));
     $rows_cfg[] = [
         'logos'    => $fila_logos,
-        'dir'      => $dirs[$i],
+        'dir'      => $i % 2 === 0 ? 'row-left' : 'row-right',
         'duration' => $duration,
         'copies'   => $copies,
     ];
@@ -52,10 +47,12 @@ foreach ($filas as $i => $fila_logos) {
 </section>
 
 <!-- ═══ MARCAS ═════════════════════════════════════════════════════ -->
-<?php if (!empty($logos)): ?>
 <section class="nos-brands">
     <p class="nos-brands-label">Marcas con las que colaboramos</p>
 
+    <?php if (empty($logos)): ?>
+        <p class="nos-brands-empty">Próximamente anunciaremos nuestras marcas colaboradoras.</p>
+    <?php else: ?>
     <div class="nos-brands-rows">
         <?php foreach ($rows_cfg as $row_cfg): ?>
         <div class="nos-row-wrap">
@@ -72,8 +69,8 @@ foreach ($filas as $i => $fila_logos) {
         </div>
         <?php endforeach; ?>
     </div>
+    <?php endif; ?>
 </section>
-<?php endif; ?>
 
 <style>
 /* ─── Hero ─────────────────────────────────────────────────────── */
@@ -132,6 +129,13 @@ foreach ($filas as $i => $fila_logos) {
     color: var(--muted);
     margin-bottom: 36px;
     padding: 0 24px;
+}
+.nos-brands-empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.95rem;
+    padding: 0 24px 52px;
+    margin: 0;
 }
 
 /* ─── Filas horizontales ───────────────────────────────────────── */
