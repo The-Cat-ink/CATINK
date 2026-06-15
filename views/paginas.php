@@ -4,7 +4,7 @@
     require_once("./../views/helpers/urlhelper.php");
 
     // Logos de marcas
-    $logos = $con->query("SELECT * FROM logos_marcas ORDER BY creado DESC")->fetch_all(MYSQLI_ASSOC);
+    $logos = $con->query("SELECT * FROM logos_marcas ORDER BY orden ASC, creado ASC")->fetch_all(MYSQLI_ASSOC);
 
     $sql = "SELECT * FROM paginas";
     $result = $con->query($sql);
@@ -125,7 +125,7 @@
                 <?php if (empty($logos)): ?>
                     <p style="color:var(--muted);text-align:center;grid-column:1/-1;padding:20px;" id="logosEmpty">No hay logos. Sube el primero.</p>
                 <?php endif; ?>
-                <?php foreach ($logos as $logo):
+                <?php foreach ($logos as $i => $logo):
                     $exp       = $logo['fecha_expiracion'] ?? null;
                     $vencido   = $exp && strtotime($exp) < time();
                     $expBadge  = '';
@@ -138,7 +138,8 @@
                         }
                     }
                 ?>
-                    <div class="logo-card <?= $vencido ? 'logo-card-vencida' : '' ?>" id="logo-<?= $logo['id_logo'] ?>">
+                    <div class="logo-card <?= $vencido ? 'logo-card-vencida' : '' ?>" id="logo-<?= $logo['id_logo'] ?>" draggable="true" data-id="<?= $logo['id_logo'] ?>">
+                        <div class="logo-num"><?= $i + 1 ?></div>
                         <div class="logo-img-wrap">
                             <img src="<?= imageUrl($logo['imagen']) ?>" alt="<?= htmlspecialchars($logo['nombre']) ?>" loading="lazy">
                         </div>
@@ -379,6 +380,31 @@
     opacity: .55;
     border-color: rgba(239,51,99,.4);
 }
+
+/* Badge numérico de orden */
+.logo-num {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Drag & drop */
+.logo-card { cursor: grab; }
+.logo-card:active { cursor: grabbing; }
+.logo-card.dragging { opacity: .35; box-shadow: none; }
+.logo-card.drag-over { border: 2px dashed var(--accent); background: rgba(239,51,99,.08); }
 </style>
 
 <script>
@@ -442,8 +468,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Prepend new card
                     const card = buildLogoCard(data.id, data.imagen, data.nombre, data.fecha_expiracion);
                     logosGrid.insertAdjacentHTML('afterbegin', card);
-                    attachDeleteBtn(logosGrid.firstElementChild.querySelector('.btn-delete-logo'));
-                    attachEditBtn(logosGrid.firstElementChild.querySelector('.btn-edit-logo'));
+                    const newCard = logosGrid.firstElementChild;
+                    attachDeleteBtn(newCard.querySelector('.btn-delete-logo'));
+                    attachEditBtn(newCard.querySelector('.btn-edit-logo'));
+                    setupLogoDrag(newCard);
+                    renumberLogos();
+                    saveLogoOrder();
                     // Reset form
                     logoFile.value = '';
                     logoNombre.value = '';
@@ -473,7 +503,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `<div class="logo-exp-badge logo-exp-activo"><i class="bi bi-calendar-check"></i> ${dias}d restantes</div>`
                 : `<div class="logo-exp-badge logo-exp-vencido"><i class="bi bi-clock-history"></i> Vencido</div>`;
         }
-        return `<div class="logo-card" id="logo-${id}">
+        const num = logosGrid.querySelectorAll('.logo-card').length + 1;
+        return `<div class="logo-card" id="logo-${id}" draggable="true" data-id="${id}">
+            <div class="logo-num">${num}</div>
             <div class="logo-img-wrap"><img src="${imgSrc}" alt="${escapeHtml(nombre)}" loading="lazy"></div>
             ${nombreHtml}
             ${expBadge}
@@ -504,6 +536,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (card) card.remove();
                     if (!logosGrid.querySelector('.logo-card')) {
                         logosGrid.innerHTML = '<p style="color:var(--muted);text-align:center;grid-column:1/-1;padding:20px;" id="logosEmpty">No hay logos. Sube el primero.</p>';
+                    } else {
+                        renumberLogos();
+                        saveLogoOrder();
                     }
                 }
             });
@@ -617,6 +652,54 @@ document.addEventListener('DOMContentLoaded', () => {
     // Attach delete to existing logos
     document.querySelectorAll('.btn-delete-logo').forEach(attachDeleteBtn);
     document.querySelectorAll('.btn-edit-logo').forEach(attachEditBtn);
+
+    // ── Drag & drop para reordenar logos ────────────────────────
+    let dragSrc = null;
+
+    function renumberLogos() {
+        logosGrid.querySelectorAll('.logo-card').forEach((card, i) => {
+            const num = card.querySelector('.logo-num');
+            if (num) num.textContent = i + 1;
+        });
+    }
+
+    function saveLogoOrder() {
+        const ids = [...logosGrid.querySelectorAll('.logo-card')].map(c => c.dataset.id);
+        fetch(BASE_PATH + '/controllers/logo_reordenar.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(ids)
+        });
+    }
+
+    function setupLogoDrag(card) {
+        card.addEventListener('dragstart', e => {
+            dragSrc = card;
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => card.classList.add('dragging'), 0);
+        });
+        card.addEventListener('dragend', () => {
+            card.classList.remove('dragging');
+            dragSrc = null;
+        });
+        card.addEventListener('dragover', e => {
+            e.preventDefault();
+            if (dragSrc && dragSrc !== card) card.classList.add('drag-over');
+        });
+        card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+        card.addEventListener('drop', e => {
+            e.preventDefault();
+            card.classList.remove('drag-over');
+            if (!dragSrc || dragSrc === card) return;
+            const all = [...logosGrid.querySelectorAll('.logo-card')];
+            if (all.indexOf(dragSrc) < all.indexOf(card)) card.after(dragSrc);
+            else card.before(dragSrc);
+            renumberLogos();
+            saveLogoOrder();
+        });
+    }
+
+    document.querySelectorAll('.logo-card').forEach(setupLogoDrag);
 
     // ── File drop zone CSS (inline for self-containment) ─────────────────
     const dropStyle = document.createElement('style');

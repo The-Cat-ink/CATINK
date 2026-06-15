@@ -3,25 +3,27 @@ include("./../layout/header.php");
 include("./../data/conexion.php");
 
 $row  = $con->query("SELECT contenido_pag FROM paginas WHERE nombre_pag='nosotros'")->fetch_assoc();
-$logos = $con->query("SELECT * FROM logos_marcas WHERE activo=1 AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW()) ORDER BY creado ASC")->fetch_all(MYSQLI_ASSOC);
+$logos = $con->query("SELECT * FROM logos_marcas WHERE activo=1 AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW()) ORDER BY orden ASC, creado ASC")->fetch_all(MYSQLI_ASSOC);
 
-// Configuración de 4 filas horizontales
-// Cada fila lleva todos los logos (duplicados para loop) con stagger de posición
-$card_w   = 150; // ancho fijo por tarjeta (px)
-$card_gap = 12;  // gap entre tarjetas (px)
-$px_per_s = 78;  // velocidad moderada horizontal
+// Dividir en grupos de 7 (máximo 3 filas)
+$card_w   = 200;
+$card_gap = 12;
+$px_per_s = 60;
+$dirs     = ['row-left', 'row-right', 'row-left'];
 
-$n_logos   = count($logos);
-$set_width = $n_logos * ($card_w + $card_gap);
-$duration  = max(10, round($set_width / $px_per_s, 1));
-$stagger   = round($duration / 4, 1);
+$filas = array_slice(array_chunk($logos, 7), 0, 3);
 
-// Cada fila: dirección + delay negativo para offset visual
-$rows_cfg = [
-    ['dir' => 'row-left',  'delay' => 0],
-    ['dir' => 'row-right', 'delay' => -$stagger],
-    ['dir' => 'row-left',  'delay' => -$stagger * 2],
-];
+// Calcular duración por fila según cuántos logos tiene
+$rows_cfg = [];
+foreach ($filas as $i => $fila_logos) {
+    $set_w    = count($fila_logos) * ($card_w + $card_gap);
+    $duration = max(8, round($set_w / $px_per_s, 1));
+    $rows_cfg[] = [
+        'logos'    => $fila_logos,
+        'dir'      => $dirs[$i],
+        'duration' => $duration,
+    ];
+}
 ?>
 
 <!-- ═══ HERO ═══════════════════════════════════════════════════════ -->
@@ -52,8 +54,8 @@ $rows_cfg = [
         <?php foreach ($rows_cfg as $row_cfg): ?>
         <div class="nos-row-wrap">
             <div class="nos-row-track <?= $row_cfg['dir'] ?>"
-                 style="animation-duration:<?= $duration ?>s; animation-delay:<?= $row_cfg['delay'] ?>s">
-                <?php for ($r = 0; $r < 2; $r++): foreach ($logos as $logo): ?>
+                 style="animation-duration:<?= $row_cfg['duration'] ?>s">
+                <?php for ($r = 0; $r < 2; $r++): foreach ($row_cfg['logos'] as $logo): ?>
                 <div class="nos-logo-card" <?= $logo['nombre'] ? 'title="'.htmlspecialchars($logo['nombre']).'"' : '' ?>>
                     <img src="<?= imageUrl($logo['imagen']) ?>"
                          alt="<?= htmlspecialchars($logo['nombre']) ?>"

@@ -49,11 +49,12 @@ $destino = $dir . $archivo;
 
 if (move_uploaded_file($file['tmp_name'], $destino)) {
     $rutaRelativa = 'uploads/logos/' . $archivo;
-    $stmt = $con->prepare("INSERT INTO logos_marcas (imagen, nombre, fecha_expiracion) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $rutaRelativa, $nombre, $fechaExp);
+    $nextOrden = (int) $con->query("SELECT COALESCE(MAX(orden), 0) + 1 AS n FROM logos_marcas")->fetch_assoc()['n'];
+    $stmt = $con->prepare("INSERT INTO logos_marcas (imagen, nombre, fecha_expiracion, orden) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("sssi", $rutaRelativa, $nombre, $fechaExp, $nextOrden);
     $stmt->execute();
     $id = $con->insert_id;
-    echo json_encode(['ok' => true, 'id' => $id, 'imagen' => $rutaRelativa, 'nombre' => $nombre, 'fecha_expiracion' => $fechaExp]);
+    echo json_encode(['ok' => true, 'id' => $id, 'imagen' => $rutaRelativa, 'nombre' => $nombre, 'fecha_expiracion' => $fechaExp, 'orden' => $nextOrden]);
 } else {
     echo json_encode(['ok' => false, 'error' => 'Error al guardar el archivo.']);
 }
