@@ -178,3 +178,23 @@ ALTER TABLE `videos` ADD COLUMN IF NOT EXISTS `orden` INT DEFAULT 0 AFTER `activ
 -- 8. Agregar columna slug para URLs amigables en noticias
 ALTER TABLE `noticias` ADD COLUMN IF NOT EXISTS `slug` VARCHAR(255) DEFAULT NULL AFTER `titulo`;
 ALTER TABLE `noticias` ADD INDEX IF NOT EXISTS `idx_slug` (`slug`);
+
+
+-- 9. Tabla para los logos
+CREATE TABLE IF NOT EXISTS logos_marcas (
+    id_logo  INT          NOT NULL AUTO_INCREMENT,
+    imagen   VARCHAR(255) NOT NULL,
+    nombre   VARCHAR(150) NOT NULL DEFAULT '',
+    activo   TINYINT(1)   NOT NULL DEFAULT 1,
+    creado   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_logo)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--10. Permite definir hasta cuándo se muestra un logo.
+ALTER TABLE logos_marcas
+    ADD COLUMN fecha_expiracion DATETIME NULL DEFAULT NULL AFTER activo;
+
+-- 11. Orden de logos de marcas colaboradoras (drag & drop en paginas.php)
+ALTER TABLE `logos_marcas` ADD COLUMN IF NOT EXISTS `orden` INT NOT NULL DEFAULT 0 AFTER `activo`;
+SET @r := 0;
+UPDATE `logos_marcas` SET `orden` = (@r := @r + 1) ORDER BY `creado` ASC;
