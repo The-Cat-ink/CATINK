@@ -229,6 +229,13 @@
             <?php endif; ?>
             <?= $expBadge ?>
             <div class="logo-actions">
+              <button class="btn-edit-logo"
+                      data-id="<?= $logo['id_logo'] ?>"
+                      data-nombre="<?= htmlspecialchars($logo['nombre'] ?? '') ?>"
+                      data-exp="<?= htmlspecialchars($logo['fecha_expiracion'] ?? '') ?>"
+                      title="Editar">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
               <button class="btn-delete-logo" data-id="<?= $logo['id_logo'] ?>" title="Eliminar">
                 <i class="bi bi-trash-fill"></i>
               </button>
@@ -282,10 +289,11 @@
   top: 6px;
   right: 6px;
   display: none;
+  gap: 4px;
 }
 .logo-card:hover .logo-actions { display: flex; }
-.btn-delete-logo {
-  background: rgba(239,51,99,.85);
+.btn-delete-logo,
+.btn-edit-logo {
   border: none;
   color: #fff;
   width: 28px;
@@ -294,12 +302,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: .95rem;
+  font-size: .85rem;
   cursor: pointer;
   backdrop-filter: blur(4px);
   transition: background .2s;
 }
+.btn-delete-logo { background: rgba(239,51,99,.85); }
 .btn-delete-logo:hover { background: #d42a55; }
+.btn-edit-logo { background: rgba(99,102,241,.85); }
+.btn-edit-logo:hover { background: #4f46e5; }
 
 /* Inputs fecha + hora de expiración */
 .logo-exp-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -399,6 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const card = buildLogoCard(data.id, data.imagen, data.nombre, data.fecha_expiracion);
                     logosGrid.insertAdjacentHTML('afterbegin', card);
                     attachDeleteBtn(logosGrid.firstElementChild.querySelector('.btn-delete-logo'));
+                    attachEditBtn(logosGrid.firstElementChild.querySelector('.btn-edit-logo'));
                     // Reset form
                     logoFile.value = '';
                     logoNombre.value = '';
@@ -433,6 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${nombreHtml}
             ${expBadge}
             <div class="logo-actions">
+                <button class="btn-edit-logo" data-id="${id}" data-nombre="${escapeHtml(nombre)}" data-exp="${escapeHtml(fechaExp||'')}" title="Editar"><i class="bi bi-pencil-fill"></i></button>
                 <button class="btn-delete-logo" data-id="${id}" title="Eliminar"><i class="bi bi-trash-fill"></i></button>
             </div>
         </div>`;
@@ -464,8 +477,113 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ── Edit logo ────────────────────────────────────────────────
+    const modalEditLogo   = document.getElementById('modalEditLogo');
+    const editLogoNombre  = document.getElementById('editLogoNombre');
+    const editLogoFecha   = document.getElementById('editLogoFecha');
+    const editLogoHora    = document.getElementById('editLogoHora');
+    const editLogoMsg     = document.getElementById('editLogoMsg');
+    const btnGuardar      = document.getElementById('btnGuardarEditLogo');
+    let   editingLogoId   = null;
+
+    function openEditModal(id, nombre, fechaExp) {
+        editingLogoId        = id;
+        editLogoNombre.value = nombre || '';
+        editLogoMsg.textContent = '';
+        if (fechaExp) {
+            // fechaExp: "YYYY-MM-DD HH:MM:SS"
+            const parts       = fechaExp.split(' ');
+            editLogoFecha.value = parts[0] || '';
+            editLogoHora.value  = (parts[1] || '23:59:00').slice(0, 5);
+        } else {
+            editLogoFecha.value = '';
+            editLogoHora.value  = '23:59';
+        }
+        modalEditLogo.style.display = 'flex';
+    }
+
+    function attachEditBtn(btn) {
+        btn.addEventListener('click', function() {
+            openEditModal(this.dataset.id, this.dataset.nombre, this.dataset.exp);
+        });
+    }
+
+    document.getElementById('closeEditLogo').addEventListener('click', () => {
+        modalEditLogo.style.display = 'none';
+    });
+    modalEditLogo.addEventListener('click', e => {
+        if (e.target === modalEditLogo) modalEditLogo.style.display = 'none';
+    });
+
+    btnGuardar.addEventListener('click', () => {
+        if (!editingLogoId) return;
+        const nombre   = editLogoNombre.value.trim();
+        const fecha    = editLogoFecha.value.trim();
+        const hora     = editLogoHora.value.trim() || '23:59';
+        const fechaExp = fecha ? `${fecha} ${hora}:00` : '';
+
+        btnGuardar.disabled = true;
+        editLogoMsg.style.color = 'var(--muted)';
+        editLogoMsg.textContent = 'Guardando…';
+
+        const fd = new FormData();
+        fd.append('id',               editingLogoId);
+        fd.append('nombre',           nombre);
+        fd.append('fecha_expiracion', fechaExp);
+
+        fetch(BASE_PATH + '/controllers/logo_editar.php', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    editLogoMsg.style.color = '#10b981';
+                    editLogoMsg.textContent = 'Guardado correctamente.';
+
+                    // Actualizar DOM de la tarjeta
+                    const card     = document.getElementById('logo-' + editingLogoId);
+                    if (card) {
+                        // Nombre
+                        let nombreEl = card.querySelector('.logo-nombre');
+                        if (data.nombre) {
+                            if (!nombreEl) { nombreEl = document.createElement('div'); nombreEl.className = 'logo-nombre'; card.querySelector('.logo-img-wrap').after(nombreEl); }
+                            nombreEl.textContent = data.nombre;
+                        } else if (nombreEl) {
+                            nombreEl.remove();
+                        }
+                        // Badge expiración
+                        let badgeEl = card.querySelector('.logo-exp-badge');
+                        if (data.fecha_expiracion) {
+                            const ms   = new Date(data.fecha_expiracion) - new Date();
+                            const dias = Math.ceil(ms / 86400000);
+                            const html = dias > 0
+                                ? `<i class="bi bi-calendar-check"></i> ${dias}d restantes`
+                                : `<i class="bi bi-clock-history"></i> Vencido`;
+                            const cls  = dias > 0 ? 'logo-exp-badge logo-exp-activo' : 'logo-exp-badge logo-exp-vencido';
+                            if (!badgeEl) { badgeEl = document.createElement('div'); card.querySelector('.logo-actions').before(badgeEl); }
+                            badgeEl.className   = cls;
+                            badgeEl.innerHTML   = html;
+                        } else if (badgeEl) {
+                            badgeEl.remove();
+                        }
+                        // Actualizar data-attributes del botón editar
+                        const editBtn = card.querySelector('.btn-edit-logo');
+                        if (editBtn) {
+                            editBtn.dataset.nombre = data.nombre || '';
+                            editBtn.dataset.exp    = data.fecha_expiracion || '';
+                        }
+                    }
+                    setTimeout(() => { modalEditLogo.style.display = 'none'; }, 800);
+                } else {
+                    editLogoMsg.style.color = '#e74c3c';
+                    editLogoMsg.textContent = data.error || 'Error al guardar.';
+                }
+            })
+            .catch(() => { editLogoMsg.style.color = '#e74c3c'; editLogoMsg.textContent = 'Error de conexión.'; })
+            .finally(() => { btnGuardar.disabled = false; });
+    });
+
     // Attach delete to existing logos
     document.querySelectorAll('.btn-delete-logo').forEach(attachDeleteBtn);
+    document.querySelectorAll('.btn-edit-logo').forEach(attachEditBtn);
 
     // ── File drop zone CSS (inline for self-containment) ─────────────────
     const dropStyle = document.createElement('style');
@@ -531,4 +649,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+<!-- ══ Modal editar logo ══════════════════════════════════════════ -->
+<div id="modalEditLogo" class="crop-modal" style="display:none;">
+  <div class="crop-modal-content" style="max-width:440px;width:95%;">
+    <h3 style="margin-top:0;"><i class="bi bi-pencil-square"></i> Editar Logo</h3>
+
+    <div class="cn-field" style="margin-bottom:16px;">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
+        Nombre de la marca <span style="color:var(--muted);font-weight:400;">(opcional)</span>
+      </label>
+      <input type="text" id="editLogoNombre" class="cn-input" placeholder="Ej: Disney+">
+    </div>
+
+    <div class="cn-field" style="margin-bottom:24px;">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
+        Visible hasta <span style="color:var(--muted);font-weight:400;">(dejar en blanco = sin vencimiento)</span>
+      </label>
+      <div class="logo-exp-fields">
+        <div class="cn-date-input">
+          <i class="bi bi-calendar3"></i>
+          <input type="date" id="editLogoFecha">
+        </div>
+        <div class="cn-date-input">
+          <i class="bi bi-clock"></i>
+          <input type="time" id="editLogoHora">
+        </div>
+      </div>
+    </div>
+
+    <div class="crop-actions">
+      <button type="button" class="btn btn-secondary" id="closeEditLogo">Cancelar</button>
+      <button type="button" class="btn btn-accent" id="btnGuardarEditLogo"><i class="bi bi-save"></i> Guardar</button>
+    </div>
+    <p id="editLogoMsg" style="margin-top:10px;font-size:0.85rem;font-weight:600;text-align:right;min-height:1.2em;"></p>
+  </div>
+</div>
+
 <?php include("./../layout/footerAdmin.php"); ?>
