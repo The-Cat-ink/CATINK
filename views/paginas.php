@@ -8,7 +8,7 @@
 
     $sql = "SELECT * FROM paginas";
     $result = $con->query($sql);
-    
+
     $paginas = [];
     while($row = $result->fetch_assoc()){
         $paginas[] = $row;
@@ -16,80 +16,164 @@
     $totalPaginas = count($paginas);
 ?>
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 12px;">
-        <h1 style="margin:0;">Gestión de Páginas Legales</h1>
-    </div>
 
     <?php if (isset($_GET['msg']) && $_GET['msg'] == 'actualizado'): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert" style="background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2); border-radius:8px;">
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2); border-radius:8px; margin-bottom:16px;">
             <i class="bi bi-check-circle-fill"></i> Página actualizada correctamente.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
 
-    <!-- Estadísticas rápidas -->
-    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(99,102,241,0.1); color: #6366f1;"><i class="bi bi-file-earmark-text"></i></div>
-            <div class="stat-info">
-                <span class="stat-value"><?= $totalPaginas ?></span>
-                <span class="stat-label">Páginas de Sistema</span>
+    <!-- ── Cuadrícula principal: tabla izq / subir logo der ── -->
+    <div class="paginas-layout-grid">
+
+        <!-- ── Columna izquierda: Páginas legales ──────────── -->
+        <div style="display:flex;flex-direction:column;">
+            <div class="mb-2">
+                <h2 style="margin:0 0 2px;font-size:2rem;font-weight:800;">Gestión de Páginas Legales</h2>
+            </div>
+            <div class="contenidos-toolbar" style="margin-bottom:10px;">
+                <div class="contenidos-tabs">
+                    <span>Todas las páginas</span>
+                </div>
+            </div>
+            <div class="card shadow-sm" style="flex:1;">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="contenidos-table paginas-table-compact">
+                            <thead>
+                                <tr>
+                                    <th>Nombre de la Sección</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach($paginas as $row): ?>
+                                    <tr>
+                                        <td>
+                                            <strong class="table-title" style="text-transform: capitalize;">
+                                                <i class="bi bi-file-text text-muted" style="margin-right:5px;"></i> <?= htmlspecialchars($row['nombre_pag']) ?>
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            <div class="noticias-actions" style="border-top:none; padding:0; justify-content:flex-start;">
+                                                <button
+                                                    class="btn btn-edit btnEditar"
+                                                    data-id="<?= $row['id_pag'] ?>"
+                                                    data-nombre="<?= htmlspecialchars($row['nombre_pag']) ?>"
+                                                    data-contenido="<?= base64_encode($row['contenido_pag']) ?>" title="Editar Contenido">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Toolbar -->
-    <div class="contenidos-toolbar">
-        <div class="contenidos-tabs">
-            <span class="tab-btn active">Todas las páginas</span>
+        <!-- ── Columna derecha: Subir logo ─────────────────── -->
+        <div>
+            <div class="mb-2">
+                <h2 style="margin:0 0 2px;font-size:2rem;font-weight:800;">Logos de Marcas Colaboradoras</h2>
+                <p style="color:var(--muted);margin:0;font-size:13px;">Se muestran en "Sobre nosotros" debajo del contenido.</p>
+            </div>
+            <div class="card shadow-sm" style="margin-top:10px;">
+                <div class="card-body">
+                    <h5 class="card-title" style="margin-top:0;font-size:0.95rem;">Subir Nuevo Logo</h5>
+                    <label class="file-drop-zone" id="logoDropZone">
+                        <input type="file" id="logoFile" accept="image/*" hidden>
+                        <div class="file-drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+                        <div class="file-drop-text">Arrastra una imagen o <span>haz clic aquí</span></div>
+                        <div class="file-drop-hint">PNG, JPG, WEBP o SVG — fondo transparente recomendado</div>
+                        <img id="logoPreview" class="file-drop-preview" style="display:none;max-height:80px;object-fit:contain;">
+                    </label>
+                    <div class="cn-field" style="margin-top:12px;">
+                        <label for="logoNombre" style="font-size:13px;font-weight:600;">Nombre de la marca <span style="color:var(--muted);font-weight:400;">(opcional)</span></label>
+                        <input type="text" id="logoNombre" class="cn-input">
+                    </div>
+                    <div class="cn-field" style="margin-top:12px;">
+                        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Visible hasta <span style="color:var(--muted);font-weight:400;">(opcional — se retira automáticamente al vencer)</span></label>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div class="logo-exp-fields" style="flex:1;min-width:0;">
+                                <div class="cn-date-input">
+                                    <i class="bi bi-calendar3"></i>
+                                    <input type="date" id="logoExpFecha" min="<?= date('Y-m-d', strtotime('+1 day')) ?>">
+                                </div>
+                                <div class="cn-date-input">
+                                    <i class="bi bi-clock"></i>
+                                    <input type="time" id="logoExpHora" value="23:59">
+                                </div>
+                            </div>
+                            <button type="button" id="btnSubirLogo" class="btn btn-accent" style="flex-shrink:0;white-space:nowrap;align-self:center;"><i class="bi bi-upload"></i> Subir Logo</button>
+                        </div>
+                    </div>
+                    <p id="logoMsg" style="margin-top:8px;font-size:0.85rem;font-weight:600;text-align:right;min-height:1.2em;"></p>
+                </div>
+            </div>
         </div>
-    </div>
 
+    </div><!-- /.paginas-layout-grid -->
+
+    <!-- ── Galería de logos: ancho completo ──────────────────── -->
     <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="contenidos-table">
-                    <thead>
-                        <tr>
-                            <th>Nombre de la Sección</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach($paginas as $row): ?>
-                            <tr>
-                                <td>
-                                    <strong class="table-title" style="text-transform: capitalize;">
-                                        <i class="bi bi-file-text text-muted" style="margin-right:5px;"></i> <?= htmlspecialchars($row['nombre_pag']) ?>
-                                    </strong>
-                                </td>
-                                <td>
-                                    <div class="noticias-actions" style="border-top:none; padding:0; justify-content:flex-start;">
-                                        <button 
-                                            class="btn btn-edit btnEditar" 
-                                            data-id="<?= $row['id_pag'] ?>" 
-                                            data-nombre="<?= htmlspecialchars($row['nombre_pag']) ?>"
-                                            data-contenido="<?= base64_encode($row['contenido_pag']) ?>" title="Editar Contenido">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+        <div class="card-body p-3">
+            <div class="logos-grid" id="logosGrid">
+                <?php if (empty($logos)): ?>
+                    <p style="color:var(--muted);text-align:center;grid-column:1/-1;padding:20px;" id="logosEmpty">No hay logos. Sube el primero.</p>
+                <?php endif; ?>
+                <?php foreach ($logos as $logo):
+                    $exp       = $logo['fecha_expiracion'] ?? null;
+                    $vencido   = $exp && strtotime($exp) < time();
+                    $expBadge  = '';
+                    if ($exp) {
+                        if ($vencido) {
+                            $expBadge = '<div class="logo-exp-badge logo-exp-vencido"><i class="bi bi-clock-history"></i> Vencido</div>';
+                        } else {
+                            $dias     = (int) ceil((strtotime($exp) - time()) / 86400);
+                            $expBadge = '<div class="logo-exp-badge logo-exp-activo"><i class="bi bi-calendar-check"></i> ' . $dias . 'd restantes</div>';
+                        }
+                    }
+                ?>
+                    <div class="logo-card <?= $vencido ? 'logo-card-vencida' : '' ?>" id="logo-<?= $logo['id_logo'] ?>">
+                        <div class="logo-img-wrap">
+                            <img src="<?= imageUrl($logo['imagen']) ?>" alt="<?= htmlspecialchars($logo['nombre']) ?>" loading="lazy">
+                        </div>
+                        <?php if ($logo['nombre']): ?>
+                            <div class="logo-nombre"><?= htmlspecialchars($logo['nombre']) ?></div>
+                        <?php endif; ?>
+                        <?= $expBadge ?>
+                        <div class="logo-actions">
+                            <button class="btn-edit-logo"
+                                    data-id="<?= $logo['id_logo'] ?>"
+                                    data-nombre="<?= htmlspecialchars($logo['nombre'] ?? '') ?>"
+                                    data-exp="<?= htmlspecialchars($logo['fecha_expiracion'] ?? '') ?>"
+                                    title="Editar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button class="btn-delete-logo" data-id="<?= $logo['id_logo'] ?>" title="Eliminar">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </div>
-</div>
 
+</div><!-- /.container-fluid -->
+
+<!-- ══ Modal editar página ════════════════════════════════════════ -->
 <div id="modalPagina" class="crop-modal" style="display: none;">
     <div class="crop-modal-content" style="max-width: 800px; width:95%;">
         <h3><i class="bi bi-pencil-square"></i> Editar Página</h3>
-        
+
         <form id="formPagina" action="./../controllers/pagina.php" method="POST">
             <input type="hidden" name="id" id="pagina_id">
-            
+
             <div style="margin-bottom: 16px;">
                 <label for="nombre" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Sección</label>
                 <select name="nombre" id="nombre" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--bg); color: var(--text);">
@@ -104,45 +188,32 @@
                 <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Contenido</label>
                 <!-- TOOLBAR QUILL -->
                 <div class="editor-toolbar ql-toolbar ql-snow" style="border-radius: 8px 8px 0 0; background: var(--card-bg);">
-                    <!-- Fuente -->
                     <select class="ql-font" title="Fuente">
                         <option value="arial" selected>Arial</option>
                         <option value="times">Times New Roman</option>
                         <option value="roboto">Roboto</option>
                         <option value="courier">Courier</option>
                     </select>
-                    <!-- Tamaño -->
                     <select class="ql-size" title="Tamaño">
                         <option value="small">Pequeño</option>
                         <option selected>Normal</option>
                         <option value="large">Grande</option>
                         <option value="huge">Muy grande</option>
                     </select>
-                    <!-- Estilos -->
                     <button class="ql-bold" title="Negritas"></button>
                     <button class="ql-italic" title="Cursiva"></button>
                     <button class="ql-underline" title="Subrayado"></button>
                     <button class="ql-strike" title="Tachado"></button>
-
-                    <!-- Color -->
                     <select class="ql-color" title="Color"></select>
                     <select class="ql-background" title="Fondo"></select>
-
-                    <!-- Alineación -->
                     <select class="ql-align" title="Alineación"></select>
-                    <!-- Listas -->
                     <button class="ql-list" value="ordered" title="Lista ordenada"></button>
                     <button class="ql-list" value="bullet" title="Lista desordenada"></button>
-
-                    <!-- Sangría -->
                     <button class="ql-indent" value="-1" title="Reducir sangría"></button>
                     <button class="ql-indent" value="+1" title="Aumentar sangría"></button>
-
-                    <!-- Limpiar formato -->
                     <button class="ql-clean" title="Limpiar formato"></button>
                 </div>
                 <div id="editorpag" class="editor-content" style="border-radius: 0 0 8px 8px; border: 1px solid var(--border); border-top: none;"></div>
-                <!-- AQUI SE GUARDA QUILL -->
                 <input type="hidden" name="contenido" id="contenido">
             </div>
 
@@ -154,158 +225,120 @@
     </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SECCIÓN: LOGOS DE MARCAS COLABORADORAS
-══════════════════════════════════════════ -->
-<div style="margin-top:32px;">
-  <div class="d-flex justify-content-between align-items-center mb-3" style="flex-wrap:wrap;gap:12px;">
-    <div>
-      <h2 style="margin:0;font-size:1.3rem;">Logos de Marcas Colaboradoras</h2>
-      <p style="color:var(--muted);margin-top:4px;font-size:13px;">Se muestran en la página "Sobre nosotros" debajo del contenido.</p>
-    </div>
-  </div>
+<!-- ══ Modal editar logo ══════════════════════════════════════════ -->
+<div id="modalEditLogo" class="crop-modal" style="display:none;">
+  <div class="crop-modal-content" style="max-width:440px;width:95%;">
+    <h3 style="margin-top:0;"><i class="bi bi-pencil-square"></i> Editar Logo</h3>
 
-  <!-- Subir logo -->
-  <div class="card shadow-sm mb-4" style="max-width:520px;">
-    <div class="card-body">
-      <h5 class="card-title" style="margin-top:0;">Subir Nuevo Logo</h5>
-      <label class="file-drop-zone" id="logoDropZone">
-        <input type="file" id="logoFile" accept="image/*" hidden>
-        <div class="file-drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
-        <div class="file-drop-text">Arrastra una imagen o <span>haz clic aquí</span></div>
-        <div class="file-drop-hint">PNG, JPG, WEBP o SVG — fondo transparente recomendado</div>
-        <img id="logoPreview" class="file-drop-preview" style="display:none;max-height:80px;object-fit:contain;">
+    <div class="cn-field" style="margin-bottom:16px;">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
+        Nombre de la marca <span style="color:var(--muted);font-weight:400;">(opcional)</span>
       </label>
-      <div class="cn-field" style="margin-top:12px;">
-        <label for="logoNombre" style="font-size:13px;font-weight:600;">Nombre de la marca <span style="color:var(--muted);font-weight:400;">(opcional)</span></label>
-        <input type="text" id="logoNombre" class="cn-input">
-      </div>
-      <div class="cn-field" style="margin-top:12px;">
-        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Visible hasta <span style="color:var(--muted);font-weight:400;">(opcional — se retira automáticamente al vencer)</span></label>
-        <div class="logo-exp-fields">
-          <div class="cn-date-input">
-            <i class="bi bi-calendar3"></i>
-            <input type="date" id="logoExpFecha" min="<?= date('Y-m-d', strtotime('+1 day')) ?>">
-          </div>
-          <div class="cn-date-input">
-            <i class="bi bi-clock"></i>
-            <input type="time" id="logoExpHora" value="23:59">
-          </div>
+      <input type="text" id="editLogoNombre" class="cn-input" placeholder="Ej: Disney+">
+    </div>
+
+    <div class="cn-field" style="margin-bottom:24px;">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
+        Visible hasta <span style="color:var(--muted);font-weight:400;">(dejar en blanco = sin vencimiento)</span>
+      </label>
+      <div class="logo-exp-fields">
+        <div class="cn-date-input">
+          <i class="bi bi-calendar3"></i>
+          <input type="date" id="editLogoFecha">
+        </div>
+        <div class="cn-date-input">
+          <i class="bi bi-clock"></i>
+          <input type="time" id="editLogoHora">
         </div>
       </div>
-      <div style="display:flex;justify-content:flex-end;">
-        <button type="button" id="btnSubirLogo" class="btn btn-accent"><i class="bi bi-upload"></i> Subir Logo</button>
-      </div>
-      <p id="logoMsg" style="margin-top:10px;font-size:0.85rem;font-weight:600;text-align:right;"></p>
     </div>
-  </div>
 
-  <!-- Galería de logos -->
-  <div class="card shadow-sm">
-    <div class="card-body p-4">
-      <div class="logos-grid" id="logosGrid">
-        <?php if (empty($logos)): ?>
-          <p style="color:var(--muted);text-align:center;grid-column:1/-1;padding:20px;" id="logosEmpty">No hay logos. Sube el primero.</p>
-        <?php endif; ?>
-        <?php foreach ($logos as $logo):
-            $exp       = $logo['fecha_expiracion'] ?? null;
-            $vencido   = $exp && strtotime($exp) < time();
-            $expBadge  = '';
-            if ($exp) {
-                if ($vencido) {
-                    $expBadge = '<div class="logo-exp-badge logo-exp-vencido"><i class="bi bi-clock-history"></i> Vencido</div>';
-                } else {
-                    $dias     = (int) ceil((strtotime($exp) - time()) / 86400);
-                    $expBadge = '<div class="logo-exp-badge logo-exp-activo"><i class="bi bi-calendar-check"></i> ' . $dias . 'd restantes</div>';
-                }
-            }
-        ?>
-          <div class="logo-card <?= $vencido ? 'logo-card-vencida' : '' ?>" id="logo-<?= $logo['id_logo'] ?>">
-            <div class="logo-img-wrap">
-              <img src="<?= imageUrl($logo['imagen']) ?>" alt="<?= htmlspecialchars($logo['nombre']) ?>" loading="lazy">
-            </div>
-            <?php if ($logo['nombre']): ?>
-              <div class="logo-nombre"><?= htmlspecialchars($logo['nombre']) ?></div>
-            <?php endif; ?>
-            <?= $expBadge ?>
-            <div class="logo-actions">
-              <button class="btn-edit-logo"
-                      data-id="<?= $logo['id_logo'] ?>"
-                      data-nombre="<?= htmlspecialchars($logo['nombre'] ?? '') ?>"
-                      data-exp="<?= htmlspecialchars($logo['fecha_expiracion'] ?? '') ?>"
-                      title="Editar">
-                <i class="bi bi-pencil-fill"></i>
-              </button>
-              <button class="btn-delete-logo" data-id="<?= $logo['id_logo'] ?>" title="Eliminar">
-                <i class="bi bi-trash-fill"></i>
-              </button>
-            </div>
-          </div>
-        <?php endforeach; ?>
-      </div>
+    <div class="crop-actions">
+      <button type="button" class="btn btn-secondary" id="closeEditLogo">Cancelar</button>
+      <button type="button" class="btn btn-accent" id="btnGuardarEditLogo"><i class="bi bi-save"></i> Guardar</button>
     </div>
+    <p id="editLogoMsg" style="margin-top:10px;font-size:0.85rem;font-weight:600;text-align:right;min-height:1.2em;"></p>
   </div>
 </div>
 
 <style>
+/* ── Layout de dos columnas ──────────────────────────────────── */
+.paginas-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: stretch;
+    margin-bottom: 20px;
+}
+@media (max-width: 900px) {
+    .paginas-layout-grid { grid-template-columns: 1fr; }
+}
+
+/* Compactar filas de la tabla de páginas */
+.paginas-table-compact td,
+.paginas-table-compact th {
+    padding: 10px 14px;
+}
+
+/* ── Galería de logos ────────────────────────────────────────── */
 .logos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 14px;
 }
 .logo-card {
-  position: relative;
-  border-radius: 12px;
-  border: 2px solid var(--border);
-  background: var(--bg);
-  overflow: hidden;
-  transition: transform .2s, box-shadow .2s;
+    position: relative;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
 }
 .logo-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.1); }
 .logo-img-wrap {
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 90px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 90px;
 }
 .logo-img-wrap img {
-  max-width: 100%;
-  max-height: 70px;
-  object-fit: contain;
-  display: block;
+    max-width: 100%;
+    max-height: 70px;
+    object-fit: contain;
+    display: block;
 }
 .logo-nombre {
-  text-align: center;
-  font-size: 11px;
-  color: var(--muted);
-  padding: 0 8px 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 0 8px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .logo-actions {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  display: none;
-  gap: 4px;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: none;
+    gap: 4px;
 }
 .logo-card:hover .logo-actions { display: flex; }
 .btn-delete-logo,
 .btn-edit-logo {
-  border: none;
-  color: #fff;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: .85rem;
-  cursor: pointer;
-  backdrop-filter: blur(4px);
-  transition: background .2s;
+    border: none;
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .85rem;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: background .2s;
 }
 .btn-delete-logo { background: rgba(239,51,99,.85); }
 .btn-delete-logo:hover { background: #d42a55; }
@@ -315,36 +348,36 @@
 /* Inputs fecha + hora de expiración */
 .logo-exp-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .cn-date-input {
-  display: flex; align-items: center; gap: 8px;
-  padding: 9px 12px; border: 1px solid var(--border);
-  border-radius: 8px; background: var(--bg); color: var(--text); font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 12px; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--bg); color: var(--text); font-size: 13px;
 }
 .cn-date-input i { color: var(--muted); font-size: 15px; flex-shrink: 0; }
 .cn-date-input input[type="date"],
 .cn-date-input input[type="time"] {
-  border: none; background: none; color: var(--text);
-  font-size: 13px; padding: 0; outline: none; width: 100%; font-family: inherit;
+    border: none; background: none; color: var(--text);
+    font-size: 13px; padding: 0; outline: none; width: 100%; font-family: inherit;
 }
 
 /* Badge de expiración */
 .logo-exp-badge {
-  font-size: 10px;
-  font-weight: 700;
-  text-align: center;
-  padding: 3px 0;
-  letter-spacing: .02em;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    padding: 3px 0;
+    letter-spacing: .02em;
 }
 .logo-exp-activo {
-  color: #10b981;
+    color: #10b981;
 }
 .logo-exp-vencido {
-  color: #fff;
-  background: rgba(239,51,99,.85);
-  padding: 4px 0;
+    color: #fff;
+    background: rgba(239,51,99,.85);
+    padding: 4px 0;
 }
 .logo-card-vencida {
-  opacity: .55;
-  border-color: rgba(239,51,99,.4);
+    opacity: .55;
+    border-color: rgba(239,51,99,.4);
 }
 </style>
 
@@ -614,7 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll(".btnEditar").forEach(btn => {
         btn.addEventListener("click", function(){
             document.getElementById("pagina_id").value = this.dataset.id;
-            
+
             // Asignar select option
             const selectNombre = document.getElementById("nombre");
             for(let i=0; i<selectNombre.options.length; i++){
@@ -623,10 +656,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
                 }
             }
-            
+
             let contenido = decodeURIComponent(escape(atob(this.dataset.contenido)));
-            modalPagina.style.display = "flex"; // Usa flex en el nuevo crop-modal
-            
+            modalPagina.style.display = "flex";
+
             setTimeout(() => {
                 quillpag.setContents([]);
                 quillpag.clipboard.dangerouslyPasteHTML(contenido);
@@ -649,40 +682,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
-<!-- ══ Modal editar logo ══════════════════════════════════════════ -->
-<div id="modalEditLogo" class="crop-modal" style="display:none;">
-  <div class="crop-modal-content" style="max-width:440px;width:95%;">
-    <h3 style="margin-top:0;"><i class="bi bi-pencil-square"></i> Editar Logo</h3>
-
-    <div class="cn-field" style="margin-bottom:16px;">
-      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
-        Nombre de la marca <span style="color:var(--muted);font-weight:400;">(opcional)</span>
-      </label>
-      <input type="text" id="editLogoNombre" class="cn-input" placeholder="Ej: Disney+">
-    </div>
-
-    <div class="cn-field" style="margin-bottom:24px;">
-      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
-        Visible hasta <span style="color:var(--muted);font-weight:400;">(dejar en blanco = sin vencimiento)</span>
-      </label>
-      <div class="logo-exp-fields">
-        <div class="cn-date-input">
-          <i class="bi bi-calendar3"></i>
-          <input type="date" id="editLogoFecha">
-        </div>
-        <div class="cn-date-input">
-          <i class="bi bi-clock"></i>
-          <input type="time" id="editLogoHora">
-        </div>
-      </div>
-    </div>
-
-    <div class="crop-actions">
-      <button type="button" class="btn btn-secondary" id="closeEditLogo">Cancelar</button>
-      <button type="button" class="btn btn-accent" id="btnGuardarEditLogo"><i class="bi bi-save"></i> Guardar</button>
-    </div>
-    <p id="editLogoMsg" style="margin-top:10px;font-size:0.85rem;font-weight:600;text-align:right;min-height:1.2em;"></p>
-  </div>
-</div>
 
 <?php include("./../layout/footerAdmin.php"); ?>
