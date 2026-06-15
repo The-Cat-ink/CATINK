@@ -13,15 +13,21 @@ $dirs     = ['row-left', 'row-right', 'row-left'];
 
 $filas = array_slice(array_chunk($logos, 7), 0, 3);
 
-// Calcular duración por fila según cuántos logos tiene
+// Calcular cuántas copias necesita cada fila para llenar la pantalla sin huecos.
+// Asumimos viewport máximo de 1800px; necesitamos que la pista mida ≥ 2× eso.
 $rows_cfg = [];
 foreach ($filas as $i => $fila_logos) {
-    $set_w    = count($fila_logos) * ($card_w + $card_gap);
-    $duration = max(8, round($set_w / $px_per_s, 1));
+    $set_w  = count($fila_logos) * ($card_w + $card_gap);
+    // Copias suficientes para que total_width > 2 × 1800px (sin huecos en cualquier pantalla).
+    $copies = max(4, (int)ceil(3600 / $set_w));
+    if ($copies % 2 !== 0) $copies++; // debe ser par para que -50% sea exactamente N sets
+    // Duración proporcional al ancho real que recorre la animación (copies/2 sets)
+    $duration = max(8, round(($copies / 2) * $set_w / $px_per_s, 1));
     $rows_cfg[] = [
         'logos'    => $fila_logos,
         'dir'      => $dirs[$i],
         'duration' => $duration,
+        'copies'   => $copies,
     ];
 }
 ?>
@@ -55,7 +61,7 @@ foreach ($filas as $i => $fila_logos) {
         <div class="nos-row-wrap">
             <div class="nos-row-track <?= $row_cfg['dir'] ?>"
                  style="animation-duration:<?= $row_cfg['duration'] ?>s">
-                <?php for ($r = 0; $r < 2; $r++): foreach ($row_cfg['logos'] as $logo): ?>
+                <?php for ($r = 0; $r < $row_cfg['copies']; $r++): foreach ($row_cfg['logos'] as $logo): ?>
                 <div class="nos-logo-card" <?= $logo['nombre'] ? 'title="'.htmlspecialchars($logo['nombre']).'"' : '' ?>>
                     <img src="<?= imageUrl($logo['imagen']) ?>"
                          alt="<?= htmlspecialchars($logo['nombre']) ?>"
