@@ -133,8 +133,11 @@
                         if ($vencido) {
                             $expBadge = '<div class="logo-exp-badge logo-exp-vencido"><i class="bi bi-clock-history"></i> Vencido</div>';
                         } else {
-                            $dias     = (int) ceil((strtotime($exp) - time()) / 86400);
-                            $expBadge = '<div class="logo-exp-badge logo-exp-activo"><i class="bi bi-calendar-check"></i> ' . $dias . 'd restantes</div>';
+                            $diff     = strtotime($exp) - time();
+                            $dias     = (int) floor($diff / 86400);
+                            $horas    = (int) floor(($diff % 86400) / 3600);
+                            $label    = $dias > 0 ? "{$dias}d {$horas}h restantes" : "{$horas}h restantes";
+                            $expBadge = '<div class="logo-exp-badge logo-exp-activo"><i class="bi bi-calendar-check"></i> ' . $label . '</div>';
                         }
                     }
                 ?>
@@ -513,9 +516,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let expBadge = '';
         if (fechaExp) {
             const ms   = new Date(fechaExp) - new Date();
-            const dias = Math.ceil(ms / 86400000);
-            expBadge = dias > 0
-                ? `<div class="logo-exp-badge logo-exp-activo"><i class="bi bi-calendar-check"></i> ${dias}d restantes</div>`
+            const dias  = Math.floor(ms / 86400000);
+            const horas = Math.floor((ms % 86400000) / 3600000);
+            const label = dias > 0 ? `${dias}d ${horas}h restantes` : `${horas}h restantes`;
+            expBadge = ms > 0
+                ? `<div class="logo-exp-badge logo-exp-activo"><i class="bi bi-calendar-check"></i> ${label}</div>`
                 : `<div class="logo-exp-badge logo-exp-vencido"><i class="bi bi-clock-history"></i> Vencido</div>`;
         }
         const num = logosGrid.querySelectorAll('.logo-card').length + 1;
@@ -656,11 +661,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         let badgeEl = card.querySelector('.logo-exp-badge');
                         if (data.fecha_expiracion) {
                             const ms   = new Date(data.fecha_expiracion) - new Date();
-                            const dias = Math.ceil(ms / 86400000);
-                            const html = dias > 0
-                                ? `<i class="bi bi-calendar-check"></i> ${dias}d restantes`
+                            const dias2  = Math.floor(ms / 86400000);
+                            const horas2 = Math.floor((ms % 86400000) / 3600000);
+                            const label2 = dias2 > 0 ? `${dias2}d ${horas2}h restantes` : `${horas2}h restantes`;
+                            const html = ms > 0
+                                ? `<i class="bi bi-calendar-check"></i> ${label2}`
                                 : `<i class="bi bi-clock-history"></i> Vencido`;
-                            const cls  = dias > 0 ? 'logo-exp-badge logo-exp-activo' : 'logo-exp-badge logo-exp-vencido';
+                            const cls  = ms > 0 ? 'logo-exp-badge logo-exp-activo' : 'logo-exp-badge logo-exp-vencido';
                             if (!badgeEl) { badgeEl = document.createElement('div'); card.querySelector('.logo-actions').before(badgeEl); }
                             badgeEl.className   = cls;
                             badgeEl.innerHTML   = html;
