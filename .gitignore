@@ -32,3 +32,7 @@ desktop.ini
 .idea/
 *.swp
 *.swo
+
+# Caché
+cache/
+
