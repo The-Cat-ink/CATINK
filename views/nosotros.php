@@ -113,10 +113,14 @@ foreach ($filas as $i => $fila_logos) {
     max-width: var(--cw, 1040px);
     margin: 0 auto;
 }
+.nos-body .ql-editor {
+    padding-left: 0;
+    padding-right: 0;
+}
 /* ─── Sección de marcas ────────────────────────────────────────── */
 .nos-brands {
     border-top: 1px solid var(--border);
-    padding: 28px 0 44px;
+    padding: 28px 32px 44px;
     overflow: hidden;
 }
 .nos-brands-label {
@@ -143,21 +147,9 @@ foreach ($filas as $i => $fila_logos) {
     flex-direction: column;
     gap: 30px;
     overflow: hidden;
-    /* Fade izquierda/derecha */
-    mask-image: linear-gradient(
-        to right,
-        transparent 0%,
-        #000 6%,
-        #000 94%,
-        transparent 100%
-    );
-    -webkit-mask-image: linear-gradient(
-        to right,
-        transparent 0%,
-        #000 6%,
-        #000 94%,
-        transparent 100%
-    );
+    /* Fade suave en los bordes del área con padding */
+    mask-image: linear-gradient(to right, transparent 0%, #000 4%, #000 96%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 4%, #000 96%, transparent 100%);
 }
 
 /* ─── Fila individual ──────────────────────────────────────────── */
@@ -232,8 +224,9 @@ foreach ($filas as $i => $fila_logos) {
     .nos-logo-card { width: 130px; height: 68px; }
 }
 @media (max-width: 600px) {
-    .nos-hero  { padding: 36px 20px 28px; }
-    .nos-body  { padding: 28px 20px 40px; }
+    .nos-hero   { padding: 36px 20px 28px; }
+    .nos-body   { padding: 28px 20px 40px; }
+    .nos-brands { padding-left: 20px; padding-right: 20px; }
     .nos-logo-card { width: 110px; height: 62px; }
 }
 </style>
