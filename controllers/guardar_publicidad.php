@@ -20,7 +20,7 @@ function guardarPublicidadBase64Webp($base64, $publicidadId, $calidad = 95) {
         return null;
     }
     
-    $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+    $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false;
     $dirUploads = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/uploads/publicidad/";
     
     if (!is_dir($dirUploads)) {
@@ -101,7 +101,7 @@ if (!empty($_POST['imagenCrop'])) {
 }
 // Si no hay crop pero hay archivo, guardar el archivo directamente
 elseif (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-    $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+    $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false;
     $dirUploads = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/uploads/publicidad/";
     
     if (!is_dir($dirUploads)) {

@@ -20,7 +20,7 @@ function guardarPublicidadBase64Webp($base64, $publicidadId, $calidad = 95) {
         return null;
     }
     
-    $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+    $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false;
     $dirUploads = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/uploads/publicidad/";
     
     if (!is_dir($dirUploads)) {
@@ -106,7 +106,7 @@ if (!empty($imagenCrop)) {
 }
 // Si no hay crop pero hay archivo, guardar el archivo directamente
 elseif (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-    $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+    $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false;
     $dirUploads = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/uploads/publicidad/";
     
     if (!is_dir($dirUploads)) {
@@ -138,7 +138,8 @@ if ($imagenFinal) {
     
     // Borrar imagen vieja del servidor si existe y es diferente
     if ($rowImg && !empty($rowImg['imagen'])) {
-        $rutaVieja = (strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/" . $rowImg['imagen'];
+        $isLocalEnv = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false;
+        $rutaVieja = ($isLocalEnv ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/" . $rowImg['imagen'];
         if (file_exists($rutaVieja)) {
             unlink($rutaVieja);
         }

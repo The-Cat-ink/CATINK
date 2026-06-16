@@ -3,23 +3,43 @@ include(__DIR__ . "/layout/header.php");
 require_once(__DIR__ . "/data/conexion.php");
 include(__DIR__ . "/views/helpers/videoEmbed.php");
 require_once(__DIR__ . "/views/helpers/urlhelper.php");
-// =====================
-// Obtener todas las noticias con sus categorías
-// =====================
-$stmt = $con->prepare("
-    SELECT
-        n.id,
-        n.slug,
-        n.titulo,
-        n.descripcion,
-        n.crop1,
-        n.crop2,
-        n.crop3,
-        n.fecha_publicacion AS fecha,
-        n.likes,
-        n.vistas,
-        u.nombre AS nombre_u,
-        GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+
+// ==============================
+// PAGINACIÓN PARA EL FEED GENERAL
+// ==============================
+$porPagina = 2;
+$pagina = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($pagina < 1) $pagina = 1;
+$offset = ($pagina - 1) * $porPagina;
+
+// Contar total para paginación
+$totalResult = $con->query("SELECT COUNT(*) as total FROM noticias WHERE fecha_publicacion <= NOW()");
+$totalNoticias = $totalResult->fetch_assoc()['total'];
+$totalpaginas = ceil($totalNoticias / $porPagina);
+
+// Obtener feed general de noticias (recientes paginadas)
+$stmtFeed = $con->prepare("
+    SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion AS fecha,
+           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+    FROM noticias n
+    INNER JOIN usuarios u ON n.autor = u.id_u
+    LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
+    LEFT JOIN categorias c ON nc.categoria_id = c.id_c
+    WHERE n.fecha_publicacion <= NOW()
+    GROUP BY n.id
+    ORDER BY n.fecha_publicacion DESC
+    LIMIT ? OFFSET ?;
+");
+$stmtFeed->bind_param("ii", $porPagina, $offset);
+$stmtFeed->execute();
+$feedNoticias = $stmtFeed->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// ==============================
+// SECCIONES DESTACADAS
+// ==============================
+$stmtGlobal = $con->prepare("
+    SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion AS fecha,
+           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
     FROM noticias n
     INNER JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
@@ -29,144 +49,119 @@ $stmt = $con->prepare("
     ORDER BY n.fecha_publicacion DESC
     LIMIT 50;
 ");
-$stmt->execute();
-$result = $stmt->get_result();
-$noticias = $result->fetch_all(MYSQLI_ASSOC);
-if(empty($noticias)){
-    echo '<div class="container mt-5 text-center"><h2>No hay noticias publicadas aún.</h2><p style="color:var(--muted);">Crea tu primera noticia desde el panel de administración.</p></div>';
-    include(__DIR__ . "/layout/footer.php");
-    exit;
+$stmtGlobal->execute();
+$noticiasGlobales = $stmtGlobal->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// 1. Slider / Hero
+$slider = array_slice($noticiasGlobales, 0, 5);
+
+// 2. Top Semanal
+$topSemanal = $noticiasGlobales;
+usort($topSemanal, fn($a, $b) => $b['vistas'] - $a['vistas']);
+$topSemanal = array_slice($topSemanal, 0, 5);
+
+// Helper para clasificar reseñas
+function esReview($n) {
+    if (isset($n['tipo_publicacion']) && $n['tipo_publicacion'] === 'review') {
+        return true;
+    }
+    if (!empty($n['categorias'])) {
+        $cats = strtolower($n['categorias']);
+        if (strpos($cats, 'review') !== false || strpos($cats, 'reseña') !== false) {
+            return true;
+        }
+    }
+    return false;
 }
-// Últimas 3 noticias para sidebar
-$ultimasNoticiasSidebar = array_slice($noticias, 0, 3);
-// Noticias más populares (por vistas)
-$popularesNoticiasSidebar = $noticias;
-usort($popularesNoticiasSidebar, fn($a,$b)=>$b['vistas']-$a['vistas']);
-$popularesNoticiasSidebar = array_slice($popularesNoticiasSidebar, 0, 5);
-// Noticias principales para slider y últimas
-$slider = array_slice($noticias, 0, 5);
 
-// 1. Obtener noticias de la semana
-$dias_desde_lunes = date('N') - 1;
-$inicio_semana = strtotime("-$dias_desde_lunes days midnight");
-$noticias_semana = array_filter($noticias, function($n) use ($inicio_semana) {
-    return strtotime($n['fecha']) >= $inicio_semana;
-});
-
-// 2. Determinar si necesitamos rellenar
-$count_semana = count($noticias_semana);
-$topTitulo = "Top Semanal";
-
-if ($count_semana < 7) {
-    // Necesitamos rellenar con noticias del mes
-    $inicio_mes = strtotime('first day of this month midnight');
-    
-    // Obtener noticias del mes (que no sean de esta semana)
-    $noticias_mes = array_filter($noticias, function($n) use ($inicio_mes, $inicio_semana) {
-        $fecha_n = strtotime($n['fecha']);
-        return $fecha_n >= $inicio_mes && $fecha_n < $inicio_semana;
-    });
-    
-    // Ordenar las del mes por vistas para agarrar las más visitadas
-    usort($noticias_mes, fn($a,$b) => $b['vistas'] - $a['vistas']);
-    
-    // Tomar solo las necesarias para completar 7
-    $faltantes = 7 - $count_semana;
-    $relleno = array_slice($noticias_mes, 0, $faltantes);
-    
-    // Combinar semana y relleno
-    $ultimasNoticias = array_merge($noticias_semana, $relleno);
+// 3. Nuestras Reviews
+$reviews = array_filter($noticiasGlobales, 'esReview');
+if (count($reviews) < 4) {
+    $reviews = array_slice($noticiasGlobales, 12, 4);
 } else {
-    $ultimasNoticias = $noticias_semana;
+    $reviews = array_slice($reviews, 0, 4);
 }
 
-// 3. Ordenar el resultado final (sean puras de la semana o combinadas) por vistas
-usort($ultimasNoticias, fn($a,$b) => $b['vistas'] - $a['vistas']);
-$ultimasNoticias = array_slice($ultimasNoticias, 0, 7);
-$noticiasMasRecientes = array_slice($noticias, 0, 6);
-$noticiasMasRecientes2 = array_slice($noticias, 7, 5);
-$noticiasMasRecientes3 = array_slice($noticias, 12, 17);
-//Obtener publicidad (banner, cuadro e inferior) en una sola consulta
-$stmt = $con->prepare("
-    (SELECT *, 'banner' as tipo_pub FROM publicidad WHERE activo = 1 AND tipo = 1 AND fecha_fin >= NOW() ORDER BY RAND() LIMIT 1)
-    UNION ALL
-    (SELECT *, 'cuadro' as tipo_pub FROM publicidad WHERE activo = 1 AND tipo = 2 AND fecha_fin >= NOW() ORDER BY RAND() LIMIT 1)
-    UNION ALL
-    (SELECT *, 'inferior' as tipo_pub FROM publicidad WHERE activo = 1 AND tipo = 1 ORDER BY RAND() LIMIT 1)
-");
-$stmt->execute();
-$publicidadResult = $stmt->get_result();
+// 4. Lo que más te Recomendamos
+$recomendamos = $noticiasGlobales;
+usort($recomendamos, fn($a, $b) => ($b['likes'] * 3 + $b['vistas']) - ($a['likes'] * 3 + $a['vistas']));
+$recomendamos = array_slice($recomendamos, 5, 5);
 
-$publicidad = null;
-$publicidadCuadro = null;
-$publicidadInferior = null;
-
-while ($row = $publicidadResult->fetch_assoc()) {
-    if ($row['tipo_pub'] === 'banner') {
-        $publicidad = $row;
-    } elseif ($row['tipo_pub'] === 'cuadro') {
-        $publicidadCuadro = $row;
-    } elseif ($row['tipo_pub'] === 'inferior') {
-        $publicidadInferior = $row;
+// 5. Próximos Estrenos
+$estrenosPelis = null;
+$estrenosJuegos = null;
+$estrenosAnime = null;
+foreach ($noticiasGlobales as $n) {
+    $cats = strtolower($n['categorias'] ?? '');
+    if (!$estrenosPelis && (strpos($cats, 'pelicula') !== false || strpos($cats, 'serie') !== false)) {
+        $estrenosPelis = $n;
+    } elseif (!$estrenosJuegos && strpos($cats, 'videojuego') !== false) {
+        $estrenosJuegos = $n;
+    } elseif (!$estrenosAnime && strpos($cats, 'anime') !== false) {
+        $estrenosAnime = $n;
     }
 }
-// obtener videos
-$stmt = $con->prepare("SELECT * FROM videos WHERE activo = 1 ORDER BY id_v DESC LIMIT 6");
-$stmt->execute();
-$vid = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-// ==============================
-// NOTICIAS RECOMENDADAS
-// ==============================
-$recomendadas = [];
-$sqlRec = "
-    SELECT id, slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion, nombre
-    FROM noticias, usuarios
-    WHERE noticias.autor = usuarios.id_u and fecha_publicacion <= NOW()
-    ORDER BY likes DESC, vistas DESC, fecha_publicacion DESC
-    LIMIT 3
-";
-$stmtRec = $con->prepare($sqlRec);
-$stmtRec->execute();
-$recomendadas = $stmtRec->get_result();
-// ==============================
-// NOTICIAS MAS COMENTADAS
-// ==============================
-$masComentadas = [];
-$sqlCom = "
-    SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion, u.nombre, COUNT(c.id_comentario) as total_comentarios
+if (!$estrenosPelis) $estrenosPelis = $noticiasGlobales[1] ?? null;
+if (!$estrenosJuegos) $estrenosJuegos = $noticiasGlobales[2] ?? null;
+if (!$estrenosAnime) $estrenosAnime = $noticiasGlobales[3] ?? null;
+
+// 6. Lo que más esperamos
+$esperamos = array_slice($noticiasGlobales, 8, 5);
+
+// 7. Lo más debatido
+$stmtCom = $con->prepare("
+    SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion AS fecha,
+           u.nombre AS nombre_u, GROUP_CONCAT(c2.nombre SEPARATOR ',') AS categorias, COUNT(c.id_comentario) as total_comentarios
     FROM noticias n
-    JOIN usuarios u ON n.autor = u.id_u
+    INNER JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN comentarios c ON c.noticia_id = n.id AND c.estado = 'activo'
+    LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
+    LEFT JOIN categorias c2 ON nc.categoria_id = c2.id_c
     WHERE n.fecha_publicacion <= NOW()
     GROUP BY n.id
     ORDER BY total_comentarios DESC, n.fecha_publicacion DESC
     LIMIT 8
-";
-$stmtCom = $con->prepare($sqlCom);
+");
 $stmtCom->execute();
-$masComentadas = $stmtCom->get_result();
-
-$debatidas = [];
-while ($row = $masComentadas->fetch_assoc()) {
-    $debatidas[] = $row;
-}
+$debatidas = $stmtCom->get_result()->fetch_all(MYSQLI_ASSOC);
 $debatidasLeft = array_slice($debatidas, 0, 3);
 $debatidasRight = array_slice($debatidas, 3, 5);
 
-// ==============================
-// NOTICIAS RECIENTES
-// ==============================
-$stmtRecientes = $con->prepare("
-    SELECT id, slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion, nombre
-    FROM noticias, usuarios
-    WHERE noticias.autor = usuarios.id_u and fecha_publicacion <= NOW()
-    ORDER BY fecha_publicacion DESC
-    LIMIT 4
-");
-$stmtRecientes->execute();
-$recientes = $stmtRecientes->get_result();
+// 8. Lo más Random
+$randomNoticias = array_slice($noticiasGlobales, 4, 25);
+shuffle($randomNoticias);
+$randomNoticias = array_slice($randomNoticias, 0, 4);
 
-// Helper: devuelve la primera imagen no vacía, o placeholder
+// 9. Videos para "No te lo pierdas" (Verticales / TikToks)
+$stmtVid = $con->prepare("SELECT * FROM videos WHERE activo = 1 ORDER BY orden ASC, id_v DESC LIMIT 4");
+$stmtVid->execute();
+$vidVerticales = $stmtVid->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// Obtener publicidad
+$stmtPub = $con->prepare("
+    (SELECT *, 'banner' as tipo_pub FROM publicidad WHERE activo = 1 AND tipo = 1 AND fecha_fin >= NOW() ORDER BY RAND() LIMIT 1)
+    UNION ALL
+    (SELECT *, 'cuadro' as tipo_pub FROM publicidad WHERE activo = 1 AND tipo = 2 AND fecha_fin >= NOW() ORDER BY RAND() LIMIT 1)
+");
+$stmtPub->execute();
+$publicidadResult = $stmtPub->get_result();
+$publicidad = null;
+$publicidadCuadro = null;
+while ($row = $publicidadResult->fetch_assoc()) {
+    if ($row['tipo_pub'] === 'banner') $publicidad = $row;
+    elseif ($row['tipo_pub'] === 'cuadro') $publicidadCuadro = $row;
+}
+
+// Secciones activas
+$seccionesResult = $con->query("SELECT nombre, estado FROM secciones");
+$secciones = [];
+if ($seccionesResult) {
+    while ($row = $seccionesResult->fetch_assoc()) {
+        $secciones[$row['nombre']] = $row;
+    }
+}
+
+// Helper de imágenes
 function img($fields, $placeholder = 'img/placeholder.svg') {
     foreach ($fields as $f) {
         if (!empty($f)) {
@@ -175,12 +170,25 @@ function img($fields, $placeholder = 'img/placeholder.svg') {
     }
     return imageUrl($placeholder);
 }
-// Helper: genera atributos de imagen con lazy loading
-function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
-    $src = img($fields, $placeholder);
-    return "src=\"$src\" loading=\"lazy\" decoding=\"async\" $extra";
+
+// Helper: calcula tiempo relativo
+function tiempoRelativo($fecha) {
+    $fecha_pub = strtotime($fecha);
+    $ahora = time();
+    $diff = $ahora - $fecha_pub;
+    if ($diff < 3600) {
+        return "Hace " . max(1, floor($diff / 60)) . " min";
+    } elseif ($diff < 86400) {
+        return "Hace " . floor($diff / 3600) . " hrs";
+    } elseif ($diff < 172800) {
+        return "Ayer";
+    } else {
+        return date("d M Y", $fecha_pub);
+    }
 }
 ?>
+
+<?php if ($pagina === 1): ?>
 <!-- ===================== -->
 <!-- SLIDER PRINCIPAL -->
 <!-- ===================== -->
@@ -222,489 +230,607 @@ function imgAttrs($fields, $extra = '', $placeholder = 'img/placeholder.svg') {
     <?php endforeach; ?>
 </div>
 </div>
-<!-- ===================== -->
-<!-- TOP NOTICIAS -->
-<!-- ===================== -->
-<?php
-// Macro local para renderizar una news-card con overlay
-function topCard($r, $type = 'thumb') {
-    $isBanner = $type === 'banner';
-    $url  = newsUrlFromRow($r);
-    $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
-    $tagsHtml = '';
-    foreach ($cats as $c) {
-        $tagsHtml .= '<a href="' . categoryUrl($c) . '" class="news-tag">' . htmlspecialchars($c) . '</a>';
-    }
-    $overlay = '<div class="news-overlay">
-        <div class="news-tags">' . $tagsHtml . '</div>
-        <div class="news-content">
-            <a href="' . $url . '" class="news-link-card">
-                <h3 class="title-limit-2">' . htmlspecialchars($r['titulo']) . '</h3>
-            </a>
-            <p class="desc-limit-1">' . htmlspecialchars($r['descripcion']) . '</p>
-        </div>
-    </div>';
-    if ($isBanner) {
-        $srcMobile  = img([$r['crop3'], $r['crop2']]);
-        $srcDesktop = img([$r['crop2'], $r['crop1']]);
-        echo '<div class="news-card card-banner" data-url="' . $url . '">
-            <picture>
-                <source media="(max-width: 767px)" srcset="' . $srcMobile . '">
-                <img src="' . $srcDesktop . '" alt="" loading="lazy" decoding="async">
-            </picture>' . $overlay . '</div>';
-    } else {
-        $src = img([$r['crop3'], $r['crop1']]);
-        echo '<div class="news-card card-thumb" data-url="' . $url . '">
-            <img src="' . $src . '" alt="" loading="lazy" decoding="async">' . $overlay . '</div>';
-    }
-}
 
-// Macro local para renderizar una tarjeta vertical premium (1 grande, 2 pequeñas abajo)
-function verticalCard($r, $type = 'small') {
-    $url = newsUrlFromRow($r);
-    $isLarge = ($type === 'large');
-    $imgSize = $isLarge ? [$r['crop2'], $r['crop1'], $r['crop3']] : [$r['crop3'], $r['crop1'], $r['crop2']];
-    $imgSrc = img($imgSize);
-    
-    $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
-    $tagsHtml = '';
-    foreach ($cats as $cat) {
-        $tagsHtml .= '<a href="' . categoryUrl($cat) . '" class="tag-news">' . htmlspecialchars($cat) . '</a> ';
-    }
-    
-    $fecha_pub = strtotime($r['fecha'] ?? $r['fecha_publicacion']);
-    $ahora = time();
-    $diff = $ahora - $fecha_pub;
-    if ($diff < 3600) {
-        $tiempo = "Hace " . floor($diff / 60) . " min";
-    } elseif ($diff < 86400) {
-        $tiempo = "Hace " . floor($diff / 3600) . " hrs";
-    } elseif ($diff < 172800) {
-        $tiempo = "Ayer";
-    } else {
-        $tiempo = date("M d", $fecha_pub);
-    }
-    
-    $author = htmlspecialchars($r['nombre_u'] ?? $r['nombre'] ?? 'Redacción');
-    
-    echo '
-    <div class="card-vertical ' . $type . '" data-url="' . $url . '">
-        <div class="card-vertical-img-wrapper">
-            <img src="' . $imgSrc . '" alt="' . htmlspecialchars($r['titulo']) . '" loading="lazy" decoding="async">
-        </div>
-        <div class="card-vertical-body">
-            <div class="card-vertical-tags">' . $tagsHtml . '</div>
-            <h4 class="card-vertical-title">
-                <a href="' . $url . '">' . htmlspecialchars($r['titulo']) . '</a>
-            </h4>
-            <p class="card-vertical-text title-limit-2">' . htmlspecialchars($r['descripcion']) . '</p>
-            <div class="card-vertical-meta">
-                <span><i class="bi bi-clock"></i> ' . $tiempo . '</span>
-                <span>Por: ' . $author . '</span>
-            </div>
-        </div>
-    </div>';
-}
-?>
+<!-- ============================================= -->
+<!-- 3. TOP SEMANAL -->
+<!-- ============================================= -->
 <div class="container mt-5">
-    <div>
-        <div class="section-separator">
-            <a href="<?= topUrl() ?>" class="section-separator-label">
-                <i class="bi bi-award"></i> <?= $topTitulo ?>
-            </a>
-            <div class="section-separator-line"></div>
-        </div>
-        <?php
-        // Fila 1 — banner grande + thumb pequeño
-        $f1 = array_values(array_filter([
-            $ultimasNoticias[0] ?? null,
-            $ultimasNoticias[1] ?? null,
-        ]));
-        if ($f1):
-        ?>
-        <div class="row">
-            <div class="<?= isset($f1[1]) ? 'col-md-8' : 'col-12' ?>">
-                <?php topCard($f1[0], 'banner'); ?>
-            </div>
-            <?php if (isset($f1[1])): ?>
-            <div class="col-md-4"><?php topCard($f1[1]); ?></div>
-            <?php endif; ?>
-        </div>
-        <?php endif; ?>
+    <div class="section-separator-pill">
+        <span class="pill-label"><i class="bi bi-fire"></i> Top Semanal</span>
+        <div class="pill-separator-line"></div>
+    </div>
 
-        <?php
-        // Fila 2 — hasta 3 thumbs; la clase de columna se adapta a los disponibles
-        $f2 = array_values(array_filter([
-            $ultimasNoticias[2] ?? null,
-            $ultimasNoticias[3] ?? null,
-            $ultimasNoticias[4] ?? null,
-        ]));
-        if ($f2):
-            $col2 = match(count($f2)) { 1 => 'col-12', 2 => 'col-12 col-md-6', default => 'col-12 col-md-4' };
-        ?>
-        <div class="row">
-            <?php foreach ($f2 as $r): ?>
-            <div class="<?= $col2 ?>"><?php topCard($r); ?></div>
-            <?php endforeach; ?>
-        </div>
-        <?php endif; ?>
-
-        <?php
-        // Fila 3 — thumb pequeño + banner grande; se adapta si solo hay 1
-        $f3 = array_values(array_filter([
-            $ultimasNoticias[5] ?? null,
-            $ultimasNoticias[6] ?? null,
-        ]));
-        if ($f3):
-        ?>
-        <div class="row">
-            <div class="<?= isset($f3[1]) ? 'col-md-4' : 'col-12' ?>">
-                <?php topCard($f3[0]); ?>
-            </div>
-            <?php if (isset($f3[1])): ?>
-            <div class="col-md-8"><?php topCard($f3[1], 'banner'); ?></div>
-            <?php endif; ?>
-        </div>
-        <?php endif; ?>
-        <!-- ===================== -->
-        <!-- SIDEBAR -->
-        <!-- ===================== -->
-        <div class="section-separator">
-            <a href="<?= recientesUrl() ?>" class="section-separator-label">
-                <i class="bi bi-alarm"></i> Lo más recientes
-            </a>
-            <div class="section-separator-line"></div>
-        </div>
-        <div class="row mt-4">
-            <div class="col-md-9">
-                <div class="news-block-row-three">
-                    <?php if (isset($noticiasMasRecientes[0])) verticalCard($noticiasMasRecientes[0], 'small'); ?>
-                    <?php if (isset($noticiasMasRecientes[1])) verticalCard($noticiasMasRecientes[1], 'small'); ?>
-                    <?php if (isset($noticiasMasRecientes[2])) verticalCard($noticiasMasRecientes[2], 'small'); ?>
+    <!-- Rejilla Top Semanal -->
+    <div class="top-semanal-grid mt-4">
+        <!-- Fila 1 -->
+        <div class="top-row-one">
+            <!-- 2/3 Tarjeta Ancha -->
+            <?php if (isset($topSemanal[0])): 
+                $r = $topSemanal[0];
+                $url = newsUrlFromRow($r);
+                $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
+            ?>
+                <div class="top-card card-width-2-3" data-url="<?= $url ?>">
+                    <div class="top-card-img-wrapper">
+                        <img src="<?= img([$r['crop2'], $r['crop1']]) ?>" alt="">
+                        <!-- Círculos superpuestos -->
+                        <div class="card-float-circles">
+                            <div class="float-circle"><img src="<?= img([$r['crop3'], $r['crop1']]) ?>"></div>
+                            <div class="float-circle"><img src="<?= img([$r['crop1'], $r['crop2']]) ?>"></div>
+                        </div>
+                    </div>
+                    <div class="top-card-overlay">
+                        <div class="top-card-tags">
+                            <?php foreach ($cats as $c): ?>
+                                <span class="news-tag-pill"><?= htmlspecialchars($c) ?></span>
+                            <?php endforeach; ?>
+                        </div>
+                        <h3 class="top-card-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>
+                        <p class="top-card-desc"><?= htmlspecialchars($r['descripcion']) ?></p>
+                    </div>
                 </div>
+            <?php endif; ?>
 
-                <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidad) : ?>
-                    <div class="ad-container" style="margin: 25px 0 35px 0;">
-                        <a href="<?php echo htmlspecialchars($publicidad['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidad['id_pub']); ?>">
-                            <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="" class="banner" loading="lazy" decoding="async">
-                        </a>
-                        <span class="ads-label">ADS</span>
+            <!-- 1/3 Tarjeta Estrecha -->
+            <?php if (isset($topSemanal[1])): 
+                $r = $topSemanal[1];
+                $url = newsUrlFromRow($r);
+                $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
+            ?>
+                <div class="top-card card-width-1-3" data-url="<?= $url ?>">
+                    <div class="top-card-img-wrapper">
+                        <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="">
+                        <div class="card-float-circles">
+                            <div class="float-circle"><img src="<?= img([$r['crop2'], $r['crop1']]) ?>"></div>
+                            <div class="float-circle"><img src="<?= img([$r['crop1'], $r['crop3']]) ?>"></div>
+                        </div>
+                    </div>
+                    <div class="top-card-overlay">
+                        <div class="top-card-tags">
+                            <?php foreach ($cats as $c): ?>
+                                <span class="news-tag-pill"><?= htmlspecialchars($c) ?></span>
+                            <?php endforeach; ?>
+                        </div>
+                        <h3 class="top-card-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>
+                        <p class="top-card-desc"><?= htmlspecialchars($r['descripcion']) ?></p>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Fila 2 (3 columnas de 1/3) -->
+        <div class="top-row-three mt-3">
+            <?php for ($i = 2; $i <= 4; $i++): 
+                if (isset($topSemanal[$i])):
+                    $r = $topSemanal[$i];
+                    $url = newsUrlFromRow($r);
+                    $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
+            ?>
+                <div class="top-card card-width-1-3" data-url="<?= $url ?>">
+                    <div class="top-card-img-wrapper">
+                        <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="">
+                        <div class="card-float-circles">
+                            <div class="float-circle"><img src="<?= img([$r['crop2'], $r['crop1']]) ?>"></div>
+                        </div>
+                    </div>
+                    <div class="top-card-overlay">
+                        <div class="top-card-tags">
+                            <?php foreach ($cats as $c): ?>
+                                <span class="news-tag-pill"><?= htmlspecialchars($c) ?></span>
+                            <?php endforeach; ?>
+                        </div>
+                        <h3 class="top-card-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>
+                        <p class="top-card-desc"><?= htmlspecialchars($r['descripcion']) ?></p>
+                    </div>
+                </div>
+            <?php endif; 
+            endfor; ?>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================= -->
+<!-- 4. NUESTRAS REVIEWS -->
+<!-- ============================================= -->
+<div class="container mt-5">
+    <div class="section-separator-pill">
+        <span class="pill-label"><i class="bi bi-star-fill"></i> Nuestras Reviews</span>
+        <div class="pill-separator-line"></div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Columna Izquierda: Listado Reseñas (2/3) -->
+        <div class="col-md-8 feed-reviews-column">
+            <div class="horizontal-cards-list">
+                <?php foreach ($reviews as $r): 
+                    $url = newsUrlFromRow($r);
+                    $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
+                ?>
+                    <div class="horizontal-news-card" data-url="<?= $url ?>">
+                        <div class="h-card-img-wrapper">
+                            <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="">
+                            <!-- Badge de calificación si existe -->
+                            <?php if (isset($r['calificacion']) && $r['calificacion'] !== null): ?>
+                                <div class="review-rating-badge"><?= number_format($r['calificacion'], 1) ?></div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="h-card-body">
+                            <div class="h-card-tags">
+                                <?php foreach ($cats as $c): ?>
+                                    <span class="category-pill-solid"><?= htmlspecialchars($c) ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                            <h3 class="h-card-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>
+                            <p class="h-card-desc"><?= htmlspecialchars($r['descripcion']) ?></p>
+                            <div class="h-card-meta">
+                                <span>Publicado: <?= tiempoRelativo($r['fecha']) ?></span>
+                                <span>Por: <?= htmlspecialchars($r['nombre_u'] ?? 'Redacción') ?></span>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Sidebar Recomendaciones (1/3) -->
+        <div class="col-md-4">
+            <div class="sidebar-reviews-section">
+                <h3 class="sidebar-title-pink">Lo que más te Recomendamos</h3>
+                <div class="sidebar-ranking-list-container">
+                    <div class="sidebar-ranking-list">
+                        <?php foreach ($recomendamos as $index => $r): 
+                            $url = newsUrlFromRow($r);
+                            $mockScores = [4.5, 4.0, 3.5, 3.0, 2.5];
+                            $score = $mockScores[$index] ?? null;
+                        ?>
+                            <?php if ($index === 0): ?>
+                                <!-- Puesto 1: Card Grande con Borde Fuchsia -->
+                                <div class="ranking-item-hero" data-url="<?= $url ?>">
+                                    <img src="<?= img([$r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-hero-img">
+                                    <div class="ranking-number-overlay">1</div>
+                                    <div class="ranking-hero-overlay">
+                                        <h4 class="ranking-hero-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
+                                    </div>
+                                    <?php if ($score): ?>
+                                        <div class="ranking-score-circle"><?= number_format($score, 1) ?></div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php else: ?>
+                                <!-- Puestos 2-5: Card con Imagen Completa y Número Gigante -->
+                                <div class="ranking-item-sub" data-url="<?= $url ?>">
+                                    <div class="ranking-sub-card">
+                                        <img src="<?= img([$r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-sub-img">
+                                        <div class="ranking-number-overlay"><?= $index + 1 ?></div>
+                                        <div class="ranking-sub-overlay">
+                                            <h4 class="ranking-sub-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
+                                        </div>
+                                        <?php if ($score): ?>
+                                            <div class="ranking-score-circle"><?= number_format($score, 1) ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================= -->
+<!-- 5. PRÓXIMOS ESTRENOS -->
+<!-- ============================================= -->
+<div class="container mt-5">
+    <div class="section-separator-pill">
+        <span class="pill-label"><i class="bi bi-play-circle-fill"></i> Próximos Estrenos</span>
+        <div class="pill-separator-line"></div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Columna Izquierda: Películas, Juegos, Anime (2/3) -->
+        <div class="col-md-8">
+            <div class="estrenos-left-layout">
+                <!-- Nota Grande (Películas y Series) -->
+                <?php if ($estrenosPelis): 
+                    $r = $estrenosPelis;
+                    $url = newsUrlFromRow($r);
+                    $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
+                ?>
+                    <div class="estreno-large-card" data-url="<?= $url ?>">
+                        <h4 class="estreno-column-header">Películas y Series</h4>
+                        <div class="estreno-large-img-wrapper">
+                            <img src="<?= img([$r['crop2'], $r['crop1']]) ?>" alt="">
+                            <div class="card-float-circles">
+                                <div class="float-circle"><img src="<?= img([$r['crop3'], $r['crop1']]) ?>"></div>
+                                <div class="float-circle"><img src="<?= img([$r['crop1'], $r['crop3']]) ?>"></div>
+                            </div>
+                        </div>
+                        <div class="estreno-large-body">
+                            <div class="estreno-tags">
+                                <?php foreach ($cats as $c): ?>
+                                    <span class="category-pill-solid"><?= htmlspecialchars($c) ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                            <h3 class="estreno-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>
+                            <p class="estreno-desc"><?= htmlspecialchars($r['descripcion']) ?></p>
+                            <div class="estreno-meta">
+                                <span>Publicado: <?= tiempoRelativo($r['fecha']) ?></span>
+                                <span>Por: <?= htmlspecialchars($r['nombre_u'] ?? 'Redacción') ?></span>
+                            </div>
+                        </div>
                     </div>
                 <?php endif; ?>
 
-                <div class="news-block-container" style="margin-top: 25px;">
-                    <?php if (isset($noticiasMasRecientes[3])): ?>
-                        <!-- Bloque 2: Grande arriba, 2 pequeños abajo -->
-                        <?php verticalCard($noticiasMasRecientes[3], 'large'); ?>
-                        
-                        <div class="news-block-row-small">
-                            <?php if (isset($noticiasMasRecientes[4])) verticalCard($noticiasMasRecientes[4], 'small'); ?>
-                            <?php if (isset($noticiasMasRecientes[5])) verticalCard($noticiasMasRecientes[5], 'small'); ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div><!-- /col-md-9 (top) -->
-
-            <div class="col-md-3">
-                <div class="sidebar-wrapper">
-                    <div class="card sidebar-card">
-                        <div class="card-h">
-                            <?php if(($secciones['publicidad']['estado'] ?? 0) == 1 && $publicidadCuadro) : ?>
-                                <div class="ad-container">
-                                    <a href="<?php echo htmlspecialchars($publicidadCuadro['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadCuadro['id_pub']); ?>">
-                                        <img src="<?= imageUrl($publicidadCuadro['imagen']) ?>" class="banner-card-img-top" loading="lazy" decoding="async">
-                                    </a>
-                                    <span class="ads-label">ADS</span>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        <div class="card-body">
-                            <h3>
-                                <a href="<?= recientesUrl() ?>" style="text-decoration: none; color: inherit;">
-                                    <i class="bi bi-alarm"></i> Lo más nuevo
-                                </a>
-                            </h3>
-                            <br>
-                            <div class="sidebar-news-list">
-                                <?php foreach($ultimasNoticiasSidebar as $row): ?>
-                                    <div class="cardSpecial row row-no-gap">
-                                        <div class="col-md-4">
-                                            <img src="<?= img([$row['crop3'], $row['crop2'], $row['crop1']]) ?>" alt="" class="imgCard card-img-left-rounded" loading="lazy" decoding="async">
-                                        </div>
-                                        <div class="col-md-8">
-                                            <div class="card-body">
-                                                <a href="<?= newsUrlFromRow($row) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <br>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div><!-- /col-md-3 (top sidebar) -->
-        </div><!-- /row (top) -->
-
-        <?php if($secciones['videos']['estado'] == 1) : ?>
-            <div class="videos-destacados-container">
-                <h2 class="videos-destacados-titulo" id="videos-destacados"><i class="bi bi-camera-video"></i> Videos Destacados</h2>
-                <div class="video-carousel <?php echo count($vid) == 1? 'single-video':''; ?>">
-                <?php foreach($vid as $video): ?>
-                    <div class="video-slide">
-                        <?php echo bloquearEmbeds(renderizarVideo($video['url_v'])); ?>
-                    </div>
-                <?php endforeach; ?>
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <div class="row mt-4">
-            <div class="col-md-9">
-                <div class="news-block-container">
-                    <?php if (isset($noticiasMasRecientes2[0])): ?>
-                        <!-- Bloque 3: Grande arriba, 2 pequeños abajo -->
-                        <?php verticalCard($noticiasMasRecientes2[0], 'large'); ?>
-                        
-                        <div class="news-block-row-small">
-                            <?php if (isset($noticiasMasRecientes2[1])) verticalCard($noticiasMasRecientes2[1], 'small'); ?>
-                            <?php if (isset($noticiasMasRecientes2[2])) verticalCard($noticiasMasRecientes2[2], 'small'); ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <div class="news-block-container" style="margin-top: 25px;">
-                    <div class="news-block-row-small">
-                        <?php if (isset($noticiasMasRecientes2[3])) verticalCard($noticiasMasRecientes2[3], 'small'); ?>
-                        <?php if (isset($noticiasMasRecientes2[4])) verticalCard($noticiasMasRecientes2[4], 'small'); ?>
-                    </div>
-                </div>
-            </div><!-- /col-md-9 (bottom) -->
-
-            <div class="col-md-3">
-                <div class="sidebar-wrapper">
-                    <div class="card sidebar-card">
-                        <div class="card-body">
-                            <h3>
-                                <a href="<?= popularUrl() ?>" style="text-decoration: none; color: inherit;">
-                                    Lo más popular
-                                </a>
-                            </h3>
-                            <br>
-                            <div class="sidebar-card-overlay-list">
-                                <?php foreach($popularesNoticiasSidebar as $row): 
-                                    $url = newsUrlFromRow($row);
-                                    $img = img([$row['crop3'], $row['crop2'], $row['crop1']]);
-                                ?>
-                                    <div class="sidebar-card-overlay-item" data-url="<?= $url ?>">
-                                        <img src="<?= $img ?>" alt="" loading="lazy" decoding="async">
-                                        <div class="sidebar-card-text-overlay">
-                                            <h4 class="title-limit-2"><?= htmlspecialchars($row['titulo']) ?></h4>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <h3>Siguenos</h3>
-                            <br>
-                            <div class="social-links">
-                                <a href="https://www.facebook.com/TheCatink?locale=es_LA" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-                                <a href="https://x.com/The_Catink/" aria-label="Twitter / X"><i class="bi bi-twitter-x"></i></a>
-                                <a href="https://www.instagram.com/the.catink/" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-                                <a href="https://www.youtube.com/@thecatink" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
-                                <a href="https://www.tiktok.com/@thecatink" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
-                                <!--<a href="#" aria-label="Twitch"><i class="bi bi-twitch"></i></a>-->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div><!-- /col-md-3 (bottom sidebar) -->
-        </div><!-- /row mt-4 outer -->
-
-        <!-- Sección Lo más debatido -->
-        <?php if (!empty($debatidas)): ?>
-        <div class="debatido-section-wrapper">
-            <div class="container debatido-section-container">
-                <div class="debatido-section-header">
-                    <h2 class="debatido-section-title">
-                        <span class="title-bar"></span>
-                        <i class="bi bi-chat-left-text" style="margin-right: 10px;"></i> LO MÁS DEBATIDO
-                    </h2>
-                </div>
-                
-                <div class="debatido-layout">
-                    <!-- Columna Izquierda: Tarjetas (1 grande, 2 pequeñas abajo) -->
-                    <div class="debatido-cards-column">
-                        <?php if (isset($debatidasLeft[0])): 
-                            $row = $debatidasLeft[0];
-                            $url = newsUrlFromRow($row);
-                            $img = img([$row['crop2'], $row['crop1'], $row['crop3']]);
+                <!-- Dos Columnas Abajo (Videojuegos y Anime) -->
+                <div class="estrenos-bottom-columns mt-4">
+                    <!-- Videojuegos -->
+                    <div class="estreno-sub-column">
+                        <h4 class="estreno-column-header">Videojuegos</h4>
+                        <?php if ($estrenosJuegos): 
+                            $r = $estrenosJuegos;
+                            $url = newsUrlFromRow($r);
+                            $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
                         ?>
-                            <!-- Tarjeta Grande -->
-                            <div class="debatido-card-large" data-url="<?= $url ?>">
-                                <img src="<?= $img ?>" alt="" loading="lazy" decoding="async">
-                                <div class="debatido-card-overlay">
-                                    <span class="debatido-card-tag"><i class="bi bi-chat-fill"></i> <?= $row['total_comentarios'] ?> comentarios</span>
-                                    <h3 class="title-limit-2"><?= htmlspecialchars($row['titulo']) ?></h3>
+                            <div class="estreno-small-card" data-url="<?= $url ?>">
+                                <div class="estreno-small-img-wrapper">
+                                    <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="">
+                                </div>
+                                <div class="estreno-small-body">
+                                    <div class="estreno-tags">
+                                        <?php foreach ($cats as $c): ?>
+                                            <span class="category-pill-solid-micro"><?= htmlspecialchars($c) ?></span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <h3 class="estreno-small-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>
+                                    <p class="estreno-small-desc title-limit-2"><?= htmlspecialchars($r['descripcion']) ?></p>
+                                    <div class="estreno-small-meta">Publicado por: <?= htmlspecialchars($r['nombre_u'] ?? 'Redacción') ?></div>
                                 </div>
                             </div>
                         <?php endif; ?>
-                        
-                        <div class="debatido-cards-row">
-                            <?php for ($i = 1; $i <= 2; $i++): 
-                                if (isset($debatidasLeft[$i])): 
-                                    $row = $debatidasLeft[$i];
-                                    $url = newsUrlFromRow($row);
-                                    $img = img([$row['crop3'], $row['crop1'], $row['crop2']]);
-                            ?>
-                                <!-- Tarjeta Pequeña -->
-                                <div class="debatido-card-small" data-url="<?= $url ?>">
-                                    <img src="<?= $img ?>" alt="" loading="lazy" decoding="async">
-                                    <div class="debatido-card-overlay">
-                                        <span class="debatido-card-tag"><i class="bi bi-chat-fill"></i> <?= $row['total_comentarios'] ?></span>
-                                        <h4 class="title-limit-2"><?= htmlspecialchars($row['titulo']) ?></h4>
-                                    </div>
-                                </div>
-                            <?php endif; 
-                            endfor; ?>
-                        </div>
                     </div>
-                    
-                    <!-- Columna Derecha: Lista de 5 notas con badges circulares -->
-                    <div class="debatido-list-column">
-                        <div class="debatido-list-items">
-                            <?php foreach ($debatidasRight as $row): 
-                                $url = newsUrlFromRow($row);
-                            ?>
-                                <div class="debatido-list-item" data-url="<?= $url ?>">
-                                    <div class="debatido-badge">
-                                        <?= $row['total_comentarios'] ?>
-                                    </div>
-                                    <div class="debatido-item-title title-limit-2">
-                                        <?= htmlspecialchars($row['titulo']) ?>
-                                    </div>
+
+                    <!-- Anime -->
+                    <div class="estreno-sub-column">
+                        <h4 class="estreno-column-header">Anime</h4>
+                        <?php if ($estrenosAnime): 
+                            $r = $estrenosAnime;
+                            $url = newsUrlFromRow($r);
+                            $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
+                        ?>
+                            <div class="estreno-small-card" data-url="<?= $url ?>">
+                                <div class="estreno-small-img-wrapper">
+                                    <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="">
                                 </div>
-                            <?php endforeach; ?>
-                        </div>
+                                <div class="estreno-small-body">
+                                    <div class="estreno-tags">
+                                        <?php foreach ($cats as $c): ?>
+                                            <span class="category-pill-solid-micro"><?= htmlspecialchars($c) ?></span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <h3 class="estreno-small-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>
+                                    <p class="estreno-small-desc title-limit-2"><?= htmlspecialchars($r['descripcion']) ?></p>
+                                    <div class="estreno-small-meta">Publicado por: <?= htmlspecialchars($r['nombre_u'] ?? 'Redacción') ?></div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
         </div>
-        <?php endif; ?>
 
-        <br>
-        <div class="section-separator" id="recomendados">
-            <a href="#recomendados" class="section-separator-label">
-                <i class="bi bi-stars"></i> Recomendados para ti
-            </a>
-            <div class="section-separator-line"></div>
+        <!-- Columna Derecha: Sidebar Lo que más esperamos (1/3) -->
+        <div class="col-md-4">
+            <div class="sidebar-reviews-section">
+                <h3 class="sidebar-title-pink">Lo que más esperamos</h3>
+                <div class="sidebar-ranking-list-container">
+                    <div class="sidebar-ranking-list">
+                        <?php foreach ($esperamos as $index => $r): 
+                            $url = newsUrlFromRow($r);
+                        ?>
+                            <?php if ($index === 0): ?>
+                                <!-- Puesto 1: Card Grande con Borde Fuchsia -->
+                                <div class="ranking-item-hero" data-url="<?= $url ?>">
+                                    <img src="<?= img([$r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-hero-img">
+                                    <div class="ranking-number-overlay">1</div>
+                                    <div class="ranking-hero-overlay">
+                                        <h4 class="ranking-hero-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <!-- Puestos 2-5: Card con Imagen Completa y Número Gigante (Sin calificaciones) -->
+                                <div class="ranking-item-sub" data-url="<?= $url ?>">
+                                    <div class="ranking-sub-card">
+                                        <img src="<?= img([$r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-sub-img">
+                                        <div class="ranking-number-overlay"><?= $index + 1 ?></div>
+                                        <div class="ranking-sub-overlay">
+                                            <h4 class="ranking-sub-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="row mt-4">
-                <?php while($r = $recomendadas->fetch_assoc()):
-                    $img = img([$r['crop3'], $r['crop2'], $r['crop1']]);
+    </div>
+</div>
+
+<!-- ============================================= -->
+<!-- 6. NO TE LO PIERDAS (VIDEOS VERTICALES) -->
+<!-- ============================================= -->
+<div class="full-width-dark-section bleed-section mt-4" id="no-te-lo-pierdas-section">
+    <div class="container">
+        <div class="section-separator-pill dark-theme-pill">
+            <span class="pill-label"><i class="bi bi-tiktok"></i> No te lo pierdas</span>
+            <div class="pill-separator-line"></div>
+        </div>
+
+        <div class="vertical-videos-grid mt-4">
+            <?php foreach ($vidVerticales as $v): ?>
+                <?= bloquearEmbeds(renderizarVideo($v['url_v'])) ?>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================= -->
+<!-- 7. LO MÁS DEBATIDO -->
+<!-- ============================================= -->
+<?php if (!empty($debatidas)): ?>
+<div class="full-width-dark-section bleed-section" id="lo-mas-debatido-section">
+    <div class="container">
+        <div class="section-separator-pill dark-theme-pill">
+            <span class="pill-label"><i class="bi bi-chat-left-text-fill"></i> Lo más debatido</span>
+            <div class="pill-separator-line"></div>
+        </div>
+        
+        <div class="debatido-layout mt-4">
+            <!-- Columna Izquierda: Tarjetas invertidas (2 pequeñas arriba, 1 grande abajo) -->
+            <div class="debatido-cards-column">
+                <div class="debatido-cards-row">
+                    <?php for ($i = 1; $i <= 2; $i++): 
+                        if (isset($debatidasLeft[$i])): 
+                            $row = $debatidasLeft[$i];
+                            $url = newsUrlFromRow($row);
+                            $img = img([$row['crop3'], $row['crop1'], $row['crop2']]);
+                    ?>
+                        <!-- Tarjeta Pequeña -->
+                        <div class="debatido-card-small" data-url="<?= $url ?>">
+                            <img src="<?= $img ?>" alt="" loading="lazy" decoding="async">
+                            <div class="debatido-card-overlay">
+                                <span class="debatido-card-tag"><i class="bi bi-chat-fill"></i> <?= $row['total_comentarios'] ?></span>
+                                <h4 class="title-limit-2"><?= htmlspecialchars($row['titulo']) ?></h4>
+                            </div>
+                        </div>
+                    <?php endif; 
+                    endfor; ?>
+                </div>
+
+                <?php if (isset($debatidasLeft[0])): 
+                    $row = $debatidasLeft[0];
+                    $url = newsUrlFromRow($row);
+                    $img = img([$row['crop2'], $row['crop1'], $row['crop3']]);
                 ?>
-                  <div class="col">
-                      <div class="card h-100" data-url="<?= newsUrlFromRow($r) ?>">
-                          <img src="<?= $img ?>" class="card-img-top">
-                          <div class="card-body">
-                              <a href="<?= newsUrlFromRow($r) ?>" class="news-link title-limit-1">
-                                  <?= htmlspecialchars($r['titulo']) ?>
-                              </a>
-                              <small class="desc-limit-3">
-                                <?= htmlspecialchars($r['descripcion']) ?>
-                              </small>
-                              <br>
-                              <small class="text-muted">
-                                  <?= date('d M Y', strtotime($r['fecha_publicacion'])) ?> - Por: <?= $r['nombre'] ?>
-                              </small>
-                          </div>
-                      </div>
-                  </div>
-                <?php endwhile; ?>
-              </div>
-        <br>
-                 <?php if (($secciones['videos']['estado'] ?? 0) == 1) : ?>
-        <!-- Reproductor interactivo de Youtube estilo LevelUp -->
-        <div class="youtube-section-wrapper">
+                    <!-- Tarjeta Grande -->
+                    <div class="debatido-card-large" data-url="<?= $url ?>">
+                        <img src="<?= $img ?>" alt="" loading="lazy" decoding="async">
+                        <div class="debatido-card-overlay">
+                            <span class="debatido-card-tag"><i class="bi bi-chat-fill"></i> <?= $row['total_comentarios'] ?> comentarios</span>
+                            <h3 class="title-limit-2"><?= htmlspecialchars($row['titulo']) ?></h3>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
             
-            <div class="container youtube-section-container">
-                <div class="youtube-section-header">
-                    <h2 class="youtube-section-title"><span class="title-bar"></span> VIDEOS RECOMENDADOS</h2>
-                </div>
-                
-                <div class="youtube-layout">
-                    <!-- Columna Izquierda: Reproductor Principal -->
-                    <div class="youtube-player-column">
-                        <div class="youtube-player-wrapper">
-                            <div id="youtube-player"></div>
-                            <button class="youtube-sound-toggle" id="youtube-sound-btn">
-                                <i class="bi bi-volume-mute-fill"></i> Activar sonido
-                            </button>
+            <!-- Columna Derecha: Lista de 5 notas con badges circulares -->
+            <div class="debatido-list-column">
+                <div class="debatido-list-items">
+                    <?php foreach ($debatidasRight as $row): 
+                        $url = newsUrlFromRow($row);
+                    ?>
+                        <div class="debatido-list-item" data-url="<?= $url ?>">
+                            <div class="debatido-badge">
+                                <?= $row['total_comentarios'] ?>
+                            </div>
+                            <div class="debatido-item-title title-limit-2">
+                                <?= htmlspecialchars($row['titulo']) ?>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <!-- Columna Derecha: Lista de Reproducción -->
-                    <div class="youtube-playlist-column">
-                        <div class="youtube-playlist-header">
-                            <span class="playlist-site">catink.com.mx</span>
-                            <span class="playlist-count" id="playlist-count-label">Cargando...</span>
-                        </div>
-                        <div class="youtube-playlist-items" id="youtube-playlist-list">
-                            <!-- Skeleton Loaders -->
-                            <?php for($i=1; $i<=5; $i++): ?>
-                                <div class="youtube-playlist-item-skeleton">
-                                    <div class="skeleton-thumb"></div>
-                                    <div class="skeleton-details">
-                                        <div class="skeleton-line title"></div>
-                                        <div class="skeleton-line meta"></div>
-                                    </div>
-                                </div>
-                            <?php endfor; ?>
-                        </div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
-        <?php endif; ?>
-        <br>
-        <div class="section-separator">
-            <a href="<?= recientesUrl() ?>" class="section-separator-label">
-                <i class="bi bi-lightning-fill"></i> Noticias recientes
-            </a>
-            <div class="section-separator-line"></div>
-        </div>
-        <div class="row mt-4">
-                <?php while($r = $recientes->fetch_assoc()):
-                    $img = img([$r['crop3'], $r['crop2'], $r['crop1']]);
-                ?>
-                  <div class="col">
-                      <div class="card h-100" data-url="<?= newsUrlFromRow($r) ?>">
-                          <img src="<?= $img ?>" class="card-img-top" loading="lazy" decoding="async">
-                          <div class="card-body">
-                              <a href="<?= newsUrlFromRow($r) ?>" class="news-link title-limit-1">
-                                  <?= htmlspecialchars($r['titulo']) ?>
-                              </a>
-                              <small class="desc-limit-3">
-                                <?= htmlspecialchars($r['descripcion']) ?>
-                              </small>
-                              <br>
-                              <small class="text-muted">
-                                  <?= date('d M Y', strtotime($r['fecha_publicacion'])) ?> - Por: <?= $r['nombre'] ?>
-                              </small>
-                          </div>
-                      </div>
-                  </div>
-                <?php endwhile; ?>
-              </div>
-            </div>
-        </div>
+    </div>
+</div>
+<?php endif; ?>
 
-<!-- Conteo de clicks -->
+<!-- ============================================= -->
+<!-- 8. LO MÁS RANDOM -->
+<!-- ============================================= -->
+<div class="container mt-5">
+    <div class="section-separator-pill">
+        <span class="pill-label"><i class="bi bi-shuffle"></i> Lo más Random</span>
+        <div class="pill-separator-line"></div>
+    </div>
+
+    <div class="random-cards-row mt-4">
+        <?php foreach ($randomNoticias as $r): 
+            $url = newsUrlFromRow($r);
+        ?>
+            <div class="random-vertical-card" data-url="<?= $url ?>">
+                <div class="random-card-img-wrapper">
+                    <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="" loading="lazy">
+                </div>
+                <div class="random-card-body">
+                    <h4 class="random-card-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
+                    <p class="random-card-text title-limit-3"><?= htmlspecialchars($r['descripcion']) ?></p>
+                    <div class="random-card-meta"><?= tiempoRelativo($r['fecha']) ?> &middot; Por: <?= htmlspecialchars($r['nombre_u'] ?? 'Redacción') ?></div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+
+<!-- ============================================= -->
+<!-- 9. REPRODUCTOR INTERACTIVO YOUTUBE (LevelUp) -->
+<!-- ============================================= -->
+<?php if (($secciones['videos']['estado'] ?? 0) == 1) : ?>
+<div class="youtube-section-wrapper mt-4 bleed-section full-width-dark-section">
+    <div class="container youtube-section-container">
+        <div class="section-separator-pill dark-theme-pill">
+            <span class="pill-label"><i class="bi bi-youtube"></i> Videos recomendados</span>
+            <div class="pill-separator-line"></div>
+        </div>
+        
+        <div class="youtube-layout mt-4">
+            <!-- Columna Izquierda: Reproductor Principal -->
+            <div class="youtube-player-column">
+                <div class="youtube-player-wrapper">
+                    <div id="youtube-player"></div>
+                    <button class="youtube-sound-toggle" id="youtube-sound-btn">
+                        <i class="bi bi-volume-mute-fill"></i> Activar sonido
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Columna Derecha: Lista de Reproducción -->
+            <div class="youtube-playlist-column">
+                <div class="youtube-playlist-header">
+                    <span class="playlist-site">catink.com.mx</span>
+                    <span class="playlist-count" id="playlist-count-label">Cargando...</span>
+                </div>
+                <div class="youtube-playlist-items" id="youtube-playlist-list">
+                    <!-- Skeleton Loaders -->
+                    <?php for($i=1; $i<=5; $i++): ?>
+                        <div class="youtube-playlist-item-skeleton">
+                            <div class="skeleton-thumb"></div>
+                            <div class="skeleton-details">
+                                <div class="skeleton-line title"></div>
+                                <div class="skeleton-line meta"></div>
+                            </div>
+                        </div>
+                    <?php endfor; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
+<?php endif; // Fin if ($pagina === 1) ?>
+
+<!-- ============================================= -->
+<!-- 10. FEED GENERAL DE NOTICIAS + PAGINACIÓN -->
+<!-- ============================================= -->
+<div class="container mt-5">
+    <div class="section-separator-pill">
+        <span class="pill-label"><i class="bi bi-lightning-fill"></i> Noticias recientes</span>
+        <div class="pill-separator-line"></div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Feed Noticias horizontales (Ancho completo, sin sidebar) -->
+        <div class="col-12">
+            <div class="horizontal-cards-list feed-news-list">
+                <?php foreach ($feedNoticias as $r): 
+                    $url = newsUrlFromRow($r);
+                    $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
+                ?>
+                    <div class="horizontal-news-card" data-url="<?= $url ?>">
+                        <div class="h-card-img-wrapper">
+                            <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="" loading="lazy">
+                        </div>
+                        <div class="h-card-body">
+                            <div class="h-card-tags">
+                                <?php foreach ($cats as $c): ?>
+                                    <span class="category-pill-solid"><?= htmlspecialchars($c) ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                            <h3 class="h-card-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>
+                            <p class="h-card-desc"><?= htmlspecialchars($r['descripcion']) ?></p>
+                            <div class="h-card-meta">
+                                <span>Publicado: <?= tiempoRelativo($r['fecha']) ?></span>
+                                <span>Por: <?= htmlspecialchars($r['nombre_u'] ?? 'Redacción') ?></span>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Paginación Circular Rosa -->
+            <?php
+            // Calcular páginas para el enlace base
+            $baseUrl = "?";
+            ?>
+            <div class="pagination-wrapper-pink mt-5">
+                <ul class="pagination-pink">
+                    <?php if ($pagina > 1): ?>
+                        <li class="page-arrow">
+                            <a href="<?= $baseUrl ?>page=<?= $pagina-1 ?>">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+                    
+                    <?php 
+                    // Limitar números de página mostrados si son muchos
+                    $rango = 3;
+                    $start = max(1, $pagina - $rango);
+                    $end = min($totalpaginas, $pagina + $rango);
+                    
+                    if ($start > 1) {
+                        echo '<li><a href="'.$baseUrl.'page=1">1</a></li>';
+                        if ($start > 2) echo '<li class="page-dots">...</li>';
+                    }
+                    
+                    for ($i = $start; $i <= $end; $i++): ?>
+                        <li class="<?= $i == $pagina ? 'active' : '' ?>">
+                            <a href="<?= $baseUrl ?>page=<?= $i ?>">
+                                <?= $i ?>
+                            </a>
+                        </li>
+                    <?php endfor;
+                    
+                    if ($end < $totalpaginas) {
+                        if ($end < $totalpaginas - 1) echo '<li class="page-dots">...</li>';
+                        echo '<li><a href="'.$baseUrl.'page='.$totalpaginas.'">'.$totalpaginas.'</a></li>';
+                    }
+                    ?>
+                    
+                    <?php if ($pagina < $totalpaginas): ?>
+                        <li class="page-arrow">
+                            <a href="<?= $baseUrl ?>page=<?= $pagina+1 ?>">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================= -->
+<!-- MODALES Y SCRIPTS -->
+<!-- ============================================= -->
+
+<!-- Modal de Video Vertical (TikTok) -->
+<div class="vertical-video-modal-overlay" id="vVideoModal">
+    <div class="vertical-video-modal-container">
+        <button class="v-video-modal-close" onclick="closeVideoModal()">✕</button>
+        <div class="v-video-iframe-wrapper">
+            <iframe id="vVideoPlayer" src="" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- Conteo de clicks en publicidad -->
 <script>
     document.querySelectorAll(".banner-button").forEach(banner => {
         banner.addEventListener("click", function(e) {
-            e.preventDefault();//pausar redireccionamiento
+            e.preventDefault();
             let url = this.href;
             let publicidadId = this.dataset.pub;
             let data = new FormData();
@@ -713,12 +839,13 @@ function verticalCard($r, $type = 'small') {
                 method: "POST",
                 body: data
             }).finally(()=>{
-                window.location.href = url;//redireccionar despues de registrar click
+                window.location.href = url;
             });
         });
     });
 </script>
-<!-- Conteo de tiempo y visualizaciones -->
+
+<!-- Conteo de tiempo y visualizaciones en publicidad -->
 <script>
     document.querySelectorAll(".banner-button").forEach(banner => {
         let publicidadId = banner.dataset.pub;
@@ -746,70 +873,66 @@ function verticalCard($r, $type = 'small') {
         }, 5000);
     });
 </script>
-<!-- Full-bleed videos container offset calculation -->
+
+<!-- Script para modal de videos verticales -->
 <script>
-    function fixVideoBleed() {
-        const vc = document.querySelector('.videos-destacados-container');
-        if (!vc) return;
-        // Medir el padre (col-md-9) para saber qué tan lejos está del borde del viewport
-        const parent = vc.parentElement;
-        const parentRect = parent.getBoundingClientRect();
-        // leftOffset: cuántos px hay que mover a la izquierda para llegar al borde del viewport
-        const leftOffset = -parentRect.left;
-        // rightOffset: cuántos px hay que extender a la derecha para llegar al borde derecho
-        const rightOffset = -(window.innerWidth - parentRect.right);
-        vc.style.setProperty('--video-bleed-left', leftOffset + 'px');
-        vc.style.setProperty('--video-bleed-right', rightOffset + 'px');
+    const vVideoModal = document.getElementById('vVideoModal');
+    const vVideoPlayer = document.getElementById('vVideoPlayer');
+
+    document.querySelectorAll('.vertical-video-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const videoSrc = this.dataset.videoSrc;
+            if (videoSrc) {
+                // Agregar autoplay si es posible
+                let playSrc = videoSrc;
+                if (playSrc.indexOf('youtube.com') !== -1) {
+                    playSrc += (playSrc.indexOf('?') !== -1 ? '&' : '?') + 'autoplay=1';
+                }
+                vVideoPlayer.src = playSrc;
+                vVideoModal.classList.add('active');
+            }
+        });
+    });
+
+    function closeVideoModal() {
+        vVideoModal.classList.remove('active');
+        vVideoPlayer.src = '';
     }
-    // Ejecutar al cargar y en resize
-    document.addEventListener('DOMContentLoaded', fixVideoBleed);
-    window.addEventListener('resize', fixVideoBleed);
-    // También al cargar inmediatamente por si el DOM ya está listo
-    fixVideoBleed();
+
+    vVideoModal?.addEventListener('click', function(e) {
+        if (e.target === vVideoModal) {
+            closeVideoModal();
+        }
+    });
 </script>
 
-<!-- Full-bleed debatido section offset calculation -->
+<!-- Full-bleed/Bleed adjustments calculation -->
 <script>
-    function fixDebatidoBleed() {
-        const wrapper = document.querySelector('.debatido-section-wrapper');
-        if (!wrapper) return;
-        const parent = wrapper.parentElement;
-        const parentRect = parent.getBoundingClientRect();
-        const leftOffset = -parentRect.left;
-        const rightOffset = -(window.innerWidth - parentRect.right);
-        wrapper.style.setProperty('--debatido-bleed-left', leftOffset + 'px');
-        wrapper.style.setProperty('--debatido-bleed-right', rightOffset + 'px');
+    function fixBleedSections() {
+        const bleedSections = document.querySelectorAll('.bleed-section');
+        bleedSections.forEach(section => {
+            const parent = section.parentElement;
+            if (!parent) return;
+            const parentRect = parent.getBoundingClientRect();
+            const leftOffset = -parentRect.left;
+            const rightOffset = -(window.innerWidth - parentRect.right);
+            section.style.setProperty('--bleed-left', leftOffset + 'px');
+            section.style.setProperty('--bleed-right', rightOffset + 'px');
+        });
     }
-    document.addEventListener('DOMContentLoaded', fixDebatidoBleed);
-    window.addEventListener('resize', fixDebatidoBleed);
-    fixDebatidoBleed();
+    document.addEventListener('DOMContentLoaded', fixBleedSections);
+    window.addEventListener('resize', fixBleedSections);
+    fixBleedSections();
 </script>
 
 <!-- YouTube Interactive Section Logic -->
 <script>
-    // 1. YouTube Interactive Section Bleed Calculation
-    function fixYoutubeBleed() {
-        const wrapper = document.querySelector('.youtube-section-wrapper');
-        if (!wrapper) return;
-        const parent = wrapper.parentElement;
-        const parentRect = parent.getBoundingClientRect();
-        const leftOffset = -parentRect.left;
-        const rightOffset = -(window.innerWidth - parentRect.right);
-        wrapper.style.setProperty('--youtube-bleed-left', leftOffset + 'px');
-        wrapper.style.setProperty('--youtube-bleed-right', rightOffset + 'px');
-    }
-    
-    document.addEventListener('DOMContentLoaded', fixYoutubeBleed);
-    window.addEventListener('resize', fixYoutubeBleed);
-    fixYoutubeBleed();
-
     // 2. YouTube Data API & IFrame player logic
     let ytPlayer;
     let currentVideoIndex = 0;
     let playlistVideos = [];
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Fetch videos list from backend proxy
         fetch('./controllers/youtube_proxy.php')
             .then(r => r.json())
             .then(data => {
@@ -845,7 +968,7 @@ function verticalCard($r, $type = 'small') {
         if (!listEl) return;
         
         countEl.textContent = `1/${videos.length}`;
-        listEl.innerHTML = ''; // Clear skeleton
+        listEl.innerHTML = '';
         
         videos.forEach((video, index) => {
             const item = document.createElement('div');
@@ -971,6 +1094,17 @@ function verticalCard($r, $type = 'small') {
             activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }
+</script>
+
+<script>
+    // Tarjetas clickeables
+    document.querySelectorAll('[data-url]').forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Evitar redirigir si se hace clic en enlaces dentro del card
+            if (e.target.closest('a') || e.target.closest('button')) return;
+            window.location.href = this.dataset.url;
+        });
+    });
 </script>
 
 <?php include(__DIR__ . "/layout/footer.php"); ?>
