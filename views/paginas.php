@@ -152,6 +152,7 @@
                                     data-id="<?= $logo['id_logo'] ?>"
                                     data-nombre="<?= htmlspecialchars($logo['nombre'] ?? '') ?>"
                                     data-exp="<?= htmlspecialchars($logo['fecha_expiracion'] ?? '') ?>"
+                                    data-imagen="<?= htmlspecialchars($logo['imagen']) ?>"
                                     title="Editar">
                                 <i class="bi bi-pencil-fill"></i>
                             </button>
@@ -230,6 +231,20 @@
 <div id="modalEditLogo" class="crop-modal" style="display:none;">
   <div class="crop-modal-content" style="max-width:440px;width:95%;">
     <h3 style="margin-top:0;"><i class="bi bi-pencil-square"></i> Editar Logo</h3>
+
+    <div class="cn-field" style="margin-bottom:16px;">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
+        Imagen <span style="color:var(--muted);font-weight:400;">(dejar sin cambios para conservar la actual)</span>
+      </label>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <img id="editLogoImgActual" style="max-height:56px;max-width:90px;object-fit:contain;border:1px solid var(--border);border-radius:8px;padding:4px;background:var(--bg);">
+        <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--text);background:var(--bg);">
+          <i class="bi bi-image"></i> Cambiar imagen
+          <input type="file" id="editLogoFile" accept="image/*" hidden>
+        </label>
+        <img id="editLogoNewPreview" style="display:none;max-height:56px;max-width:90px;object-fit:contain;border:2px solid var(--accent);border-radius:8px;padding:4px;background:var(--bg);">
+      </div>
+    </div>
 
     <div class="cn-field" style="margin-bottom:16px;">
       <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
@@ -466,7 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const empty = document.getElementById('logosEmpty');
                     if (empty) empty.remove();
                     // Prepend new card
-                    const card = buildLogoCard(data.id, data.imagen, data.nombre, data.fecha_expiracion);
+                    const card = buildLogoCard(data.id, data.imagen, data.nombre, data.fecha_expiracion, data.imagen);
                     logosGrid.insertAdjacentHTML('afterbegin', card);
                     const newCard = logosGrid.firstElementChild;
                     attachDeleteBtn(newCard.querySelector('.btn-delete-logo'));
@@ -492,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .finally(() => { btnSubirLogo.disabled = false; });
     });
 
-    function buildLogoCard(id, imagen, nombre, fechaExp) {
+    function buildLogoCard(id, imagen, nombre, fechaExp, imagenPath) {
         const imgSrc     = BASE_PATH + '/serve-image.php?file=' + encodeURIComponent(imagen);
         const nombreHtml = nombre ? `<div class="logo-nombre">${escapeHtml(nombre)}</div>` : '';
         let expBadge = '';
@@ -510,7 +525,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${nombreHtml}
             ${expBadge}
             <div class="logo-actions">
-                <button class="btn-edit-logo" data-id="${id}" data-nombre="${escapeHtml(nombre)}" data-exp="${escapeHtml(fechaExp||'')}" title="Editar"><i class="bi bi-pencil-fill"></i></button>
+                <button class="btn-edit-logo" data-id="${id}" data-nombre="${escapeHtml(nombre)}" data-exp="${escapeHtml(fechaExp||'')}" data-imagen="${escapeHtml(imagen)}" title="Editar"><i class="bi bi-pencil-fill"></i></button>
                 <button class="btn-delete-logo" data-id="${id}" title="Eliminar"><i class="bi bi-trash-fill"></i></button>
             </div>
         </div>`;
@@ -546,20 +561,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Edit logo ────────────────────────────────────────────────
-    const modalEditLogo   = document.getElementById('modalEditLogo');
-    const editLogoNombre  = document.getElementById('editLogoNombre');
-    const editLogoFecha   = document.getElementById('editLogoFecha');
-    const editLogoHora    = document.getElementById('editLogoHora');
-    const editLogoMsg     = document.getElementById('editLogoMsg');
-    const btnGuardar      = document.getElementById('btnGuardarEditLogo');
-    let   editingLogoId   = null;
+    const modalEditLogo      = document.getElementById('modalEditLogo');
+    const editLogoNombre     = document.getElementById('editLogoNombre');
+    const editLogoFecha      = document.getElementById('editLogoFecha');
+    const editLogoHora       = document.getElementById('editLogoHora');
+    const editLogoMsg        = document.getElementById('editLogoMsg');
+    const btnGuardar         = document.getElementById('btnGuardarEditLogo');
+    const editLogoFile       = document.getElementById('editLogoFile');
+    const editLogoImgActual  = document.getElementById('editLogoImgActual');
+    const editLogoNewPreview = document.getElementById('editLogoNewPreview');
+    let   editingLogoId      = null;
 
-    function openEditModal(id, nombre, fechaExp) {
+    editLogoFile.addEventListener('change', () => {
+        const f = editLogoFile.files[0];
+        if (!f) { editLogoNewPreview.style.display = 'none'; return; }
+        editLogoNewPreview.src = URL.createObjectURL(f);
+        editLogoNewPreview.style.display = 'block';
+    });
+
+    function openEditModal(id, nombre, fechaExp, imagen) {
         editingLogoId        = id;
         editLogoNombre.value = nombre || '';
         editLogoMsg.textContent = '';
+        editLogoFile.value = '';
+        editLogoNewPreview.style.display = 'none';
+        editLogoImgActual.src = imagen
+            ? BASE_PATH + '/serve-image.php?file=' + encodeURIComponent(imagen)
+            : '';
         if (fechaExp) {
-            // fechaExp: "YYYY-MM-DD HH:MM:SS"
             const parts       = fechaExp.split(' ');
             editLogoFecha.value = parts[0] || '';
             editLogoHora.value  = (parts[1] || '23:59:00').slice(0, 5);
@@ -572,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function attachEditBtn(btn) {
         btn.addEventListener('click', function() {
-            openEditModal(this.dataset.id, this.dataset.nombre, this.dataset.exp);
+            openEditModal(this.dataset.id, this.dataset.nombre, this.dataset.exp, this.dataset.imagen);
         });
     }
 
@@ -598,6 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fd.append('id',               editingLogoId);
         fd.append('nombre',           nombre);
         fd.append('fecha_expiracion', fechaExp);
+        if (editLogoFile.files[0]) fd.append('imagen', editLogoFile.files[0]);
 
         fetch(BASE_PATH + '/controllers/logo_editar.php', { method: 'POST', body: fd })
             .then(r => r.json())
@@ -609,6 +639,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Actualizar DOM de la tarjeta
                     const card     = document.getElementById('logo-' + editingLogoId);
                     if (card) {
+                        // Imagen
+                        if (data.imagen) {
+                            const imgEl = card.querySelector('.logo-img-wrap img');
+                            if (imgEl) imgEl.src = BASE_PATH + '/serve-image.php?file=' + encodeURIComponent(data.imagen);
+                        }
                         // Nombre
                         let nombreEl = card.querySelector('.logo-nombre');
                         if (data.nombre) {
@@ -637,6 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (editBtn) {
                             editBtn.dataset.nombre = data.nombre || '';
                             editBtn.dataset.exp    = data.fecha_expiracion || '';
+                            if (data.imagen) editBtn.dataset.imagen = data.imagen;
                         }
                     }
                     setTimeout(() => { modalEditLogo.style.display = 'none'; }, 800);
