@@ -294,23 +294,6 @@ function topCard($r, $type = 'thumb') {
         </div>
         <?php endif; ?>
 
-        <?php
-        // Fila 3 — thumb pequeño + banner grande; se adapta si solo hay 1
-        $f3 = array_values(array_filter([
-            $ultimasNoticias[5] ?? null,
-            $ultimasNoticias[6] ?? null,
-        ]));
-        if ($f3):
-        ?>
-        <div class="row">
-            <div class="<?= isset($f3[1]) ? 'col-md-4' : 'col-12' ?>">
-                <?php topCard($f3[0]); ?>
-            </div>
-            <?php if (isset($f3[1])): ?>
-            <div class="col-md-8"><?php topCard($f3[1], 'banner'); ?></div>
-            <?php endif; ?>
-        </div>
-        <?php endif; ?>
         <!-- ===================== -->
         <!-- SIDEBAR -->
         <!-- ===================== -->
