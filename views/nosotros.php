@@ -147,9 +147,6 @@ foreach ($filas as $i => $fila_logos) {
     flex-direction: column;
     gap: 30px;
     overflow: hidden;
-    /* Fade suave en los bordes del área con padding */
-    mask-image: linear-gradient(to right, transparent 0%, #000 4%, #000 96%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 4%, #000 96%, transparent 100%);
 }
 
 /* ─── Fila individual ──────────────────────────────────────────── */
