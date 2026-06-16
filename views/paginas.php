@@ -657,7 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else if (nombreEl) {
                             nombreEl.remove();
                         }
-                        // Badge expiración
+                        // Badge expiración + estado vencido de la tarjeta
                         let badgeEl = card.querySelector('.logo-exp-badge');
                         if (data.fecha_expiracion) {
                             const ms   = new Date(data.fecha_expiracion) - new Date();
@@ -671,8 +671,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (!badgeEl) { badgeEl = document.createElement('div'); card.querySelector('.logo-actions').before(badgeEl); }
                             badgeEl.className   = cls;
                             badgeEl.innerHTML   = html;
-                        } else if (badgeEl) {
-                            badgeEl.remove();
+                            card.classList.toggle('logo-card-vencida', ms <= 0);
+                        } else {
+                            if (badgeEl) badgeEl.remove();
+                            card.classList.remove('logo-card-vencida');
                         }
                         // Actualizar data-attributes del botón editar
                         const editBtn = card.querySelector('.btn-edit-logo');
