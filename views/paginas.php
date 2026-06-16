@@ -88,7 +88,7 @@
                         <input type="file" id="logoFile" accept="image/*" hidden>
                         <div class="file-drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                         <div class="file-drop-text">Arrastra una imagen o <span>haz clic aquí</span></div>
-                        <div class="file-drop-hint">PNG, JPG, WEBP o SVG — fondo transparente recomendado</div>
+                        <div class="file-drop-hint">PNG, JPG, — Mejor si es fondo transparente</div>
                         <img id="logoPreview" class="file-drop-preview" style="display:none;max-height:80px;object-fit:contain;">
                     </label>
                     <div class="cn-field" style="margin-top:12px;">

@@ -75,7 +75,7 @@ foreach ($filas as $i => $fila_logos) {
 <style>
 /* ─── Hero ─────────────────────────────────────────────────────── */
 .nos-hero {
-    padding: 52px 32px 36px;
+    padding: 40px 32px 24px;
     border-bottom: 1px solid var(--border);
 }
 .nos-hero-inner {
@@ -107,17 +107,16 @@ foreach ($filas as $i => $fila_logos) {
 
 /* ─── Cuerpo de texto ──────────────────────────────────────────── */
 .nos-body {
-    padding: 40px 32px 56px;
+    padding: 20px 32px 28px;
 }
 .nos-body-inner {
     max-width: var(--cw, 1040px);
     margin: 0 auto;
 }
-
 /* ─── Sección de marcas ────────────────────────────────────────── */
 .nos-brands {
     border-top: 1px solid var(--border);
-    padding: 52px 0 68px;
+    padding: 28px 0 44px;
     overflow: hidden;
 }
 .nos-brands-label {
@@ -127,7 +126,7 @@ foreach ($filas as $i => $fila_logos) {
     letter-spacing: .16em;
     text-transform: uppercase;
     color: var(--muted);
-    margin-bottom: 36px;
+    margin-bottom: 20px;
     padding: 0 24px;
 }
 .nos-brands-empty {
