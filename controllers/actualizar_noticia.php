@@ -111,6 +111,7 @@ $contenido = preg_replace_callback(
 );
 
 $fecha_publicacion = $_POST['fecha_publicacion'] ?? date('Y-m-d H:i:s');
+$calificacion = max(1, min(5, intval($_POST['calificacion'] ?? 3)));
 // ============================
 // VALIDACION
 // ============================
@@ -132,13 +133,13 @@ $creado_por = $resCreado['creado_por'] ?? $usuario_id;
 
 $update = $con->prepare("
   UPDATE noticias
-  SET titulo = ?, slug = ?, descripcion = ?, contenido = ?, fecha_publicacion = ?, creado_por = ?, editado_por = ?
+  SET titulo = ?, slug = ?, descripcion = ?, contenido = ?, fecha_publicacion = ?, creado_por = ?, editado_por = ?, calificacion = ?
   WHERE id = ?
 ");
 // Asegurarse de que creado_por y usuario_id son integers
 $creado_por = intval($creado_por);
 $usuario_id = intval($usuario_id);
-$update->bind_param("sssssiii", $titulo, $slug, $descripcion, $contenido, $fecha_publicacion, $creado_por, $usuario_id, $id);
+$update->bind_param("sssssiiii", $titulo, $slug, $descripcion, $contenido, $fecha_publicacion, $creado_por, $usuario_id, $calificacion, $id);
 $result = $update->execute();
 // ============================
 // OBTENER IMAGENES ACTUALES

@@ -383,6 +383,27 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
   font-size: 13px; padding: 0; outline: none; width: 100%; font-family: inherit;
 }
 
+/* ── CALIFICACIÓN ── */
+.cn-star-rating {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 4px 0;
+}
+.cn-star-rating input[type="radio"] { display: none; }
+.cn-star-rating label {
+  font-size: 30px;
+  color: var(--border);
+  cursor: pointer;
+  transition: color .15s;
+  line-height: 1;
+}
+.cn-star-rating input:checked ~ label { color: var(--accent); }
+.cn-star-rating:hover label { color: var(--border); }
+.cn-star-rating label:hover,
+.cn-star-rating label:hover ~ label { color: var(--accent); }
+
 /* ── BOTÓN PUBLICAR ── */
 .cn-publish-wrap {
   display: flex;
@@ -494,6 +515,39 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
           <div id="catInputs"></div>
         </div>
       </div><!-- /sec-cats -->
+
+      <!-- CALIFICACIÓN -->
+      <div class="cn-section" id="sec-rating">
+        <div class="cn-section-header">
+          <div class="cn-section-icon" style="font-size:15px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1em" height="1em" fill="currentColor" aria-hidden="true"><ellipse cx="50" cy="72" rx="22" ry="17"/><ellipse cx="18" cy="47" rx="10" ry="14" transform="rotate(-25 18 47)"/><ellipse cx="36" cy="30" rx="10" ry="14"/><ellipse cx="64" cy="30" rx="10" ry="14"/><ellipse cx="82" cy="47" rx="10" ry="14" transform="rotate(25 82 47)"/></svg></div>
+          <div>
+            <p class="cn-section-title">Calificación</p>
+            <p class="cn-section-sub">Relevancia editorial de la noticia</p>
+          </div>
+          <i class="bi bi-chevron-down cn-section-toggle"></i>
+        </div>
+        <div class="cn-section-body">
+          <div class="cn-field">
+            <label>¿Qué tan importante es esta noticia?</label>
+            <?php
+            $pawSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1em" height="1em" fill="currentColor" aria-hidden="true"><ellipse cx="50" cy="72" rx="22" ry="17"/><ellipse cx="18" cy="47" rx="10" ry="14" transform="rotate(-25 18 47)"/><ellipse cx="36" cy="30" rx="10" ry="14"/><ellipse cx="64" cy="30" rx="10" ry="14"/><ellipse cx="82" cy="47" rx="10" ry="14" transform="rotate(25 82 47)"/></svg>';
+            ?>
+            <div class="cn-star-rating" id="starRating">
+              <input type="radio" name="calificacion" id="star5" value="5">
+              <label for="star5" title="5 — Muy importante"><?= $pawSvg ?></label>
+              <input type="radio" name="calificacion" id="star4" value="4">
+              <label for="star4" title="4 — Importante"><?= $pawSvg ?></label>
+              <input type="radio" name="calificacion" id="star3" value="3">
+              <label for="star3" title="3 — Normal"><?= $pawSvg ?></label>
+              <input type="radio" name="calificacion" id="star2" value="2">
+              <label for="star2" title="2 — Secundaria"><?= $pawSvg ?></label>
+              <input type="radio" name="calificacion" id="star1" value="1" checked>
+              <label for="star1" title="1 — Baja relevancia"><?= $pawSvg ?></label>
+            </div>
+            <div class="cn-hint" id="ratingHint">Seleccionado: 1 de 5 Patitas — Baja relevancia</div>
+          </div>
+        </div>
+      </div><!-- /sec-rating -->
 
       <!-- PROGRAMAR -->
       <div class="cn-section" id="sec-schedule">
@@ -887,6 +941,15 @@ document.addEventListener('DOMContentLoaded', () => {
       renumberChips(); rebuildInputs();
     });
   }
+
+  /* ── Calificación hint ── */
+  const ratingLabels = { 1: 'Baja relevancia', 2: 'Secundaria', 3: 'Normal', 4: 'Importante', 5: 'Muy importante' };
+  document.querySelectorAll('input[name="calificacion"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const hint = document.getElementById('ratingHint');
+      if (hint) hint.textContent = `Seleccionado: ${radio.value} de 5 Patitas — ${ratingLabels[radio.value]}`;
+    });
+  });
 
   /* ── Programar toggle ── */
   const schedToggle = document.getElementById('scheduleToggle');

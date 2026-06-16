@@ -198,3 +198,6 @@ ALTER TABLE logos_marcas
 ALTER TABLE `logos_marcas` ADD COLUMN IF NOT EXISTS `orden` INT NOT NULL DEFAULT 0 AFTER `activo`;
 SET @r := 0;
 UPDATE `logos_marcas` SET `orden` = (@r := @r + 1) ORDER BY `creado` ASC;
+
+-- 12. Calificación editorial de noticias (1-5 estrellas, asignada al crear/editar)
+ALTER TABLE `noticias` ADD COLUMN IF NOT EXISTS `calificacion` TINYINT UNSIGNED DEFAULT NULL COMMENT '1-5 estrellas — calificación editorial';

@@ -208,6 +208,38 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
     }
   }
 </style>
+<style>
+.news-rating-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 24px 0 18px;
+  padding: 14px 18px;
+  background: rgba(245,166,35,.07);
+  border: 1px solid rgba(245,166,35,.3);
+  border-radius: 10px;
+}
+.news-rating-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted, #888);
+  white-space: nowrap;
+}
+.news-rating-stars {
+  display: flex;
+  gap: 4px;
+  font-size: 22px;
+  color: var(--accent, #EF3363);
+}
+.news-rating-stars .paw-empty {
+  color: #ddd;
+}
+.news-rating-text {
+  font-size: 13px;
+  color: var(--muted, #888);
+  white-space: nowrap;
+}
+</style>
 <div class="reading-progress-container">
     <div id="readingProgressBar" class="reading-progress-bar"></div>
 </div>
@@ -252,6 +284,19 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 echo $contenido
               ?>
             </div>
+            <?php if (!empty($noticia['calificacion'])): ?>
+            <div class="news-rating-block">
+              <span class="news-rating-label">Calificación de catink</span>
+              <div class="news-rating-stars">
+                <?php
+                $pawFilled = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1em" height="1em" fill="currentColor" aria-hidden="true"><ellipse cx="50" cy="72" rx="22" ry="17"/><ellipse cx="18" cy="47" rx="10" ry="14" transform="rotate(-25 18 47)"/><ellipse cx="36" cy="30" rx="10" ry="14"/><ellipse cx="64" cy="30" rx="10" ry="14"/><ellipse cx="82" cy="47" rx="10" ry="14" transform="rotate(25 82 47)"/></svg>';
+                $pawEmpty  = '<svg class="paw-empty" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="5" aria-hidden="true"><ellipse cx="50" cy="72" rx="22" ry="17"/><ellipse cx="18" cy="47" rx="10" ry="14" transform="rotate(-25 18 47)"/><ellipse cx="36" cy="30" rx="10" ry="14"/><ellipse cx="64" cy="30" rx="10" ry="14"/><ellipse cx="82" cy="47" rx="10" ry="14" transform="rotate(25 82 47)"/></svg>';
+                for ($s = 1; $s <= 5; $s++): echo $s <= $noticia['calificacion'] ? $pawFilled : $pawEmpty; endfor;
+                ?>
+              </div>
+              <span class="news-rating-text"><?= (int)$noticia['calificacion'] ?> de 5</span>
+            </div>
+            <?php endif; ?>
             <hr>
             <h2 align="center"><i class="bi bi-share-fill"></i> Compartir</h2>
             <div class="share-bar">
