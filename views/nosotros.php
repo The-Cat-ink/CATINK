@@ -53,6 +53,7 @@ foreach ($filas as $i => $fila_logos) {
     <?php if (empty($logos)): ?>
         <p class="nos-brands-empty">Próximamente anunciaremos nuestras marcas colaboradoras.</p>
     <?php else: ?>
+    <div class="nos-brands-outer">
     <div class="nos-brands-rows">
         <?php foreach ($rows_cfg as $row_cfg): ?>
         <div class="nos-row-wrap">
@@ -69,6 +70,7 @@ foreach ($filas as $i => $fila_logos) {
         </div>
         <?php endforeach; ?>
     </div>
+    </div><!-- /.nos-brands-outer -->
     <?php endif; ?>
 </section>
 
@@ -139,6 +141,13 @@ foreach ($filas as $i => $fila_logos) {
     font-size: 0.95rem;
     padding: 0 24px 52px;
     margin: 0;
+}
+
+/* ─── Wrapper centrado igual que el texto ──────────────────────── */
+.nos-brands-outer {
+    max-width: var(--cw, 1040px);
+    margin: 0 auto;
+    overflow: hidden;
 }
 
 /* ─── Filas horizontales ───────────────────────────────────────── */
