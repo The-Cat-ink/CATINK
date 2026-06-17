@@ -3724,7 +3724,6 @@ body, .nav-link, .btn, .card, .site-main {
 .debatido-list-item:hover .debatido-item-title {
     color: var(--accent);
 }
-}
 
 /* ==================================================
    DISEÑO DE BLOQUES DE NOTICIAS PREMIUM (1 GRANDE + 2 PEQUEÑAS)
