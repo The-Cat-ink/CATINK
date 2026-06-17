@@ -205,7 +205,10 @@ ALTER TABLE `noticias` ADD COLUMN IF NOT EXISTS `calificacion` TINYINT UNSIGNED 
 ALTER TABLE `secciones` ADD COLUMN IF NOT EXISTS `valor` VARCHAR(255) DEFAULT NULL;
 UPDATE `secciones` SET `valor` = 'PLMC9KNkIncKvYin_USF1QeqG50KB1K1uD' WHERE `nombre` = 'videos' AND `valor` IS NULL;
 
--- 14. Orden de categorías por noticia (define qué categoría aparece primero en las tarjetas)
+-- 14. Imagen paisaje (21:9) — formato intermedio entre banner y miniatura, usado en cards destacadas
+ALTER TABLE `noticias` ADD COLUMN IF NOT EXISTS `crop4` TEXT DEFAULT NULL COMMENT '21:9 paisaje — card destacada (estreno, reviews)';
+
+-- 15. Orden de categorías por noticia (define qué categoría aparece primero en las tarjetas)
 ALTER TABLE `noticia_categoria` ADD COLUMN IF NOT EXISTS `orden` TINYINT UNSIGNED NOT NULL DEFAULT 1;
 UPDATE `noticia_categoria` nc
     JOIN (SELECT noticia_id, categoria_id, ROW_NUMBER() OVER (PARTITION BY noticia_id ORDER BY categoria_id ASC) AS rn FROM noticia_categoria) sub

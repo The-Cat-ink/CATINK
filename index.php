@@ -38,7 +38,7 @@ $feedNoticias = $stmtFeed->get_result()->fetch_all(MYSQLI_ASSOC);
 // SECCIONES DESTACADAS
 // ==============================
 $stmtGlobal = $con->prepare("
-    SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion AS fecha,
+    SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.crop4, n.fecha_publicacion AS fecha,
            n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
     FROM noticias n
     INNER JOIN usuarios u ON n.autor = u.id_u
@@ -440,7 +440,7 @@ function tiempoRelativo($fecha) {
                     <div class="estreno-large-card" data-url="<?= $url ?>">
                         <h4 class="estreno-column-header">Películas y Series</h4>
                         <div class="estreno-large-img-wrapper">
-                            <img src="<?= img([$r['crop2'], $r['crop1']]) ?>" alt="">
+                            <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="">
                             <div class="card-float-circles">
                                 <div class="float-circle"><img src="<?= img([$r['crop3'], $r['crop1']]) ?>"></div>
                                 <div class="float-circle"><img src="<?= img([$r['crop1'], $r['crop3']]) ?>"></div>

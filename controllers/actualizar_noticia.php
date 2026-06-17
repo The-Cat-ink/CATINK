@@ -144,7 +144,7 @@ $result = $update->execute();
 // ============================
 // OBTENER IMAGENES ACTUALES
 // ============================
-$stmt = $con->prepare("SELECT crop1, crop2, crop3 FROM noticias WHERE id = ?");
+$stmt = $con->prepare("SELECT crop1, crop2, crop3, crop4 FROM noticias WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $res = $stmt->get_result();
@@ -152,39 +152,29 @@ $actual = $res->fetch_assoc();
 $c1 = $actual['crop1'] ?? null;
 $c2 = $actual['crop2'] ?? null;
 $c3 = $actual['crop3'] ?? null;
+$c4 = $actual['crop4'] ?? null;
 // ============================
 // NUEVAS IMAGENES
 // ============================
 $new1 = guardarImagenBase64WebpConId($_POST['crop1'] ?? null, $id, 'crop1');
 $new2 = guardarImagenBase64WebpConId($_POST['crop2'] ?? null, $id, 'crop2');
 $new3 = guardarImagenBase64WebpConId($_POST['crop3'] ?? null, $id, 'crop3');
-if ($new1 || $new2 || $new3) {
+$new4 = guardarImagenBase64WebpConId($_POST['crop4'] ?? null, $id, 'crop4');
+if ($new1 || $new2 || $new3 || $new4) {
   // Eliminar imágenes antiguas si se suben nuevas
   $isLocalEnv = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false;
-  if ($new1 && $c1 && $c1 !== $new1) {
-    $rutaVieja = ($isLocalEnv ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/" . $c1;
-    if (file_exists($rutaVieja)) {
-      unlink($rutaVieja);
+  foreach ([1 => [$new1, $c1], 2 => [$new2, $c2], 3 => [$new3, $c3], 4 => [$new4, $c4]] as [$newPath, $oldPath]) {
+    if ($newPath && $oldPath && $oldPath !== $newPath) {
+      $rutaVieja = ($isLocalEnv ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/" . $oldPath;
+      if (file_exists($rutaVieja)) unlink($rutaVieja);
     }
   }
-  if ($new2 && $c2 && $c2 !== $new2) {
-    $rutaVieja = ($isLocalEnv ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/" . $c2;
-    if (file_exists($rutaVieja)) {
-      unlink($rutaVieja);
-    }
-  }
-  if ($new3 && $c3 && $c3 !== $new3) {
-    $rutaVieja = ($isLocalEnv ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/" . $c3;
-    if (file_exists($rutaVieja)) {
-      unlink($rutaVieja);
-    }
-  }
-  
   $c1 = $new1 ?: $c1;
   $c2 = $new2 ?: $c2;
   $c3 = $new3 ?: $c3;
-  $updImgs = $con->prepare("UPDATE noticias SET crop1=?, crop2=?, crop3=? WHERE id=?");
-  $updImgs->bind_param("sssi", $c1, $c2, $c3, $id);
+  $c4 = $new4 ?: $c4;
+  $updImgs = $con->prepare("UPDATE noticias SET crop1=?, crop2=?, crop3=?, crop4=? WHERE id=?");
+  $updImgs->bind_param("ssssi", $c1, $c2, $c3, $c4, $id);
   $updImgs->execute();
 }
 // ============================

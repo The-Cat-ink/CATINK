@@ -13,7 +13,7 @@ if (empty($ACL['editar'])) { header("Location: admin.php"); exit(); }
 if (!isset($_GET['id']))    { header("Location: contenidos.php"); exit; }
 $id = intval($_GET['id']);
 
-$stmt = $con->prepare("SELECT id, titulo, descripcion, contenido, fecha_publicacion, crop1, crop2, crop3, creado_por, editado_por, ultima_edicion, calificacion FROM noticias WHERE id = ?");
+$stmt = $con->prepare("SELECT id, titulo, descripcion, contenido, fecha_publicacion, crop1, crop2, crop3, crop4, creado_por, editado_por, ultima_edicion, calificacion FROM noticias WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $noticia = $stmt->get_result()->fetch_assoc();
@@ -59,6 +59,7 @@ $fechaExistente = date('Y-m-d\TH:i', strtotime($noticia['fecha_publicacion']));
 $crop1Url = !empty($noticia['crop1']) ? imageUrl($noticia['crop1']) : '';
 $crop2Url = imageUrl($noticia['crop2'] ?? '');
 $crop3Url = imageUrl($noticia['crop3'] ?? '');
+$crop4Url = imageUrl($noticia['crop4'] ?? '');
 ?>
 <script>const ACL = <?= json_encode($ACL) ?>;</script>
 
@@ -214,6 +215,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .upload-zone.has-image .cn-zone-icon,
 .upload-zone.has-image > :not(.preview-img):not(.zone-overlay):not(.zone-actions) { display: none; }
 .cn-zone-banner { aspect-ratio: 21/6; height: auto; min-height: 60px; }
+.cn-zone-paisaje { aspect-ratio: 21/9; height: auto; max-width: min(100%, 520px); margin: 0 auto; }
 .cn-zone-mini { aspect-ratio: 16/9; height: auto; max-width: min(100%, 520px); margin: 0 auto; }
 .zone-actions { position: absolute; bottom: 6px; right: 6px; display: none; gap: 5px; z-index: 3; }
 .upload-zone.has-image .zone-actions { display: flex; }
@@ -418,6 +420,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
     <input type="hidden" name="crop1" id="crop1" value="<?= htmlspecialchars($noticia['crop1'] ?? '') ?>">
     <input type="hidden" name="crop2" id="crop2" value="<?= htmlspecialchars($noticia['crop2'] ?? '') ?>">
     <input type="hidden" name="crop3" id="crop3" value="<?= htmlspecialchars($noticia['crop3'] ?? '') ?>">
+    <input type="hidden" name="crop4" id="crop4" value="<?= htmlspecialchars($noticia['crop4'] ?? '') ?>">
     <input type="hidden" name="contenido" id="contenido">
     <input type="hidden" name="fecha_publicacion" id="fecha_publicacion_hidden">
 
@@ -586,6 +589,20 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               <div class="zone-actions">
                 <button type="button" class="zone-btn zone-btn-adjust" onclick="event.stopPropagation();adjustCrop(2)"><i class="bi bi-crop"></i> Ajustar</button>
                 <button type="button" class="zone-btn zone-btn-remove" onclick="event.stopPropagation();removeCrop(2)"><i class="bi bi-x-lg"></i> Quitar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Paisaje 21:9 (cards destacadas: estrenos, reviews) -->
+          <div style="margin-bottom:12px;">
+            <p class="cn-zone-label">Paisaje <span style="text-transform:none;font-size:10px;font-weight:400;color:var(--muted)">(21:9 — cards destacadas de estrenos y reviews)</span></p>
+            <div class="upload-zone cn-zone-paisaje" id="zone4" onclick="openCrop(4)">
+              <div class="zone-overlay"><span>Cambiar</span></div>
+              <i class="bi bi-layout-text-window cn-zone-icon"></i>
+              <span class="zone-ratio">21 : 9</span>
+              <div class="zone-actions">
+                <button type="button" class="zone-btn zone-btn-adjust" onclick="event.stopPropagation();adjustCrop(4)"><i class="bi bi-crop"></i> Ajustar</button>
+                <button type="button" class="zone-btn zone-btn-remove" onclick="event.stopPropagation();removeCrop(4)"><i class="bi bi-x-lg"></i> Quitar</button>
               </div>
             </div>
           </div>
@@ -797,6 +814,7 @@ const BASE_PATH          = '<?= basePath() ?>';
 const EXISTING_CROP1_URL = '<?= addslashes($crop1Url) ?>';
 const EXISTING_CROP2_URL = '<?= addslashes($crop2Url) ?>';
 const EXISTING_CROP3_URL = '<?= addslashes($crop3Url) ?>';
+const EXISTING_CROP4_URL = '<?= addslashes($crop4Url) ?>';
 const FECHA_EXISTENTE    = '<?= $fechaExistente ?>';
 const CATS_INICIALES     = <?= json_encode($categoriasSeleccionadas) ?>;
 
@@ -947,14 +965,15 @@ document.addEventListener('DOMContentLoaded', () => {
     setZonePreviewFromUrl(2, EXISTING_CROP2_URL);
     zoneSources[2] = EXISTING_CROP1_URL || EXISTING_CROP2_URL;
   }
+  if (EXISTING_CROP4_URL) {
+    setZonePreviewFromUrl(4, EXISTING_CROP4_URL);
+    zoneSources[4] = EXISTING_CROP1_URL || EXISTING_CROP2_URL || EXISTING_CROP4_URL;
+  }
   if (EXISTING_CROP3_URL) {
     setZonePreviewFromUrl(3, EXISTING_CROP3_URL);
-    // Para noticias antiguas sin crop1 (original), usar el banner (21:6) como
-    // fuente del recortador en lugar de la miniatura ya recortada (16:9),
-    // porque recortar 16:9→16:9 no da margen de maniobra en el cropper.
     zoneSources[3] = EXISTING_CROP1_URL || EXISTING_CROP2_URL || EXISTING_CROP3_URL;
   }
-  if (EXISTING_CROP2_URL || EXISTING_CROP3_URL) {
+  if (EXISTING_CROP2_URL || EXISTING_CROP3_URL || EXISTING_CROP4_URL) {
     document.getElementById('previewSection').style.display = 'block';
     updateAllPreviews();
   }
@@ -1096,11 +1115,12 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ════════════════════════════════
    CROPPER
 ════════════════════════════════ */
-const CROP_RATIOS = { 1: 1/1, 2: 21/6, 3: 16/9 };
+const CROP_RATIOS = { 1: 1/1, 2: 21/6, 3: 16/9, 4: 21/9 };
 const CROP_TITLES = {
   1: 'Recortar — Imagen Original (1:1)',
   2: 'Recortar — Banner (21:6)',
-  3: 'Recortar — Miniatura (16:9)'
+  3: 'Recortar — Miniatura (16:9)',
+  4: 'Recortar — Paisaje (21:9)'
 };
 let activeCrop = null, cropperInstance = null;
 const zoneSources = {};
@@ -1110,8 +1130,7 @@ let _chainNextCrop = false;
 function openCrop(num) {
   activeCrop = num;
   _chainNextCrop = true;
-  delete zoneCropData[num];
-  delete zoneCropData[num === 2 ? 3 : 2];
+  [2, 3, 4].forEach(n => delete zoneCropData[n]);
   document.getElementById('fileInput').click();
 }
 
@@ -1122,7 +1141,7 @@ function initCropper(num) {
   const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
   cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
 
-  const cropRatioOverride = { 2: 21 / 6, 3: 16 / 9 };
+  const cropRatioOverride = { 2: 21 / 6, 3: 16 / 9, 4: 21 / 9 };
   const effectiveRatio = cropRatioOverride[num] ?? CROP_RATIOS[num];
 
   cropperInstance = new Cropper(cropImg, {
@@ -1137,7 +1156,7 @@ function initCropper(num) {
     guides: true,
     background: false,
     ready() {
-      if (num === 2 || num === 3) {
+      if (num === 2 || num === 3 || num === 4) {
         if (zoneCropData[num]) {
           cropperInstance.setData(zoneCropData[num]);
         } else {
@@ -1186,15 +1205,11 @@ function removeCrop(num) {
     delete zoneSources[n];
     delete zoneCropData[n];
     const z = document.getElementById('zone' + n);
-    z.querySelectorAll('.preview-img').forEach(el => el.remove());
-    z.classList.remove('has-image');
+    if (z) { z.querySelectorAll('.preview-img').forEach(el => el.remove()); z.classList.remove('has-image'); }
   };
-  clearZone(num);
-  if (num === 2) clearZone(3); else clearZone(2);
-  const c2 = document.getElementById('crop2').value;
-  const c3 = document.getElementById('crop3').value;
-  if (!c2 && !c3) document.getElementById('crop1').value = '';
-  document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
+  [2, 3, 4].forEach(clearZone);
+  document.getElementById('crop1').value = '';
+  document.getElementById('previewSection').style.display = 'none';
 }
 
 function onFileSelected(e) {
@@ -1221,6 +1236,7 @@ function onFileSelected(e) {
 
     zoneSources[2] = fullSrc;
     zoneSources[3] = fullSrc;
+    zoneSources[4] = fullSrc;
     const cropImg  = document.getElementById('cropImg');
     if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
     const cropArea = document.querySelector('.crop-area');
@@ -1289,8 +1305,9 @@ function confirmCrop() {
       document.getElementById('crop' + cropNum).value = data64;
       setZonePreview(cropNum, data64);
 
-      if (chain) {
-        const nextNum = cropNum === 2 ? 3 : 2;
+      const CHAIN_NEXT = { 2: 4, 4: 3 };
+      if (chain && CHAIN_NEXT[cropNum] !== undefined) {
+        const nextNum = CHAIN_NEXT[cropNum];
         activeCrop = nextNum;
         zoneSources[nextNum] = srcForAuto;
         const cropImg  = document.getElementById('cropImg');
@@ -1304,7 +1321,8 @@ function confirmCrop() {
       } else {
         const c2 = document.getElementById('crop2').value;
         const c3 = document.getElementById('crop3').value;
-        document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
+        const c4 = document.getElementById('crop4').value;
+        document.getElementById('previewSection').style.display = (c2 || c3 || c4) ? 'block' : 'none';
         updateAllPreviews();
       }
     };

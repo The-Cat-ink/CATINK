@@ -152,11 +152,12 @@ $noticiaId = $con->insert_id;
 $crop1 = guardarImagenBase64WebpConId($_POST['crop1'] ?? null, $noticiaId, 'crop1');
 $crop2 = guardarImagenBase64WebpConId($_POST['crop2'] ?? null, $noticiaId, 'crop2');
 $crop3 = guardarImagenBase64WebpConId($_POST['crop3'] ?? null, $noticiaId, 'crop3');
+$crop4 = guardarImagenBase64WebpConId($_POST['crop4'] ?? null, $noticiaId, 'crop4');
 // ============================
 // ACTUALIZAR RUTAS IMAGENES
 // ============================
-$update = $con->prepare("UPDATE noticias SET crop1=?, crop2=?, crop3=? WHERE id=?");
-$update->bind_param("sssi", $crop1, $crop2, $crop3, $noticiaId);
+$update = $con->prepare("UPDATE noticias SET crop1=?, crop2=?, crop3=?, crop4=? WHERE id=?");
+$update->bind_param("ssssi", $crop1, $crop2, $crop3, $crop4, $noticiaId);
 $update->execute();
 // ============================
 // INSERTAR CATEGORIAS RELACIONADAS
