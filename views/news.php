@@ -252,6 +252,94 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 echo $contenido
               ?>
             </div>
+            
+            <?php if (($noticia['tipo_publicacion'] ?? '') === 'review'): ?>
+              <!-- Bloque del Veredicto / Review Card -->
+              <?php
+                $scoreVal = floatval($noticia['calificacion'] ?? 0.0);
+                if ($scoreVal >= 7.0) {
+                    $statusClass = 'status-green';
+                    if ($scoreVal >= 9.0) {
+                        $label = 'Excelente';
+                    } elseif ($scoreVal >= 8.0) {
+                        $label = 'Muy Bueno';
+                    } else {
+                        $label = 'Bueno';
+                    }
+                } elseif ($scoreVal >= 5.0) {
+                    $label = 'Regular';
+                    $statusClass = 'status-yellow';
+                } else {
+                    $label = 'Malo';
+                    $statusClass = 'status-red';
+                }
+              ?>
+              <div class="review-verdict-card">
+                <div class="review-score-section">
+                  <div class="review-score-circle-lg <?= $statusClass ?>">
+                    <span class="review-score-num"><?= number_format($scoreVal, 1, '.', '') ?></span>
+                    <span class="review-score-max">de 10</span>
+                  </div>
+                  <div class="review-verdict-label <?= $statusClass ?>-text"><?= $label ?></div>
+                </div>
+                
+                <div class="review-details-section">
+                  <!-- PROS -->
+                  <div class="review-list-box">
+                    <div class="review-list-title pros-title">
+                      <i class="bi bi-plus-circle-fill"></i> Lo que nos gustó
+                    </div>
+                    <ul class="review-items-list">
+                      <?php
+                        $prosText = trim($noticia['pros'] ?? '');
+                        if (!empty($prosText)):
+                          $prosLines = explode("\n", $prosText);
+                          foreach ($prosLines as $line):
+                            $line = trim($line);
+                            if (empty($line)) continue;
+                      ?>
+                            <li class="review-item-li pro-item">
+                              <i class="bi bi-check-circle-fill"></i>
+                              <span><?= htmlspecialchars($line) ?></span>
+                            </li>
+                      <?php
+                          endforeach;
+                        else:
+                      ?>
+                          <li class="review-item-li" style="color: var(--muted); font-style: italic;">Sin puntos positivos destacados</li>
+                      <?php endif; ?>
+                    </ul>
+                  </div>
+                  
+                  <!-- CONTRAS -->
+                  <div class="review-list-box">
+                    <div class="review-list-title contras-title">
+                      <i class="bi bi-dash-circle-fill"></i> Lo que no nos gustó
+                    </div>
+                    <ul class="review-items-list">
+                      <?php
+                        $contrasText = trim($noticia['contras'] ?? '');
+                        if (!empty($contrasText)):
+                          $contrasLines = explode("\n", $contrasText);
+                          foreach ($contrasLines as $line):
+                            $line = trim($line);
+                            if (empty($line)) continue;
+                      ?>
+                            <li class="review-item-li contra-item">
+                              <i class="bi bi-x-circle-fill"></i>
+                              <span><?= htmlspecialchars($line) ?></span>
+                            </li>
+                      <?php
+                          endforeach;
+                        else:
+                      ?>
+                          <li class="review-item-li" style="color: var(--muted); font-style: italic;">Sin puntos negativos destacados</li>
+                      <?php endif; ?>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            <?php endif; ?>
             <hr>
             <h2 align="center"><i class="bi bi-share-fill"></i> Compartir</h2>
             <div class="share-bar">

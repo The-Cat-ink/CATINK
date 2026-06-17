@@ -111,6 +111,21 @@ $contenido = preg_replace_callback(
 );
 
 $fecha_publicacion = $_POST['fecha_publicacion'] ?? date('Y-m-d H:i:s');
+
+$tipo_publicacion = $_POST['tipo_publicacion'] ?? 'noticia';
+$calificacion = null;
+$pros = null;
+$contras = null;
+
+if ($tipo_publicacion === 'review') {
+    $calificacion = isset($_POST['calificacion']) && $_POST['calificacion'] !== '' ? floatval($_POST['calificacion']) : null;
+    $pros = isset($_POST['pros']) ? trim($_POST['pros']) : null;
+    $contras = isset($_POST['contras']) ? trim($_POST['contras']) : null;
+}
+
+$es_estreno = isset($_POST['es_estreno']) ? intval($_POST['es_estreno']) : 0;
+$seccion_estreno = ($es_estreno === 1 && !empty($_POST['seccion_estreno'])) ? $_POST['seccion_estreno'] : null;
+
 // ============================
 // VALIDACION
 // ============================
@@ -132,13 +147,13 @@ $creado_por = $resCreado['creado_por'] ?? $usuario_id;
 
 $update = $con->prepare("
   UPDATE noticias
-  SET titulo = ?, slug = ?, descripcion = ?, contenido = ?, fecha_publicacion = ?, creado_por = ?, editado_por = ?
+  SET titulo = ?, slug = ?, descripcion = ?, contenido = ?, fecha_publicacion = ?, creado_por = ?, editado_por = ?, tipo_publicacion = ?, calificacion = ?, pros = ?, contras = ?, es_estreno = ?, seccion_estreno = ?
   WHERE id = ?
 ");
 // Asegurarse de que creado_por y usuario_id son integers
 $creado_por = intval($creado_por);
 $usuario_id = intval($usuario_id);
-$update->bind_param("sssssiii", $titulo, $slug, $descripcion, $contenido, $fecha_publicacion, $creado_por, $usuario_id, $id);
+$update->bind_param("sssssiisssssis", $titulo, $slug, $descripcion, $contenido, $fecha_publicacion, $creado_por, $usuario_id, $tipo_publicacion, $calificacion, $pros, $contras, $es_estreno, $seccion_estreno, $id);
 $result = $update->execute();
 // ============================
 // OBTENER IMAGENES ACTUALES

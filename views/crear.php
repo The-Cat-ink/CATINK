@@ -460,6 +460,54 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
                       placeholder="Resumen breve para redes sociales y buscadores..." required></textarea>
             <div class="cn-hint"><span id="descCount">0</span>/150</div>
           </div>
+          <div class="cn-field">
+            <label for="tipo_publicacion">Tipo de Publicación</label>
+            <select class="cn-input" id="tipo_publicacion" name="tipo_publicacion" required>
+              <option value="noticia" selected>Noticia</option>
+              <option value="review">Reseña / Review</option>
+            </select>
+          </div>
+
+          <div class="cn-field" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; margin-bottom: 10px;">
+            <div>
+              <label for="es_estreno" style="margin-bottom: 2px;">¿Es Próximo Estreno?</label>
+              <span style="font-size: 11px; color: var(--muted);">Marcar para mostrar en la sección de próximos estrenos</span>
+            </div>
+            <div class="cn-toggle-wrap">
+              <label class="cn-toggle">
+                <input type="checkbox" id="es_estreno" name="es_estreno" value="1">
+                <div class="cn-toggle-track"></div>
+                <div class="cn-toggle-thumb"></div>
+              </label>
+            </div>
+          </div>
+          <div class="cn-field" id="seccionEstrenoWrapper" style="display: none; margin-bottom: 15px;">
+            <label for="seccion_estreno">Sección de Estreno</label>
+            <select class="cn-input" id="seccion_estreno" name="seccion_estreno">
+              <option value="">-- Selecciona una sección --</option>
+              <option value="peliculas">Películas y Series</option>
+              <option value="videojuegos">Videojuegos</option>
+              <option value="anime">Anime</option>
+            </select>
+          </div>
+
+          <div id="reviewFieldsWrapper" style="display: none; border-top: 1px dashed var(--border); padding-top: 15px; margin-top: 15px;">
+            <div class="cn-field">
+              <label for="calificacion">Calificación (1.0 - 10.0)</label>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <input type="range" class="form-range" id="calificacionRange" min="1.0" max="10.0" step="0.1" value="5.0" style="flex: 1; accent-color: var(--accent);">
+                <input type="number" class="cn-input" id="calificacion" name="calificacion" min="1.0" max="10.0" step="0.1" placeholder="5.0" style="width: 80px; text-align: center; font-weight: 700;">
+              </div>
+            </div>
+            <div class="cn-field">
+              <label for="pros">Pros (Puntos Positivos - Uno por línea)</label>
+              <textarea class="cn-input" id="pros" name="pros" rows="4" placeholder="Ejemplo:&#10;Excelente historia&#10;Animación fluida&#10;Banda sonora increíble"></textarea>
+            </div>
+            <div class="cn-field">
+              <label for="contras">Contras (Puntos Negativos - Uno por línea)</label>
+              <textarea class="cn-input" id="contras" name="contras" rows="4" placeholder="Ejemplo:&#10;Ritmo lento al inicio&#10;Desarrollo de personajes apresurado"></textarea>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -774,6 +822,68 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  /* ── Review fields toggle & sync ── */
+  const tipoPublicacion = document.getElementById('tipo_publicacion');
+  const reviewFieldsWrapper = document.getElementById('reviewFieldsWrapper');
+  const calificacionRange = document.getElementById('calificacionRange');
+  const calificacionInput = document.getElementById('calificacion');
+
+  /* ── Estreno fields toggle ── */
+  const esEstrenoCheckbox = document.getElementById('es_estreno');
+  const seccionEstrenoWrapper = document.getElementById('seccionEstrenoWrapper');
+  const seccionEstrenoSelect = document.getElementById('seccion_estreno');
+
+  if (esEstrenoCheckbox && seccionEstrenoWrapper) {
+    const toggleEstrenoFields = () => {
+      if (esEstrenoCheckbox.checked) {
+        seccionEstrenoWrapper.style.display = 'block';
+        seccionEstrenoSelect.setAttribute('required', 'required');
+      } else {
+        seccionEstrenoWrapper.style.display = 'none';
+        seccionEstrenoSelect.removeAttribute('required');
+        seccionEstrenoSelect.value = '';
+      }
+    };
+    esEstrenoCheckbox.addEventListener('change', toggleEstrenoFields);
+    toggleEstrenoFields();
+  }
+
+  if (tipoPublicacion && reviewFieldsWrapper) {
+    const toggleReviewFields = () => {
+      if (tipoPublicacion.value === 'review') {
+        reviewFieldsWrapper.style.display = 'block';
+        if (!calificacionInput.value) {
+          calificacionInput.value = calificacionRange.value;
+        }
+      } else {
+        reviewFieldsWrapper.style.display = 'none';
+      }
+    };
+    
+    tipoPublicacion.addEventListener('change', toggleReviewFields);
+    toggleReviewFields();
+  }
+
+  if (calificacionRange && calificacionInput) {
+    calificacionRange.addEventListener('input', () => {
+      calificacionInput.value = calificacionRange.value;
+    });
+    calificacionInput.addEventListener('input', () => {
+      let val = parseFloat(calificacionInput.value);
+      if (isNaN(val)) return;
+      if (val < 1.0) val = 1.0;
+      if (val > 10.0) val = 10.0;
+      calificacionRange.value = val;
+    });
+    calificacionInput.addEventListener('blur', () => {
+      let val = parseFloat(calificacionInput.value);
+      if (isNaN(val) || val < 1.0 || val > 10.0) {
+        calificacionInput.value = parseFloat(calificacionRange.value).toFixed(1);
+      } else {
+        calificacionInput.value = val.toFixed(1);
+      }
+    });
+  }
 
   /* ── Collapse de secciones ── */
   document.querySelectorAll('.cn-section-header').forEach(header => {
@@ -921,8 +1031,6 @@ document.addEventListener('DOMContentLoaded', () => {
       errors.push('Título de la noticia');
     if (!document.getElementById('descripcion').value.trim())
       errors.push('Descripción corta');
-    if (!document.getElementById('catChips').querySelectorAll('.cn-chip').length)
-      errors.push('Al menos una categoría');
     if (!document.getElementById('crop2').value && !document.getElementById('crop3').value)
       errors.push('Imagen (banner y miniatura)');
     const editorEl = document.querySelector('#editor .ql-editor');

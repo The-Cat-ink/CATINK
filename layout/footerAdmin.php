@@ -59,37 +59,87 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Verificar parámetros de URL para mostrar notificaciones
-const params = new URLSearchParams(window.location.search);
-if (params.has('success')) {
-    const successType = params.get('success');
-    let message = 'Operación completada';
+// Detectar parámetros de redirección en la URL para mostrar notificaciones toast automáticamente
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const msg = urlParams.get('msg');
+    const error = urlParams.get('error');
+    let urlChanged = false;
     
-    if (successType === 'correo_enviado') {
-        message = 'Correo enviado exitosamente';
-    } else if (successType === 'correos_enviados') {
-        const count = params.get('count') || '0';
-        message = `${count} correo(s) enviado(s) exitosamente`;
-    } else if (successType === 'programacion_actualizada') {
-        message = 'Programación actualizada correctamente';
+    if (msg) {
+        let text = '';
+        const path = window.location.pathname.toLowerCase();
+        const isPage = path.includes('paginas.php');
+        const isPub = path.includes('publicidad.php') || path.includes('editarp.php') || path.includes('crearp.php');
+        const isUser = path.includes('usuarios.php') || path.includes('editaru.php') || path.includes('crearu.php');
+
+        if (msg === 'actualizado') {
+            if (isPage) {
+                text = 'Página actualizada correctamente';
+            } else if (isPub) {
+                text = 'Publicidad actualizada correctamente';
+            } else if (isUser) {
+                text = 'Usuario actualizado correctamente';
+            } else {
+                text = 'Noticia actualizada correctamente';
+            }
+        } else if (msg === 'creado') {
+            if (isPage) {
+                text = 'Página creada correctamente';
+            } else if (isPub) {
+                text = 'Publicidad creada correctamente';
+            } else if (isUser) {
+                text = 'Usuario creado correctamente';
+            } else {
+                text = 'Noticia creada correctamente';
+            }
+        } else if (msg === 'eliminado') {
+            if (isPage) {
+                text = 'Página eliminada correctamente';
+            } else if (isPub) {
+                text = 'Publicidad eliminada correctamente';
+            } else if (isUser) {
+                text = 'Usuario eliminado correctamente';
+            } else {
+                text = 'Noticia eliminada correctamente';
+            }
+        }
+
+        if (text) {
+            showToast(text, 'success');
+            urlParams.delete('msg');
+            urlChanged = true;
+        }
     }
     
-    showToast(message, 'success');
-}
-if (params.has('error')) {
-    const errorType = params.get('error');
-    const messages = {
-        'permisos': 'No tienes permisos para realizar esta acción',
-        'id': 'ID no proporcionado',
-        'id_invalido': 'ID inválido',
-        'db': 'Error en la base de datos',
-        'no_encontrado': 'Suscriptor no encontrado',
-        'sin_noticias': 'No hay noticias para enviar',
-        'plantilla': 'Error cargando plantilla',
-        'envio': 'Error al enviar el correo'
-    };
-    showToast(messages[errorType] || 'Ocurrió un error', 'error');
-}
+    if (error) {
+        let text = '';
+        if (error === 'no_eliminado') {
+            text = 'No se pudo eliminar la noticia';
+        } else if (error === 'permisos') {
+            text = 'No tienes permisos para realizar esta acción';
+        } else if (error === 'pass') {
+            text = 'Las contraseñas no coinciden o son incorrectas';
+        } else {
+            if (error.length > 3) {
+                text = decodeURIComponent(error);
+            } else {
+                text = 'Ocurrió un error al procesar la solicitud';
+            }
+        }
+        if (text) {
+            showToast(text, 'error');
+            urlParams.delete('error');
+            urlChanged = true;
+        }
+    }
+
+    if (urlChanged) {
+        const newSearch = urlParams.toString();
+        const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash;
+        window.history.replaceState({}, document.title, newUrl);
+    }
+});
 </script>
 <!-- Pie de página de administración -->
 <footer class="site-footer mt-5">

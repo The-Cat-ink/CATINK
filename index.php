@@ -39,7 +39,8 @@ $feedNoticias = $stmtFeed->get_result()->fetch_all(MYSQLI_ASSOC);
 // ==============================
 $stmtGlobal = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion AS fecha,
-           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias,
+           n.es_estreno, n.seccion_estreno
     FROM noticias n
     INNER JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
@@ -92,18 +93,18 @@ $estrenosPelis = null;
 $estrenosJuegos = null;
 $estrenosAnime = null;
 foreach ($noticiasGlobales as $n) {
-    $cats = strtolower($n['categorias'] ?? '');
-    if (!$estrenosPelis && (strpos($cats, 'pelicula') !== false || strpos($cats, 'serie') !== false)) {
+    if (intval($n['es_estreno'] ?? 0) !== 1) {
+        continue;
+    }
+    $sec = $n['seccion_estreno'] ?? '';
+    if (!$estrenosPelis && $sec === 'peliculas') {
         $estrenosPelis = $n;
-    } elseif (!$estrenosJuegos && strpos($cats, 'videojuego') !== false) {
+    } elseif (!$estrenosJuegos && $sec === 'videojuegos') {
         $estrenosJuegos = $n;
-    } elseif (!$estrenosAnime && strpos($cats, 'anime') !== false) {
+    } elseif (!$estrenosAnime && $sec === 'anime') {
         $estrenosAnime = $n;
     }
 }
-if (!$estrenosPelis) $estrenosPelis = $noticiasGlobales[1] ?? null;
-if (!$estrenosJuegos) $estrenosJuegos = $noticiasGlobales[2] ?? null;
-if (!$estrenosAnime) $estrenosAnime = $noticiasGlobales[3] ?? null;
 
 // 6. Lo que más esperamos
 $esperamos = array_slice($noticiasGlobales, 8, 5);
@@ -460,6 +461,13 @@ function tiempoRelativo($fecha) {
                             </div>
                         </div>
                     </div>
+                <?php else: ?>
+                    <div class="estreno-large-card" style="display: flex; flex-direction: column; min-height: 250px;">
+                        <h4 class="estreno-column-header">Películas y Series</h4>
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border); border-radius: 8px; color: var(--muted); font-size: 13px; font-style: italic; margin-top: 10px;">
+                            Sin estrenos programados en esta sección
+                        </div>
+                    </div>
                 <?php endif; ?>
 
                 <!-- Dos Columnas Abajo (Videojuegos y Anime) -->
@@ -487,6 +495,10 @@ function tiempoRelativo($fecha) {
                                     <div class="estreno-small-meta">Publicado por: <?= htmlspecialchars($r['nombre_u'] ?? 'Redacción') ?></div>
                                 </div>
                             </div>
+                        <?php else: ?>
+                            <div style="flex: 1; min-height: 120px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border); border-radius: 8px; color: var(--muted); font-size: 13px; font-style: italic; text-align: center; padding: 15px;">
+                                Sin estrenos programados
+                            </div>
                         <?php endif; ?>
                     </div>
 
@@ -512,6 +524,10 @@ function tiempoRelativo($fecha) {
                                     <p class="estreno-small-desc title-limit-2"><?= htmlspecialchars($r['descripcion']) ?></p>
                                     <div class="estreno-small-meta">Publicado por: <?= htmlspecialchars($r['nombre_u'] ?? 'Redacción') ?></div>
                                 </div>
+                            </div>
+                        <?php else: ?>
+                            <div style="flex: 1; min-height: 120px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border); border-radius: 8px; color: var(--muted); font-size: 13px; font-style: italic; text-align: center; padding: 15px;">
+                                Sin estrenos programados
                             </div>
                         <?php endif; ?>
                     </div>
@@ -674,7 +690,7 @@ function tiempoRelativo($fecha) {
 </div>
 
 <!-- ============================================= -->
-<!-- 9. REPRODUCTOR INTERACTIVO YOUTUBE (LevelUp) -->
+<!-- 9. REPRODUCTOR INTERACTIVO YOUTUBE  -->
 <!-- ============================================= -->
 <?php if (($secciones['videos']['estado'] ?? 0) == 1) : ?>
 <div class="youtube-section-wrapper mt-4 bleed-section full-width-dark-section">
@@ -971,7 +987,7 @@ function tiempoRelativo($fecha) {
         listEl.innerHTML = '';
         
         videos.forEach((video, index) => {
-            const item = document.createElement('div');
+                const item = document.createElement('div');
             item.className = `youtube-playlist-item ${index === 0 ? 'active' : ''}`;
             item.dataset.videoId = video.id;
             item.dataset.index = index;

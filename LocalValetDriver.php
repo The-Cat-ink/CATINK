@@ -62,7 +62,7 @@ class LocalValetDriver extends \Valet\Drivers\ValetDriver
         if (preg_match('#^/n/([a-zA-Z0-9_-]+)/?$#', $uri, $matches) || 
             preg_match('#^/noticia/([a-zA-Z0-9_-]+)/?$#', $uri, $matches) ||
             preg_match('#^/news/([a-zA-Z0-9_-]+)/?$#', $uri, $matches)) {
-            $_GET['hash'] = $matches[1];
+            $_GET['slug'] = $matches[1];
             return $sitePath . '/views/news.php';
         }
 

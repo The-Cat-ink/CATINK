@@ -201,3 +201,15 @@ UPDATE `logos_marcas` SET `orden` = (@r := @r + 1) ORDER BY `creado` ASC;
 -- 12. Agregar columna valor a la tabla secciones y setear default para videos
 ALTER TABLE `secciones` ADD COLUMN IF NOT EXISTS `valor` VARCHAR(255) DEFAULT NULL;
 UPDATE `secciones` SET `valor` = 'PLMC9KNkIncKvYin_USF1QeqG50KB1K1uD' WHERE `nombre` = 'videos' AND `valor` IS NULL;
+
+-- 13. Columnas para el sistema de reseñas (Reviews)
+ALTER TABLE `noticias` 
+ADD COLUMN IF NOT EXISTS `tipo_publicacion` ENUM('noticia', 'review') NOT NULL DEFAULT 'noticia' AFTER `id`,
+ADD COLUMN IF NOT EXISTS `calificacion` DECIMAL(3,1) DEFAULT NULL AFTER `tipo_publicacion`,
+ADD COLUMN IF NOT EXISTS `pros` TEXT DEFAULT NULL AFTER `calificacion`,
+ADD COLUMN IF NOT EXISTS `contras` TEXT DEFAULT NULL AFTER `pros`;
+
+-- 14. Columnas para próximos estrenos
+ALTER TABLE `noticias`
+ADD COLUMN IF NOT EXISTS `es_estreno` TINYINT(1) NOT NULL DEFAULT 0 AFTER `contras`,
+ADD COLUMN IF NOT EXISTS `seccion_estreno` VARCHAR(50) DEFAULT NULL AFTER `es_estreno`;

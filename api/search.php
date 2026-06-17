@@ -12,7 +12,7 @@ if(strlen($q) < 2){
 }
 
 $stmt = $con->prepare("
-    SELECT id, titulo, crop3 
+    SELECT id, titulo, slug, crop3 
     FROM noticias 
     WHERE titulo LIKE CONCAT('%', ?, '%')
     ORDER BY id DESC
@@ -28,8 +28,8 @@ $data = [];
 while($row = $result->fetch_assoc()){
     $data[] = [
         "titulo" => $row['titulo'],
-        "imagen" => basePath().'/'.$row['crop3'],
-        "url" => basePath() . "/noticia/" . $row['id']
+        "imagen" => imageUrl($row['crop3']),
+        "url" => newsUrlFromRow($row)
     ];
 }
 
