@@ -194,9 +194,10 @@ if ($new1 || $new2 || $new3) {
 $con->query("DELETE FROM noticia_categoria WHERE noticia_id = $id");
 // insertar nuevas
 if (!empty($categorias)) {
-  $stmtCat = $con->prepare("INSERT INTO noticia_categoria (noticia_id, categoria_id) VALUES (?, ?)");
-  foreach ($categorias as $cat_id) {
-    $stmtCat->bind_param("ii", $id, $cat_id);
+  $stmtCat = $con->prepare("INSERT INTO noticia_categoria (noticia_id, categoria_id, orden) VALUES (?, ?, ?)");
+  foreach ($categorias as $i => $cat_id) {
+    $orden = $i + 1;
+    $stmtCat->bind_param("iii", $id, $cat_id, $orden);
     $stmtCat->execute();
   }
 }

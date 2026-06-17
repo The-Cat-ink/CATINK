@@ -20,7 +20,7 @@ $totalpaginas = ceil($totalNoticias / $porPagina);
 // Obtener feed general de noticias (recientes paginadas)
 $stmtFeed = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion AS fecha,
-           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
     FROM noticias n
     INNER JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
@@ -39,7 +39,7 @@ $feedNoticias = $stmtFeed->get_result()->fetch_all(MYSQLI_ASSOC);
 // ==============================
 $stmtGlobal = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion AS fecha,
-           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
     FROM noticias n
     INNER JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
@@ -111,7 +111,7 @@ $esperamos = array_slice($noticiasGlobales, 8, 5);
 // 7. Lo más debatido
 $stmtCom = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion AS fecha,
-           u.nombre AS nombre_u, GROUP_CONCAT(c2.nombre SEPARATOR ',') AS categorias, COUNT(c.id_comentario) as total_comentarios
+           u.nombre AS nombre_u, GROUP_CONCAT(c2.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias, COUNT(c.id_comentario) as total_comentarios
     FROM noticias n
     INNER JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN comentarios c ON c.noticia_id = n.id AND c.estado = 'activo'

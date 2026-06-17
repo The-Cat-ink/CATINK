@@ -101,7 +101,7 @@ $resultNoticias = $con->query("
         n.vistas,
         n.likes,
         n.fecha_publicacion,
-        GROUP_CONCAT(DISTINCT c.nombre SEPARATOR ',') AS categorias,
+        GROUP_CONCAT(DISTINCT c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias,
         COALESCE((SELECT SUM(tiempo_segundos) FROM noticias_stats WHERE noticia_id = n.id), 0) AS tiempo_total_stats
     FROM noticias n
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id

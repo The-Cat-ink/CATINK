@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once("./../data/conexion.php");
 require_once("./helpers/urlhelper.php");
 
@@ -61,7 +61,7 @@ include("./../layout/header.php");
 if ($q !== '') {
     $stmt = $con->prepare("
         SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion,
-               GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+               GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
         FROM noticias n
         LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
         LEFT JOIN categorias c ON nc.categoria_id = c.id_c
@@ -77,7 +77,7 @@ if ($q !== '') {
 } elseif ($categoria !== '') {
     $stmt = $con->prepare("
         SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion,
-               GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+               GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
         FROM noticias n
         INNER JOIN noticia_categoria nc_filter ON n.id = nc_filter.noticia_id
         INNER JOIN categorias c_filter ON nc_filter.categoria_id = c_filter.id_c AND c_filter.nombre = ?
@@ -93,7 +93,7 @@ if ($q !== '') {
 } else {
     $stmt = $con->prepare("
         SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion,
-               GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+               GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
         FROM noticias n
         LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
         LEFT JOIN categorias c ON nc.categoria_id = c.id_c

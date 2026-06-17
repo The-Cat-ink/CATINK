@@ -162,10 +162,11 @@ $update->execute();
 // INSERTAR CATEGORIAS RELACIONADAS
 // ============================
 if (!empty($categorias)) {
-  $stmtCat = $con->prepare("INSERT INTO noticia_categoria (noticia_id, categoria_id) VALUES (?, ?)");
+  $stmtCat = $con->prepare("INSERT INTO noticia_categoria (noticia_id, categoria_id, orden) VALUES (?, ?, ?)");
 
-  foreach ($categorias as $cat_id) {
-    $stmtCat->bind_param("ii", $noticiaId, $cat_id);
+  foreach ($categorias as $i => $cat_id) {
+    $orden = $i + 1;
+    $stmtCat->bind_param("iii", $noticiaId, $cat_id, $orden);
     $stmtCat->execute();
   }
 }

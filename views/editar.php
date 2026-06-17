@@ -44,7 +44,7 @@ $stmtCat = $con->prepare("
     FROM noticia_categoria nc
     JOIN categorias c ON c.id_c = nc.categoria_id
     WHERE nc.noticia_id = ?
-    ORDER BY c.nombre ASC
+    ORDER BY nc.orden ASC
 ");
 $stmtCat->bind_param("i", $id);
 $stmtCat->execute();

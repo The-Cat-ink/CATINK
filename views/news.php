@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include("./../layout/header.php");
 require_once("./../data/conexion.php");
 include("./helpers/videoEmbed.php");
@@ -30,7 +30,7 @@ if(isset($_GET['slug'])){
 // ==============================
 $sql = "
     SELECT n.*, n.slug, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto,
-           GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+           GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
     FROM noticias n
     LEFT JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
@@ -51,7 +51,7 @@ if (!$noticia && isset($_GET['slug'])) {
         $param = $decodedId;
         $sql = "
             SELECT n.*, n.slug, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto,
-                   GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+                   GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
             FROM noticias n
             LEFT JOIN usuarios u ON n.autor = u.id_u
             LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
