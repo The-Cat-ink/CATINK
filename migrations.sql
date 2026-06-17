@@ -179,20 +179,19 @@ ALTER TABLE `videos` ADD COLUMN IF NOT EXISTS `orden` INT DEFAULT 0 AFTER `activ
 ALTER TABLE `noticias` ADD COLUMN IF NOT EXISTS `slug` VARCHAR(255) DEFAULT NULL AFTER `titulo`;
 ALTER TABLE `noticias` ADD INDEX IF NOT EXISTS `idx_slug` (`slug`);
 
-
 -- 9. Tabla para los logos
-CREATE TABLE IF NOT EXISTS logos_marcas (
-    id_logo  INT          NOT NULL AUTO_INCREMENT,
-    imagen   VARCHAR(255) NOT NULL,
-    nombre   VARCHAR(150) NOT NULL DEFAULT '',
-    activo   TINYINT(1)   NOT NULL DEFAULT 1,
-    creado   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_logo)
+CREATE TABLE IF NOT EXISTS `logos_marcas` (
+    `id_logo`  INT          NOT NULL AUTO_INCREMENT,
+    `imagen`   VARCHAR(255) NOT NULL,
+    `nombre`   VARCHAR(150) NOT NULL DEFAULT '',
+    `activo`   TINYINT(1)   NOT NULL DEFAULT 1,
+    `creado`   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id_logo`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---10. Permite definir hasta cuándo se muestra un logo.
-ALTER TABLE logos_marcas
-    ADD COLUMN fecha_expiracion DATETIME NULL DEFAULT NULL AFTER activo;
+-- 10. Permite definir hasta cuándo se muestra un logo.
+ALTER TABLE `logos_marcas`
+    ADD COLUMN `fecha_expiracion` DATETIME NULL DEFAULT NULL AFTER `activo`;
 
 -- 11. Orden de logos de marcas colaboradoras (drag & drop en paginas.php)
 ALTER TABLE `logos_marcas` ADD COLUMN IF NOT EXISTS `orden` INT NOT NULL DEFAULT 0 AFTER `activo`;
@@ -201,3 +200,7 @@ UPDATE `logos_marcas` SET `orden` = (@r := @r + 1) ORDER BY `creado` ASC;
 
 -- 12. Calificación editorial de noticias (1-5 estrellas, asignada al crear/editar)
 ALTER TABLE `noticias` ADD COLUMN IF NOT EXISTS `calificacion` TINYINT UNSIGNED DEFAULT NULL COMMENT '1-5 estrellas — calificación editorial';
+
+-- 13. Agregar columna valor a la tabla secciones y setear default para videos
+ALTER TABLE `secciones` ADD COLUMN IF NOT EXISTS `valor` VARCHAR(255) DEFAULT NULL;
+UPDATE `secciones` SET `valor` = 'PLMC9KNkIncKvYin_USF1QeqG50KB1K1uD' WHERE `nombre` = 'videos' AND `valor` IS NULL;

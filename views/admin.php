@@ -1,16 +1,53 @@
 <?php 
-include(__DIR__ . "/../layout/headerAdmin.php");
+if(session_status() == PHP_SESSION_NONE){
+    session_start();
+}
 include(__DIR__ . "/../data/conexion.php");
+
+// Procesar actualización de estado de secciones
 if(isset($_POST['actualizarEstado']) && isset($_POST['secciones'])){
     foreach($_POST['secciones'] as $id => $datos){
         $estado = $datos['estado'] == '1' ? 1 : 0;
-        $stmt = $con->prepare("UPDATE secciones SET estado = ? WHERE id_s = ?");
-        $stmt->bind_param("ii", $estado, $id);
+        $valor = isset($datos['valor']) ? trim($datos['valor']) : null;
+        $stmt = $con->prepare("UPDATE secciones SET estado = ?, valor = ? WHERE id_s = ?");
+        $stmt->bind_param("isi", $estado, $valor, $id);
         $stmt->execute();
+        
+        // Si es la sección de videos, limpiar la caché de YouTube para aplicar los cambios de inmediato
+        if ($id == 2) {
+            $cacheDir = __DIR__ . '/../cache/youtube';
+            if (file_exists($cacheDir)) {
+                $files = glob($cacheDir . '/*');
+                foreach($files as $file){
+                    if(is_file($file)) unlink($file);
+                }
+            }
+        }
     }
     header("Location: ".$_SERVER['PHP_SELF']);
     exit();
 }
+
+// Procesar actualización de lista de reproducción (YouTube)
+if(isset($_POST['actualizarPlaylist']) && isset($_POST['youtube_playlist'])){
+    $valor = trim($_POST['youtube_playlist']);
+    $stmt = $con->prepare("UPDATE secciones SET valor = ? WHERE id_s = 2");
+    $stmt->bind_param("s", $valor);
+    $stmt->execute();
+    
+    // Limpiar caché de YouTube
+    $cacheDir = __DIR__ . '/../cache/youtube';
+    if (file_exists($cacheDir)) {
+        $files = glob($cacheDir . '/*');
+        foreach($files as $file){
+            if(is_file($file)) unlink($file);
+        }
+    }
+    header("Location: ".$_SERVER['PHP_SELF']);
+    exit();
+}
+
+include(__DIR__ . "/../layout/headerAdmin.php");
 // ====================================
 // ACL GLOBAL
 // ====================================
@@ -108,6 +145,32 @@ function formatNumberShort($num){
             </button>
         <?php endif; ?>
     </div>
+
+    <!-- SECCIÓN DE LISTA DE REPRODUCCIÓN (YOUTUBE) -->
+    <?php if($superadmin): ?>
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light"><h5>Lista de Reproducción (YouTube)</h5></div>
+            <div class="card-body">
+                <form action="" method="POST">
+                    <div class="mb-3">
+                        <label for="youtube_playlist_id" style="font-weight: 600; display: block; margin-bottom: 8px;">ID o URL de la lista de reproducción de YouTube:</label>
+                        <?php 
+                            $playlistVal = '';
+                            foreach($config as $sec) {
+                                if($sec['nombre'] === 'videos') {
+                                    $playlistVal = $sec['valor'];
+                                }
+                            }
+                        ?>
+                        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="youtube_playlist_id" name="youtube_playlist" value="<?= htmlspecialchars($playlistVal) ?>" placeholder="Ej: PLMC9KNkIncKvYin_USF1QeqG50KB1K1uD" style="flex: 1; min-width: 250px; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                            <button type="submit" class="btn btn-accent" name="actualizarPlaylist" style="margin-top:0; padding: 10px 20px;">Actualizar Playlist</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <!-- ÚLTIMAS NOTICIAS -->
     <div class="card shadow-sm mb-4">
@@ -246,13 +309,16 @@ function formatNumberShort($num){
             <div class="modal-body-nativo">
                 <form action="" method="POST">
                     <?php foreach($config as $sec): ?>
-                        <div class="mb-2">
-                            <label for="sec_<?= $sec['id_s'] ?>"><?= htmlspecialchars($sec['nombre']) ?></label>
+                        <div class="mb-3">
+                            <label for="sec_<?= $sec['id_s'] ?>" style="font-weight: 600; display: block; margin-bottom: 4px;"><?= htmlspecialchars(ucfirst($sec['nombre'])) ?></label>
                             <input type="hidden" name="secciones[<?= $sec['id_s'] ?>][id]" value="<?= $sec['id_s'] ?>">
-                            <select name="secciones[<?= $sec['id_s'] ?>][estado]" id="sec_<?= $sec['id_s'] ?>">
-                                <option value="1" <?= $sec['estado'] == '1' ? 'selected' : '' ?>>Activo</option>
-                                <option value="0" <?= $sec['estado'] == '0' ? 'selected' : '' ?>>Inactivo</option>
-                            </select>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <select name="secciones[<?= $sec['id_s'] ?>][estado]" id="sec_<?= $sec['id_s'] ?>" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                                    <option value="1" <?= $sec['estado'] == '1' ? 'selected' : '' ?>>Activo</option>
+                                    <option value="0" <?= $sec['estado'] == '0' ? 'selected' : '' ?>>Inactivo</option>
+                                </select>
+                                <input type="hidden" name="secciones[<?= $sec['id_s'] ?>][valor]" value="<?= htmlspecialchars($sec['valor'] ?? '') ?>">
+                            </div>
                         </div>
                     <?php endforeach; ?>
                     <div class="mt-3" style="text-align:right;">

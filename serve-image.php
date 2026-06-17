@@ -51,6 +51,15 @@ $realPath = $uploadsDir . $file;
 
 // Validar que el archivo existe
 if (!file_exists($realPath)) {
+    // Si no existe, servir el placeholder por defecto de forma temporal
+    $placeholderPath = __DIR__ . '/img/placeholder.svg';
+    if (file_exists($placeholderPath)) {
+        header('Content-Type: image/svg+xml');
+        header('Cache-Control: no-cache, no-store, must-revalidate'); // Evitar caché por si después se sube el archivo real
+        readfile($placeholderPath);
+        exit;
+    }
+
     http_response_code(404);
     // Log para debugging
     $debugInfo = "Image not found\n";

@@ -46,7 +46,7 @@ function guardarImagenBase64WebpConId($base64, $noticiaId, $crop, $calidad = 100
     // En producción: /home/usuario/uploads/noticias/
     // En local: /uploads/noticias/
     // Esto evita que Hostinger borre las imágenes en despliegues
-    $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+    $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false;
     $dirUploads = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/uploads/noticias/";
     
     // Si no existe, crear carpeta
@@ -160,20 +160,21 @@ $new2 = guardarImagenBase64WebpConId($_POST['crop2'] ?? null, $id, 'crop2');
 $new3 = guardarImagenBase64WebpConId($_POST['crop3'] ?? null, $id, 'crop3');
 if ($new1 || $new2 || $new3) {
   // Eliminar imágenes antiguas si se suben nuevas
+  $isLocalEnv = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false;
   if ($new1 && $c1 && $c1 !== $new1) {
-    $rutaVieja = (strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/" . $c1;
+    $rutaVieja = ($isLocalEnv ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/" . $c1;
     if (file_exists($rutaVieja)) {
       unlink($rutaVieja);
     }
   }
   if ($new2 && $c2 && $c2 !== $new2) {
-    $rutaVieja = (strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/" . $c2;
+    $rutaVieja = ($isLocalEnv ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/" . $c2;
     if (file_exists($rutaVieja)) {
       unlink($rutaVieja);
     }
   }
   if ($new3 && $c3 && $c3 !== $new3) {
-    $rutaVieja = (strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/" . $c3;
+    $rutaVieja = ($isLocalEnv ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/" . $c3;
     if (file_exists($rutaVieja)) {
       unlink($rutaVieja);
     }

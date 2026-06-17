@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include(__DIR__ . "/layout/header.php");
 require_once(__DIR__ . "/data/conexion.php");
 include(__DIR__ . "/views/helpers/videoEmbed.php");
