@@ -1184,10 +1184,16 @@ let activeCrop = null, cropperInstance = null;
 const zoneSources = {};
 const zoneCropData = {};
 let _chainNextCrop = false;
+let _chainQueue = [];
 
 function openCrop(num) {
   activeCrop = num;
   _chainNextCrop = true;
+  const ORDER = [2, 4, 3];
+  const idx = ORDER.indexOf(num);
+  _chainQueue = idx >= 0
+    ? [...ORDER.slice(idx + 1), ...ORDER.slice(0, idx)]
+    : [];
   [2, 3, 4].forEach(n => delete zoneCropData[n]);
   document.getElementById('fileInput').click();
 }
@@ -1245,6 +1251,7 @@ function adjustCrop(num) {
   if (!zoneSources[num]) return;
   activeCrop = num;
   _chainNextCrop = false;
+  _chainQueue = [];
   const cropImg = document.getElementById('cropImg');
   if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
   const cropArea = document.querySelector('.crop-area');
@@ -1339,9 +1346,8 @@ function confirmCrop() {
       document.getElementById('crop' + cropNum).value = data64;
       setZonePreview(cropNum, data64);
 
-      const CHAIN_NEXT = { 2: 4, 4: 3 };
-      if (chain && CHAIN_NEXT[cropNum] !== undefined) {
-        const nextNum = CHAIN_NEXT[cropNum];
+      if (_chainQueue.length > 0) {
+        const nextNum = _chainQueue.shift();
         activeCrop = nextNum;
         zoneSources[nextNum] = srcForAuto;
         const cropImg  = document.getElementById('cropImg');
