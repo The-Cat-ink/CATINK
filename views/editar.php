@@ -1308,7 +1308,9 @@ function initCropper(num) {
           const availX = imgData.width - cbW;
           const leftOffset = num === 3
             ? imgData.left + availX * 0.85
-            : imgData.left + availX / 2;
+            : num === 4
+              ? imgData.left + availX
+              : imgData.left + availX / 2;
           cropperInstance.setCropBoxData({
             width:  cbW,
             height: cbH,
