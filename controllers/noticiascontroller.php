@@ -118,7 +118,21 @@ $contenido = preg_replace_callback(
 );
 $fecha_publicacion = $_POST['fecha_publicacion'] ?? date('Y-m-d H:i:s');
 $fecha_publicacion = str_replace('T', ' ', $fecha_publicacion);
-$calificacion = max(1, min(5, intval($_POST['calificacion'] ?? 1)));
+
+$tipo_publicacion = $_POST['tipo_publicacion'] ?? 'noticia';
+$calificacion = null;
+$pros = null;
+$contras = null;
+
+if ($tipo_publicacion === 'review') {
+    $calificacion = isset($_POST['calificacion']) && $_POST['calificacion'] !== '' ? floatval($_POST['calificacion']) : null;
+    $pros = isset($_POST['pros']) ? trim($_POST['pros']) : null;
+    $contras = isset($_POST['contras']) ? trim($_POST['contras']) : null;
+}
+
+$es_estreno = isset($_POST['es_estreno']) ? intval($_POST['es_estreno']) : 0;
+$seccion_estreno = ($es_estreno === 1 && !empty($_POST['seccion_estreno'])) ? $_POST['seccion_estreno'] : null;
+
 // ============================
 // VALIDACION
 // ============================
@@ -131,15 +145,15 @@ if (empty($titulo) || empty($descripcion) || empty($contenido)) {
 // INSERTAR NOTICIA (YA SIN CATEGORIA)
 // ============================
 $usuario_id = intval($_SESSION['id_u'] ?? 0);
-$sql = "INSERT INTO noticias (titulo, slug, descripcion, autor, contenido, fecha_publicacion, creado_por, editado_por, calificacion)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$sql = "INSERT INTO noticias (titulo, slug, descripcion, autor, contenido, fecha_publicacion, creado_por, editado_por, tipo_publicacion, calificacion, pros, contras, es_estreno, seccion_estreno)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 $stmt = $con->prepare($sql);
 if (!$stmt) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'error' => 'Error de Base de Datos al preparar la noticia.']);
     exit;
 }
-$stmt->bind_param("sssissiii", $titulo, $slug, $descripcion, $autor, $contenido, $fecha_publicacion, $usuario_id, $usuario_id, $calificacion);
+$stmt->bind_param("sssissiissssis", $titulo, $slug, $descripcion, $autor, $contenido, $fecha_publicacion, $usuario_id, $usuario_id, $tipo_publicacion, $calificacion, $pros, $contras, $es_estreno, $seccion_estreno);
 if (!$stmt->execute()) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'error' => 'Error al guardar la noticia en Base de Datos.']);

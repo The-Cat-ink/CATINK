@@ -13,7 +13,7 @@ if (empty($ACL['editar'])) { header("Location: admin.php"); exit(); }
 if (!isset($_GET['id']))    { header("Location: contenidos.php"); exit; }
 $id = intval($_GET['id']);
 
-$stmt = $con->prepare("SELECT id, titulo, descripcion, contenido, fecha_publicacion, crop1, crop2, crop3, crop4, creado_por, editado_por, ultima_edicion, calificacion FROM noticias WHERE id = ?");
+$stmt = $con->prepare("SELECT id, titulo, descripcion, contenido, fecha_publicacion, crop1, crop2, crop3, crop4, creado_por, editado_por, ultima_edicion, tipo_publicacion, calificacion, pros, contras, es_estreno, seccion_estreno FROM noticias WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $noticia = $stmt->get_result()->fetch_assoc();
@@ -448,6 +448,63 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
                       placeholder="Resumen breve para redes sociales y buscadores..." required><?= htmlspecialchars($noticia['descripcion']) ?></textarea>
             <div class="cn-hint"><span id="descCount"><?= mb_strlen($noticia['descripcion']) ?></span>/150</div>
           </div>
+          <div class="cn-field">
+            <label for="tipo_publicacion">Tipo de Publicación</label>
+            <select class="cn-input" id="tipo_publicacion" name="tipo_publicacion" required>
+              <option value="noticia" <?= ($noticia['tipo_publicacion'] ?? 'noticia') === 'noticia' ? 'selected' : '' ?>>Noticia</option>
+              <option value="review" <?= ($noticia['tipo_publicacion'] ?? '') === 'review' ? 'selected' : '' ?>>Reseña / Review</option>
+            </select>
+          </div>
+          <div class="cn-field" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; margin-bottom: 10px;">
+            <div>
+              <label for="es_estreno" style="margin-bottom: 2px;">¿Es Próximo Estreno?</label>
+              <span style="font-size: 11px; color: var(--muted);">Marcar para mostrar en la sección de próximos estrenos</span>
+            </div>
+            <div class="cn-toggle-wrap">
+              <label class="cn-toggle">
+                <input type="checkbox" id="es_estreno" name="es_estreno" value="1" <?= ($noticia['es_estreno'] ?? 0) == 1 ? 'checked' : '' ?>>
+                <div class="cn-toggle-track"></div>
+                <div class="cn-toggle-thumb"></div>
+              </label>
+            </div>
+          </div>
+          <div class="cn-field" id="seccionEstrenoWrapper" style="display: none; margin-bottom: 15px;">
+            <label for="seccion_estreno">Sección de Estreno</label>
+            <select class="cn-input" id="seccion_estreno" name="seccion_estreno">
+              <option value="">-- Selecciona una sección --</option>
+              <option value="peliculas" <?= ($noticia['seccion_estreno'] ?? '') === 'peliculas' ? 'selected' : '' ?>>Películas y Series</option>
+              <option value="videojuegos" <?= ($noticia['seccion_estreno'] ?? '') === 'videojuegos' ? 'selected' : '' ?>>Videojuegos</option>
+              <option value="anime" <?= ($noticia['seccion_estreno'] ?? '') === 'anime' ? 'selected' : '' ?>>Anime</option>
+            </select>
+          </div>
+
+          <!-- Campos específicos para Review (ocultos por defecto si no es review) -->
+          <?php
+          $isReview = ($noticia['tipo_publicacion'] ?? '') === 'review';
+          $calificacion = $noticia['calificacion'] ?? '';
+          if ($calificacion === '') {
+              $calificacionRangeVal = '5.0';
+          } else {
+              $calificacionRangeVal = number_format((float)$calificacion, 1, '.', '');
+          }
+          ?>
+          <div id="reviewFieldsWrapper" style="display: <?= $isReview ? 'block' : 'none' ?>; border-top: 1px dashed var(--border); padding-top: 15px; margin-top: 15px;">
+            <div class="cn-field">
+              <label for="calificacion">Calificación (1.0 - 10.0)</label>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <input type="range" class="form-range" id="calificacionRange" min="1.0" max="10.0" step="0.1" value="<?= $calificacionRangeVal ?>" style="flex: 1; accent-color: var(--accent);">
+                <input type="number" class="cn-input" id="calificacion" name="calificacion" min="1.0" max="10.0" step="0.1" placeholder="5.0" value="<?= htmlspecialchars($calificacion) ?>" style="width: 80px; text-align: center; font-weight: 700;">
+              </div>
+            </div>
+            <div class="cn-field">
+              <label for="pros">Pros (Puntos Positivos - Uno por línea)</label>
+              <textarea class="cn-input" id="pros" name="pros" rows="4" placeholder="Ejemplo:&#10;Excelente historia&#10;Animación fluida&#10;Banda sonora increíble"><?= htmlspecialchars($noticia['pros'] ?? '') ?></textarea>
+            </div>
+            <div class="cn-field">
+              <label for="contras">Contras (Puntos Negativos - Uno por línea)</label>
+              <textarea class="cn-input" id="contras" name="contras" rows="4" placeholder="Ejemplo:&#10;Ritmo lento al inicio&#10;Desarrollo de personajes apresurado"><?= htmlspecialchars($noticia['contras'] ?? '') ?></textarea>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -832,6 +889,69 @@ const CATS_INICIALES     = <?= json_encode($categoriasSeleccionadas) ?>;
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
+  /* ── Review fields toggle & sync ── */
+  const tipoPublicacion = document.getElementById('tipo_publicacion');
+  const reviewFieldsWrapper = document.getElementById('reviewFieldsWrapper');
+  const calificacionRange = document.getElementById('calificacionRange');
+  const calificacionInput = document.getElementById('calificacion');
+
+  /* ── Estreno fields toggle ── */
+  const esEstrenoCheckbox = document.getElementById('es_estreno');
+  const seccionEstrenoWrapper = document.getElementById('seccionEstrenoWrapper');
+  const seccionEstrenoSelect = document.getElementById('seccion_estreno');
+
+  if (esEstrenoCheckbox && seccionEstrenoWrapper) {
+    const toggleEstrenoFields = () => {
+      if (esEstrenoCheckbox.checked) {
+        seccionEstrenoWrapper.style.display = 'block';
+        seccionEstrenoSelect.setAttribute('required', 'required');
+      } else {
+        seccionEstrenoWrapper.style.display = 'none';
+        seccionEstrenoSelect.removeAttribute('required');
+        seccionEstrenoSelect.value = '';
+      }
+    };
+    esEstrenoCheckbox.addEventListener('change', toggleEstrenoFields);
+    toggleEstrenoFields();
+  }
+
+  if (tipoPublicacion && reviewFieldsWrapper) {
+    const toggleReviewFields = () => {
+      if (tipoPublicacion.value === 'review') {
+        reviewFieldsWrapper.style.display = 'block';
+        if (!calificacionInput.value) {
+          calificacionInput.value = calificacionRange.value;
+        }
+      } else {
+        reviewFieldsWrapper.style.display = 'none';
+      }
+    };
+    
+    tipoPublicacion.addEventListener('change', toggleReviewFields);
+    // Don't override initial DB visibility if it's already review
+    toggleReviewFields();
+  }
+
+  if (calificacionRange && calificacionInput) {
+    calificacionRange.addEventListener('input', () => {
+      calificacionInput.value = calificacionRange.value;
+    });
+    calificacionInput.addEventListener('input', () => {
+      let val = parseFloat(calificacionInput.value);
+      if (isNaN(val)) return;
+      if (val < 1.0) val = 1.0;
+      if (val > 10.0) val = 10.0;
+      calificacionRange.value = val;
+    });
+    calificacionInput.addEventListener('blur', () => {
+      let val = parseFloat(calificacionInput.value);
+      if (isNaN(val) || val < 1.0 || val > 10.0) {
+        calificacionInput.value = parseFloat(calificacionRange.value).toFixed(1);
+      } else {
+        calificacionInput.value = val.toFixed(1);
+      }
+    });
+  }
 
   /* ── Collapse de secciones ── */
   document.querySelectorAll('.cn-section-header').forEach(header => {
@@ -1006,22 +1126,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const hiddenFecha  = document.getElementById('fecha_publicacion_hidden');
   const contenidoHid = document.getElementById('contenido');
   let _submitting = false;
-
   function validateForm() {
     const errors = [];
     if (!document.getElementById('titulo').value.trim())
       errors.push('Título de la noticia');
     if (!document.getElementById('descripcion').value.trim())
       errors.push('Descripción corta');
-    if (!document.getElementById('catChips').querySelectorAll('.cn-chip').length)
-      errors.push('Al menos una categoría');
     const editorEl  = document.querySelector('#editor .ql-editor');
     const editorHtml = editorEl ? editorEl.innerHTML.trim() : '';
     if (!editorHtml || editorHtml === '<p><br></p>' || editorHtml === '<p></p>')
       errors.push('Contenido del artículo');
     return errors;
   }
-
   function showToast(errors) {
     const toast = document.getElementById('cnToast');
     const list  = document.getElementById('cnToastList');

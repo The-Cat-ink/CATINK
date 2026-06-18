@@ -284,18 +284,93 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 echo $contenido
               ?>
             </div>
-            <?php if (!empty($noticia['calificacion'])): ?>
-            <div class="news-rating-block">
-              <span class="news-rating-label">Calificación de catink</span>
-              <div class="news-rating-stars">
-                <?php
-                $pawFilled = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1em" height="1em" fill="currentColor" aria-hidden="true"><ellipse cx="50" cy="72" rx="22" ry="17"/><ellipse cx="18" cy="47" rx="10" ry="14" transform="rotate(-25 18 47)"/><ellipse cx="36" cy="30" rx="10" ry="14"/><ellipse cx="64" cy="30" rx="10" ry="14"/><ellipse cx="82" cy="47" rx="10" ry="14" transform="rotate(25 82 47)"/></svg>';
-                $pawEmpty  = '<svg class="paw-empty" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="5" aria-hidden="true"><ellipse cx="50" cy="72" rx="22" ry="17"/><ellipse cx="18" cy="47" rx="10" ry="14" transform="rotate(-25 18 47)"/><ellipse cx="36" cy="30" rx="10" ry="14"/><ellipse cx="64" cy="30" rx="10" ry="14"/><ellipse cx="82" cy="47" rx="10" ry="14" transform="rotate(25 82 47)"/></svg>';
-                for ($s = 1; $s <= 5; $s++): echo $s <= $noticia['calificacion'] ? $pawFilled : $pawEmpty; endfor;
-                ?>
+
+            <?php if (($noticia['tipo_publicacion'] ?? '') === 'review'): ?>
+              <!-- Bloque del Veredicto / Review Card -->
+              <?php
+                $scoreVal = floatval($noticia['calificacion'] ?? 0.0);
+                if ($scoreVal >= 7.0) {
+                    $statusClass = 'status-green';
+                    if ($scoreVal >= 9.0) {
+                        $label = 'Excelente';
+                    } elseif ($scoreVal >= 8.0) {
+                        $label = 'Muy Bueno';
+                    } else {
+                        $label = 'Bueno';
+                    }
+                } elseif ($scoreVal >= 5.0) {
+                    $label = 'Regular';
+                    $statusClass = 'status-yellow';
+                } else {
+                    $label = 'Malo';
+                    $statusClass = 'status-red';
+                }
+              ?>
+              <div class="review-verdict-card">
+                <div class="review-score-section">
+                  <div class="review-score-circle-lg <?= $statusClass ?>">
+                    <span class="review-score-num"><?= number_format($scoreVal, 1, '.', '') ?></span>
+                    <span class="review-score-max">de 10</span>
+                  </div>
+                  <div class="review-verdict-label <?= $statusClass ?>-text"><?= $label ?></div>
+                </div>
+
+                <div class="review-details-section">
+                  <!-- PROS -->
+                  <div class="review-list-box">
+                    <div class="review-list-title pros-title">
+                      <i class="bi bi-plus-circle-fill"></i> Lo que nos gustó
+                    </div>
+                    <ul class="review-items-list">
+                      <?php
+                        $prosText = trim($noticia['pros'] ?? '');
+                        if (!empty($prosText)):
+                          $prosLines = explode("\n", $prosText);
+                          foreach ($prosLines as $line):
+                            $line = trim($line);
+                            if (empty($line)) continue;
+                      ?>
+                            <li class="review-item-li pro-item">
+                              <i class="bi bi-check-circle-fill"></i>
+                              <span><?= htmlspecialchars($line) ?></span>
+                            </li>
+                      <?php
+                          endforeach;
+                        else:
+                      ?>
+                          <li class="review-item-li" style="color: var(--muted); font-style: italic;">Sin puntos positivos destacados</li>
+                      <?php endif; ?>
+                    </ul>
+                  </div>
+
+                  <!-- CONTRAS -->
+                  <div class="review-list-box">
+                    <div class="review-list-title contras-title">
+                      <i class="bi bi-dash-circle-fill"></i> Lo que no nos gustó
+                    </div>
+                    <ul class="review-items-list">
+                      <?php
+                        $contrasText = trim($noticia['contras'] ?? '');
+                        if (!empty($contrasText)):
+                          $contrasLines = explode("\n", $contrasText);
+                          foreach ($contrasLines as $line):
+                            $line = trim($line);
+                            if (empty($line)) continue;
+                      ?>
+                            <li class="review-item-li contra-item">
+                              <i class="bi bi-x-circle-fill"></i>
+                              <span><?= htmlspecialchars($line) ?></span>
+                            </li>
+                      <?php
+                          endforeach;
+                        else:
+                      ?>
+                          <li class="review-item-li" style="color: var(--muted); font-style: italic;">Sin puntos negativos destacados</li>
+                      <?php endif; ?>
+                    </ul>
+                  </div>
+                </div>
               </div>
-              <span class="news-rating-text"><?= (int)$noticia['calificacion'] ?> de 5</span>
-            </div>
             <?php endif; ?>
             <hr>
             <h2 align="center"><i class="bi bi-share-fill"></i> Compartir</h2>
