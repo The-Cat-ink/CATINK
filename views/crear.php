@@ -1308,19 +1308,23 @@ function openCrop(num) {
 function initCropper(num) {
   const cropImg = document.getElementById('cropImg');
   const cropArea = document.querySelector('.crop-area');
-  // Ajustar altura del área al ratio real de la imagen (sin zona negra)
   const maxW = cropArea.clientWidth || 640;
   const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
-  cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
+
+  if (num === 2) {
+    cropArea.style.height = Math.round(maxW * 6 / 21) + 'px';
+  } else {
+    cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
+  }
 
   const cropRatioOverride = { 2: 21 / 6, 3: 16 / 9, 4: 21 / 9 };
   const effectiveRatio = cropRatioOverride[num] ?? CROP_RATIOS[num];
 
   cropperInstance = new Cropper(cropImg, {
     aspectRatio: effectiveRatio,
-    viewMode: 1,
-    autoCropArea: 0.98,
-    movable: false,
+    viewMode: num === 2 ? 3 : 1,
+    autoCropArea: num === 2 ? 1 : 0.98,
+    movable: num === 2,
     zoomable: false,
     cropBoxResizable: true,
     dragMode: 'move',
@@ -1328,7 +1332,17 @@ function initCropper(num) {
     guides: true,
     background: false,
     ready() {
-      if (num === 2 || num === 3 || num === 4) {
+      if (num === 2) {
+        if (zoneCropData[2]) {
+          cropperInstance.setData(zoneCropData[2]);
+        } else {
+          // Posicionar la imagen desde arriba (no centrada) para no cortar el tope
+          const cv = cropperInstance.getCanvasData();
+          cropperInstance.setCanvasData({ ...cv, top: 0 });
+          const cd = cropperInstance.getContainerData();
+          cropperInstance.setCropBoxData({ left: 0, top: 0, width: cd.width, height: cd.height });
+        }
+      } else if (num === 3 || num === 4) {
         if (zoneCropData[num]) {
           cropperInstance.setData(zoneCropData[num]);
         } else {
@@ -1348,7 +1362,7 @@ function initCropper(num) {
             width:  cbW,
             height: cbH,
             left:   leftOffset,
-            top:    imgData.top  + (imgData.height - cbH) / 2
+            top:    imgData.top + (imgData.height - cbH) / 2
           });
         }
       }
