@@ -4206,6 +4206,11 @@ body, .nav-link, .btn, .card, .site-main {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 16px;
+  align-items: stretch;
+  aspect-ratio: 7/2;
+}
+.top-row-one .top-card {
+  aspect-ratio: unset;
 }
 .top-row-three {
   display: grid;
@@ -4229,7 +4234,7 @@ body, .nav-link, .btn, .card, .site-main {
   aspect-ratio: 16/10;
 }
 .top-card.card-width-2-3 {
-  aspect-ratio: 32/10;
+  aspect-ratio: 21/9;
 }
 .top-card:hover {
   transform: translateY(-4px);
@@ -5232,15 +5237,14 @@ body, .nav-link, .btn, .card, .site-main {
 
 /* ── REVIEW VERDICT CARD (SISTEMA DE RESEÑAS) ── */
 .review-verdict-card {
-  background: #121212;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 30px;
+  padding: 28px;
   margin: 40px 0;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
   display: grid;
-  grid-template-columns: 200px 1fr;
-  gap: 30px;
+  grid-template-columns: 170px 1fr;
+  gap: 28px;
   position: relative;
   overflow: hidden;
 }
@@ -5252,7 +5256,7 @@ body, .nav-link, .btn, .card, .site-main {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(239, 51, 99, 0.05) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(239, 51, 99, 0.07) 0%, transparent 65%);
   pointer-events: none;
   z-index: 1;
 }
@@ -5264,124 +5268,96 @@ body, .nav-link, .btn, .card, .site-main {
   justify-content: center;
   text-align: center;
   z-index: 2;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  padding-right: 30px;
+  border-right: 1px solid var(--border);
+  padding-right: 28px;
 }
 
-/* Score display with neon radial gradient circle */
 .review-score-circle-lg {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 115px;
+  height: 115px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(239, 51, 99, 0.15) 0%, rgba(20, 20, 25, 0.9) 100%);
-  border: 4px solid var(--accent-fuchsia);
+  background: radial-gradient(circle, rgba(239, 51, 99, 0.15) 0%, transparent 70%);
+  border: 3px solid var(--accent);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 25px rgba(239, 51, 99, 0.35);
-  margin-bottom: 15px;
-  transition: transform 0.3s ease;
+  box-shadow: 0 0 20px rgba(239, 51, 99, 0.3);
+  margin-bottom: 14px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .review-score-circle-lg:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 35px rgba(239, 51, 99, 0.5);
+  box-shadow: 0 0 30px rgba(239, 51, 99, 0.5);
 }
 
 .review-score-num {
-  font-size: 2.8rem;
+  font-size: 2.6rem;
   font-weight: 900;
   color: #fff;
   line-height: 1;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .review-score-max {
-  font-size: 0.8rem;
-  color: #fff;
-  font-weight: 700;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 600;
   text-transform: uppercase;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 .review-verdict-label {
-  font-size: 1.1rem;
-  font-weight: 850;
+  font-size: 0.95rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: var(--accent-fuchsia);
+  color: var(--accent);
 }
 
-/* Color rules by score status */
-.review-score-circle-lg.status-green {
-  border-color: #4ade80;
-  background: radial-gradient(circle, rgba(74, 222, 128, 0.15) 0%, rgba(20, 20, 25, 0.9) 100%);
-  box-shadow: 0 0 25px rgba(74, 222, 128, 0.35);
-}
-.review-score-circle-lg.status-green:hover {
-  box-shadow: 0 0 35px rgba(74, 222, 128, 0.5);
-}
-.review-verdict-label.status-green-text {
-  color: #4ade80;
-}
+/* Unificar todas las variantes de status al color del sitio */
+.review-score-circle-lg.status-green,
+.review-score-circle-lg.status-yellow,
+.review-score-circle-lg.status-red { /* hereda estilos base — sin override de color */ }
 
-.review-score-circle-lg.status-yellow {
-  border-color: #facc15;
-  background: radial-gradient(circle, rgba(250, 204, 21, 0.15) 0%, rgba(20, 20, 25, 0.9) 100%);
-  box-shadow: 0 0 25px rgba(250, 204, 21, 0.35);
-}
-.review-score-circle-lg.status-yellow:hover {
-  box-shadow: 0 0 35px rgba(250, 204, 21, 0.5);
-}
-.review-verdict-label.status-yellow-text {
-  color: #facc15;
-}
-
-.review-score-circle-lg.status-red {
-  border-color: #f87171;
-  background: radial-gradient(circle, rgba(248, 113, 113, 0.15) 0%, rgba(20, 20, 25, 0.9) 100%);
-  box-shadow: 0 0 25px rgba(248, 113, 113, 0.35);
-}
-.review-score-circle-lg.status-red:hover {
-  box-shadow: 0 0 35px rgba(248, 113, 113, 0.5);
-}
+.review-verdict-label.status-green-text,
+.review-verdict-label.status-yellow-text,
 .review-verdict-label.status-red-text {
-  color: #f87171;
+  color: var(--accent);
 }
 
 .review-details-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 25px;
+  gap: 16px;
   z-index: 2;
 }
 
 .review-list-box {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(239, 51, 99, 0.04);
   border-radius: 10px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border: 1px solid var(--border);
 }
 
 .review-list-title {
-  font-size: 0.95rem;
-  font-weight: 800;
+  font-size: 0.8rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .review-list-title.pros-title {
-  color: #4ade80; /* emerald/green accent */
+  color: #34d399;
 }
 
 .review-list-title.contras-title {
-  color: #f87171; /* red accent */
+  color: var(--accent);
 }
 
 .review-items-list {
@@ -5390,29 +5366,30 @@ body, .nav-link, .btn, .card, .site-main {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
 }
 
 .review-item-li {
-  font-size: 0.88rem;
+  font-size: 0.87rem;
   line-height: 1.4;
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  color: rgba(255, 255, 255, 0.9);
+  gap: 9px;
+  color: var(--text);
 }
 
 .review-item-li i {
-  font-size: 1.1rem;
-  margin-top: 1px;
+  font-size: 1rem;
+  margin-top: 2px;
+  flex-shrink: 0;
 }
 
 .review-item-li.pro-item i {
-  color: #4ade80;
+  color: #34d399;
 }
 
 .review-item-li.contra-item i {
-  color: #f87171;
+  color: var(--accent);
 }
 
 @media (max-width: 768px) {
@@ -5423,12 +5400,12 @@ body, .nav-link, .btn, .card, .site-main {
   }
   .review-score-section {
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--border);
     padding-right: 0;
     padding-bottom: 20px;
   }
   .review-details-section {
     grid-template-columns: 1fr;
-    gap: 15px;
+    gap: 12px;
   }
 }

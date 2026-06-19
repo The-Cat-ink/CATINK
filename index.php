@@ -253,7 +253,7 @@ function tiempoRelativo($fecha) {
             ?>
                 <div class="top-card card-width-2-3" data-url="<?= $url ?>">
                     <div class="top-card-img-wrapper">
-                        <img src="<?= img([$r['crop2'], $r['crop1']]) ?>" alt="">
+                        <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="">
                         <!-- Círculos superpuestos -->
                         <div class="card-float-circles">
                             <div class="float-circle"><img src="<?= img([$r['crop3'], $r['crop1']]) ?>"></div>
@@ -387,7 +387,7 @@ function tiempoRelativo($fecha) {
                             <?php if ($index === 0): ?>
                                 <!-- Puesto 1: Card Grande con Borde Fuchsia -->
                                 <div class="ranking-item-hero" data-url="<?= $url ?>">
-                                    <img src="<?= img([$r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-hero-img">
+                                    <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-hero-img">
                                     <div class="ranking-number-overlay">1</div>
                                     <div class="ranking-hero-overlay">
                                         <h4 class="ranking-hero-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
@@ -400,7 +400,7 @@ function tiempoRelativo($fecha) {
                                 <!-- Puestos 2-5: Card con Imagen Completa y Número Gigante -->
                                 <div class="ranking-item-sub" data-url="<?= $url ?>">
                                     <div class="ranking-sub-card">
-                                        <img src="<?= img([$r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-sub-img">
+                                        <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-sub-img">
                                         <div class="ranking-number-overlay"><?= $index + 1 ?></div>
                                         <div class="ranking-sub-overlay">
                                             <h4 class="ranking-sub-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
