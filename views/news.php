@@ -223,11 +223,13 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
               $img = imageUrl($imgSrc);
             ?>
             <img src="<?= htmlspecialchars($img) ?>" alt="" class="img-titular">
+            
             <!-- Categorías -->
             <?php foreach ($cats as $cat): ?>
               <a href="<?= categoryUrl($cat) ?>" class="news-tag"><?= htmlspecialchars($cat) ?></a>
             <?php endforeach; ?>
             <h1><?= htmlspecialchars($noticia['titulo']) ?></h1>
+
             <p class="descripcion"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
             <p class="meta">
               Por <a href="<?= authorUrl($noticia['autor_id'] ?? 0) ?>" style="color: var(--accent); text-decoration: none; font-weight: 700;"><?= htmlspecialchars($noticia['autor_nombre'] ?? 'Desconocido') ?></a> —
@@ -243,16 +245,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 </a>
               <?php endif; ?>
             </div>
-            <!-- Contenido completo de la noticia -->
-            <div class="post-content">
-              <?php
-                $contenido=$noticia['contenido'];
-                $contenido=procesarEmbedsSociales($contenido);
-                $contenido=bloquearEmbeds($contenido);
-                echo $contenido
-              ?>
-            </div>
-            
+
             <?php if (($noticia['tipo_publicacion'] ?? '') === 'review'): ?>
               <!-- Bloque del Veredicto / Review Card -->
               <?php
@@ -340,6 +333,15 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 </div>
               </div>
             <?php endif; ?>
+            <!-- Contenido completo de la noticia -->
+            <div class="post-content">
+              <?php
+                $contenido=$noticia['contenido'];
+                $contenido=procesarEmbedsSociales($contenido);
+                $contenido=bloquearEmbeds($contenido);
+                echo $contenido
+              ?>
+            </div>
             <hr>
             <h2 align="center"><i class="bi bi-share-fill"></i> Compartir</h2>
             <div class="share-bar">

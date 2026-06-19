@@ -14,12 +14,13 @@ $archivoActual = basename($_SERVER['PHP_SELF'], ".php");
 $mapVistaModulo = [
     'cats' => 'categorias',
     'contenidos' => 'noticias',
+    'recomendados' => 'noticias',
+    'esperamos' => 'noticias',
     'publicidad' => 'publicidad',
     'suscripciones' => 'suscripciones',
     'usuarios' => 'usuarios',
     'correos' => 'correos',
     'videos' => 'videos'
-                                                                                                                  
 ];
 $superadmin = $_SESSION['superadmin'] ?? false;
 // cargar acl globalmente
@@ -123,6 +124,16 @@ $_SESSION['id_u'] = $fila['id_u'];
             <li class="sidebar-menu-item">
                 <a href="./contenidos.php" class="sidebar-menu-link" data-tooltip="Contenido">
                     <i class="bi bi-newspaper"></i> <span class="sb-label">Contenido</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="./recomendados.php" class="sidebar-menu-link" data-tooltip="Recomendados">
+                    <i class="bi bi-star"></i> <span class="sb-label">Recomendados</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="./esperamos.php" class="sidebar-menu-link" data-tooltip="Lo más Esperado">
+                    <i class="bi bi-hourglass-split"></i> <span class="sb-label">Lo más Esperado</span>
                 </a>
             </li>
         <?php endif; ?>

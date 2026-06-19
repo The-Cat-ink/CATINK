@@ -796,6 +796,26 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .align-items-center { align-items: center; }
 .d-flex { display: flex; }
 .gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 1rem !important; }
+.gap-4 { gap: 1.5rem !important; }
+.flex-column { flex-direction: column !important; }
+.flex-row { flex-direction: row !important; }
+.flex-wrap { flex-wrap: wrap !important; }
+.mb-4 { margin-bottom: 1.5rem !important; }
+.w-100 { width: 100% !important; }
+.shadow-sm { box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important; }
+.flex-grow-1 { flex-grow: 1 !important; }
+.flex-shrink-0 { flex-shrink: 0 !important; }
+.justify-content-between { justify-content: space-between !important; }
+.justify-content-center { justify-content: center !important; }
+.justify-content-start { justify-content: flex-start !important; }
+.justify-content-end { justify-content: flex-end !important; }
+.p-2 { padding: 0.5rem !important; }
+.p-3 { padding: 1rem !important; }
+.py-4 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+.py-3 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+.border { border: 1px solid var(--border) !important; }
+.rounded { border-radius: 0.375rem !important; }
 /* List group minimal */
 .list-group { list-style: none; padding: 0; margin: 0; }
 .list-group-flush { border-top: none; }
@@ -4470,7 +4490,7 @@ body, .nav-link, .btn, .card, .site-main {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: 680px;
+  max-height: 420px;
   overflow-y: auto;
   padding-right: 8px;
   scrollbar-width: thin;
@@ -5088,6 +5108,7 @@ body, .nav-link, .btn, .card, .site-main {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  container-type: inline-size;
 }
 .sidebar-ranking-list-container::after {
   content: '';
@@ -5103,8 +5124,8 @@ body, .nav-link, .btn, .card, .site-main {
 .sidebar-ranking-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  flex-grow: 1;
+  gap: 10px;
+  max-height: 660px;
   overflow-y: auto;
   min-height: 0;
   padding-right: 8px;
@@ -5116,13 +5137,14 @@ body, .nav-link, .btn, .card, .site-main {
 .ranking-item-hero {
   position: relative;
   width: 100%;
-  aspect-ratio: 16/9;
+  height: 120px;
   border-radius: 8px;
   overflow: hidden;
   border: 2px solid var(--accent-fuchsia);
   box-shadow: 0 4px 15px rgba(239, 51, 99, 0.25);
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  flex-shrink: 0 !important;
 }
 .ranking-item-hero:hover {
   transform: translateY(-2px);
@@ -5155,12 +5177,13 @@ body, .nav-link, .btn, .card, .site-main {
 /* Puestos 2-5 */
 .ranking-item-sub {
   width: 100%;
-  aspect-ratio: 16/9;
+  height: 85px;
   border-radius: 8px;
   overflow: hidden;
   position: relative;
   cursor: pointer;
   transition: transform 0.2s;
+  flex-shrink: 0 !important;
 }
 .ranking-item-sub:hover {
   transform: translateY(-2px);
