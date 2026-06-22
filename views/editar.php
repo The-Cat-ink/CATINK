@@ -597,9 +597,9 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
             </div>
           </div>
 
-          <!-- Paisaje 21:9 (cards destacadas: estrenos, reviews) -->
+          <!-- Imagen centrada 21:9 (cards destacadas: estrenos, reviews) -->
           <div style="margin-bottom:12px;">
-            <p class="cn-zone-label">Paisaje <span style="text-transform:none;font-size:10px;font-weight:400;color:var(--muted)">(21:9 — cards destacadas de estrenos y reviews)</span></p>
+            <p class="cn-zone-label">Imagen centrada <span style="text-transform:none;font-size:10px;font-weight:400;color:var(--muted)">(21:9)</span></p>
             <div class="upload-zone cn-zone-paisaje" id="zone4" onclick="openCrop(4)">
               <div class="zone-overlay"><span>Cambiar</span></div>
               <i class="bi bi-layout-text-window cn-zone-icon"></i>
@@ -1175,7 +1175,7 @@ const CROP_TITLES = {
   1: 'Recortar — Imagen Original (1:1)',
   2: 'Recortar — Banner (21:6)',
   3: 'Recortar — Miniatura (16:9)',
-  4: 'Recortar — Paisaje (21:9)'
+  4: 'Recortar — Imagen centrada (21:9)'
 };
 let activeCrop = null, cropperInstance = null;
 const zoneSources = {};

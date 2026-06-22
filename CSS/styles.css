@@ -4224,7 +4224,7 @@ body, .nav-link, .btn, .card, .site-main {
 }
 .top-row-one {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 21fr 16fr;
   gap: 16px;
 }
 .top-row-three {
@@ -4246,10 +4246,15 @@ body, .nav-link, .btn, .card, .site-main {
   box-shadow: 0 4px 12px var(--border);
   cursor: pointer;
   transition: transform 0.25s, box-shadow 0.25s;
-  aspect-ratio: 16/10;
+  aspect-ratio: 16/9;
 }
+/* Card ancha: 21/9 — muestra crop4 completo */
 .top-card.card-width-2-3 {
-  aspect-ratio: 32/10;
+  aspect-ratio: 21/9;
+}
+/* Card lateral fila 1: 16/9 — muestra crop3 completo, misma altura que la ancha */
+.top-row-one .top-card:not(.card-width-2-3) {
+  aspect-ratio: 16/9;
 }
 .top-card:hover {
   transform: translateY(-4px);
@@ -4264,6 +4269,7 @@ body, .nav-link, .btn, .card, .site-main {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
 }
 .top-card-overlay {
@@ -5334,16 +5340,37 @@ body, .nav-link, .btn, .card, .site-main {
   color: var(--accent);
 }
 
-/* Unificar todas las variantes de status al color del sitio */
-.review-score-circle-lg.status-green,
-.review-score-circle-lg.status-yellow,
-.review-score-circle-lg.status-red { /* hereda estilos base — sin override de color */ }
-
-.review-verdict-label.status-green-text,
-.review-verdict-label.status-yellow-text,
-.review-verdict-label.status-red-text {
-  color: var(--accent);
+/* Colores por calificación */
+.review-score-circle-lg.status-green {
+  border-color: #4caf50;
+  background: radial-gradient(circle, rgba(76, 175, 80, 0.15) 0%, transparent 70%);
+  box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
 }
+.review-score-circle-lg.status-green:hover {
+  box-shadow: 0 0 30px rgba(76, 175, 80, 0.5);
+}
+
+.review-score-circle-lg.status-yellow {
+  border-color: #ffc107;
+  background: radial-gradient(circle, rgba(255, 193, 7, 0.15) 0%, transparent 70%);
+  box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
+}
+.review-score-circle-lg.status-yellow:hover {
+  box-shadow: 0 0 30px rgba(255, 193, 7, 0.5);
+}
+
+.review-score-circle-lg.status-red {
+  border-color: #f44336;
+  background: radial-gradient(circle, rgba(244, 67, 54, 0.15) 0%, transparent 70%);
+  box-shadow: 0 0 20px rgba(244, 67, 54, 0.3);
+}
+.review-score-circle-lg.status-red:hover {
+  box-shadow: 0 0 30px rgba(244, 67, 54, 0.5);
+}
+
+.review-verdict-label.status-green-text { color: #4caf50; }
+.review-verdict-label.status-yellow-text { color: #ffc107; }
+.review-verdict-label.status-red-text { color: #f44336; }
 
 .review-details-section {
   display: grid;

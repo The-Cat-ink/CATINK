@@ -639,7 +639,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
             </div>
           </div>
 
-          <!-- Miniatura (se llena automáticamente al subir el banner) -->
+          <!-- Miniatura -->
           <div style="margin-bottom:14px;">
             <p class="cn-zone-label">Miniatura <span style="text-transform:none;font-size:10px;font-weight:400;color:var(--muted)">(se auto-genera del banner — clic para cambiar)</span></p>
             <div class="upload-zone cn-zone-mini" id="zone3" onclick="openCrop(3)">
