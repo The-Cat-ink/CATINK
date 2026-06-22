@@ -4206,11 +4206,6 @@ body, .nav-link, .btn, .card, .site-main {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 16px;
-  align-items: stretch;
-  aspect-ratio: 7/2;
-}
-.top-row-one .top-card {
-  aspect-ratio: unset;
 }
 .top-row-three {
   display: grid;
@@ -4234,7 +4229,7 @@ body, .nav-link, .btn, .card, .site-main {
   aspect-ratio: 16/10;
 }
 .top-card.card-width-2-3 {
-  aspect-ratio: 21/9;
+  aspect-ratio: 32/10;
 }
 .top-card:hover {
   transform: translateY(-4px);

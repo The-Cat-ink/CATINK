@@ -253,7 +253,7 @@ function tiempoRelativo($fecha) {
             ?>
                 <div class="top-card card-width-2-3" data-url="<?= $url ?>">
                     <div class="top-card-img-wrapper">
-                        <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="">
+                        <img src="<?= img([$r['crop2'], $r['crop1']]) ?>" alt="">
                         <!-- Círculos superpuestos -->
                         <div class="card-float-circles">
                             <div class="float-circle"><img src="<?= img([$r['crop3'], $r['crop1']]) ?>"></div>
