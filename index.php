@@ -39,7 +39,8 @@ $feedNoticias = $stmtFeed->get_result()->fetch_all(MYSQLI_ASSOC);
 // ==============================
 $stmtGlobal = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.crop4, n.fecha_publicacion AS fecha,
-           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias,
+           n.likes, n.vistas, n.tipo_publicacion, n.calificacion, u.nombre AS nombre_u,
+           GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias,
            n.es_estreno, n.seccion_estreno
     FROM noticias n
     INNER JOIN usuarios u ON n.autor = u.id_u
@@ -75,18 +76,47 @@ function esReview($n) {
     return false;
 }
 
-// 3. Nuestras Reviews
-$reviews = array_filter($noticiasGlobales, 'esReview');
-if (count($reviews) < 4) {
-    $reviews = array_slice($noticiasGlobales, 12, 4);
-} else {
-    $reviews = array_slice($reviews, 0, 4);
-}
+// 3. Nuestras Reviews — query directa para siempre mostrar las más recientes
+$stmtReviews = $con->prepare("
+    SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3,
+           n.fecha_publicacion AS fecha, n.likes, n.vistas, n.tipo_publicacion,
+           n.calificacion, u.nombre AS nombre_u,
+           GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+    FROM noticias n
+    INNER JOIN usuarios u ON n.autor = u.id_u
+    LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
+    LEFT JOIN categorias c ON nc.categoria_id = c.id_c
+    WHERE n.fecha_publicacion <= NOW()
+      AND n.tipo_publicacion = 'review'
+    GROUP BY n.id
+    ORDER BY n.fecha_publicacion DESC
+    LIMIT 4;
+");
+$stmtReviews->execute();
+$reviews = $stmtReviews->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// 4. Lo que más te Recomendamos
-$recomendamos = $noticiasGlobales;
-usort($recomendamos, fn($a, $b) => ($b['likes'] * 3 + $b['vistas']) - ($a['likes'] * 3 + $a['vistas']));
-$recomendamos = array_slice($recomendamos, 5, 5);
+// 4. Lo que más te Recomendamos (Curados manualmente por el administrador)
+$stmtRec = $con->prepare("
+    SELECT r.id AS recomendado_id, r.noticia_id,
+           COALESCE(r.titulo, n.titulo) AS titulo,
+           n.slug, n.descripcion,
+           COALESCE(r.imagen, n.crop1) AS crop1,
+           COALESCE(r.imagen, n.crop2) AS crop2,
+           COALESCE(r.imagen, n.crop3) AS crop3,
+           n.fecha_publicacion AS fecha,
+           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+    FROM recomendados r
+    LEFT JOIN noticias n ON r.noticia_id = n.id
+    LEFT JOIN usuarios u ON n.autor = u.id_u
+    LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
+    LEFT JOIN categorias c ON nc.categoria_id = c.id_c
+    WHERE (r.noticia_id IS NULL OR n.fecha_publicacion <= NOW())
+    GROUP BY r.id
+    ORDER BY r.orden ASC
+    LIMIT 10;
+");
+$stmtRec->execute();
+$recomendamos = $stmtRec->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // 5. Próximos Estrenos
 $estrenosPelis = null;
@@ -106,8 +136,28 @@ foreach ($noticiasGlobales as $n) {
     }
 }
 
-// 6. Lo que más esperamos
-$esperamos = array_slice($noticiasGlobales, 8, 5);
+// 6. Lo que más esperamos (Curados manualmente por el administrador)
+$stmtEsp = $con->prepare("
+    SELECT e.id AS esperado_id, e.noticia_id,
+           COALESCE(e.titulo, n.titulo) AS titulo,
+           n.slug, n.descripcion,
+           COALESCE(e.imagen, n.crop1) AS crop1,
+           COALESCE(e.imagen, n.crop2) AS crop2,
+           COALESCE(e.imagen, n.crop3) AS crop3,
+           n.fecha_publicacion AS fecha,
+           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+    FROM esperamos e
+    LEFT JOIN noticias n ON e.noticia_id = n.id
+    LEFT JOIN usuarios u ON n.autor = u.id_u
+    LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
+    LEFT JOIN categorias c ON nc.categoria_id = c.id_c
+    WHERE (e.noticia_id IS NULL OR n.fecha_publicacion <= NOW())
+    GROUP BY e.id
+    ORDER BY e.orden ASC
+    LIMIT 10;
+");
+$stmtEsp->execute();
+$esperamos = $stmtEsp->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // 7. Lo más debatido
 $stmtCom = $con->prepare("
@@ -380,8 +430,8 @@ function tiempoRelativo($fecha) {
                 <div class="sidebar-ranking-list-container">
                     <div class="sidebar-ranking-list">
                         <?php foreach ($recomendamos as $index => $r): 
-                            $url = newsUrlFromRow($r);
-                            $mockScores = [4.5, 4.0, 3.5, 3.0, 2.5];
+                            $url = empty($r['noticia_id']) ? '#' : newsUrlFromRow($r);
+                            $mockScores = [9.8, 9.5, 9.2, 9.0, 8.8, 8.5, 8.2, 8.0, 7.8, 7.5];
                             $score = $mockScores[$index] ?? null;
                         ?>
                             <?php if ($index === 0): ?>
@@ -542,7 +592,7 @@ function tiempoRelativo($fecha) {
                 <div class="sidebar-ranking-list-container">
                     <div class="sidebar-ranking-list">
                         <?php foreach ($esperamos as $index => $r): 
-                            $url = newsUrlFromRow($r);
+                            $url = empty($r['noticia_id']) ? '#' : newsUrlFromRow($r);
                         ?>
                             <?php if ($index === 0): ?>
                                 <!-- Puesto 1: Card Grande con Borde Fuchsia -->
