@@ -57,20 +57,9 @@ $noticiasGlobales = $stmtGlobal->get_result()->fetch_all(MYSQLI_ASSOC);
 // 1. Slider / Hero
 $slider = array_slice($noticiasGlobales, 0, 5);
 
-// 2. Top Semanal — artículos de los últimos 7 días por vistas (recencia como desempate)
-$unaSemanAtras = date('Y-m-d H:i:s', strtotime('-7 days'));
-$topSemanal = array_filter($noticiasGlobales, fn($n) => ($n['fecha'] ?? '') >= $unaSemanAtras);
-usort($topSemanal, function($a, $b) {
-    if ($b['vistas'] !== $a['vistas']) return $b['vistas'] - $a['vistas'];
-    return strcmp($b['fecha'] ?? '', $a['fecha'] ?? '');
-});
-$topSemanal = array_values($topSemanal);
-// Si esta semana tiene menos de 5, completar con los más recientes del pool global
-if (count($topSemanal) < 5) {
-    $idsTop = array_column($topSemanal, 'id');
-    $resto  = array_filter($noticiasGlobales, fn($n) => !in_array($n['id'], $idsTop));
-    $topSemanal = array_merge($topSemanal, array_values($resto));
-}
+// 2. Top Semanal
+$topSemanal = $noticiasGlobales;
+usort($topSemanal, fn($a, $b) => $b['vistas'] - $a['vistas']);
 $topSemanal = array_slice($topSemanal, 0, 5);
 
 // Helper para clasificar reseñas
