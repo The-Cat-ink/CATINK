@@ -104,7 +104,8 @@ $stmtRec = $con->prepare("
            COALESCE(r.imagen, n.crop2) AS crop2,
            COALESCE(r.imagen, n.crop3) AS crop3,
            n.fecha_publicacion AS fecha,
-           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias,
+           n.calificacion
     FROM recomendados r
     LEFT JOIN noticias n ON r.noticia_id = n.id
     LEFT JOIN usuarios u ON n.autor = u.id_u
@@ -431,8 +432,7 @@ function tiempoRelativo($fecha) {
                     <div class="sidebar-ranking-list">
                         <?php foreach ($recomendamos as $index => $r): 
                             $url = empty($r['noticia_id']) ? '#' : newsUrlFromRow($r);
-                            $mockScores = [9.8, 9.5, 9.2, 9.0, 8.8, 8.5, 8.2, 8.0, 7.8, 7.5];
-                            $score = $mockScores[$index] ?? null;
+                            $score = (!empty($r['calificacion']) && floatval($r['calificacion']) > 0) ? floatval($r['calificacion']) : null;
                         ?>
                             <div class="ranking-item-hero" data-url="<?= $url ?>">
                                 <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="" class="ranking-hero-img">
@@ -440,7 +440,7 @@ function tiempoRelativo($fecha) {
                                 <div class="ranking-hero-overlay">
                                     <h4 class="ranking-hero-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
                                 </div>
-                                <?php if ($score): ?>
+                                <?php if ($score !== null): ?>
                                     <div class="ranking-score-circle"><?= number_format($score, 1) ?></div>
                                 <?php endif; ?>
                             </div>
