@@ -198,12 +198,15 @@ ALTER TABLE `logos_marcas` ADD COLUMN IF NOT EXISTS `orden` INT NOT NULL DEFAULT
 SET @r := 0;
 UPDATE `logos_marcas` SET `orden` = (@r := @r + 1) ORDER BY `creado` ASC;
 
--- 12. Agregar columna valor a la tabla secciones y setear default para videos
+-- 12. Calificación editorial de noticias (1-5 estrellas, asignada al crear/editar)
+ALTER TABLE `noticias` ADD COLUMN IF NOT EXISTS `calificacion` TINYINT UNSIGNED DEFAULT NULL COMMENT '1-5 estrellas — calificación editorial';
+
+-- 13. Agregar columna valor a la tabla secciones y setear default para videos
 ALTER TABLE `secciones` ADD COLUMN IF NOT EXISTS `valor` VARCHAR(255) DEFAULT NULL;
 UPDATE `secciones` SET `valor` = 'PLMC9KNkIncKvYin_USF1QeqG50KB1K1uD' WHERE `nombre` = 'videos' AND `valor` IS NULL;
 
 -- 13. Columnas para el sistema de reseñas (Reviews)
-ALTER TABLE `noticias` 
+ALTER TABLE `noticias`
 ADD COLUMN IF NOT EXISTS `tipo_publicacion` ENUM('noticia', 'review') NOT NULL DEFAULT 'noticia' AFTER `id`,
 ADD COLUMN IF NOT EXISTS `calificacion` DECIMAL(3,1) DEFAULT NULL AFTER `tipo_publicacion`,
 ADD COLUMN IF NOT EXISTS `pros` TEXT DEFAULT NULL AFTER `calificacion`,
@@ -213,3 +216,13 @@ ADD COLUMN IF NOT EXISTS `contras` TEXT DEFAULT NULL AFTER `pros`;
 ALTER TABLE `noticias`
 ADD COLUMN IF NOT EXISTS `es_estreno` TINYINT(1) NOT NULL DEFAULT 0 AFTER `contras`,
 ADD COLUMN IF NOT EXISTS `seccion_estreno` VARCHAR(50) DEFAULT NULL AFTER `es_estreno`;
+
+-- 15. Imagen paisaje (21:9) — formato intermedio entre banner y miniatura, usado en cards destacadas
+ALTER TABLE `noticias` ADD COLUMN IF NOT EXISTS `crop4` TEXT DEFAULT NULL COMMENT '21:9 paisaje — card destacada (estreno, reviews)';
+
+-- 16. Orden de categorías por noticia (define qué categoría aparece primero en las tarjetas)
+ALTER TABLE `noticia_categoria` ADD COLUMN IF NOT EXISTS `orden` TINYINT UNSIGNED NOT NULL DEFAULT 1;
+UPDATE `noticia_categoria` nc
+    JOIN (SELECT noticia_id, categoria_id, ROW_NUMBER() OVER (PARTITION BY noticia_id ORDER BY categoria_id ASC) AS rn FROM noticia_categoria) sub
+    ON nc.noticia_id = sub.noticia_id AND nc.categoria_id = sub.categoria_id
+    SET nc.orden = sub.rn;

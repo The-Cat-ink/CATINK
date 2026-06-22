@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include("./../layout/headerAdmin.php");
 include("./../data/conexion.php");
 $ACL = $_SESSION['ACL']['noticias'] ?? [
@@ -17,7 +17,7 @@ $id = intval($_GET['id'] ?? 1);
 // ==============================
 $sql = "
     SELECT n.*, u.nombre AS autor_nombre,
-           GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+           GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
     FROM noticias n
     LEFT JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id

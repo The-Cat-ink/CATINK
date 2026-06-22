@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include("./../layout/header.php");
 require_once("./../data/conexion.php");
 require_once("./helpers/urlhelper.php");
@@ -35,7 +35,7 @@ if (!$editor) {
 // ==============================
 $stmtNews = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop3, n.fecha_publicacion,
-           GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+           GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
     FROM noticias n
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c

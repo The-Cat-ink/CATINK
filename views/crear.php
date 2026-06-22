@@ -217,6 +217,11 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .cn-zone-original { height: 150px; }
 /* Banner: ratio exacto 21:6 para ver la imagen tal como queda publicada */
 .cn-zone-banner { aspect-ratio: 21/6; height: auto; min-height: 60px; }
+/* Paisaje: ratio 21:9 — intermedio entre banner y miniatura */
+.cn-zone-paisaje {
+  aspect-ratio: 21/9; height: auto;
+  max-width: min(100%, 520px); margin: 0 auto;
+}
 /* Miniatura: ratio 16:9, acotada a un ancho cómodo centrada */
 .cn-zone-mini {
   aspect-ratio: 16/9; height: auto;
@@ -383,6 +388,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
   font-size: 13px; padding: 0; outline: none; width: 100%; font-family: inherit;
 }
 
+
 /* ── BOTÓN PUBLICAR ── */
 .cn-publish-wrap {
   display: flex;
@@ -432,6 +438,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
     <input type="hidden" name="crop1" id="crop1">
     <input type="hidden" name="crop2" id="crop2">
     <input type="hidden" name="crop3" id="crop3">
+    <input type="hidden" name="crop4" id="crop4">
     <input type="hidden" name="contenido" id="contenido">
     <input type="hidden" name="fecha_publicacion" id="fecha_publicacion_hidden">
 
@@ -543,6 +550,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
         </div>
       </div><!-- /sec-cats -->
 
+
       <!-- PROGRAMAR -->
       <div class="cn-section" id="sec-schedule">
         <div class="cn-section-header">
@@ -613,6 +621,20 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               <div class="zone-actions">
                 <button type="button" class="zone-btn zone-btn-adjust" onclick="event.stopPropagation();adjustCrop(2)"><i class="bi bi-crop"></i> Ajustar</button>
                 <button type="button" class="zone-btn zone-btn-remove" onclick="event.stopPropagation();removeCrop(2)"><i class="bi bi-x-lg"></i> Quitar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Imagen centrada 21:9 -->
+          <div style="margin-bottom:12px;">
+            <p class="cn-zone-label">Imagen centrada <span style="text-transform:none;font-size:10px;font-weight:400;color:var(--muted)">(21:9)</span></p>
+            <div class="upload-zone cn-zone-paisaje" id="zone4" onclick="openCrop(4)">
+              <div class="zone-overlay"><span>Cambiar</span></div>
+              <i class="bi bi-layout-text-window cn-zone-icon"></i>
+              <span class="zone-ratio">21 : 9</span>
+              <div class="zone-actions">
+                <button type="button" class="zone-btn zone-btn-adjust" onclick="event.stopPropagation();adjustCrop(4)"><i class="bi bi-crop"></i> Ajustar</button>
+                <button type="button" class="zone-btn zone-btn-remove" onclick="event.stopPropagation();removeCrop(4)"><i class="bi bi-x-lg"></i> Quitar</button>
               </div>
             </div>
           </div>
@@ -998,6 +1020,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+
   /* ── Programar toggle ── */
   const schedToggle = document.getElementById('scheduleToggle');
   const schedFields = document.getElementById('scheduleFields');
@@ -1198,40 +1221,50 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ════════════════════════════════
    CROPPER
 ════════════════════════════════ */
-const CROP_RATIOS = { 1: 1/1, 2: 21/6, 3: 16/9 };
+const CROP_RATIOS = { 1: 1/1, 2: 21/6, 3: 16/9, 4: 21/9 };
 const CROP_TITLES = {
   1: 'Recortar — Imagen Original (1:1)',
   2: 'Recortar — Banner (21:6)',
-  3: 'Recortar — Miniatura (16:9)'
+  3: 'Recortar — Miniatura (16:9)',
+  4: 'Recortar — Imagen centrada (21:9)'
 };
 let activeCrop = null, cropperInstance = null;
 const zoneSources = {};
 const zoneCropData = {};
 let _chainNextCrop = false;
+let _chainQueue = [];
 
 function openCrop(num) {
   activeCrop = num;
   _chainNextCrop = true;
-  delete zoneCropData[num];
-  delete zoneCropData[num === 2 ? 3 : 2];
+  const ORDER = [2, 4, 3];
+  const idx = ORDER.indexOf(num);
+  _chainQueue = idx >= 0
+    ? [...ORDER.slice(idx + 1), ...ORDER.slice(0, idx)]
+    : [];
+  [2, 3, 4].forEach(n => delete zoneCropData[n]);
   document.getElementById('fileInput').click();
 }
 function initCropper(num) {
   const cropImg = document.getElementById('cropImg');
   const cropArea = document.querySelector('.crop-area');
-  // Ajustar altura del área al ratio real de la imagen (sin zona negra)
   const maxW = cropArea.clientWidth || 640;
   const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
-  cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
 
-  const cropRatioOverride = { 2: 21 / 6, 3: 16 / 9 };
+  if (num === 2) {
+    cropArea.style.height = Math.round(maxW * 6 / 21) + 'px';
+  } else {
+    cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
+  }
+
+  const cropRatioOverride = { 2: 21 / 6, 3: 16 / 9, 4: 21 / 9 };
   const effectiveRatio = cropRatioOverride[num] ?? CROP_RATIOS[num];
 
   cropperInstance = new Cropper(cropImg, {
     aspectRatio: effectiveRatio,
-    viewMode: 1,
-    autoCropArea: 0.98,
-    movable: false,
+    viewMode: num === 2 ? 3 : 1,
+    autoCropArea: num === 2 ? 1 : 0.98,
+    movable: num === 2,
     zoomable: false,
     cropBoxResizable: true,
     dragMode: 'move',
@@ -1239,7 +1272,17 @@ function initCropper(num) {
     guides: true,
     background: false,
     ready() {
-      if (num === 2 || num === 3) {
+      if (num === 2) {
+        if (zoneCropData[2]) {
+          cropperInstance.setData(zoneCropData[2]);
+        } else {
+          // Posicionar la imagen desde arriba (no centrada) para no cortar el tope
+          const cv = cropperInstance.getCanvasData();
+          cropperInstance.setCanvasData({ ...cv, top: 0 });
+          const cd = cropperInstance.getContainerData();
+          cropperInstance.setCropBoxData({ left: 0, top: 0, width: cd.width, height: cd.height });
+        }
+      } else if (num === 3 || num === 4) {
         if (zoneCropData[num]) {
           cropperInstance.setData(zoneCropData[num]);
         } else {
@@ -1254,12 +1297,14 @@ function initCropper(num) {
           const availX = imgData.width - cbW;
           const leftOffset = num === 3
             ? imgData.left + availX * 0.85
-            : imgData.left + availX / 2;
+            : num === 4
+              ? imgData.left + availX
+              : imgData.left + availX / 2;
           cropperInstance.setCropBoxData({
             width:  cbW,
             height: cbH,
             left:   leftOffset,
-            top:    imgData.top  + (imgData.height - cbH) / 2
+            top:    imgData.top + (imgData.height - cbH) / 2
           });
         }
       }
@@ -1270,6 +1315,7 @@ function adjustCrop(num) {
   if (!zoneSources[num]) return;
   activeCrop = num;
   _chainNextCrop = false;
+  _chainQueue = [];
   const cropImg = document.getElementById('cropImg');
   if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
   const cropArea = document.querySelector('.crop-area');
@@ -1286,11 +1332,9 @@ function removeCrop(num) {
     delete zoneSources[n];
     delete zoneCropData[n];
     const z = document.getElementById('zone' + n);
-    z.querySelectorAll('.preview-img').forEach(el => el.remove());
-    z.classList.remove('has-image');
+    if (z) { z.querySelectorAll('.preview-img').forEach(el => el.remove()); z.classList.remove('has-image'); }
   };
-  clearZone(num);
-  clearZone(num === 2 ? 3 : 2);
+  [2, 3, 4].forEach(clearZone);
   document.getElementById('crop1').value = '';
   document.getElementById('previewSection').style.display = 'none';
 }
@@ -1366,9 +1410,8 @@ function confirmCrop() {
       document.getElementById('crop' + cropNum).value = data64;
       setZonePreview(cropNum, data64);
 
-      if (chain) {
-        // Abrir recortador para el otro formato con la misma imagen fuente
-        const nextNum = cropNum === 2 ? 3 : 2;
+      if (_chainQueue.length > 0) {
+        const nextNum = _chainQueue.shift();
         activeCrop = nextNum;
         zoneSources[nextNum] = srcForAuto;
         const cropImg  = document.getElementById('cropImg');
@@ -1382,7 +1425,8 @@ function confirmCrop() {
       } else {
         const c2 = document.getElementById('crop2').value;
         const c3 = document.getElementById('crop3').value;
-        document.getElementById('previewSection').style.display = (c2 || c3) ? 'block' : 'none';
+        const c4 = document.getElementById('crop4').value;
+        document.getElementById('previewSection').style.display = (c2 || c3 || c4) ? 'block' : 'none';
         updateAllPreviews();
       }
     };

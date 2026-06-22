@@ -48,7 +48,14 @@ foreach ($filas as $i => $fila_logos) {
 
 <!-- ═══ MARCAS ═════════════════════════════════════════════════════ -->
 <section class="nos-brands">
-    <p class="nos-brands-label">Marcas con las que colaboramos</p>
+    <div class="nos-sep-wrap">
+        <div class="section-separator" id="marcas">
+            <a href="#marcas" class="section-separator-label">
+                Marcas con las que colaboramos
+            </a>
+            <div class="section-separator-line"></div>
+        </div>
+    </div>
 
     <?php if (empty($logos)): ?>
         <p class="nos-brands-empty">Próximamente anunciaremos nuestras marcas colaboradoras.</p>
@@ -122,18 +129,12 @@ foreach ($filas as $i => $fila_logos) {
 /* ─── Sección de marcas ────────────────────────────────────────── */
 .nos-brands {
     border-top: 1px solid var(--border);
-    padding: 28px 32px 44px;
+    padding: 32px 32px 44px;
     overflow: hidden;
 }
-.nos-brands-label {
-    text-align: center;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 20px;
-    padding: 0 24px;
+.nos-sep-wrap {
+    max-width: var(--cw, 1040px);
+    margin: 0 auto 24px;
 }
 .nos-brands-empty {
     text-align: center;
@@ -233,6 +234,7 @@ foreach ($filas as $i => $fila_logos) {
     .nos-hero   { padding: 36px 20px 28px; }
     .nos-body   { padding: 28px 20px 40px; }
     .nos-brands { padding-left: 20px; padding-right: 20px; }
+    .nos-sep-wrap { padding: 0; }
     .nos-logo-card { width: 110px; height: 62px; }
 }
 </style>

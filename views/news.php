@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include("./../layout/header.php");
 require_once("./../data/conexion.php");
 include("./helpers/videoEmbed.php");
@@ -30,7 +30,7 @@ if(isset($_GET['slug'])){
 // ==============================
 $sql = "
     SELECT n.*, n.slug, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto,
-           GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+           GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
     FROM noticias n
     LEFT JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
@@ -51,7 +51,7 @@ if (!$noticia && isset($_GET['slug'])) {
         $param = $decodedId;
         $sql = "
             SELECT n.*, n.slug, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto,
-                   GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+                   GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
             FROM noticias n
             LEFT JOIN usuarios u ON n.autor = u.id_u
             LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
@@ -208,6 +208,38 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
     }
   }
 </style>
+<style>
+.news-rating-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 24px 0 18px;
+  padding: 14px 18px;
+  background: rgba(245,166,35,.07);
+  border: 1px solid rgba(245,166,35,.3);
+  border-radius: 10px;
+}
+.news-rating-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted, #888);
+  white-space: nowrap;
+}
+.news-rating-stars {
+  display: flex;
+  gap: 4px;
+  font-size: 22px;
+  color: var(--accent, #EF3363);
+}
+.news-rating-stars .paw-empty {
+  color: #ddd;
+}
+.news-rating-text {
+  font-size: 13px;
+  color: var(--muted, #888);
+  white-space: nowrap;
+}
+</style>
 <div class="reading-progress-container">
     <div id="readingProgressBar" class="reading-progress-bar"></div>
 </div>
@@ -275,7 +307,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                   </div>
                   <div class="review-verdict-label <?= $statusClass ?>-text"><?= $label ?></div>
                 </div>
-                
+
                 <div class="review-details-section">
                   <!-- PROS -->
                   <div class="review-list-box">
@@ -303,7 +335,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                       <?php endif; ?>
                     </ul>
                   </div>
-                  
+
                   <!-- CONTRAS -->
                   <div class="review-list-box">
                     <div class="review-list-title contras-title">
