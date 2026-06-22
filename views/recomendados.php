@@ -153,7 +153,7 @@ $totalRecomendados = count($recomendados);
                         <!-- Cropper inline container -->
                         <div class="crop-inline-wrap" id="cropperContainer" style="margin-top: 14px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; display: none;">
                             <div class="crop-inline-head" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--text);">
-                                <span><i class="bi bi-crop"></i> Ajustar recorte (16:9)</span>
+                                <span><i class="bi bi-crop"></i> Ajustar recorte (8:3)</span>
                             </div>
                             <div class="crop-inline-body" style="padding: 12px; background: var(--bg);">
                                 <img id="cropImg" style="max-width: 100%; display: block; max-height: 260px; margin: 0 auto;" draggable="false">
@@ -531,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 customCropper = new Cropper(cropImg, {
                     dragMode: 'none',
-                    aspectRatio: 16/9,
+                    aspectRatio: 8/3,
                     autoCropArea: 1,
                     responsive: true,
                     restore: true,
@@ -553,8 +553,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!customCropper) return;
 
             const canvas = customCropper.getCroppedCanvas({
-                width: 640,
-                height: 360,
+                width: 800,
+                height: 300,
                 imageSmoothingEnabled: true,
                 imageSmoothingQuality: 'high',
             });
