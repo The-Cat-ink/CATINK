@@ -4235,7 +4235,7 @@ body, .nav-link, .btn, .card, .site-main {
 }
 .top-row-one {
   display: grid;
-  grid-template-columns: 21fr 16fr;
+  grid-template-columns: 2fr 1fr;
   gap: 16px;
 }
 .top-row-three {
@@ -4257,15 +4257,10 @@ body, .nav-link, .btn, .card, .site-main {
   box-shadow: 0 4px 12px var(--border);
   cursor: pointer;
   transition: transform 0.25s, box-shadow 0.25s;
-  aspect-ratio: 16/9;
+  aspect-ratio: 16/10;
 }
-/* Card ancha: 21/9 — muestra crop4 completo */
 .top-card.card-width-2-3 {
-  aspect-ratio: 21/9;
-}
-/* Card lateral fila 1: 16/9 — muestra crop3 completo, misma altura que la ancha */
-.top-row-one .top-card:not(.card-width-2-3) {
-  aspect-ratio: 16/9;
+  aspect-ratio: 32/10;
 }
 .top-card:hover {
   transform: translateY(-4px);
@@ -4280,7 +4275,6 @@ body, .nav-link, .btn, .card, .site-main {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
   display: block;
 }
 .top-card-overlay {
