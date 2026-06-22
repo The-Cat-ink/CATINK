@@ -217,9 +217,9 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .cn-zone-original { height: 150px; }
 /* Banner: ratio exacto 21:6 para ver la imagen tal como queda publicada */
 .cn-zone-banner { aspect-ratio: 21/6; height: auto; min-height: 60px; }
-/* Paisaje: ratio 21:9 — intermedio entre banner y miniatura */
+/* Paisaje: mismo ratio que el banner (21:6) */
 .cn-zone-paisaje {
-  aspect-ratio: 21/9; height: auto;
+  aspect-ratio: 21/6; height: auto;
   max-width: min(100%, 520px); margin: 0 auto;
 }
 /* Miniatura: ratio 16:9, acotada a un ancho cómodo centrada */
@@ -625,9 +625,9 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
             </div>
           </div>
 
-          <!-- Imagen centrada 21:9 -->
+          <!-- Imagen centrada 21:6 -->
           <div style="margin-bottom:12px;">
-            <p class="cn-zone-label">Imagen centrada <span style="text-transform:none;font-size:10px;font-weight:400;color:var(--muted)">(21:9)</span></p>
+            <p class="cn-zone-label">Imagen centrada <span style="text-transform:none;font-size:10px;font-weight:400;color:var(--muted)">(21:6)</span></p>
             <div class="upload-zone cn-zone-paisaje" id="zone4" onclick="openCrop(4)">
               <div class="zone-overlay"><span>Cambiar</span></div>
               <i class="bi bi-layout-text-window cn-zone-icon"></i>
@@ -1221,12 +1221,12 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ════════════════════════════════
    CROPPER
 ════════════════════════════════ */
-const CROP_RATIOS = { 1: 1/1, 2: 21/6, 3: 16/9, 4: 21/9 };
+const CROP_RATIOS = { 1: 1/1, 2: 21/6, 3: 16/9, 4: 21/6 };
 const CROP_TITLES = {
   1: 'Recortar — Imagen Original (1:1)',
   2: 'Recortar — Banner (21:6)',
   3: 'Recortar — Miniatura (16:9)',
-  4: 'Recortar — Imagen centrada (21:9)'
+  4: 'Recortar — Imagen centrada (21:6)'
 };
 let activeCrop = null, cropperInstance = null;
 const zoneSources = {};
@@ -1253,7 +1253,7 @@ function initCropper(num) {
 
   cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
 
-  const cropRatioOverride = { 2: 21 / 6, 3: 16 / 9, 4: 21 / 9 };
+  const cropRatioOverride = { 2: 21 / 6, 3: 16 / 9, 4: 21 / 6 };
   const effectiveRatio = cropRatioOverride[num] ?? CROP_RATIOS[num];
 
   cropperInstance = new Cropper(cropImg, {
@@ -1284,7 +1284,7 @@ function initCropper(num) {
           cropperInstance.setCropBoxData({
             width:  cbW,
             height: cbH,
-            left:   imgData.left + availX / 2,
+            left:   imgData.left + availX,
             top:    imgData.top + (imgData.height - cbH) / 2
           });
         }
@@ -1301,10 +1301,13 @@ function initCropper(num) {
             cbH = cbW / ratio;
           }
           const availX = imgData.width - cbW;
+          // num=4: misma posición izquierda que el banner (21:6)
+          const bannerCbW = Math.min(imgData.height * (21 / 6), imgData.width);
+          const bannerLeft = imgData.left + (imgData.width - bannerCbW);
           const leftOffset = num === 3
             ? imgData.left + availX * 0.85
             : num === 4
-              ? imgData.left + availX
+              ? bannerLeft
               : imgData.left + availX / 2;
           cropperInstance.setCropBoxData({
             width:  cbW,
