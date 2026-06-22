@@ -249,9 +249,9 @@ function tiempoRelativo($fecha) {
         <?php foreach($slider as $i => $row): ?>
             <div class="carousel-item <?= $i==0?'active':'' ?>" data-url="<?= newsUrlFromRow($row) ?>">
                 <picture>
-                    <!-- MÓVIL: crop 16:9; fallback a original (no al 21:6 que causa zoom extremo) -->
+                    <!-- MÓVIL: crop 16:9; cubre hasta 1024px para móviles con zoom reducido -->
                     <source
-                        media="(max-width:768px)"
+                        media="(max-width:1024px)"
                         srcset="<?= img([$row['crop3'], $row['crop1']]) ?>">
                     <!-- DESKTOP: banner (21:6) -->
                     <img
