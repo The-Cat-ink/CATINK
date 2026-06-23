@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include(__DIR__ . "/layout/header.php");
 require_once(__DIR__ . "/data/conexion.php");
 include(__DIR__ . "/views/helpers/videoEmbed.php");
@@ -105,7 +105,8 @@ $stmtRec = $con->prepare("
            COALESCE(r.imagen, n.crop3) AS crop3,
            COALESCE(r.imagen, n.crop4) AS crop4,
            n.fecha_publicacion AS fecha,
-           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias,
+           n.calificacion
     FROM recomendados r
     LEFT JOIN noticias n ON r.noticia_id = n.id
     LEFT JOIN usuarios u ON n.autor = u.id_u
@@ -433,36 +434,18 @@ function tiempoRelativo($fecha) {
                     <div class="sidebar-ranking-list">
                         <?php foreach ($recomendamos as $index => $r): 
                             $url = empty($r['noticia_id']) ? '#' : newsUrlFromRow($r);
-                            $mockScores = [9.8, 9.5, 9.2, 9.0, 8.8, 8.5, 8.2, 8.0, 7.8, 7.5];
-                            $score = $mockScores[$index] ?? null;
+                            $score = (!empty($r['calificacion']) && floatval($r['calificacion']) > 0) ? floatval($r['calificacion']) : null;
                         ?>
-                            <?php if ($index === 0): ?>
-                                <!-- Puesto 1: Card Grande con Borde Fuchsia -->
-                                <div class="ranking-item-hero" data-url="<?= $url ?>">
-                                    <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-hero-img">
-                                    <div class="ranking-number-overlay">1</div>
-                                    <div class="ranking-hero-overlay">
-                                        <h4 class="ranking-hero-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
-                                    </div>
-                                    <?php if ($score): ?>
-                                        <div class="ranking-score-circle"><?= number_format($score, 1) ?></div>
-                                    <?php endif; ?>
+                            <div class="ranking-item-hero" data-url="<?= $url ?>">
+                                <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="" class="ranking-hero-img">
+                                <div class="ranking-number-overlay"><?= $index + 1 ?></div>
+                                <div class="ranking-hero-overlay">
+                                    <h4 class="ranking-hero-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
                                 </div>
-                            <?php else: ?>
-                                <!-- Puestos 2-5: Card con Imagen Completa y Número Gigante -->
-                                <div class="ranking-item-sub" data-url="<?= $url ?>">
-                                    <div class="ranking-sub-card">
-                                        <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-sub-img">
-                                        <div class="ranking-number-overlay"><?= $index + 1 ?></div>
-                                        <div class="ranking-sub-overlay">
-                                            <h4 class="ranking-sub-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
-                                        </div>
-                                        <?php if ($score): ?>
-                                            <div class="ranking-score-circle"><?= number_format($score, 1) ?></div>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
+                                <?php if ($score !== null): ?>
+                                    <div class="ranking-score-circle"><?= number_format($score, 1) ?></div>
+                                <?php endif; ?>
+                            </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -596,27 +579,13 @@ function tiempoRelativo($fecha) {
                         <?php foreach ($esperamos as $index => $r): 
                             $url = empty($r['noticia_id']) ? '#' : newsUrlFromRow($r);
                         ?>
-                            <?php if ($index === 0): ?>
-                                <!-- Puesto 1: Card Grande con Borde Fuchsia -->
-                                <div class="ranking-item-hero" data-url="<?= $url ?>">
-                                    <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-hero-img">
-                                    <div class="ranking-number-overlay">1</div>
-                                    <div class="ranking-hero-overlay">
-                                        <h4 class="ranking-hero-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
-                                    </div>
+                            <div class="ranking-item-hero" data-url="<?= $url ?>">
+                                <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="" class="ranking-hero-img">
+                                <div class="ranking-number-overlay"><?= $index + 1 ?></div>
+                                <div class="ranking-hero-overlay">
+                                    <h4 class="ranking-hero-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
                                 </div>
-                            <?php else: ?>
-                                <!-- Puestos 2-5: Card con Imagen Completa y Número Gigante (Sin calificaciones) -->
-                                <div class="ranking-item-sub" data-url="<?= $url ?>">
-                                    <div class="ranking-sub-card">
-                                        <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-sub-img">
-                                        <div class="ranking-number-overlay"><?= $index + 1 ?></div>
-                                        <div class="ranking-sub-overlay">
-                                            <h4 class="ranking-sub-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
+                            </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
