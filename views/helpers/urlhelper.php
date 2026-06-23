@@ -138,13 +138,27 @@ function imageUrl($path) {
         }
     }
     
-    // Si es una ruta en /img/, servir a través de serve-image.php (para logos, placeholders, etc)
+    // Si es una ruta en /img/, servir directamente (siempre en la carpeta pública)
     if (strpos($path, 'img/') === 0) {
-        return basePath() . "/serve-image.php?file=" . urlencode($path);
+        return basePath() . "/" . $path;
     }
     
-    // Si es una ruta en /uploads/, servir a través de serve-image.php
+    // Si es una ruta en /uploads/
     if (strpos($path, 'uploads/') === 0) {
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        $isLocal = strpos($host, 'localhost') !== false || strpos($host, 'catink.test') !== false;
+        
+        // En local, o si existe la carpeta/symlink de uploads en la raíz pública de producción:
+        $publicUploadsExist = false;
+        if (isset($_SERVER['DOCUMENT_ROOT'])) {
+            $publicUploadsExist = file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads');
+        }
+        
+        if ($isLocal || $publicUploadsExist) {
+            return basePath() . "/" . $path;
+        }
+        
+        // Fallback a serve-image.php en producción si no existe el enlace simbólico
         return basePath() . "/serve-image.php?file=" . urlencode($path);
     }
     

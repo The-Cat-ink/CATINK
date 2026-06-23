@@ -60,6 +60,28 @@ while ($row = $resultado->fetch_assoc()) {
 
 error_log("Noticias encontradas: " . count($noticias));
 
+// Preparar PHPMailer
+$mail = new PHPMailer(true);
+try {
+    $mail->isSMTP();
+    $mail->Host = env('SMTP_HOST');
+    $mail->SMTPAuth = true;
+    $mail->Username = env('SMTP_USERNAME');
+    $mail->Password = env('SMTP_PASSWORD');
+    $mail->SMTPSecure = env('SMTP_SECURE');
+    $mail->Port = env('SMTP_PORT');
+
+    $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
+} catch (Exception $e) {
+    error_log("Error al inicializar SMTP: " . $e->getMessage());
+}
+
+// Embed the banner
+$bannerPath = __DIR__ . '/../views/email/logo_alt.png';
+if (file_exists($bannerPath)) {
+    $mail->addEmbeddedImage($bannerPath, 'banner', 'logo_alt.png');
+}
+
 // Preparar contenido de noticias
 $contenidoNoticias = '';
 
@@ -73,15 +95,45 @@ if (empty($noticias)) {
         $descripcion = strip_tags($noticia['descripcion']);
         $descripcion = mb_strimwidth($descripcion, 0, 100, '...');
 
-        // Construir URL correcta de la imagen (usar directamente, sin descargar)
-        $imagenUrl = 'https://www.catink.com.mx/serve-image.php?file=' . urlencode($noticia['crop3']);
+        // Buscar la ruta local del archivo
+        $localPath = null;
+        $candidates = [
+            __DIR__ . '/../' . $noticia['crop3'],
+            __DIR__ . '/../../' . $noticia['crop3'],
+            dirname(__DIR__) . '/' . $noticia['crop3'],
+            dirname(dirname(__DIR__)) . '/' . $noticia['crop3']
+        ];
+        foreach ($candidates as $c) {
+            if (!empty($noticia['crop3']) && file_exists($c) && is_file($c)) {
+                $localPath = realpath($c);
+                break;
+            }
+        }
+
+        $imgSrc = '';
+        if ($localPath) {
+            $ext = strtolower(pathinfo($localPath, PATHINFO_EXTENSION));
+            $mimeTypes = [
+                'jpg' => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'gif' => 'image/gif',
+                'webp' => 'image/webp'
+            ];
+            $mimeType = $mimeTypes[$ext] ?? 'image/jpeg';
+            $mail->addEmbeddedImage($localPath, "logo{$index}", basename($localPath), 'base64', $mimeType);
+            $imgSrc = "cid:logo{$index}";
+        } else {
+            // Fallback a URL pública
+            $imgSrc = 'https://www.catink.com.mx/serve-image.php?file=' . urlencode($noticia['crop3']);
+        }
 
         $contenidoNoticias .= "
         <table width='100%' cellpadding='0' cellspacing='0' border='0' 
             style='background:#ffffff;margin-bottom:15px;border-radius:10px;overflow:hidden;'>
         <tr class='stack-column'>
         <td width='240' valign='top' class='card-padding' style='padding:14px;'>
-            <img src='{$imagenUrl}' width='220' class='stack-img' 
+            <img src='{$imgSrc}' width='220' class='stack-img' 
                 style='width:100%;max-width:220px;height:auto;display:block;border-radius:10px;border:0;margin:0;'>
         </td>
         <td valign='top' class='card-padding' style='padding:14px;font-family:Arial,sans-serif;'>
@@ -107,16 +159,6 @@ $plantilla = file_get_contents($plantillaPath);
 $plantilla = str_replace("{{noticias}}", $contenidoNoticias, $plantilla);
 
 try {
-    $mail = new PHPMailer(true);
-    $mail->isSMTP();
-    $mail->Host = env('SMTP_HOST');
-    $mail->SMTPAuth = true;
-    $mail->Username = env('SMTP_USERNAME');
-    $mail->Password = env('SMTP_PASSWORD');
-    $mail->SMTPSecure = env('SMTP_SECURE');
-    $mail->Port = env('SMTP_PORT');
-
-    $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
     $mail->addAddress($suscriptor['correo'], $suscriptor['nombre_completo']);
 
     error_log("Enviando correo a: " . $suscriptor['correo']);
@@ -134,7 +176,6 @@ try {
     } else {
         error_log("Error al enviar correo: " . $mail->ErrorInfo);
     }
-
 
     header("Location: ./../views/suscripciones.php?success=correo_enviado");
     exit();
