@@ -436,16 +436,33 @@ function tiempoRelativo($fecha) {
                             $url = empty($r['noticia_id']) ? '#' : newsUrlFromRow($r);
                             $score = (!empty($r['calificacion']) && floatval($r['calificacion']) > 0) ? floatval($r['calificacion']) : null;
                         ?>
-                            <div class="ranking-item-hero" data-url="<?= $url ?>">
-                                <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="" class="ranking-hero-img">
-                                <div class="ranking-number-overlay"><?= $index + 1 ?></div>
-                                <div class="ranking-hero-overlay">
-                                    <h4 class="ranking-hero-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
+                            <?php if ($index === 0): ?>
+                                <!-- Puesto 1: Card Grande con Borde Fuchsia -->
+                                <div class="ranking-item-hero" data-url="<?= $url ?>">
+                                    <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-hero-img">
+                                    <div class="ranking-number-overlay">1</div>
+                                    <div class="ranking-hero-overlay">
+                                        <h4 class="ranking-hero-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
+                                    </div>
+                                    <?php if ($score !== null): ?>
+                                        <div class="ranking-score-circle"><?= number_format($score, 1) ?></div>
+                                    <?php endif; ?>
                                 </div>
-                                <?php if ($score !== null): ?>
-                                    <div class="ranking-score-circle"><?= number_format($score, 1) ?></div>
-                                <?php endif; ?>
-                            </div>
+                            <?php else: ?>
+                                <!-- Puestos 2-5: Card con Imagen Completa y Número Gigante -->
+                                <div class="ranking-item-sub" data-url="<?= $url ?>">
+                                    <div class="ranking-sub-card">
+                                        <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="" class="ranking-sub-img">
+                                        <div class="ranking-number-overlay"><?= $index + 1 ?></div>
+                                        <div class="ranking-sub-overlay">
+                                            <h4 class="ranking-sub-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h4>
+                                        </div>
+                                        <?php if ($score !== null): ?>
+                                            <div class="ranking-score-circle"><?= number_format($score, 1) ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         <?php endforeach; ?>
                     </div>
                 </div>

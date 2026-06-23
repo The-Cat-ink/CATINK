@@ -5164,7 +5164,7 @@ body, .nav-link, .btn, .card, .site-main {
 .ranking-item-hero {
   position: relative;
   width: 100%;
-  aspect-ratio: 8/3;
+  height: 100px;
   border-radius: 8px;
   overflow: hidden;
   border: 2px solid var(--accent-fuchsia);
