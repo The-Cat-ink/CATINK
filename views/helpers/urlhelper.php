@@ -148,17 +148,15 @@ function imageUrl($path) {
         $host = $_SERVER['HTTP_HOST'] ?? '';
         $isLocal = strpos($host, 'localhost') !== false || strpos($host, 'catink.test') !== false;
         
-        // En local, o si existe la carpeta/symlink de uploads en la raíz pública de producción:
-        $publicUploadsExist = false;
-        if (isset($_SERVER['DOCUMENT_ROOT'])) {
-            $publicUploadsExist = file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads');
-        }
+        // Comprobar si el archivo físico realmente existe en la carpeta pública (ya sea por symlink o copiado)
+        $publicFilePath = isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] . '/' . $path : '';
+        $existsInPublic = !empty($publicFilePath) && file_exists($publicFilePath) && is_file($publicFilePath);
         
-        if ($isLocal || $publicUploadsExist) {
+        if ($isLocal || $existsInPublic) {
             return basePath() . "/" . $path;
         }
         
-        // Fallback a serve-image.php en producción si no existe el enlace simbólico
+        // Fallback a serve-image.php en producción si el archivo no está en la carpeta pública
         return basePath() . "/serve-image.php?file=" . urlencode($path);
     }
     
