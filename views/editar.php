@@ -215,7 +215,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .upload-zone.has-image .cn-zone-icon,
 .upload-zone.has-image > :not(.preview-img):not(.zone-overlay):not(.zone-actions) { display: none; }
 .cn-zone-banner { aspect-ratio: 21/6; height: auto; min-height: 60px; }
-.cn-zone-paisaje { aspect-ratio: 21/9; height: auto; max-width: min(100%, 520px); margin: 0 auto; }
+.cn-zone-paisaje { aspect-ratio: 21/6; height: auto; max-width: min(100%, 520px); margin: 0 auto; }
 .cn-zone-mini { aspect-ratio: 16/9; height: auto; max-width: min(100%, 520px); margin: 0 auto; }
 .zone-actions { position: absolute; bottom: 6px; right: 6px; display: none; gap: 5px; z-index: 3; }
 .upload-zone.has-image .zone-actions { display: flex; }
@@ -597,9 +597,9 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
             </div>
           </div>
 
-          <!-- Imagen centrada 21:9 (cards destacadas: estrenos, reviews) -->
+          <!-- Imagen centrada 21:6 -->
           <div style="margin-bottom:12px;">
-            <p class="cn-zone-label">Imagen centrada <span style="text-transform:none;font-size:10px;font-weight:400;color:var(--muted)">(21:9)</span></p>
+            <p class="cn-zone-label">Imagen centrada <span style="text-transform:none;font-size:10px;font-weight:400;color:var(--muted)">(21:6)</span></p>
             <div class="upload-zone cn-zone-paisaje" id="zone4" onclick="openCrop(4)">
               <div class="zone-overlay"><span>Cambiar</span></div>
               <i class="bi bi-layout-text-window cn-zone-icon"></i>
@@ -1170,12 +1170,12 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ════════════════════════════════
    CROPPER
 ════════════════════════════════ */
-const CROP_RATIOS = { 1: 1/1, 2: 21/6, 3: 16/9, 4: 21/9 };
+const CROP_RATIOS = { 1: 1/1, 2: 21/6, 3: 16/9, 4: 21/6 };
 const CROP_TITLES = {
   1: 'Recortar — Imagen Original (1:1)',
   2: 'Recortar — Banner (21:6)',
   3: 'Recortar — Miniatura (16:9)',
-  4: 'Recortar — Imagen centrada (21:9)'
+  4: 'Recortar — Imagen centrada (21:6)'
 };
 let activeCrop = null, cropperInstance = null;
 const zoneSources = {};
@@ -1201,20 +1201,16 @@ function initCropper(num) {
   const maxW     = cropArea.clientWidth || 640;
   const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
 
-  if (num === 2) {
-    cropArea.style.height = Math.round(maxW * 6 / 21) + 'px';
-  } else {
-    cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
-  }
+  cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
 
-  const cropRatioOverride = { 2: 21 / 6, 3: 16 / 9, 4: 21 / 9 };
+  const cropRatioOverride = { 2: 21 / 6, 3: 16 / 9, 4: 21 / 6 };
   const effectiveRatio = cropRatioOverride[num] ?? CROP_RATIOS[num];
 
   cropperInstance = new Cropper(cropImg, {
     aspectRatio: effectiveRatio,
-    viewMode: num === 2 ? 3 : 1,
-    autoCropArea: num === 2 ? 1 : 0.98,
-    movable: num === 2,
+    viewMode: 1,
+    autoCropArea: 0.98,
+    movable: false,
     zoomable: false,
     cropBoxResizable: true,
     dragMode: 'move',
@@ -1226,11 +1222,20 @@ function initCropper(num) {
         if (zoneCropData[2]) {
           cropperInstance.setData(zoneCropData[2]);
         } else {
-          // Posicionar la imagen desde arriba (no centrada) para no cortar el tope
-          const cv = cropperInstance.getCanvasData();
-          cropperInstance.setCanvasData({ ...cv, top: 0 });
-          const cd = cropperInstance.getContainerData();
-          cropperInstance.setCropBoxData({ left: 0, top: 0, width: cd.width, height: cd.height });
+          const imgData = cropperInstance.getImageData();
+          const ratio = 21 / 6;
+          let cbW = imgData.width;
+          let cbH = cbW / ratio;
+          if (cbH > imgData.height) {
+            cbH = imgData.height;
+            cbW = cbH * ratio;
+          }
+          cropperInstance.setCropBoxData({
+            width:  cbW,
+            height: cbH,
+            left:   imgData.left,
+            top:    imgData.top + (imgData.height - cbH) / 2
+          });
         }
       } else if (num === 3 || num === 4) {
         if (zoneCropData[num]) {
@@ -1245,15 +1250,10 @@ function initCropper(num) {
             cbH = cbW / ratio;
           }
           const availX = imgData.width - cbW;
-          const leftOffset = num === 3
-            ? imgData.left + availX * 0.85
-            : num === 4
-              ? imgData.left + availX
-              : imgData.left + availX / 2;
           cropperInstance.setCropBoxData({
             width:  cbW,
             height: cbH,
-            left:   leftOffset,
+            left:   imgData.left + availX / 2,
             top:    imgData.top + (imgData.height - cbH) / 2
           });
         }
