@@ -1284,7 +1284,7 @@ function initCropper(num) {
           cropperInstance.setCropBoxData({
             width:  cbW,
             height: cbH,
-            left:   imgData.left + availX,
+            left:   imgData.left,
             top:    imgData.top + (imgData.height - cbH) / 2
           });
         }
@@ -1301,14 +1301,7 @@ function initCropper(num) {
             cbH = cbW / ratio;
           }
           const availX = imgData.width - cbW;
-          // num=4: misma posición izquierda que el banner (21:6)
-          const bannerCbW = Math.min(imgData.height * (21 / 6), imgData.width);
-          const bannerLeft = imgData.left + (imgData.width - bannerCbW);
-          const leftOffset = num === 3
-            ? imgData.left + availX * 0.85
-            : num === 4
-              ? bannerLeft
-              : imgData.left + availX / 2;
+          const leftOffset = imgData.left + availX / 2;
           cropperInstance.setCropBoxData({
             width:  cbW,
             height: cbH,
