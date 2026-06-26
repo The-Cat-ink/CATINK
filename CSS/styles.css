@@ -5262,7 +5262,7 @@ body, .nav-link, .btn, .card, .site-main {
 .ranking-number-overlay {
   position: absolute;
   left: 10px;
-  top: 50%;
+  top: 40%;
   transform: translateY(-50%);
   font-size: 6.5rem;
   font-weight: 900;
