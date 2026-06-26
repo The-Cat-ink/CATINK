@@ -322,35 +322,42 @@ const editorElement = document.getElementById('editor');
 let editor = null;
 
 if (editorElement) {
-  // Adaptador de imágenes base64 para CKEditor 5
-  class Base64UploadAdapter {
+  // Adaptador que sube las imágenes del contenido al servidor como archivos
+  // (en lugar de incrustarlas como base64, que hacía pesar la nota varios MB).
+  class ServerUploadAdapter {
     constructor(loader) {
       this.loader = loader;
     }
     upload() {
       return this.loader.file
         .then(file => new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            resolve({ default: reader.result });
-          };
-          reader.onerror = error => reject(error);
-          reader.readAsDataURL(file);
+          const data = new FormData();
+          data.append('imagen', file);
+          fetch((window.ADMIN_BASE || '') + '/controllers/subir_imagen_contenido.php', {
+            method: 'POST',
+            body: data
+          })
+            .then(r => r.json())
+            .then(res => {
+              if (res && res.url) resolve({ default: res.url });
+              else reject((res && res.error) || 'No se pudo subir la imagen');
+            })
+            .catch(() => reject('Error de red al subir la imagen'));
         }));
     }
     abort() {}
   }
 
-  function Base64UploadAdapterPlugin(editorInstance) {
+  function ServerUploadAdapterPlugin(editorInstance) {
     editorInstance.plugins.get('FileRepository').createUploadAdapter = (loader) => {
-      return new Base64UploadAdapter(loader);
+      return new ServerUploadAdapter(loader);
     };
   }
 
   // Inicializar DecoupledEditor
   DecoupledEditor
     .create(editorElement, {
-      extraPlugins: [Base64UploadAdapterPlugin],
+      extraPlugins: [ServerUploadAdapterPlugin],
       placeholder: 'Comienza a escribir tu nota aquí...',
       language: 'es',
       toolbar: {
@@ -382,12 +389,8 @@ if (editorElement) {
       if (toolbarContainer) {
         toolbarContainer.appendChild(editor.ui.view.toolbar.element);
       }
-      
-      // Si hay contenido preexistente en el div, CKEditor lo carga automáticamente.
-      const editorContent = document.getElementById('editorContent');
-      if (editorContent && editorContent.textContent.trim().length > 0) {
-        editor.setData(editorContent.innerHTML);
-      }
+      // El contenido preexistente del div #editor lo carga CKEditor automáticamente
+      // al inicializarse (DecoupledEditor.create), sin necesidad de setData.
     })
     .catch(error => {
       console.error('Error inicializando CKEditor 5:', error);

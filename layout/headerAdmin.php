@@ -76,6 +76,7 @@ $_SESSION['id_u'] = $fila['id_u'];
   <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
   <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/decoupled-document/ckeditor.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+  <script>window.ADMIN_BASE = '<?= basePath() ?>';</script>
     <?php if($ACL): ?>
         <script>
             window.ACL = {
