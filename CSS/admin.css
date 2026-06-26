@@ -2584,3 +2584,93 @@ input, select, textarea,
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ── ESTILOS CKEDITOR 5 DECOUPLED DOCUMENT (GOOGLE DOCS LOOK) ── */
+.document-editor {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+  margin-bottom: 20px;
+}
+
+.document-editor__toolbar {
+  border-bottom: 1px solid var(--border);
+  background: var(--card-bg);
+}
+
+.document-editor__toolbar .ck-toolbar {
+  border: none !important;
+  background: transparent !important;
+}
+
+/* Forzar colores de texto e iconos en modo oscuro */
+[data-bs-theme="dark"] .ck-toolbar {
+  --ck-color-toolbar-background: transparent;
+  --ck-color-button-default-hover-background: rgba(255, 255, 255, 0.08);
+  --ck-color-button-default-active-background: rgba(255, 255, 255, 0.12);
+  --ck-color-text: #f8fafc;
+}
+
+[data-bs-theme="dark"] .ck.ck-button {
+  color: var(--text) !important;
+}
+
+[data-bs-theme="dark"] .ck.ck-dropdown__panel {
+  background: #1e293b !important;
+  border-color: var(--border) !important;
+}
+
+[data-bs-theme="dark"] .ck.ck-list {
+  background: #1e293b !important;
+}
+
+[data-bs-theme="dark"] .ck.ck-list__item .ck-button {
+  color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .ck.ck-list__item .ck-button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Contenedor gris del escritorio */
+.document-editor__editable-container {
+  padding: 30px 15px;
+  background: #e2e8f0;
+  min-height: 480px;
+  max-height: 700px;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+[data-bs-theme="dark"] .document-editor__editable-container {
+  background: #0f172a;
+}
+
+/* Hoja blanca editable */
+.document-editor__editable-container .ck-editor__editable {
+  width: 100%;
+  max-width: 800px;
+  min-height: 600px;
+  padding: 40px 50px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 4px !important;
+  background: white !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  outline: none !important;
+  line-height: 1.6;
+  font-family: inherit !important;
+}
+
+/* Alinear imágenes y estilo general dentro del editor */
+.document-editor__editable-container .ck-editor__editable img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 10px 0;
+}

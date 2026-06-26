@@ -8,6 +8,10 @@ if (isset($_SESSION['usuario'])) {
     exit();
 }
 $showRegistro = isset($_GET['modo']) && $_GET['modo'] === 'registro';
+$tempRegistro = $_SESSION['temp_registro'] ?? null;
+if ($tempRegistro) {
+    unset($_SESSION['temp_registro']);
+}
 ?>
 <!DOCTYPE html>
 <html lang="es" data-bs-theme="light">
@@ -74,7 +78,8 @@ $showRegistro = isset($_GET['modo']) && $_GET['modo'] === 'registro';
                 '2' => 'Las contraseñas no coinciden.',
                 '3' => 'El nombre de usuario ya existe.',
                 '4' => 'El correo ya está registrado.',
-                '5' => 'Error al registrar. Intenta de nuevo.'
+                '5' => 'Error al registrar. Intenta de nuevo.',
+                '6' => 'Debes aceptar los términos y condiciones.'
               ];
               echo $errores[$_GET['reg_error']] ?? 'Error desconocido.';
             ?>
@@ -179,6 +184,16 @@ $showRegistro = isset($_GET['modo']) && $_GET['modo'] === 'registro';
               <label for="reg_pass2">Confirmar</label>
               <input type="password" id="reg_pass2" name="pass2" class="input" placeholder="Repite tu contraseña..." minlength="6" required>
             </div>
+            <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:12px;">
+              <input type="checkbox" id="recibir_correos" name="recibir_correos" style="width:16px; height:16px; accent-color:var(--accent); margin-top:2px; cursor:pointer;" checked>
+              <label for="recibir_correos" style="font-weight:normal; font-size:0.85rem; color:var(--text); margin-bottom:0; cursor:pointer; user-select:none;">Deseo recibir correos y novedades de CatInk</label>
+            </div>
+            <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:20px;">
+              <input type="checkbox" id="terminos_condiciones" name="terminos_condiciones" style="width:16px; height:16px; accent-color:var(--accent); margin-top:2px; cursor:pointer;" required>
+              <label for="terminos_condiciones" style="font-weight:normal; font-size:0.85rem; color:var(--text); margin-bottom:0; cursor:pointer; user-select:none;">
+                Acepto los <a href="<?= basePath() ?>/terminos" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:600;">términos y condiciones</a>
+              </label>
+            </div>
             <div style="display:flex; gap:8px;">
               <button type="button" class="btn-perfil-save" style="background:var(--muted);" onclick="prevStep(3)">Atrás</button>
               <button type="submit" class="btn-perfil-save">Registrarse</button>
@@ -277,15 +292,33 @@ document.querySelectorAll('.step-dot').forEach((dot, i) => {
 showPanel('registro');
 <?php endif; ?>
 
+const tempRegistro = <?= json_encode($tempRegistro) ?>;
+if (tempRegistro) {
+  if (tempRegistro.nombre) document.getElementById('nombre').value = tempRegistro.nombre;
+  if (tempRegistro.usuario) document.getElementById('reg_usuario').value = tempRegistro.usuario;
+  if (tempRegistro.correo) document.getElementById('correo').value = tempRegistro.correo;
+  if (tempRegistro.sexo) document.getElementById('sexo').value = tempRegistro.sexo;
+  if (tempRegistro.entidad) document.getElementById('entidad').value = tempRegistro.entidad;
+  if (tempRegistro.recibir_correos === 0) {
+    const rc = document.getElementById('recibir_correos');
+    if (rc) rc.checked = false;
+  }
+}
+
 flatpickr('#fecha_nacimiento', {
   locale: 'es',
   dateFormat: 'Y-m-d',
   altInput: true,
   altFormat: 'j F Y',
   maxDate: 'today',
-  defaultDate: '2000-01-01',
+  defaultDate: tempRegistro && tempRegistro.fecha_nacimiento ? tempRegistro.fecha_nacimiento : '2000-01-01',
   disableMobile: false
 });
+
+<?php if(isset($_GET['reg_error'])): ?>
+currentStep = 4;
+goToStep(4);
+<?php endif; ?>
 </script>
 </body>
 </html>

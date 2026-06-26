@@ -316,196 +316,101 @@
   });
 })();
 /* ===============================
-   EDITOR QUILL
+   EDITOR CKEDITOR 5
 ================================ */
 const editorElement = document.getElementById('editor');
-let quill = null;
+let editor = null;
 
 if (editorElement) {
-  // ====== REGISTROS NECESARIOS ======
-  // Importaciones de Quill
-  const Font = Quill.import('formats/font');
-  const Size = Quill.import('formats/size');
-  const ImageResize = Quill.import('modules/imageResize');
-  const Parchment = Quill.import('parchment');
-  // Declaraciones
-  Font.whitelist = ['arial', 'times', 'roboto', 'courier'];
-  Quill.register(Font, true);
-  Size.whitelist = ['small', false, 'large', 'huge'];
-  Quill.register(Size, true);
-  Quill.register(ImageResize, true);
-  const LineHeightStyle = new Parchment.Attributor.Style(
-    'lineheight',
-    'line-height',
-    {
-      scope: Parchment.Scope.BLOCK,
-      whitelist: ['0', '0.85', '1', '1.5', '2', '2.5', '3']
+  // Adaptador de imágenes base64 para CKEditor 5
+  class Base64UploadAdapter {
+    constructor(loader) {
+      this.loader = loader;
     }
-  );
-  Quill.register(LineHeightStyle, true);
-
-  // ===== Define callout (barra lateral) blot =====
-  const Block = Quill.import('blots/block');
-  class CalloutBlot extends Block {}
-  CalloutBlot.blotName = 'callout';
-  CalloutBlot.tagName = 'div';
-  CalloutBlot.className = 'ql-callout';
-  Quill.register(CalloutBlot, true);
-
-  // ===== Define social embed blot =====
-const BlockEmbed = Quill.import('blots/block/embed');
-class SocialEmbedBlot extends BlockEmbed {
-  static create(value) {
-    const node = super.create();
-    node.setAttribute('data-url', value);
-    node.classList.add('social-embed');
-    // insert preview HTML
-    node.innerHTML = renderizarEmbedSocialJS(value);
-    return node;
-  }
-  static value(node) {
-    return node.getAttribute('data-url');
-  }
-}
-SocialEmbedBlot.blotName = 'socialEmbed';
-SocialEmbedBlot.tagName = 'div';
-SocialEmbedBlot.className = 'social-embed';
-Quill.register(SocialEmbedBlot);
-}
-
-// simple JS mirror of PHP helper, used for preview inside editor
-function renderizarEmbedSocialJS(url) {
-  // twitter/x
-  if (/twitter\.com|x\.com/i.test(url)) {
-    return `
-      <blockquote class="twitter-tweet">
-        <a href="${url}"></a>
-      </blockquote>
-      <script async src="https://platform.twitter.com/widgets.js"></script>
-    `;
-  }
-  if (/instagram\.com/i.test(url)) {
-    return `
-      <div class="social-embed-container"><div class="video-responsive instagram-embed">
-        <blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="${url}" data-instgrm-version="14"></blockquote>
-        <script async src="https://www.instagram.com/embed.js"></script>
-      </div></div>
-    `;
-  }
-  if (/facebook\.com/i.test(url)) {
-    return `
-      <iframe src="https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(url)}" width="100%" height="500" frameborder="0"></iframe>
-    `;
-  }
-  if (/youtube\.com|youtu\.be/i.test(url)) {
-    const m = url.match(/(v=|\/)([0-9A-Za-z_-]{11})/);
-    if (m && m[2]) {
-      return `<div class="video-responsive"><iframe src="https://www.youtube.com/embed/${m[2]}" frameborder="0" allowfullscreen></iframe></div>`;
+    upload() {
+      return this.loader.file
+        .then(file => new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            resolve({ default: reader.result });
+          };
+          reader.onerror = error => reject(error);
+          reader.readAsDataURL(file);
+        }));
     }
+    abort() {}
   }
-  if (/vimeo\.com/i.test(url)) {
-    const m = url.match(/vimeo\.com\/(\d+)/);
-    if (m && m[1]) {
-      return `<div class="video-responsive"><iframe src="https://player.vimeo.com/video/${m[1]}" frameborder="0" allowfullscreen></iframe></div>`;
-    }
-  }
-  if (/tiktok\.com/i.test(url)) {
-    const m = url.match(/video\/(\d+)/);
-    if (m && m[1]) {
-      return `<iframe src="https://www.tiktok.com/embed/v2/${m[1]}" width="100%" height="600" frameborder="0" allowfullscreen></iframe>`;
-    }
-  }
-  // fallback: just hyperlink
-  return `<a href="${url}" target="_blank">${url}</a>`;
-}
 
-// ====== INICIALIZACIÓN ======
-// clipboard matcher for existing social-embed divs
-const Delta = Quill.import('delta');
-
-if (editorElement) {
-  // create editor instance
-  quill = new Quill('#editor', {
-    theme: 'snow',
-    placeholder: 'Escribe aquí...',
-    modules: {
-      toolbar: {
-        container: '.editor-toolbar',
-        handlers: {
-          image: imageHandler,
-          embed: embedHandler,
-          callout: function() {
-            const range = this.quill.getSelection(true);
-            const format = this.quill.getFormat(range);
-            this.quill.format('callout', !format.callout, Quill.sources.USER);
-          }
-        }
-      },
-      imageResize: {
-        modules: [ 'Resize', 'DisplaySize']
-      }
-    }
-  });
-  window.quill = quill;
-
-  // convert pasted existing wrapper divs into blot
-  quill.clipboard.addMatcher('DIV', function(node, delta) {
-    if (node.classList && node.classList.contains('social-embed')) {
-      const url = node.getAttribute('data-url');
-      return new Delta().insert({ socialEmbed: url });
-    }
-    return delta;
-  });
-
-  // ====== CARGAR CONTENIDO EXISTENTE ======
-  const editorContent = document.getElementById('editorContent');
-  if (editorContent && editorContent.textContent.trim().length > 0) {
-    quill.clipboard.dangerouslyPasteHTML(editorContent.innerHTML);
-  }
-}
-// ====== HANDLER DE IMÁGENES (PREPARADO PARA CROP) ======
-function imageHandler() {
-  const input = document.createElement('input');
-  input.setAttribute('type', 'file');
-  input.setAttribute('accept', 'image/*');
-  input.click();
-  input.onchange = () => {
-    const file = input.files[0];
-    if (!file || !quill) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const range = quill.getSelection(true);
-      if (!range) return;
-      quill.insertEmbed(range.index, 'image', reader.result);
-      quill.setSelection(range.index + 1);
+  function Base64UploadAdapterPlugin(editorInstance) {
+    editorInstance.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+      return new Base64UploadAdapter(loader);
     };
-    reader.readAsDataURL(file);
-  };
+  }
+
+  // Inicializar DecoupledEditor
+  DecoupledEditor
+    .create(editorElement, {
+      extraPlugins: [Base64UploadAdapterPlugin],
+      placeholder: 'Comienza a escribir tu nota aquí...',
+      language: 'es',
+      toolbar: {
+        items: [
+          'heading',
+          '|',
+          'bold', 'italic', 'underline', 'strikethrough',
+          '|',
+          'fontSize', 'fontColor', 'fontBackgroundColor',
+          '|',
+          'alignment',
+          '|',
+          'numberedList', 'bulletedList',
+          '|',
+          'outdent', 'indent',
+          '|',
+          'link', 'uploadImage', 'blockQuote', 'insertTable', 'mediaEmbed',
+          '|',
+          'undo', 'redo'
+        ]
+      }
+    })
+    .then(newEditor => {
+      editor = newEditor;
+      window.editor = newEditor;
+
+      // Anclar la barra de herramientas al contenedor superior
+      const toolbarContainer = document.querySelector('.document-editor__toolbar');
+      if (toolbarContainer) {
+        toolbarContainer.appendChild(editor.ui.view.toolbar.element);
+      }
+      
+      // Si hay contenido preexistente en el div, CKEditor lo carga automáticamente.
+      const editorContent = document.getElementById('editorContent');
+      if (editorContent && editorContent.textContent.trim().length > 0) {
+        editor.setData(editorContent.innerHTML);
+      }
+    })
+    .catch(error => {
+      console.error('Error inicializando CKEditor 5:', error);
+    });
 }
 
-// ====== HANDLER PARA EMBEDS SOCIALES ======
-function embedHandler() {
-  const url = prompt("Introduce la URL a embeber (Twitter, Instagram, Facebook, etc.):");
-  if (!url || !quill) return;
-  // escape quotes to avoid breaking attributes
-  const safeUrl = url.replace(/"/g, '&quot;');
-  const range = quill.getSelection(true);
-  if (!range) return;
-  const html = `<div class="social-embed" data-url="${safeUrl}"><a href="${safeUrl}" target="_blank">${safeUrl}</a></div>`;
-  quill.clipboard.dangerouslyPasteHTML(range.index, html);
-  // move cursor after the inserted block
-  quill.setSelection(range.index + 1);
-}
 /* verifica el contenido del editor antes de enviar el formulario */
 const form = document.getElementById('formPublicacion') || document.getElementById('formEdicion');
 const contenidoInput = document.getElementById('contenido');
-if (form && contenidoInput && quill) {
+if (form && contenidoInput) {
   form.addEventListener('submit', () => {
-    let html = quill.root.innerHTML;
-    // ensure social-embed placeholders are minimal (strip inner HTML/scripts)
-    html = html.replace(/<div class="social-embed"[^>]*data-url="([^"]+)"[^>]*>.*?<\/div>/gi,
-                        '<div class="social-embed" data-url="$1"></div>');
-    contenidoInput.value = html;
+    if (window.editor) {
+      let html = window.editor.getData();
+      
+      // Convertir etiquetas oembed de CKEditor a los divs social-embed que el backend procesa
+      html = html.replace(/<oembed url="([^"]+)"><\/oembed>/gi, 
+                          '<div class="social-embed" data-url="$1"></div>');
+      // Limpiar también cualquier social-embed con contenido residual para dejarlo limpio
+      html = html.replace(/<div class="social-embed"[^>]*data-url="([^"]+)"[^>]*>.*?<\/div>/gi,
+                          '<div class="social-embed" data-url="$1"></div>');
+      
+      contenidoInput.value = html;
+    }
   });
 }
 // modal-delete

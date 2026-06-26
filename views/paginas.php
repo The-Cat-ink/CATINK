@@ -191,34 +191,12 @@
 
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Contenido</label>
-                <!-- TOOLBAR QUILL -->
-                <div class="editor-toolbar ql-toolbar ql-snow" style="border-radius: 8px 8px 0 0; background: var(--card-bg);">
-                    <select class="ql-font" title="Fuente">
-                        <option value="arial" selected>Arial</option>
-                        <option value="times">Times New Roman</option>
-                        <option value="roboto">Roboto</option>
-                        <option value="courier">Courier</option>
-                    </select>
-                    <select class="ql-size" title="Tamaño">
-                        <option value="small">Pequeño</option>
-                        <option selected>Normal</option>
-                        <option value="large">Grande</option>
-                        <option value="huge">Muy grande</option>
-                    </select>
-                    <button class="ql-bold" title="Negritas"></button>
-                    <button class="ql-italic" title="Cursiva"></button>
-                    <button class="ql-underline" title="Subrayado"></button>
-                    <button class="ql-strike" title="Tachado"></button>
-                    <select class="ql-color" title="Color"></select>
-                    <select class="ql-background" title="Fondo"></select>
-                    <select class="ql-align" title="Alineación"></select>
-                    <button class="ql-list" value="ordered" title="Lista ordenada"></button>
-                    <button class="ql-list" value="bullet" title="Lista desordenada"></button>
-                    <button class="ql-indent" value="-1" title="Reducir sangría"></button>
-                    <button class="ql-indent" value="+1" title="Aumentar sangría"></button>
-                    <button class="ql-clean" title="Limpiar formato"></button>
+                <div class="document-editor">
+                    <div class="document-editor__toolbar" id="toolbarpag"></div>
+                    <div class="document-editor__editable-container" style="height: 350px;">
+                        <div id="editorpag" class="editor-content"></div>
+                    </div>
                 </div>
-                <div id="editorpag" class="editor-content" style="border-radius: 0 0 8px 8px; border: 1px solid var(--border); border-top: none;"></div>
                 <input type="hidden" name="contenido" id="contenido">
             </div>
 
@@ -758,16 +736,23 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.head.appendChild(dropStyle);
 
-    // ── Quill (page editor) ──────────────────────────────────────────────
-    var quillpag = new Quill('#editorpag', {
-        theme: 'snow',
-        placeholder: 'Escribe el contenido aquí...',
-        modules: {
-            toolbar: {
-                container: '.editor-toolbar'
+    // ── CKEditor 5 (page editor) ──────────────────────────────────────────
+    let editorpag = null;
+    DecoupledEditor
+        .create(document.querySelector('#editorpag'), {
+            placeholder: 'Escribe el contenido aquí...',
+            language: 'es'
+        })
+        .then(editor => {
+            editorpag = editor;
+            const toolbarContainer = document.querySelector('#toolbarpag');
+            if (toolbarContainer) {
+                toolbarContainer.appendChild(editor.ui.view.toolbar.element);
             }
-        }
-    });
+        })
+        .catch(error => {
+            console.error('Error inicializando CKEditor para páginas:', error);
+        });
 
     const modalPagina = document.getElementById("modalPagina");
     const modalClosePag = document.getElementById("modalClosePag");
@@ -789,14 +774,19 @@ document.addEventListener('DOMContentLoaded', () => {
             modalPagina.style.display = "flex";
 
             setTimeout(() => {
-                quillpag.setContents([]);
-                quillpag.clipboard.dangerouslyPasteHTML(contenido);
+                if (editorpag) {
+                    editorpag.setData(contenido);
+                } else {
+                    document.getElementById('editorpag').innerHTML = contenido;
+                }
             }, 100);
         });
     });
 
     document.getElementById("formPagina").addEventListener("submit", function(){
-        document.getElementById("contenido").value = quillpag.root.innerHTML;
+        if (editorpag) {
+            document.getElementById("contenido").value = editorpag.getData();
+        }
     });
 
     modalClosePag.addEventListener('click', () => {
