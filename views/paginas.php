@@ -193,7 +193,7 @@
                 <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Contenido</label>
                 <div class="document-editor">
                     <div class="document-editor__toolbar" id="toolbarpag"></div>
-                    <div class="document-editor__editable-container" style="height: 350px;">
+                    <div class="document-editor__editable-container" style="height: 350px; overflow-y: auto;">
                         <div id="editorpag" class="editor-content"></div>
                     </div>
                 </div>

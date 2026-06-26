@@ -666,6 +666,18 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     desktopMQ.addListener(syncState);
   }
+  // Resaltar la página activa en el sidebar
+  const activePage = window.location.pathname.split('/').pop().toLowerCase();
+  document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+    const hrefAttr = link.getAttribute('href');
+    if (hrefAttr) {
+      const linkPage = hrefAttr.split('/').pop().toLowerCase();
+      if (activePage === linkPage) {
+        link.classList.add('active');
+      }
+    }
+  });
+
   window.addEventListener('resize', syncState, { passive: true });
   syncState();
 })();

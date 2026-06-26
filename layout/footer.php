@@ -75,36 +75,43 @@
         }, 300);
       });
     }
-
-    document.addEventListener('click', (e) => {
-      if (resultsBox && !e.target.closest('.nav-search')) {
-        resultsBox.style.display = 'none';
-      }
-    });
   }
 
   initSearch('searchInput', 'clearBtn', 'searchBtn', 'searchResults');
   initSearch('searchInputMobile', 'clearBtnMobile', 'searchBtnMobile', 'searchResultsMobile');
+
+  // Registrar el click listener global de búsqueda sólo una vez para evitar fugas de memoria
+  if (!window.searchClickBound) {
+    window.searchClickBound = true;
+    document.addEventListener('click', (e) => {
+      const resultsBox = document.getElementById('searchResults');
+      const resultsBoxMobile = document.getElementById('searchResultsMobile');
+      if (resultsBox && !e.target.closest('.nav-search')) {
+        resultsBox.style.display = 'none';
+      }
+      if (resultsBoxMobile && !e.target.closest('.nav-search')) {
+        resultsBoxMobile.style.display = 'none';
+      }
+    });
+  }
 </script>
 <script>
-  document.addEventListener("DOMContentLoaded", function(){
+  function handleInstagramAndCookies() {
       if(window.instgrm){
           window.instgrm.Embeds.process();
       }
-  });
-</script>
-<script>
-  document.addEventListener("DOMContentLoaded", function(){
       const modal = document.getElementById("cookie-modal");
-
-      // Si ya tomó decisión, ocultar modal
-      if(document.cookie.includes("cookies_decision=")){
-          if(modal) modal.style.display = "none";
-          if(document.cookie.includes("cookies_decision=aceptadas")) cargarCookies();
-      } else {
-          if(modal) modal.style.display = "flex";
+      if (modal) {
+          if(document.cookie.includes("cookies_decision=")){
+              modal.style.display = "none";
+              if(document.cookie.includes("cookies_decision=aceptadas")) cargarCookies();
+          } else {
+              modal.style.display = "flex";
+          }
       }
-  });
+  }
+  document.addEventListener("DOMContentLoaded", handleInstagramAndCookies);
+  document.addEventListener("turbo:load", handleInstagramAndCookies);
 
   function aceptarCookies(){
       document.cookie = "cookies_decision=aceptadas; path=/; max-age=" + (60*60*24*365);
@@ -135,19 +142,6 @@
           }
       }
   }
-</script>
-<script>
-    document.querySelectorAll(".news-card, .card, .carousel-item").forEach(card => {
-        card.addEventListener("click", function(e) {
-            // Evitar conflicto si hacen click en links o tags
-            if (e.target.closest("a")) return;
-
-            const url = this.dataset.url;
-            if (url) {
-                window.location.href = url;
-            }
-        });
-    });
 </script>
 <script>
     function updateClass() {
@@ -183,8 +177,11 @@
     }
     // Ejecutar al cargar
     updateClass();
-    // Ejecutar al redimensionar
+    // Ejecutar al redimensionar y al cargar nuevas vistas en Turbo sin acumular escuchadores
+    window.removeEventListener("resize", updateClass);
     window.addEventListener("resize", updateClass);
+    document.removeEventListener("turbo:load", updateClass);
+    document.addEventListener("turbo:load", updateClass);
 </script>
 <!-- Pie de página: columnas, enlaces y barra inferior -->
 <footer class="site-footer mt-5">
