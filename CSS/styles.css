@@ -5491,3 +5491,11 @@ body, .nav-link, .btn, .card, .site-main {
     gap: 12px;
   }
 }
+
+/* Barra de progreso de carga de Turbo Drive (Efecto YouTube) */
+.turbo-progress-bar {
+  height: 3px !important;
+  background-color: var(--accent, #EF3363) !important;
+  box-shadow: 0 0 10px rgba(239, 51, 99, 0.5);
+  z-index: 99999 !important;
+}

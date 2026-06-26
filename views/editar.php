@@ -126,6 +126,10 @@ $crop4Url = imageUrl($noticia['crop4'] ?? '');
 .cn-section.collapsed .cn-section-body {
   max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0;
 }
+.cn-section:not(.collapsed),
+.cn-section:not(.collapsed) .cn-section-body {
+  overflow: visible;
+}
 
 /* ── FORM FIELDS ── */
 .cn-field { margin-bottom: 14px; }

@@ -107,6 +107,10 @@ while($row = $categoriasResult->fetch_assoc()) $categorias[] = $row;
   padding-top: 0;
   padding-bottom: 0;
 }
+.cn-section:not(.collapsed),
+.cn-section:not(.collapsed) .cn-section-body {
+  overflow: visible;
+}
 
 /* ── FORM FIELDS ── */
 .cn-field { margin-bottom: 14px; }
