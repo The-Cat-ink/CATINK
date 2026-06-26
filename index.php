@@ -490,26 +490,24 @@ function tiempoRelativo($fecha) {
                     $url = newsUrlFromRow($r);
                     $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
                 ?>
-                    <div class="estreno-large-card" data-url="<?= $url ?>">
+                    <div class="estreno-pelis-block">
                         <h4 class="estreno-column-header">Películas y Series</h4>
-                        <div class="estreno-large-img-wrapper">
-                            <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="">
-                            <div class="card-float-circles">
-                                <div class="float-circle"><img src="<?= img([$r['crop3'], $r['crop1']]) ?>"></div>
-                                <div class="float-circle"><img src="<?= img([$r['crop1'], $r['crop3']]) ?>"></div>
+                        <div class="top-card card-width-2-3" data-url="<?= $url ?>">
+                            <div class="top-card-img-wrapper">
+                                <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="">
+                                <div class="card-float-circles">
+                                    <div class="float-circle"><img src="<?= img([$r['crop3'], $r['crop1']]) ?>"></div>
+                                    <div class="float-circle"><img src="<?= img([$r['crop1'], $r['crop3']]) ?>"></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="estreno-large-body">
-                            <div class="estreno-tags">
-                                <?php foreach ($cats as $c): ?>
-                                    <span class="category-pill-solid"><?= htmlspecialchars($c) ?></span>
-                                <?php endforeach; ?>
-                            </div>
-                            <h3 class="estreno-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>
-                            <p class="estreno-desc"><?= htmlspecialchars($r['descripcion']) ?></p>
-                            <div class="estreno-meta">
-                                <span>Publicado: <?= tiempoRelativo($r['fecha']) ?></span>
-                                <span>Por: <?= htmlspecialchars($r['nombre_u'] ?? 'Redacción') ?></span>
+                            <div class="top-card-overlay">
+                                <div class="top-card-tags">
+                                    <?php foreach ($cats as $c): ?>
+                                        <span class="news-tag-pill"><?= htmlspecialchars($c) ?></span>
+                                    <?php endforeach; ?>
+                                </div>
+                                <h3 class="top-card-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>
+                                <p class="top-card-desc"><?= htmlspecialchars($r['descripcion']) ?></p>
                             </div>
                         </div>
                     </div>
