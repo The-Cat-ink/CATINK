@@ -752,50 +752,12 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
           <i class="bi bi-chevron-down cn-section-toggle"></i>
         </div>
         <div class="cn-section-body">
-          <div class="cn-editor-wrap">
-            <div class="editor-toolbar ql-toolbar ql-snow">
-              <select class="ql-font" title="Fuente">
-                <option value="arial" selected>Arial</option>
-                <option value="times">Times New Roman</option>
-                <option value="roboto">Roboto</option>
-                <option value="courier">Courier</option>
-              </select>
-              <select class="ql-size" title="Tamaño">
-                <option value="small">Pequeño</option>
-                <option selected>Normal</option>
-                <option value="large">Grande</option>
-                <option value="huge">Muy grande</option>
-              </select>
-              <button class="ql-bold"></button>
-              <button class="ql-italic"></button>
-              <button class="ql-underline"></button>
-              <button class="ql-strike"></button>
-              <select class="ql-color"></select>
-              <select class="ql-background"></select>
-              <select class="ql-align"></select>
-              <select class="ql-lineheight" title="Interlineado">
-                <option value="0">0</option>
-                <option value="0.85">0.85</option>
-                <option value="1">1</option>
-                <option value="1.5">1.5</option>
-                <option value="2">2</option>
-                <option value="2.5">2.5</option>
-                <option value="3">3</option>
-              </select>
-              <button class="ql-list" value="ordered"></button>
-              <button class="ql-list" value="bullet"></button>
-              <button class="ql-indent" value="-1"></button>
-              <button class="ql-indent" value="+1"></button>
-              <button class="ql-link"></button>
-              <button class="ql-image"></button>
-              <button class="ql-video"></button>
-              <button class="ql-clean"></button>
-              <button class="ql-embed" title="Embebido"><i class="bi bi-boxes"></i></button>
-              <button class="ql-callout" title="Barra lateral"><i class="bi bi-layout-text-sidebar-reverse"></i></button>
+          <div class="document-editor">
+            <div class="document-editor__toolbar"></div>
+            <div class="document-editor__editable-container">
+              <div id="editor" class="editor-content"></div>
             </div>
-            <div id="editor" class="editor-content"></div>
           </div>
-          <input type="file" id="imageInputEditor" accept="image/*" hidden>
         </div>
       </div>
 
@@ -1056,9 +1018,14 @@ document.addEventListener('DOMContentLoaded', () => {
       errors.push('Descripción corta');
     if (!document.getElementById('crop2').value && !document.getElementById('crop3').value)
       errors.push('Imagen (banner y miniatura)');
-    const editorEl = document.querySelector('#editor .ql-editor');
-    const editorHtml = editorEl ? editorEl.innerHTML.trim() : '';
-    const emptyEditor = !editorHtml || editorHtml === '<p><br></p>' || editorHtml === '<p></p>';
+    let editorHtml = '';
+    if (window.editor) {
+      editorHtml = window.editor.getData().trim();
+    } else {
+      const editorEl = document.querySelector('#editor .ck-editor__editable') || document.querySelector('#editor');
+      editorHtml = editorEl ? editorEl.innerHTML.trim() : '';
+    }
+    const emptyEditor = !editorHtml || editorHtml === '<p><br></p>' || editorHtml === '<p></p>' || editorHtml === '';
     if (emptyEditor) errors.push('Contenido del artículo');
     return errors;
   }
@@ -1089,8 +1056,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (errors.length) { showToast(errors); return; }
 
     // Actualizamos valores ocultos
-    if (window.quill) {
-      let html = quill.root.innerHTML;
+    if (window.editor) {
+      let html = window.editor.getData();
+      html = html.replace(/<oembed url="([^"]+)"><\/oembed>/gi, 
+                          '<div class="social-embed" data-url="$1"></div>');
       html = html.replace(/<div class="social-embed"[^>]*data-url="([^"]+)"[^>]*>.*?<\/div>/gi,
                           '<div class="social-embed" data-url="$1"></div>');
       contenidoHid.value = html;
