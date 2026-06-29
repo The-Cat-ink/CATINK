@@ -1,5 +1,8 @@
-<?php
 include("./../layout/header.php");
+?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<?php
 require_once("./../data/conexion.php");
 if(!isset($_SESSION['usuario'])){
     header('Location: ' . basePath() . '/login');
