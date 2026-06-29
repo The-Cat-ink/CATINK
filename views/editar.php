@@ -56,10 +56,12 @@ while ($row = $resCat->fetch_assoc()) $categoriasSeleccionadas[] = $row;
 $fechaExistente = date('Y-m-d\TH:i', strtotime($noticia['fecha_publicacion']));
 
 // URLs de imágenes usando imageUrl() para servir correctamente
+// Nota: imageUrl('') devuelve el placeholder.svg, así que guardamos contra
+// vacío para que una zona sin crop quede realmente vacía (no con placeholder).
 $crop1Url = !empty($noticia['crop1']) ? imageUrl($noticia['crop1']) : '';
-$crop2Url = imageUrl($noticia['crop2'] ?? '');
-$crop3Url = imageUrl($noticia['crop3'] ?? '');
-$crop4Url = imageUrl($noticia['crop4'] ?? '');
+$crop2Url = !empty($noticia['crop2']) ? imageUrl($noticia['crop2']) : '';
+$crop3Url = !empty($noticia['crop3']) ? imageUrl($noticia['crop3']) : '';
+$crop4Url = !empty($noticia['crop4']) ? imageUrl($noticia['crop4']) : '';
 ?>
 <script>const ACL = <?= json_encode($ACL) ?>;</script>
 
@@ -590,7 +592,8 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 
           <div style="margin-bottom:12px;">
             <p class="cn-zone-label">Imagen Banner</p>
-            <div class="upload-zone cn-zone-banner" id="zone2" onclick="openCrop(2)">
+            <div class="upload-zone cn-zone-banner <?= $crop2Url ? 'has-image' : '' ?>" id="zone2" onclick="openCrop(2)">
+              <?php if ($crop2Url): ?><img class="preview-img" src="<?= htmlspecialchars($crop2Url) ?>" fetchpriority="high" alt=""><?php endif; ?>
               <div class="zone-overlay"><span>Cambiar imagen</span></div>
               <i class="bi bi-aspect-ratio cn-zone-icon"></i>
               <span class="zone-ratio">21 : 6</span>
@@ -604,7 +607,8 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
           <!-- Imagen centrada 21:6 -->
           <div style="margin-bottom:12px;">
             <p class="cn-zone-label">Imagen centrada <span style="text-transform:none;font-size:10px;font-weight:400;color:var(--muted)">(21:6)</span></p>
-            <div class="upload-zone cn-zone-paisaje" id="zone4" onclick="openCrop(4)">
+            <div class="upload-zone cn-zone-paisaje <?= $crop4Url ? 'has-image' : '' ?>" id="zone4" onclick="openCrop(4)">
+              <?php if ($crop4Url): ?><img class="preview-img" src="<?= htmlspecialchars($crop4Url) ?>" fetchpriority="high" alt=""><?php endif; ?>
               <div class="zone-overlay"><span>Cambiar</span></div>
               <i class="bi bi-layout-text-window cn-zone-icon"></i>
               <span class="zone-ratio">21 : 9</span>
@@ -617,7 +621,8 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 
           <div style="margin-bottom:14px;">
             <p class="cn-zone-label">Miniatura <span style="text-transform:none;font-size:10px;font-weight:400;color:var(--muted)">(clic para cambiar)</span></p>
-            <div class="upload-zone cn-zone-mini" id="zone3" onclick="openCrop(3)">
+            <div class="upload-zone cn-zone-mini <?= $crop3Url ? 'has-image' : '' ?>" id="zone3" onclick="openCrop(3)">
+              <?php if ($crop3Url): ?><img class="preview-img" src="<?= htmlspecialchars($crop3Url) ?>" fetchpriority="high" alt=""><?php endif; ?>
               <div class="zone-overlay"><span>Cambiar</span></div>
               <i class="bi bi-image cn-zone-icon"></i>
               <span class="zone-ratio">16 : 9</span>
@@ -712,7 +717,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
           <div class="document-editor">
             <div class="document-editor__toolbar"></div>
             <div class="document-editor__editable-container">
-              <div id="editor" class="editor-content"><?= $noticia['contenido'] ?></div>
+              <div id="editor" class="editor-content"><?= preg_replace('/<img(?![^>]*\bloading=)\s/i', '<img loading="lazy" ', $noticia['contenido']) ?></div>
             </div>
           </div>
         </div>
@@ -983,17 +988,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   updateCatLabel();
 
-  /* ── Pre-cargar zonas con imágenes existentes ── */
+  /* ── Pre-cargar zonas con imágenes existentes ──
+     Las <img> de preview ya vienen renderizadas desde el servidor dentro de
+     cada zona (así cargan junto con el resto del HTML, sin quedar al final de
+     la cola de descargas detrás de las imágenes del contenido). Aquí solo
+     reponemos zoneSources —la fuente para re-recortar— y la vista previa. */
   if (EXISTING_CROP2_URL) {
-    setZonePreviewFromUrl(2, EXISTING_CROP2_URL);
     zoneSources[2] = EXISTING_CROP1_URL || EXISTING_CROP2_URL;
   }
   if (EXISTING_CROP4_URL) {
-    setZonePreviewFromUrl(4, EXISTING_CROP4_URL);
     zoneSources[4] = EXISTING_CROP1_URL || EXISTING_CROP2_URL || EXISTING_CROP4_URL;
   }
   if (EXISTING_CROP3_URL) {
-    setZonePreviewFromUrl(3, EXISTING_CROP3_URL);
     zoneSources[3] = EXISTING_CROP1_URL || EXISTING_CROP2_URL || EXISTING_CROP3_URL;
   }
   if (EXISTING_CROP2_URL || EXISTING_CROP3_URL || EXISTING_CROP4_URL) {
@@ -1327,6 +1333,10 @@ function setZonePreviewFromUrl(zoneId, url) {
   zone.querySelectorAll('.preview-img').forEach(el => el.remove());
   const img = document.createElement('img');
   img.className = 'preview-img';
+  // Prioriza la carga de los crops por encima de las (muchas) imágenes del
+  // contenido, que de otro modo saturan el pool de conexiones del navegador
+  // y dejan estas previews en cola hasta que se recarga la página.
+  img.fetchPriority = 'high';
   img.onload = function() {
     zone.classList.add('has-image');
   };
