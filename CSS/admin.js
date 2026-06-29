@@ -409,31 +409,39 @@
     const editorElement = document.getElementById('editor');
     if (!editorElement) return;
 
-    class Base64UploadAdapter {
+    class ServerUploadAdapter {
       constructor(loader) {
         this.loader = loader;
       }
       upload() {
         return this.loader.file
           .then(file => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve({ default: reader.result });
-            reader.onerror = error => reject(error);
-            reader.readAsDataURL(file);
+            const data = new FormData();
+            data.append('imagen', file);
+            fetch((window.ADMIN_BASE || '') + '/controllers/subir_imagen_contenido.php', {
+              method: 'POST',
+              body: data
+            })
+              .then(r => r.json())
+              .then(res => {
+                if (res && res.url) resolve({ default: res.url });
+                else reject((res && res.error) || 'No se pudo subir la imagen');
+              })
+              .catch(() => reject('Error de red al subir la imagen'));
           }));
       }
       abort() {}
     }
 
-    function Base64UploadAdapterPlugin(editorInstance) {
+    function ServerUploadAdapterPlugin(editorInstance) {
       editorInstance.plugins.get('FileRepository').createUploadAdapter = (loader) => {
-        return new Base64UploadAdapter(loader);
+        return new ServerUploadAdapter(loader);
       };
     }
 
     DecoupledEditor
       .create(editorElement, {
-        extraPlugins: [Base64UploadAdapterPlugin],
+        extraPlugins: [ServerUploadAdapterPlugin],
         placeholder: 'Comienza a escribir tu nota aquí...',
         language: 'es',
         toolbar: {
@@ -451,10 +459,6 @@
         const toolbarContainer = document.querySelector('.document-editor__toolbar');
         if (toolbarContainer) {
           toolbarContainer.appendChild(newEditor.ui.view.toolbar.element);
-        }
-        const editorContent = document.getElementById('editorContent');
-        if (editorContent && editorContent.textContent.trim().length > 0) {
-          newEditor.setData(editorContent.innerHTML);
         }
       })
       .catch(error => {
@@ -601,6 +605,7 @@
 
     if (!inputImage || !cropBtn || !resetBtn || !tipoPublicidad) return;
 
+    // Tamaños según tipo
     function getAspectRatio() {
       let tipo = tipoPublicidad.value;
       if (tipo == "1") return 21 / 6;

@@ -715,7 +715,6 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               <div id="editor" class="editor-content"><?= $noticia['contenido'] ?></div>
             </div>
           </div>
-          <div id="editorContent" style="display:none;"><?= $noticia['contenido'] ?></div>
         </div>
       </div>
 
