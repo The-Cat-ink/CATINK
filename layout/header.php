@@ -215,9 +215,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <button class="user-avatar-link" id="userDropdownBtn" title="Mi Perfil">
             <span class="user-avatar">
               <?php if($fotoPersonal): ?>
-                <img src="<?= imageUrl($fotoPersonal) ?>" alt="Foto personal" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                <img src="<?= imageUrl($fotoPersonal) ?>" alt="Foto personal" style="width:100%; height:100%; object-fit:cover; display:block;">
               <?php elseif($avatarActual): ?>
-                <img src="<?= imageUrl($avatarActual) ?>" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                <img src="<?= imageUrl($avatarActual) ?>" alt="Avatar" style="width:100%; height:100%; object-fit:cover; display:block;">
               <?php else: ?>
                 <i class="bi bi-person"></i>
               <?php endif; ?>
