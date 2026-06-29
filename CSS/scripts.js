@@ -3,6 +3,45 @@
   window.scriptsJsInitialized = true;
 
   let lastScroll = 0;
+  let prefetchTimeout;
+
+  // Prefetch de enlaces en hover para navegación instantánea
+  function initHoverPrefetch() {
+    document.addEventListener('mouseover', (e) => {
+      const link = e.target.closest('a');
+      if (!link) return;
+
+      const href = link.getAttribute('href');
+      if (!href) return;
+
+      // Asegurar que es un enlace local
+      if (href.startsWith('http') && !href.includes(window.location.hostname)) return;
+      if (href.startsWith('#') || href.startsWith('javascript:')) return;
+      if (link.getAttribute('data-turbo') === 'false') return;
+      if (link.getAttribute('target') === '_blank') return;
+
+      try {
+        const absoluteUrl = new URL(href, window.location.href).href;
+        // Evitar prefetch duplicado
+        if (document.querySelector(`link[rel="prefetch"][href="${absoluteUrl}"]`)) return;
+
+        clearTimeout(prefetchTimeout);
+        prefetchTimeout = setTimeout(() => {
+          const prefetchLink = document.createElement('link');
+          prefetchLink.rel = 'prefetch';
+          prefetchLink.href = absoluteUrl;
+          document.head.appendChild(prefetchLink);
+        }, 80); // Retardo de 80ms para sweeps rápidos
+      } catch (err) {}
+    });
+
+    document.addEventListener('mouseout', () => {
+      clearTimeout(prefetchTimeout);
+    });
+  }
+
+  // Inicializar prefetcher
+  initHoverPrefetch();
 
   function handleNavbarScroll() {
     const navbar = document.querySelector('.navbar');
