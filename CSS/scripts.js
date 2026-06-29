@@ -56,16 +56,6 @@
     lastScroll = curr;
   }
 
-  function handleDropdownOutsideClick(e) {
-    const userDropdownBtn = document.getElementById('userDropdownBtn');
-    const userDropdownMenu = document.getElementById('userDropdownMenu');
-    if (userDropdownBtn && userDropdownMenu) {
-      if (!userDropdownBtn.contains(e.target) && !userDropdownMenu.contains(e.target)) {
-        userDropdownMenu.classList.remove('show');
-      }
-    }
-  }
-
   function handleDropdownEscape(e) {
     if (e.key === 'Escape') {
       const userDropdownMenu = document.getElementById('userDropdownMenu');
@@ -74,6 +64,24 @@
       }
     }
   }
+
+  // ============================================================
+  // Dropdown de usuario (foto de perfil del header)
+  // Delegación en document registrada UNA sola vez. Así funciona con
+  // el botón que exista en cada momento (Turbo reemplaza el <body> en
+  // cada navegación) y nunca se acumulan listeners → clic siempre responde.
+  // ============================================================
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('userDropdownMenu');
+    if (!menu) return;
+    if (e.target.closest('#userDropdownBtn')) {
+      e.stopPropagation();
+      menu.classList.toggle('show');
+    } else if (!e.target.closest('#userDropdownMenu')) {
+      menu.classList.remove('show');
+    }
+  });
+  document.addEventListener('keydown', handleDropdownEscape);
 
   // Escuchar evento turbo:load en lugar de DOMContentLoaded
   document.addEventListener('turbo:load', function() {
@@ -231,21 +239,10 @@
       });
     }
 
-    // 8. User dropdown toggle (Dropdown de Usuario)
-    document.removeEventListener('click', handleDropdownOutsideClick);
-    document.removeEventListener('keydown', handleDropdownEscape);
-
-    const userDropdownBtn = document.getElementById('userDropdownBtn');
+    // 8. User dropdown: cerrar el menú al navegar (el toggle se maneja
+    //    con delegación única registrada arriba, fuera de turbo:load)
     const userDropdownMenu = document.getElementById('userDropdownMenu');
-
-    if (userDropdownBtn && userDropdownMenu) {
-      userDropdownBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        userDropdownMenu.classList.toggle('show');
-      });
-      document.addEventListener('click', handleDropdownOutsideClick);
-      document.addEventListener('keydown', handleDropdownEscape);
-    }
+    if (userDropdownMenu) userDropdownMenu.classList.remove('show');
 
     // 9. Barra de progreso de lectura (para notas/noticias)
     const progressBar = document.getElementById('readingProgressBar');

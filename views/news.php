@@ -511,8 +511,13 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                         <?php if ($esMiComentario): ?>
                           <button class="btn-editar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-pencil"></i> Editar</button>
                           <button class="btn-eliminar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-trash"></i> Eliminar</button>
-                        <?php elseif (isset($_SESSION['tipo'])): ?>
-                          <button class="btn-reportar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-flag"></i> Reportar</button>
+                        <?php else: ?>
+                          <?php if (isset($_SESSION['tipo'])): ?>
+                            <button class="btn-reportar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-flag"></i> Reportar</button>
+                          <?php endif; ?>
+                          <?php if (!empty($_SESSION['superadmin'])): ?>
+                            <button class="btn-eliminar-com btn-mod-eliminar" data-id="<?= $com['id_comentario'] ?>" title="Eliminar como moderador"><i class="bi bi-trash"></i> Eliminar (mod)</button>
+                          <?php endif; ?>
                         <?php endif; ?>
                       </div>
                     </div>

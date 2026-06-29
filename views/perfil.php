@@ -1,4 +1,5 @@
 <?php
+$noTurboCache = true; // El perfil es un formulario: nunca servir snapshot cacheado de Turbo
 include("./../layout/header.php");
 ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
@@ -385,6 +386,7 @@ $estadosMX = ['AGU'=>'Aguascalientes','BCN'=>'Baja California','BCS'=>'Baja Cali
 
 /* PAGE & TABS */
 .perfil-page {
+  position: relative; z-index: 2; /* el hero tiene margin-bottom negativo + position:relative; sin esto tapa las pestañas */
   max-width: 760px; margin: 0 auto 60px;
   padding: 0 16px;
 }
@@ -532,6 +534,12 @@ $estadosMX = ['AGU'=>'Aguascalientes','BCN'=>'Baja California','BCS'=>'Baja Cali
 </style>
 
 <script>
+// Inicializa la página de perfil. Se ejecuta en carga directa y en cada
+// navegación Turbo (turbo:load). La guarda por body evita doble enlace.
+function initPerfil(){
+  if (!document.body || document.body.dataset.perfilInit === '1') return;
+  document.body.dataset.perfilInit = '1';
+
 // ---- TABS ----
 document.querySelectorAll('.perfil-tab').forEach(tab => {
   tab.addEventListener('click', () => {
@@ -634,5 +642,12 @@ if (toast) setTimeout(() => { toast.style.opacity = '0'; toast.style.transition 
     modalInput.value = '';
   });
 })();
+
+} // fin initPerfil
+
+// Disparar en navegación Turbo y en carga directa (sin depender del parseo).
+document.addEventListener('turbo:load', initPerfil);
+if (document.readyState !== 'loading') initPerfil();
+else document.addEventListener('DOMContentLoaded', initPerfil);
 </script>
 <?php include("./../layout/footer.php"); ?>

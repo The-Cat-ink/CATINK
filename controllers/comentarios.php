@@ -3,6 +3,7 @@ session_start();
 header('Content-Type: application/json');
 require_once(__DIR__ . '/../data/conexion.php');
 require_once(__DIR__ . '/../views/helpers/filtrohelper.php');
+require_once(__DIR__ . '/../views/helpers/moderacion.php');
 
 // Lectores o admins pueden comentar
 $tipoUsuario = $_SESSION['tipo'] ?? null;
@@ -26,6 +27,19 @@ if (!$lectorId && !$usuarioId) {
 
 $esEditor = ($tipoUsuario === 'admin');
 $action = $_POST['action'] ?? '';
+
+// ============================
+// BLOQUEAR USUARIOS SUSPENDIDOS (no aplica a 'eliminar')
+// ============================
+if (in_array($action, ['crear', 'editar'], true)) {
+    $banTipo = $tipoUsuario === 'lector' ? 'lector' : 'admin';
+    $banId   = $tipoUsuario === 'lector' ? $lectorId : $usuarioId;
+    $banRow  = obtenerBaneo($con, $banTipo, $banId);
+    if ($banRow && estaBaneado($banRow)) {
+        echo json_encode(['ok' => false, 'msg' => 'Tu cuenta está suspendida. ' . (textoBaneo($banRow) ?? '')]);
+        exit;
+    }
+}
 
 // ============================
 // FILTRO DE PALABRAS PROHIBIDAS
@@ -253,19 +267,21 @@ switch ($action) {
             exit;
         }
 
-        // Verificar propiedad (lector o admin)
-        if ($lectorId) {
-            $stmtCheck = $con->prepare("SELECT id_comentario FROM comentarios WHERE id_comentario = ? AND lector_id = ?");
-            $stmtCheck->bind_param("ii", $comentarioId, $lectorId);
-        } else {
-            $stmtCheck = $con->prepare("SELECT id_comentario FROM comentarios WHERE id_comentario = ? AND usuario_id = ?");
-            $stmtCheck->bind_param("ii", $comentarioId, $usuarioId);
-        }
-        $stmtCheck->execute();
+        // El superadmin puede eliminar cualquier comentario; los demás solo el propio.
+        if (!esSuperAdminActual()) {
+            if ($lectorId) {
+                $stmtCheck = $con->prepare("SELECT id_comentario FROM comentarios WHERE id_comentario = ? AND lector_id = ?");
+                $stmtCheck->bind_param("ii", $comentarioId, $lectorId);
+            } else {
+                $stmtCheck = $con->prepare("SELECT id_comentario FROM comentarios WHERE id_comentario = ? AND usuario_id = ?");
+                $stmtCheck->bind_param("ii", $comentarioId, $usuarioId);
+            }
+            $stmtCheck->execute();
 
-        if ($stmtCheck->get_result()->num_rows === 0) {
-            echo json_encode(['ok' => false, 'msg' => 'No puedes eliminar este comentario.']);
-            exit;
+            if ($stmtCheck->get_result()->num_rows === 0) {
+                echo json_encode(['ok' => false, 'msg' => 'No puedes eliminar este comentario.']);
+                exit;
+            }
         }
 
         $stmtDel = $con->prepare("UPDATE comentarios SET estado = 'eliminado' WHERE id_comentario = ?");

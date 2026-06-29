@@ -2432,6 +2432,19 @@ hr{
   appearance: auto;
   cursor: pointer;
 }
+/* Fix tema oscuro: el desplegable nativo hereda fondo transparente y deja
+   las opciones ilegibles (texto claro sobre fondo claro). Damos fondo y
+   color explícitos que siguen el tema actual. */
+.input option,
+select.input option,
+.mod-select option {
+  background-color: var(--bg);
+  color: var(--text);
+}
+[data-bs-theme="dark"] .perfil-form select.input,
+[data-bs-theme="dark"] .input.mod-select {
+  background-color: var(--bg);
+}
 .btn-perfil-save {
   width: 100%;
   padding: 14px;

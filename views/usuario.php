@@ -2,6 +2,7 @@
 include("./../layout/header.php");
 require_once("./../data/conexion.php");
 require_once("./helpers/urlhelper.php");
+require_once("./helpers/moderacion.php");
 
 // ==============================
 // Obtener ID del lector
@@ -105,6 +106,13 @@ $esMiPerfil = (isset($_SESSION['tipo'], $_SESSION['id_lector']) && $_SESSION['ti
                     </a>
                 </div>
             <?php endif; ?>
+            <?php
+                // Panel de moderación (solo superadmin)
+                $modTipo = 'lector';
+                $modUserId = $lector['id'];
+                $modBanRow = obtenerBaneo($con, 'lector', $lector['id']) ?: [];
+                include(__DIR__ . '/helpers/mod_panel.php');
+            ?>
         </div>
     </div>
 

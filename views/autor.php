@@ -2,6 +2,8 @@
 include("./../layout/header.php");
 require_once("./../data/conexion.php");
 require_once("./helpers/urlhelper.php");
+require_once("./helpers/helper.php");
+require_once("./helpers/moderacion.php");
 
 // ==============================
 // Obtener ID del editor
@@ -16,7 +18,8 @@ if ($id <= 0) {
 // Obtener datos del editor
 // ==============================
 $stmt = $con->prepare("
-    SELECT id_u, nombre, usuario, biografia, foto_personal, link_twitter, link_instagram, registro
+    SELECT id_u, nombre, usuario, biografia, foto_personal, link_twitter, link_instagram, registro,
+           perm_categorias, perm_noticias, perm_publicidad, perm_suscripciones, perm_usuarios, perm_correos, perm_videos
     FROM usuarios
     WHERE id_u = ?
 ");
@@ -116,6 +119,15 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                     </a>
                 <?php endif; ?>
             </div>
+            <?php
+                // Panel de moderación (solo superadmin, nunca sobre uno mismo ni sobre otro superadmin)
+                if (!$esEditorActual && !esSuperAdmin($editor)) {
+                    $modTipo = 'admin';
+                    $modUserId = $editor['id_u'];
+                    $modBanRow = obtenerBaneo($con, 'admin', $editor['id_u']) ?: [];
+                    include(__DIR__ . '/helpers/mod_panel.php');
+                }
+            ?>
         </div>
     </div>
 
