@@ -263,10 +263,22 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
             <h1><?= htmlspecialchars($noticia['titulo']) ?></h1>
 
             <p class="descripcion"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
-            <p class="meta">
-              Por <a href="<?= authorUrl($noticia['autor_id'] ?? 0) ?>" style="color: var(--accent); text-decoration: none; font-weight: 700;"><?= htmlspecialchars($noticia['autor_nombre'] ?? 'Desconocido') ?></a> —
-              <?= date("d/m/Y H:i", strtotime($noticia['fecha_publicacion'])) ?>
-            </p>
+            <div class="meta-autor">
+              <?php
+                $autorFoto = $noticia['autor_foto'] ?? null;
+                $autorNombre = $noticia['autor_nombre'] ?? 'Desconocido';
+                $autorIniciales = strtoupper(substr($autorNombre, 0, 1));
+              ?>
+              <?php if($autorFoto): ?>
+                <img src="<?= imageUrl($autorFoto) ?>" alt="<?= htmlspecialchars($autorNombre) ?>" class="meta-autor-avatar">
+              <?php else: ?>
+                <span class="meta-autor-avatar meta-autor-avatar--iniciales"><?= $autorIniciales ?></span>
+              <?php endif; ?>
+              <span class="meta-autor-info">
+                Por <a href="<?= authorUrl($noticia['autor_id'] ?? 0) ?>" class="meta-autor-link"><?= htmlspecialchars($autorNombre) ?></a>
+                <span class="meta-autor-fecha"><?= date("d/m/Y · H:i", strtotime($noticia['fecha_publicacion'])) ?></span>
+              </span>
+            </div>
             <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
               <button id="likeBtn" class="like-btn" data-id="<?= $id ?>">
                 <i class="bi bi-heart-fill" style="color: red;"></i> Like <span id="likeCount"><?= $noticia['likes'] ?></span>

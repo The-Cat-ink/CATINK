@@ -942,6 +942,48 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
 }
+/* Autor chip en noticias */
+.meta-autor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.meta-autor-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+}
+.meta-autor-avatar--iniciales {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent), #7c1d5e);
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 700;
+}
+.meta-autor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: .85rem;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.meta-autor-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: .92rem;
+}
+.meta-autor-link:hover { text-decoration: underline; }
+.meta-autor-fecha { font-size: .78rem; color: var(--muted); }
 .like-btn {
   background: transparent;
   border: 1px solid var(--accent);
