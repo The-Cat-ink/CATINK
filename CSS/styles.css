@@ -6,9 +6,24 @@
 */
 /* Reset básico */
 
-body, header, nav, footer, .card, .panel-admin {
-    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+/*
+  Transición global de tema (dark ↔ light).
+  Se aplica a todos los elementos para que el cambio sea suave.
+  No interfiere con otras transiciones (hover, animaciones) porque
+  solo agrega las propiedades de color a la lista de transición.
+*/
+*, *::before, *::after {
+  transition-property: background-color, color, border-color, fill, stroke, box-shadow;
+  transition-duration: 0.25s;
+  transition-timing-function: ease;
 }
+/*
+  Excepción: elementos donde la transición de color no debe aplicarse
+  para no afectar animaciones ni SVGs animados.
+*/
+[data-no-theme-transition],
+[data-no-theme-transition] *,
+video, canvas, img, svg * { transition: none; }
 
 body.dark-mode {
     background-color: #121212; /* Un gris hiper oscuro estilo Spotify */
@@ -236,13 +251,14 @@ h2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
-  background: var(--accent, #4299E1);
+  background: var(--accent, #EF3363);
   color: #fff;
   font-size: 14px;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .nav-actions .user-dropdown .user-name {
@@ -324,19 +340,21 @@ h2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--card-bg, #F7FAFC);
-  border: 1px solid var(--border, #E2E8F0);
+  border: 2px solid var(--border, #E2E8F0);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease, transform 0.15s ease;
   text-decoration: none;
   flex-shrink: 0;
+  overflow: hidden;
+  padding: 0;
 }
 .nav-actions .user-avatar-link:hover {
-  background: var(--hover-bg, #EDF2F7);
-  border-color: var(--border-hover, #CBD5E0);
+  border-color: var(--accent);
+  transform: scale(1.06);
 }
 
 /* ============================
@@ -939,6 +957,48 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
 }
+/* Autor chip en noticias */
+.meta-autor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.meta-autor-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+}
+.meta-autor-avatar--iniciales {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent), #7c1d5e);
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 700;
+}
+.meta-autor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: .85rem;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.meta-autor-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: .92rem;
+}
+.meta-autor-link:hover { text-decoration: underline; }
+.meta-autor-fecha { font-size: .78rem; color: var(--muted); }
 .like-btn {
   background: transparent;
   border: 1px solid var(--accent);
