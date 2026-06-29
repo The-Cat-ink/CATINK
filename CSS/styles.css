@@ -6,9 +6,24 @@
 */
 /* Reset básico */
 
-body, header, nav, footer, .card, .panel-admin {
-    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+/*
+  Transición global de tema (dark ↔ light).
+  Se aplica a todos los elementos para que el cambio sea suave.
+  No interfiere con otras transiciones (hover, animaciones) porque
+  solo agrega las propiedades de color a la lista de transición.
+*/
+*, *::before, *::after {
+  transition-property: background-color, color, border-color, fill, stroke, box-shadow;
+  transition-duration: 0.25s;
+  transition-timing-function: ease;
 }
+/*
+  Excepción: elementos donde la transición de color no debe aplicarse
+  para no afectar animaciones ni SVGs animados.
+*/
+[data-no-theme-transition],
+[data-no-theme-transition] *,
+video, canvas, img, svg * { transition: none; }
 
 body.dark-mode {
     background-color: #121212; /* Un gris hiper oscuro estilo Spotify */
