@@ -180,7 +180,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </ul>
       <?php if(isset($_SESSION['usuario'])): ?>
         <div class="nav-logout-mobile">
-          <a class="nav-link nav-logout-link" href="<?= basePath() ?>/controllers/logoutcontroller.php">
+          <a class="nav-link nav-logout-link" href="<?= basePath() ?>/controllers/logoutcontroller.php" data-turbo="false">
             <i class="bi bi-box-arrow-right"></i> Cerrar sesión
           </a>
         </div>
@@ -269,7 +269,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               <a href="https://www.tiktok.com/@thecatink" aria-label="TikTok" target="_blank"><i class="bi bi-tiktok"></i></a>
             </div>
             <div class="dropdown-divider"></div>
-            <a href="<?= basePath() ?>/controllers/logoutcontroller.php" class="dropdown-item dropdown-logout">
+            <a href="<?= basePath() ?>/controllers/logoutcontroller.php" class="dropdown-item dropdown-logout" data-turbo="false">
               <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
             </a>
           </div>

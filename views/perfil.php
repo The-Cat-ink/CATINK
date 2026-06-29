@@ -70,7 +70,7 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
           <span class="perfil-meta-value"><?= $fechaRegistro ?></span>
         </div>
       </div>
-      <a href="<?= basePath() ?>/controllers/logoutcontroller.php" class="perfil-logout-btn">
+      <a href="<?= basePath() ?>/controllers/logoutcontroller.php" class="perfil-logout-btn" data-turbo="false">
         <i class="bi bi-box-arrow-right"></i> Cerrar sesión
       </a>
     </div>

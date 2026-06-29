@@ -5497,5 +5497,5 @@ body, .nav-link, .btn, .card, .site-main {
   height: 3px !important;
   background-color: var(--accent, #EF3363) !important;
   box-shadow: 0 0 10px rgba(239, 51, 99, 0.5);
-  z-index: 99999 !important;
+  z-index: 100005 !important;
 }

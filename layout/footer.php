@@ -18,7 +18,7 @@
 <script src="<?= basePath() ?>/CSS/scripts.js?v=<?= filemtime(__DIR__ . '/../CSS/scripts.js') ?>"></script>
 <script async src="https://platform.twitter.com/widgets.js"></script>
 <script>
-  const basePath = '<?= basePath() ?>';
+  var basePath = '<?= basePath() ?>';
 
   function initSearch(inputId, clearBtnId, searchBtnId, resultsBoxId) {
     const input = document.getElementById(inputId);

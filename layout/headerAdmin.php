@@ -76,6 +76,7 @@ $_SESSION['id_u'] = $fila['id_u'];
   <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
   <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/decoupled-document/ckeditor.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js" defer></script>
     <?php if($ACL): ?>
         <script>
             window.ACL = {
@@ -191,7 +192,7 @@ $_SESSION['id_u'] = $fila['id_u'];
           <span class="theme-switch-icons-thumb"></span>
         </span>
       </label>
-      <a href="./../controllers/logoutcontroller.php" class="sidebar-menu-link" data-tooltip="Salir">
+      <a href="./../controllers/logoutcontroller.php" class="sidebar-menu-link" data-tooltip="Salir" data-turbo="false">
           <i class="bi bi-box-arrow-right"></i> <span class="sb-label">Salir</span>
       </a>
     </div>
