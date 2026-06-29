@@ -1,3 +1,4 @@
+<?php
 include("./../layout/header.php");
 ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
