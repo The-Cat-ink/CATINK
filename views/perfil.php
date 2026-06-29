@@ -174,44 +174,6 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
             <option value="ZAC" <?= $ent=='ZAC'?'selected':'' ?>>Zacatecas</option>
           </select>
         </div>
-        <?php if($tipoUsuario === 'admin'): ?>
-        <!-- PERFIL PÚBLICO (solo editores) -->
-        <hr style="margin: 24px 0; border-color: var(--border);">
-        <h3 style="margin-bottom: 16px; font-size: 1.1rem;"><i class="bi bi-person-badge"></i> Perfil Público</h3>
-        <div class="form-group">
-          <label>Foto Personal</label>
-          <label class="perfil-drop-zone" id="fotoDropZone">
-            <input type="file" name="foto_personal" id="fotoFileInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
-            <?php if(!empty($user['foto_personal'])): ?>
-              <img id="fotoPreview" src="<?= imageUrl($user['foto_personal']) ?>" style="max-width:100%; max-height:150px; border-radius:8px; object-fit:cover;">
-              <div class="perfil-drop-icon" style="display:none;"><i class="bi bi-cloud-arrow-up"></i></div>
-              <div class="perfil-drop-text" style="display:none;">Arrastra una imagen o <span>haz clic aquí</span></div>
-            <?php else: ?>
-              <img id="fotoPreview" style="display:none; max-width:100%; max-height:150px; border-radius:8px; object-fit:cover;">
-              <div class="perfil-drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
-              <div class="perfil-drop-text">Arrastra una imagen o <span>haz clic aquí</span></div>
-            <?php endif; ?>
-            <div class="perfil-drop-hint">JPG, PNG o WEBP</div>
-          </label>
-        </div>
-        <div class="form-group">
-          <label for="biografia">Biografía</label>
-          <textarea id="biografia" name="biografia" class="input" rows="4" style="resize:vertical;" placeholder="Cuéntale al mundo sobre ti..."><?= htmlspecialchars($user['biografia'] ?? '') ?></textarea>
-        </div>
-        <div class="perfil-row">
-          <div class="form-group perfil-half">
-            <label for="link_twitter"><i class="bi bi-twitter-x"></i> Twitter / X</label>
-            <input type="url" id="link_twitter" name="link_twitter" class="input" value="<?= htmlspecialchars($user['link_twitter'] ?? '') ?>" placeholder="https://x.com/tu_usuario">
-          </div>
-          <div class="form-group perfil-half">
-            <label for="link_instagram"><i class="bi bi-instagram"></i> Instagram</label>
-            <input type="url" id="link_instagram" name="link_instagram" class="input" value="<?= htmlspecialchars($user['link_instagram'] ?? '') ?>" placeholder="https://instagram.com/tu_usuario">
-          </div>
-        </div>
-        <a href="<?= basePath() ?>/autor/<?= $user['id_u'] ?>" target="_blank" style="display:inline-block; margin-bottom: 16px; color: var(--accent); font-size: 0.9rem; text-decoration: none;">
-          <i class="bi bi-eye"></i> Ver mi perfil público
-        </a>
-        <?php endif; ?>
         <button type="submit" class="btn-perfil-save">Guardar Cambios</button>
       </form>
 
