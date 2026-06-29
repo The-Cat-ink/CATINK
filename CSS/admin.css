@@ -2293,6 +2293,20 @@ body.sidebar-open {
     width: var(--sidebar-collapsed-width);
     box-shadow: none;
   }
+  /* Colapsada (sin expandir): iconos perfectamente centrados en la barra.
+     El padding lateral simétrico de 26px descentraba el icono hacia la derecha. */
+  .sidebar .sidebar-menu-link {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  /* Expandida (hover o fijada): icono a la izquierda dejando sitio al label. */
+  .sidebar:hover .sidebar-menu-link,
+  .sidebar:not(.is-collapsed) .sidebar-menu-link {
+    justify-content: flex-start;
+    padding-left: 26px;
+    padding-right: 12px;
+  }
   .sidebar:hover {
     width: var(--sidebar-width);
     box-shadow: 18px 0 36px rgba(15, 23, 42, 0.1);
@@ -2344,8 +2358,9 @@ body.sidebar-open {
     pointer-events: none;
   }
   .sidebar.is-collapsed .sidebar-menu-link {
-    padding: 7px 26px !important;
-    justify-content: flex-start !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    justify-content: center !important;
   }
   .sidebar.is-collapsed .sidebar-theme-switch {
     padding: 8px 3px !important;
