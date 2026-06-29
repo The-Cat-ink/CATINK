@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include("./../layout/header.php");
 require_once("./../data/conexion.php");
 include("./helpers/videoEmbed.php");
@@ -941,23 +941,5 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
         );
     }
 }
-</script>
-<script>
-  // Script para actualizar la barra de progreso de lectura
-  document.addEventListener('DOMContentLoaded', () => {
-    const progressBar = document.getElementById('readingProgressBar');
-    if (progressBar) {
-      function updateProgressBar() {
-        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-        if (scrollHeight > 0) {
-          const scrolled = (window.scrollY / scrollHeight) * 100;
-          progressBar.style.width = scrolled + '%';
-        }
-      }
-      window.addEventListener('scroll', updateProgressBar, { passive: true });
-      window.addEventListener('resize', updateProgressBar);
-      updateProgressBar(); // Ejecutar inicialmente
-    }
-  });
 </script>
 <?php include("./../layout/footer.php"); ?>

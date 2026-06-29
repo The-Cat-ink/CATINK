@@ -34,33 +34,35 @@ function showToast(message, type = 'success', duration = 3000) {
 }
 
 // Estilos de animación
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
+(function() {
+  const style = document.createElement('style');
+  style.textContent = `
+      @keyframes slideIn {
+          from {
+              transform: translateX(400px);
+              opacity: 0;
+          }
+          to {
+              transform: translateX(0);
+              opacity: 1;
+          }
+      }
+      @keyframes slideOut {
+          from {
+              transform: translateX(0);
+              opacity: 1;
+          }
+          to {
+              transform: translateX(400px);
+              opacity: 0;
+          }
+      }
+  `;
+  document.head.appendChild(style);
+})();
 
 // Detectar parámetros de redirección en la URL para mostrar notificaciones toast automáticamente
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('turbo:load', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const msg = urlParams.get('msg');
     const error = urlParams.get('error');
