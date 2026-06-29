@@ -78,6 +78,13 @@ $_SESSION['id_u'] = $fila['id_u'];
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
   <script>window.ADMIN_BASE = '<?= basePath() ?>';</script>
   <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js" defer></script>
+  <?php
+  // Vistas con JS inline no idempotente para Turbo (init en DOMContentLoaded,
+  // const de nivel superior) → forzar recarga completa al navegar hacia ellas.
+  $turboReloadPages = ['crear', 'editar'];
+  if (in_array($archivoActual, $turboReloadPages, true)): ?>
+  <meta name="turbo-visit-control" content="reload">
+  <?php endif; ?>
     <?php if($ACL): ?>
         <script>
             window.ACL = {
