@@ -40,10 +40,20 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
   <?php if(isset($_GET['ok'])): ?>
     <p style="color:#28a745; text-align:center; margin-bottom:16px;">Perfil actualizado correctamente.</p>
   <?php endif; ?>
+  <?php if(isset($_GET['deleted'])): ?>
+    <p style="color:#28a745; text-align:center; margin-bottom:16px;">Tu cuenta ha sido eliminada. ¡Hasta pronto!</p>
+  <?php endif; ?>
   <?php if(isset($_GET['error'])): ?>
     <p style="color:#EF3363; text-align:center; margin-bottom:16px;">
       <?php
-        $errores = ['1'=>'La contraseña actual es incorrecta.','2'=>'Error al actualizar.'];
+        $errores = [
+          '1'  => 'La contraseña actual es incorrecta.',
+          '2'  => 'Error al actualizar.',
+          '3'  => 'Ese nombre de usuario ya está en uso.',
+          '4'  => 'El nombre de usuario solo puede contener letras, números, puntos y guiones bajos.',
+          '5'  => 'Contraseña incorrecta. No se eliminó la cuenta.',
+          '6'  => 'Error al eliminar la cuenta.',
+        ];
         echo $errores[$_GET['error']] ?? 'Error desconocido.';
       ?>
     </p>
@@ -80,6 +90,16 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
     <!-- COLUMNA DERECHA: Formulario -->
     <div class="perfil-form">
       <form id="perfilForm" action="<?= basePath() ?>/controllers/perfilcontroller.php" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="nombre_usuario">Nombre de Usuario</label>
+          <div style="position:relative;">
+            <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); font-weight:600;">@</span>
+            <input type="text" id="nombre_usuario" name="nombre_usuario" class="input" value="<?= htmlspecialchars($user['usuario']) ?>" required
+              pattern="[a-zA-Z0-9_.]{3,30}" title="De 3 a 30 caracteres: letras, números, puntos y guiones bajos."
+              style="padding-left:28px;">
+          </div>
+          <small style="color:var(--muted); font-size:0.78rem;">3–30 caracteres. Solo letras, números, puntos y guiones bajos.</small>
+        </div>
         <div class="form-group">
           <label for="correo">Correo Electrónico</label>
           <input type="email" id="correo" name="correo" class="input" value="<?= htmlspecialchars($user['correo']) ?>" required>
@@ -193,9 +213,45 @@ $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY
         <?php endif; ?>
         <button type="submit" class="btn-perfil-save">Guardar Cambios</button>
       </form>
+
+      <!-- ZONA DE PELIGRO -->
+      <div class="perfil-danger-zone" id="dangerZone">
+        <h3 style="color:#ef3333; font-size:1rem; margin-bottom:8px;"><i class="bi bi-exclamation-triangle-fill"></i> Zona de Peligro</h3>
+        <p style="color:var(--muted); font-size:0.88rem; margin-bottom:16px;">Al eliminar tu cuenta se borrarán permanentemente todos tus datos, comentarios y likes. Esta acción <strong>no se puede deshacer</strong>.</p>
+        <button type="button" class="btn-delete-account" id="btnEliminarCuenta">
+          <i class="bi bi-trash3-fill"></i> Eliminar mi cuenta
+        </button>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Modal confirmación eliminar cuenta -->
+<div id="modalEliminar" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+  <div style="background:var(--card-bg); border:1px solid #ef3333; border-radius:16px; padding:32px; max-width:420px; width:92%; box-shadow:0 8px 40px rgba(239,51,51,0.2);">
+    <h3 style="color:#ef3333; margin-bottom:8px;"><i class="bi bi-exclamation-octagon-fill"></i> ¿Seguro que quieres eliminar tu cuenta?</h3>
+    <p style="color:var(--muted); font-size:0.9rem; margin-bottom:20px;">Escribe tu contraseña para confirmar. Esta acción es irreversible.</p>
+    <form id="formEliminar" action="<?= basePath() ?>/controllers/eliminar_cuenta.php" method="POST">
+      <input type="password" name="pass_confirmar" id="passConfirmar" class="input" placeholder="Tu contraseña actual..." required
+        style="width:100%; margin-bottom:16px; padding:10px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+      <div style="display:flex; gap:12px;">
+        <button type="button" id="cancelarEliminar" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer; font-size:0.9rem;">Cancelar</button>
+        <button type="submit" style="flex:1; padding:10px; border-radius:8px; border:none; background:#ef3333; color:#fff; font-weight:700; cursor:pointer; font-size:0.9rem;"><i class="bi bi-trash3-fill"></i> Eliminar cuenta</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  // Lógica del modal de eliminación de cuenta
+  const btnEliminar = document.getElementById('btnEliminarCuenta');
+  const modalEliminar = document.getElementById('modalEliminar');
+  const cancelarEliminar = document.getElementById('cancelarEliminar');
+  if (btnEliminar && modalEliminar) {
+    btnEliminar.addEventListener('click', () => { modalEliminar.style.display = 'flex'; });
+    cancelarEliminar.addEventListener('click', () => { modalEliminar.style.display = 'none'; });
+    modalEliminar.addEventListener('click', (e) => { if (e.target === modalEliminar) modalEliminar.style.display = 'none'; });
+  }
+</script>
 <!-- Modal selector de avatar -->
 <div id="avatarModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; display:none; justify-content:center; align-items:center;">
   <div style="background:var(--bg); border-radius:12px; padding:24px; max-width:400px; width:90%; max-height:80vh; overflow-y:auto;">

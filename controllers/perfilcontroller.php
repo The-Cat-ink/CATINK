@@ -11,6 +11,7 @@ if(!isset($_SESSION['usuario'])){
 
 $usuario = $_SESSION['usuario'];
 $tipo = $_SESSION['tipo'] ?? 'lector';
+$nombre_usuario = trim($_POST['nombre_usuario'] ?? '');
 $correo = trim($_POST['correo'] ?? '');
 $pass_actual = $_POST['pass_actual'] ?? '';
 $pass_nueva = $_POST['pass_nueva'] ?? '';
@@ -20,6 +21,30 @@ $entidad = $_POST['entidad'] ?? null;
 $biografia = trim($_POST['biografia'] ?? '');
 $link_twitter = trim($_POST['link_twitter'] ?? '');
 $link_instagram = trim($_POST['link_instagram'] ?? '');
+
+// ============================
+// VALIDAR NOMBRE DE USUARIO
+// ============================
+if(!empty($nombre_usuario) && $nombre_usuario !== $usuario) {
+    // Validar formato
+    if(!preg_match('/^[a-zA-Z0-9_.]{3,30}$/', $nombre_usuario)){
+        header('Location: ' . basePath() . '/perfil?error=4');
+        exit;
+    }
+    // Verificar unicidad (buscar en ambas tablas)
+    $stmtChk = $con->prepare("SELECT COUNT(*) AS cnt FROM lectores WHERE usuario = ? UNION ALL SELECT COUNT(*) FROM usuarios WHERE usuario = ?");
+    $stmtChk->bind_param("ss", $nombre_usuario, $nombre_usuario);
+    $stmtChk->execute();
+    $res = $stmtChk->get_result();
+    $total = 0;
+    while($r = $res->fetch_assoc()) $total += $r['cnt'];
+    if($total > 0){
+        header('Location: ' . basePath() . '/perfil?error=3');
+        exit;
+    }
+} elseif(empty($nombre_usuario)) {
+    $nombre_usuario = $usuario; // sin cambios
+}
 
 // ============================
 // VALIDACIÓN DE BIOGRAFÍA
@@ -175,9 +200,9 @@ if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_persona
 
 if($tipo === 'admin'){
     // Admin → tabla usuarios
-    $campos = "correo=?, sexo=?, fecha_nacimiento=?, entidad=?, biografia=?, link_twitter=?, link_instagram=?";
-    $tipos = "sssssss";
-    $valores = [$correo, $sexo ?: null, $nacimiento ?: null, $entidad ?: null, $biografia ?: null, $link_twitter ?: null, $link_instagram ?: null];
+    $campos = "correo=?, sexo=?, fecha_nacimiento=?, entidad=?, biografia=?, link_twitter=?, link_instagram=?, usuario=?";
+    $tipos = "ssssssss";
+    $valores = [$correo, $sexo ?: null, $nacimiento ?: null, $entidad ?: null, $biografia ?: null, $link_twitter ?: null, $link_instagram ?: null, $nombre_usuario];
     if($foto_personal){
         $campos .= ", foto_personal=?";
         $tipos .= "s";
@@ -189,25 +214,29 @@ if($tipo === 'admin'){
         $valores[] = password_hash($pass_nueva, PASSWORD_BCRYPT);
     }
     $tipos .= "s";
-    $valores[] = $usuario;
+    $valores[] = $usuario; // WHERE
     $stmt = $con->prepare("UPDATE usuarios SET $campos WHERE usuario=?");
 } else {
     // Lector → tabla lectores
-    $campos = "correo=?, sexo=?, fecha_nacimiento=?, entidad=?";
-    $tipos = "ssss";
-    $valores = [$correo, $sexo ?: null, $nacimiento ?: null, $entidad ?: null];
+    $campos = "correo=?, sexo=?, fecha_nacimiento=?, entidad=?, usuario=?";
+    $tipos = "sssss";
+    $valores = [$correo, $sexo ?: null, $nacimiento ?: null, $entidad ?: null, $nombre_usuario];
     if(!empty($pass_nueva) && !empty($pass_actual)){
         $campos .= ", password_hash=?";
         $tipos .= "s";
         $valores[] = password_hash($pass_nueva, PASSWORD_BCRYPT);
     }
     $tipos .= "s";
-    $valores[] = $usuario;
+    $valores[] = $usuario; // WHERE
     $stmt = $con->prepare("UPDATE lectores SET $campos WHERE usuario=?");
 }
 $stmt->bind_param($tipos, ...$valores);
 
 if($stmt->execute()){
+    // Si el usuario cambió su nombre, actualizamos la sesión
+    if($nombre_usuario !== $usuario){
+        $_SESSION['usuario'] = $nombre_usuario;
+    }
     $redirectUrl = basePath() . '/perfil?ok=1';
     if($foto_personal){
         $redirectUrl .= '&foto_ruta=' . urlencode($foto_personal);
