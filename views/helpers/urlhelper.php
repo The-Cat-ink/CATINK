@@ -100,6 +100,21 @@ function searchUrlLong($termino){
 function authorUrl($id){
     return basePath() . "/autor/" . intval($id);
 }
+// Perfil público de un lector (comentarista)
+function readerUrl($id){
+    return basePath() . "/usuario/" . intval($id);
+}
+// Devuelve la URL del perfil público del autor de un comentario.
+// Editores → /autor/{id}, lectores → /usuario/{id}. null si no hay autor.
+function commentAuthorUrl($com){
+    if (!empty($com['usuario_id'])) {
+        return authorUrl($com['usuario_id']);
+    }
+    if (!empty($com['lector_id'])) {
+        return readerUrl($com['lector_id']);
+    }
+    return null;
+}
 function topUrl(){
     return basePath() . "/top";
 }

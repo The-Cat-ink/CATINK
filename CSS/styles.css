@@ -2646,7 +2646,12 @@ hr{
 .comentario-item .comentario-avatar-placeholder { width: 40px; height: 40px; font-size: 1.1rem; }
 .comentario-body { flex: 1; min-width: 0; }
 .comentario-header { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
-.comentario-autor { font-size: 0.95rem; }
+.comentario-autor { font-size: 0.95rem; font-weight: 700; }
+a.comentario-autor { color: var(--text); text-decoration: none; transition: color 0.15s; }
+a.comentario-autor:hover { color: var(--accent); }
+.comentario-perfil-link { display: inline-block; }
+.comentario-avatar-col a.comentario-perfil-link:hover .comentario-avatar,
+.comentario-avatar-col a.comentario-perfil-link:hover .comentario-avatar-placeholder { opacity: 0.85; }
 .badge-editor {
   background: var(--accent); color: #fff; font-size: 0.7rem; font-weight: 700;
   padding: 2px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px;
