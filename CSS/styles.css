@@ -233,18 +233,6 @@ h2 {
 .nav-actions .user-dropdown {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 24px;
-  background: var(--card-bg, #F7FAFC);
-  border: 1px solid var(--border, #E2E8F0);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.nav-actions .user-dropdown:hover {
-  background: var(--hover-bg, #EDF2F7);
-  border-color: var(--border-hover, #CBD5E0);
 }
 
 .nav-actions .user-dropdown .user-avatar {
