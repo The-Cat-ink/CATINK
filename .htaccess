@@ -77,6 +77,7 @@ RewriteRule ^search/(.+)/?$ views/categoria.php?q=$1 [L,QSA]
 RewriteRule ^perfil/?$ views/perfil.php [L,QSA]
 RewriteRule ^registro/?$ views/registro.php [L,QSA]
 RewriteRule ^autor/([0-9]+)/?$ views/autor.php?id=$1 [L,QSA]
+RewriteRule ^usuario/([0-9]+)/?$ views/usuario.php?id=$1 [L,QSA]
 
 # =========================
 # PAGINAS ESTATICAS

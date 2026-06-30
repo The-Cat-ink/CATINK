@@ -2,9 +2,16 @@
 session_start();
 header('Content-Type: application/json');
 require_once(__DIR__ . '/../data/conexion.php');
+require_once(__DIR__ . '/../views/helpers/moderacion.php');
 
 if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'lector' || !isset($_SESSION['id_lector'])) {
     echo json_encode(['ok' => false, 'msg' => 'Debes iniciar sesión.']);
+    exit;
+}
+
+$banTxt = baneoLectorActual($con);
+if ($banTxt) {
+    echo json_encode(['ok' => false, 'msg' => 'Tu cuenta está suspendida. ' . $banTxt]);
     exit;
 }
 

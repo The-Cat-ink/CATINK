@@ -2433,6 +2433,19 @@ hr{
   appearance: auto;
   cursor: pointer;
 }
+/* Fix tema oscuro: el desplegable nativo hereda fondo transparente y deja
+   las opciones ilegibles (texto claro sobre fondo claro). Damos fondo y
+   color explícitos que siguen el tema actual. */
+.input option,
+select.input option,
+.mod-select option {
+  background-color: var(--bg);
+  color: var(--text);
+}
+[data-bs-theme="dark"] .perfil-form select.input,
+[data-bs-theme="dark"] .input.mod-select {
+  background-color: var(--bg);
+}
 .btn-perfil-save {
   width: 100%;
   padding: 14px;
@@ -2707,7 +2720,12 @@ hr{
 .comentario-item .comentario-avatar-placeholder { width: 40px; height: 40px; font-size: 1.1rem; }
 .comentario-body { flex: 1; min-width: 0; }
 .comentario-header { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
-.comentario-autor { font-size: 0.95rem; }
+.comentario-autor { font-size: 0.95rem; font-weight: 700; }
+a.comentario-autor { color: var(--text); text-decoration: none; transition: color 0.15s; }
+a.comentario-autor:hover { color: var(--accent); }
+.comentario-perfil-link { display: inline-block; }
+.comentario-avatar-col a.comentario-perfil-link:hover .comentario-avatar,
+.comentario-avatar-col a.comentario-perfil-link:hover .comentario-avatar-placeholder { opacity: 0.85; }
 .badge-editor {
   background: var(--accent); color: #fff; font-size: 0.7rem; font-weight: 700;
   padding: 2px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px;

@@ -227,6 +227,21 @@ UPDATE `noticia_categoria` nc
     ON nc.noticia_id = sub.noticia_id AND nc.categoria_id = sub.categoria_id
     SET nc.orden = sub.rn;
 
--- 17. Búsqueda rápida: Índice FULLTEXT para optimizar motor de búsqueda
+-- 17. Sistema de baneo de usuarios (moderación por superadmin)
+--     Aplica tanto a lectores (comentaristas) como a usuarios (admins/editores).
+--     baneado_hasta = fecha de expiración del baneo temporal (NULL = sin baneo temporal)
+--     baneado_permanente = 1 para suspensión indefinida
+--     Un usuario está baneado si baneado_permanente = 1 O baneado_hasta > NOW()
+ALTER TABLE `lectores`
+  ADD COLUMN IF NOT EXISTS `baneado_hasta` DATETIME NULL DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `baneado_permanente` TINYINT(1) NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS `baneado_motivo` VARCHAR(255) NULL DEFAULT NULL;
+ALTER TABLE `usuarios`
+  ADD COLUMN IF NOT EXISTS `baneado_hasta` DATETIME NULL DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `baneado_permanente` TINYINT(1) NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS `baneado_motivo` VARCHAR(255) NULL DEFAULT NULL;
+
+-- 18. Búsqueda rápida: Índice FULLTEXT para optimizar motor de búsqueda
 -- (Si da error de duplicado en ejecución por ya estar creado, omitir)
 ALTER TABLE `noticias` ADD FULLTEXT INDEX `idx_busqueda_rapida` (`titulo`, `descripcion`, `contenido`);
+

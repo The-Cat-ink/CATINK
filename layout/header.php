@@ -72,6 +72,10 @@ $menuJson = [
 <html lang="es" data-bs-theme="light">
 <head>
   <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light');</script>
+  <?php if(!empty($noTurboCache)): ?>
+  <!-- Evita que Turbo Drive sirva una instantánea cacheada con datos viejos (formularios/perfil) -->
+  <meta name="turbo-cache-control" content="no-cache">
+  <?php endif; ?>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Google Tag Manager -->

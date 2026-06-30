@@ -497,17 +497,24 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                   <p class="comentarios-vacio" id="comentariosVacio">Sé el primero en comentar.</p>
                 <?php endif; ?>
                 <?php while ($com = $comentarios->fetch_assoc()): ?>
+                  <?php $perfilUrl = commentAuthorUrl($com); ?>
                   <div class="comentario-item" data-id="<?= $com['id_comentario'] ?>">
                     <div class="comentario-avatar-col">
+                      <?php if ($perfilUrl): ?><a href="<?= $perfilUrl ?>" class="comentario-perfil-link" title="Ver perfil"><?php endif; ?>
                       <?php if (!empty($com['avatar_img'])): ?>
                         <img src="<?= imageUrl($com['avatar_img']) ?>" alt="" class="comentario-avatar" loading="lazy" decoding="async">
                       <?php else: ?>
                         <div class="comentario-avatar-placeholder"><?= strtoupper(mb_substr($com['nombre'], 0, 1)) ?></div>
                       <?php endif; ?>
+                      <?php if ($perfilUrl): ?></a><?php endif; ?>
                     </div>
                     <div class="comentario-body">
                       <div class="comentario-header">
-                        <strong class="comentario-autor"><?= htmlspecialchars($com['nombre']) ?></strong>
+                        <?php if ($perfilUrl): ?>
+                          <a href="<?= $perfilUrl ?>" class="comentario-autor comentario-perfil-link"><?= htmlspecialchars($com['nombre']) ?></a>
+                        <?php else: ?>
+                          <strong class="comentario-autor"><?= htmlspecialchars($com['nombre']) ?></strong>
+                        <?php endif; ?>
                         <?php if ($com['es_editor']): ?>
                           <span class="badge-editor">Editor</span>
                         <?php endif; ?>
@@ -536,8 +543,13 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                         <?php if ($esMiComentario): ?>
                           <button class="btn-editar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-pencil"></i> Editar</button>
                           <button class="btn-eliminar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-trash"></i> Eliminar</button>
-                        <?php elseif (isset($_SESSION['tipo'])): ?>
-                          <button class="btn-reportar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-flag"></i> Reportar</button>
+                        <?php else: ?>
+                          <?php if (isset($_SESSION['tipo'])): ?>
+                            <button class="btn-reportar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-flag"></i> Reportar</button>
+                          <?php endif; ?>
+                          <?php if (!empty($_SESSION['superadmin'])): ?>
+                            <button class="btn-eliminar-com btn-mod-eliminar" data-id="<?= $com['id_comentario'] ?>" title="Eliminar como moderador"><i class="bi bi-trash"></i> Eliminar (mod)</button>
+                          <?php endif; ?>
                         <?php endif; ?>
                       </div>
                     </div>
@@ -794,9 +806,18 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
         const data = await res.json();
         if (data.ok && data.comentario) {
           const c = data.comentario;
-          const avatarHtml = c.avatar_img
+          const perfilUrl = c.usuario_id
+            ? `<?= basePath() ?>/autor/${c.usuario_id}`
+            : (c.lector_id ? `<?= basePath() ?>/usuario/${c.lector_id}` : null);
+          const innerAvatar = c.avatar_img
             ? `<img src="<?= basePath() ?>/serve-image.php?file=img/avatares/${c.avatar_img}" alt="" class="comentario-avatar" loading="lazy" decoding="async">`
             : `<div class="comentario-avatar-placeholder">${c.nombre.charAt(0).toUpperCase()}</div>`;
+          const avatarHtml = perfilUrl
+            ? `<a href="${perfilUrl}" class="comentario-perfil-link" title="Ver perfil">${innerAvatar}</a>`
+            : innerAvatar;
+          const autorHtml = perfilUrl
+            ? `<a href="${perfilUrl}" class="comentario-autor comentario-perfil-link">${c.nombre}</a>`
+            : `<strong class="comentario-autor">${c.nombre}</strong>`;
           const fecha = new Date(c.fecha_publicacion).toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
           const badgeHtml = c.es_editor == 1 ? '<span class="badge-editor">Editor</span>' : '';
           const html = `
@@ -804,7 +825,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
               <div class="comentario-avatar-col">${avatarHtml}</div>
               <div class="comentario-body">
                 <div class="comentario-header">
-                  <strong class="comentario-autor">${c.nombre}</strong>
+                  ${autorHtml}
                   ${badgeHtml}
                   <span class="comentario-fecha">${fecha}</span>
                 </div>
