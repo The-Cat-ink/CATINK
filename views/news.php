@@ -207,6 +207,31 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
       padding-right: 16px !important;
     }
   }
+  .back-to-top-btn {
+    background: var(--card-bg, #1e1e24);
+    color: var(--text, #fff);
+    border: 1px solid var(--border, rgba(255,255,255,0.1));
+    padding: 10px 24px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-radius: 30px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .back-to-top-btn:hover {
+    background: var(--accent, #EF3363);
+    color: #fff;
+    border-color: var(--accent, #EF3363);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 51, 99, 0.3);
+  }
+  .back-to-top-btn i {
+    font-size: 1.1rem;
+  }
 </style>
 <style>
 .news-rating-block {
@@ -249,7 +274,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
       <div class="row">
         <!-- COLUMNA PRINCIPAL -->
         <div class="col-md-9">
-          <div class="container-noticia">
+          <div class="container-noticia" id="noticia-top">
             <?php
               $imgSrc = $noticia['crop3'] ?? $noticia['crop2'] ?? $noticia['crop1'] ?? null;
               $img = imageUrl($imgSrc);
@@ -385,6 +410,13 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 $contenido=bloquearEmbeds($contenido);
                 echo $contenido
               ?>
+            </div>
+
+            <!-- Botón para volver al inicio de la nota -->
+            <div class="back-to-top-container" style="text-align: center; margin: 30px 0 10px;">
+                <button onclick="scrollToNoticiaTop()" class="back-to-top-btn">
+                    <i class="bi bi-arrow-up-circle-fill"></i> Volver al inicio de la nota
+                </button>
             </div>
             <hr>
             <h2 align="center"><i class="bi bi-share-fill"></i> Compartir</h2>
@@ -933,6 +965,14 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
   });
 </script>
 <script>
+  function scrollToNoticiaTop() {
+    const target = document.getElementById('noticia-top');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
   function copyLink(){
     const link = "https://www.catink.com.mx/<?= newsUrl($noticia['slug']) ?>";
     navigator.clipboard.writeText(link);

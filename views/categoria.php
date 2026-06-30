@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once("./../data/conexion.php");
 require_once("./helpers/urlhelper.php");
 
@@ -15,6 +15,11 @@ $offset = ($pagina - 1) * $porPagina;
 // ==============================
 $q         = trim(urldecode($_GET['q'] ?? $_GET['query'] ?? $_GET['search'] ?? ''));
 $categoria = trim(urldecode($_GET['cat'] ?? $_GET['category'] ?? $_GET['categoria'] ?? ''));
+
+$suggestionActive = false;
+$originalQuery = $q;
+$displayCorrectedQuery = '';
+$correctedQuery = '';
 
 // ==============================
 // SEO DINÁMICO
@@ -59,6 +64,22 @@ include("./../layout/header.php");
 // CONSULTA PRINCIPAL
 // ==============================
 if ($q !== '') {
+    $words = array_filter(explode(' ', $q));
+    $searchTerms = [];
+    foreach ($words as $word) {
+        $wordClean = preg_replace('/[+\-><()~*\"@]+/', '', $word);
+        if (strlen($wordClean) >= 2) {
+            $searchTerms[] = "+{$wordClean}*";
+        }
+    }
+    if (empty($searchTerms)) {
+        $firstWord = preg_replace('/[+\-><()~*\"@]+/', '', reset($words));
+        if (strlen($firstWord) > 0) {
+            $searchTerms[] = "+{$firstWord}*";
+        }
+    }
+    $searchQuery = implode(' ', $searchTerms);
+
     $stmt = $con->prepare("
         SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion,
                GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
@@ -66,13 +87,12 @@ if ($q !== '') {
         LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
         LEFT JOIN categorias c ON nc.categoria_id = c.id_c
         WHERE n.fecha_publicacion <= NOW()
-          AND (n.titulo LIKE ? OR n.descripcion LIKE ? OR n.contenido LIKE ?)
+          AND MATCH(n.titulo, n.descripcion, n.contenido) AGAINST(? IN BOOLEAN MODE)
         GROUP BY n.id
         ORDER BY n.fecha_publicacion DESC
         LIMIT ? OFFSET ?
     ");
-    $like = "%$q%";
-    $stmt->bind_param("sssii", $like, $like, $like, $porPagina, $offset);
+    $stmt->bind_param("sii", $searchQuery, $porPagina, $offset);
 
 } elseif ($categoria !== '') {
     $stmt = $con->prepare("
@@ -112,15 +132,31 @@ $result = $stmt->get_result();
 // TOTAL
 // ==============================
 if ($q !== '') {
+    $words = array_filter(explode(' ', $q));
+    $searchTerms = [];
+    foreach ($words as $word) {
+        $wordClean = preg_replace('/[+\-><()~*\"@]+/', '', $word);
+        if (strlen($wordClean) >= 2) {
+            $searchTerms[] = "+{$wordClean}*";
+        }
+    }
+    if (empty($searchTerms)) {
+        $firstWord = preg_replace('/[+\-><()~*\"@]+/', '', reset($words));
+        if (strlen($firstWord) > 0) {
+            $searchTerms[] = "+{$firstWord}*";
+        }
+    }
+    $searchQuery = implode(' ', $searchTerms);
+
     $stmtTotal = $con->prepare("
         SELECT COUNT(DISTINCT n.id) as total
         FROM noticias n
         LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
         LEFT JOIN categorias c ON nc.categoria_id = c.id_c
         WHERE n.fecha_publicacion <= NOW()
-        AND (n.titulo LIKE ? OR n.descripcion LIKE ? OR n.contenido LIKE ?)
+          AND MATCH(n.titulo, n.descripcion, n.contenido) AGAINST(? IN BOOLEAN MODE)
     ");
-    $stmtTotal->bind_param("sss", $like, $like, $like);
+    $stmtTotal->bind_param("s", $searchQuery);
 
 } elseif ($categoria !== '') {
     $stmtTotal = $con->prepare("
@@ -143,6 +179,127 @@ if ($q !== '') {
 $stmtTotal->execute();
 $totalNoticias = $stmtTotal->get_result()->fetch_assoc()['total'];
 $totalpaginas = ceil($totalNoticias / $porPagina);
+
+// ==============================
+// CORRECTOR ORTOGRÁFICO (SUGGESTION / DID YOU MEAN)
+// ==============================
+if ($q !== '' && $totalNoticias == 0 && !isset($_GET['force'])) {
+    // 1. Obtener todas las palabras únicas de los títulos en la BD
+    $resWords = $con->query("SELECT DISTINCT titulo FROM noticias WHERE fecha_publicacion <= NOW()");
+    $allDbWords = [];
+    if ($resWords) {
+        while ($rowWord = $resWords->fetch_assoc()) {
+            $wordsInTitle = preg_split('/[\s,\.\-\?\!\'\"\(\)¿¡]+/u', mb_strtolower($rowWord['titulo'], 'UTF-8'));
+            foreach ($wordsInTitle as $w) {
+                $w = trim($w);
+                if (mb_strlen($w, 'UTF-8') > 2) {
+                    $allDbWords[$w] = true;
+                }
+            }
+        }
+    }
+    $uniqueDbWords = array_keys($allDbWords);
+
+    // 2. Analizar cada palabra de la búsqueda del usuario
+    $queryWords = array_filter(explode(' ', $q));
+    $correctedWords = [];
+    $displayCorrected = [];
+    $hasCorrection = false;
+
+    foreach ($queryWords as $userWord) {
+        $userWordLower = mb_strtolower($userWord, 'UTF-8');
+        if (isset($allDbWords[$userWordLower])) {
+            $correctedWords[] = $userWord;
+            $displayCorrected[] = htmlspecialchars($userWord);
+            continue;
+        }
+
+        $bestMatch = null;
+        $shortestDist = -1;
+        foreach ($uniqueDbWords as $dbWord) {
+            $dist = levenshtein($userWordLower, $dbWord);
+            // Umbral de tolerancia de error (diferencia de 1 o 2 caracteres)
+            if ($dist >= 1 && $dist <= 2) {
+                if ($shortestDist === -1 || $dist < $shortestDist) {
+                    $shortestDist = $dist;
+                    $bestMatch = $dbWord;
+                }
+            }
+        }
+
+        if ($bestMatch !== null) {
+            // Mantener mayúscula si el usuario la usó
+            if (ctype_upper($userWord[0])) {
+                $bestMatchFormatted = mb_convert_case($bestMatch, MB_CASE_TITLE, "UTF-8");
+            } else {
+                $bestMatchFormatted = $bestMatch;
+            }
+            $correctedWords[] = $bestMatchFormatted;
+            $displayCorrected[] = '<span style="font-weight: bold; font-style: italic;">' . htmlspecialchars($bestMatchFormatted) . '</span>';
+            $hasCorrection = true;
+        } else {
+            $correctedWords[] = $userWord;
+            $displayCorrected[] = htmlspecialchars($userWord);
+        }
+    }
+
+    if ($hasCorrection) {
+        $correctedQuery = implode(' ', $correctedWords);
+        $displayCorrectedQuery = implode(' ', $displayCorrected);
+        
+        // Ejecutar la consulta de nuevo con la query corregida
+        $suggestionActive = true;
+        $q = $correctedQuery; // Cambiar $q temporalmente para la consulta principal y conteo
+        
+        // Re-ejecutar consulta principal con $q corregida
+        $words = array_filter(explode(' ', $q));
+        $stmt = $con->prepare("
+            SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop3, n.fecha_publicacion,
+                   GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
+            FROM noticias n
+            LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
+            LEFT JOIN categorias c ON nc.categoria_id = c.id_c
+            WHERE n.fecha_publicacion <= NOW()
+              AND MATCH(n.titulo, n.descripcion, n.contenido) AGAINST(? IN BOOLEAN MODE)
+            GROUP BY n.id
+            ORDER BY n.fecha_publicacion DESC
+            LIMIT ? OFFSET ?
+        ");
+        
+        $searchTerms = [];
+        foreach ($words as $word) {
+            $wordClean = preg_replace('/[+\-><()~*\"@]+/', '', $word);
+            if (strlen($wordClean) >= 2) {
+                $searchTerms[] = "+{$wordClean}*";
+            }
+        }
+        if (empty($searchTerms)) {
+            $firstWord = preg_replace('/[+\-><()~*\"@]+/', '', reset($words));
+            if (strlen($firstWord) > 0) {
+                $searchTerms[] = "+{$firstWord}*";
+            }
+        }
+        $searchQuery = implode(' ', $searchTerms);
+        
+        $stmt->bind_param("sii", $searchQuery, $porPagina, $offset);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        // Re-calcular total
+        $stmtTotal = $con->prepare("
+            SELECT COUNT(DISTINCT n.id) as total
+            FROM noticias n
+            LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
+            LEFT JOIN categorias c ON nc.categoria_id = c.id_c
+            WHERE n.fecha_publicacion <= NOW()
+              AND MATCH(n.titulo, n.descripcion, n.contenido) AGAINST(? IN BOOLEAN MODE)
+        ");
+        $stmtTotal->bind_param("s", $searchQuery);
+        $stmtTotal->execute();
+        $totalNoticias = $stmtTotal->get_result()->fetch_assoc()['total'];
+        $totalpaginas = ceil($totalNoticias / $porPagina);
+    }
+}
 
 // ==============================
 // SIDEBAR
@@ -221,7 +378,16 @@ if ($q !== '') {
   <div class="container-fluid">
 
     <!-- TITULO CONTEXTUAL -->
-    <?php if ($q !== ''): ?>
+    <?php if ($suggestionActive): ?>
+      <div class="search-suggestion" style="margin-bottom: 25px; font-family: inherit; font-size: 1.05rem; line-height: 1.6; color: var(--text);">
+          <div style="margin-bottom: 4px;">
+              Se muestran resultados de <a href="?q=<?= urlencode($q) ?>" style="color: var(--accent); text-decoration: none; font-weight: bold;"><?= $displayCorrectedQuery ?></a>
+          </div>
+          <div style="font-size: 0.95rem; color: var(--muted, #888);">
+              Buscar, en cambio, <a href="?q=<?= urlencode($originalQuery) ?>&force=1" style="color: var(--accent); text-decoration: underline;"><?= htmlspecialchars($originalQuery) ?></a>
+          </div>
+      </div>
+    <?php elseif ($q !== ''): ?>
       <h4>Resultados para: <strong><?= htmlspecialchars($q) ?></strong></h4>
     <?php elseif ($categoria !== ''): ?>
       <h4>Categoría: <strong><?= htmlspecialchars($categoria) ?></strong></h4>

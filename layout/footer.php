@@ -28,6 +28,9 @@
 
     if (!input) return;
 
+    const form = input.closest('.nav-search');
+    const isDesplegable = form && form.classList.contains('buscador-desplegable');
+
     function performSearch() {
       const q = input.value.trim();
       if (q.length >= 2) {
@@ -41,13 +44,32 @@
 
     if (clearBtn) {
       clearBtn.addEventListener('click', function (e) {
-        e.preventDefault(); input.value = ''; input.focus();
+        e.preventDefault(); input.value = '';
+        if (resultsBox) resultsBox.style.display = 'none';
+        input.focus();
       });
     }
 
     if (searchBtn) {
       searchBtn.addEventListener('click', function (e) {
-        e.preventDefault(); performSearch();
+        e.preventDefault();
+        if (isDesplegable) {
+          if (!form.classList.contains('open')) {
+            form.classList.add('open');
+            input.focus();
+          } else {
+            const q = input.value.trim();
+            if (q.length >= 2) {
+              performSearch();
+            } else {
+              form.classList.remove('open');
+              if (resultsBox) resultsBox.style.display = 'none';
+              input.blur();
+            }
+          }
+        } else {
+          performSearch();
+        }
       });
     }
 
@@ -62,14 +84,32 @@
             .then(res => res.json())
             .then(data => {
               resultsBox.innerHTML = '';
-              if (data.length === 0) { resultsBox.style.display = 'none'; return; }
-              data.forEach(item => {
+              if (data.length === 0) {
                 const div = document.createElement('div');
                 div.classList.add('search-item');
-                div.innerHTML = `<img src="${item.imagen}" alt="" class="img-search"><span>${item.titulo}</span>`;
-                div.addEventListener('click', () => { window.location.href = item.url; });
+                div.style.cursor = 'default';
+                div.style.justifyContent = 'center';
+                div.style.color = 'var(--muted, #999)';
+                div.style.fontSize = '0.9rem';
+                div.style.padding = '12px';
+                div.innerHTML = `<i class="bi bi-exclamation-circle" style="margin-right: 6px;"></i> No se encontraron resultados`;
                 resultsBox.appendChild(div);
-              });
+              } else {
+                data.forEach(item => {
+                  const div = document.createElement('div');
+                  div.classList.add('search-item');
+                  const img = document.createElement('img');
+                  img.src = item.imagen;
+                  img.alt = "";
+                  img.classList.add('img-search');
+                  const span = document.createElement('span');
+                  span.textContent = item.titulo;
+                  div.appendChild(img);
+                  div.appendChild(span);
+                  div.addEventListener('click', () => { window.location.href = item.url; });
+                  resultsBox.appendChild(div);
+                });
+              }
               resultsBox.style.display = 'block';
             });
         }, 300);
@@ -92,6 +132,12 @@
       if (resultsBoxMobile && !e.target.closest('.nav-search')) {
         resultsBoxMobile.style.display = 'none';
       }
+      // Cerrar buscadores desplegables si se hace click fuera
+      document.querySelectorAll('.buscador-desplegable').forEach(form => {
+        if (!form.contains(e.target)) {
+          form.classList.remove('open');
+        }
+      });
     });
   }
 </script>

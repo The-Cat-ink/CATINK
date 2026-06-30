@@ -7,15 +7,26 @@ require_once(__DIR__ . "/views/helpers/urlhelper.php");
 // ==============================
 // PAGINACIÓN PARA EL FEED GENERAL
 // ==============================
-$porPagina = 2;
 $pagina = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($pagina < 1) $pagina = 1;
-$offset = ($pagina - 1) * $porPagina;
+
+if ($pagina === 1) {
+    $porPagina = 2;
+    $offset = 0;
+} else {
+    $porPagina = 10;
+    $offset = 2 + ($pagina - 2) * 10;
+}
 
 // Contar total para paginación
 $totalResult = $con->query("SELECT COUNT(*) as total FROM noticias WHERE fecha_publicacion <= NOW()");
 $totalNoticias = $totalResult->fetch_assoc()['total'];
-$totalpaginas = ceil($totalNoticias / $porPagina);
+
+if ($totalNoticias <= 2) {
+    $totalpaginas = 1;
+} else {
+    $totalpaginas = 1 + ceil(($totalNoticias - 2) / 10);
+}
 
 // Obtener feed general de noticias (recientes paginadas)
 $stmtFeed = $con->prepare("
@@ -307,11 +318,6 @@ function tiempoRelativo($fecha) {
                 <div class="top-card card-width-2-3" data-url="<?= $url ?>">
                     <div class="top-card-img-wrapper">
                         <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="">
-                        <!-- Círculos superpuestos -->
-                        <div class="card-float-circles">
-                            <div class="float-circle"><img src="<?= img([$r['crop3'], $r['crop1']]) ?>"></div>
-                            <div class="float-circle"><img src="<?= img([$r['crop1'], $r['crop2']]) ?>"></div>
-                        </div>
                     </div>
                     <div class="top-card-overlay">
                         <div class="top-card-tags">
@@ -334,10 +340,6 @@ function tiempoRelativo($fecha) {
                 <div class="top-card card-width-1-3" data-url="<?= $url ?>">
                     <div class="top-card-img-wrapper">
                         <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="">
-                        <div class="card-float-circles">
-                            <div class="float-circle"><img src="<?= img([$r['crop2'], $r['crop1']]) ?>"></div>
-                            <div class="float-circle"><img src="<?= img([$r['crop1'], $r['crop3']]) ?>"></div>
-                        </div>
                     </div>
                     <div class="top-card-overlay">
                         <div class="top-card-tags">
@@ -363,9 +365,6 @@ function tiempoRelativo($fecha) {
                 <div class="top-card card-width-1-3" data-url="<?= $url ?>">
                     <div class="top-card-img-wrapper">
                         <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="">
-                        <div class="card-float-circles">
-                            <div class="float-circle"><img src="<?= img([$r['crop2'], $r['crop1']]) ?>"></div>
-                        </div>
                     </div>
                     <div class="top-card-overlay">
                         <div class="top-card-tags">
@@ -495,10 +494,6 @@ function tiempoRelativo($fecha) {
                         <div class="top-card card-width-2-3" data-url="<?= $url ?>">
                             <div class="top-card-img-wrapper">
                                 <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="">
-                                <div class="card-float-circles">
-                                    <div class="float-circle"><img src="<?= img([$r['crop3'], $r['crop1']]) ?>"></div>
-                                    <div class="float-circle"><img src="<?= img([$r['crop1'], $r['crop3']]) ?>"></div>
-                                </div>
                             </div>
                             <div class="top-card-overlay">
                                 <div class="top-card-tags">

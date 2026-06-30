@@ -11,15 +11,38 @@ if(strlen($q) < 2){
     exit;
 }
 
+$words = array_filter(explode(' ', $q));
+if (empty($words)) {
+    echo json_encode([]);
+    exit;
+}
+
+$searchTerms = [];
+foreach ($words as $word) {
+    $wordClean = preg_replace('/[+\-><()~*\"@]+/', '', $word);
+    if (strlen($wordClean) >= 2) {
+        $searchTerms[] = "+{$wordClean}*";
+    }
+}
+
+if (empty($searchTerms)) {
+    $firstWord = preg_replace('/[+\-><()~*\"@]+/', '', reset($words));
+    if (strlen($firstWord) > 0) {
+        $searchTerms[] = "+{$firstWord}*";
+    }
+}
+
+$searchQuery = implode(' ', $searchTerms);
+
 $stmt = $con->prepare("
     SELECT id, titulo, slug, crop3 
     FROM noticias 
-    WHERE titulo LIKE CONCAT('%', ?, '%')
+    WHERE MATCH(titulo, descripcion, contenido) AGAINST(? IN BOOLEAN MODE)
     ORDER BY id DESC
     LIMIT 10
 ");
 
-$stmt->bind_param("s", $q);
+$stmt->bind_param("s", $searchQuery);
 $stmt->execute();
 $result = $stmt->get_result();
 

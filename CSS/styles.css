@@ -344,17 +344,16 @@ h2 {
   height: 36px;
   border-radius: 50%;
   background: var(--card-bg, #F7FAFC);
-  border: 2px solid var(--border, #E2E8F0);
+  border: none;
   cursor: pointer;
-  transition: border-color 0.2s ease, transform 0.15s ease;
+  transition: transform 0.15s ease;
   text-decoration: none;
   flex-shrink: 0;
   overflow: hidden;
   padding: 0;
 }
 .nav-actions .user-avatar-link:hover {
-  border-color: var(--accent);
-  transform: scale(1.06);
+  transform: scale(1.08);
 }
 
 /* ============================
@@ -508,24 +507,22 @@ h2 {
   font-size: 14px;
   font-family: inherit;
 }
-/* Override for desplegable */
+/* Desplegable: se expande solo cuando tiene clase .open (click) */
 .nav-search.buscador-desplegable .search-input.input-desplegable {
   width: 0px;
   opacity: 0;
   padding: 0;
   background: transparent;
-  transition: width 0.4s ease, opacity 0.3s ease, padding 0.4s ease;
+  transition: width 0.35s ease, opacity 0.25s ease, padding 0.35s ease;
 }
-.nav-search.buscador-desplegable:hover .search-input.input-desplegable,
-.nav-search.buscador-desplegable:focus-within .search-input.input-desplegable {
+.nav-search.buscador-desplegable.open .search-input.input-desplegable {
   width: 220px;
   opacity: 1;
   padding: 5px 10px;
 }
-.nav-search.buscador-desplegable:hover,
-.nav-search.buscador-desplegable:focus-within {
-  background-color: var(--bs-secondary-bg);
-  border: 1px solid var(--bs-border-color);
+.nav-search.buscador-desplegable.open {
+  background-color: var(--card-bg);
+  border-radius: 20px;
 }
 .nav-search .search-input::placeholder {
   color: #000;
@@ -602,12 +599,17 @@ h2 {
     margin-top: 0;
     margin-left: 0;
     margin-right: 0;
-    gap: 8px;
+    gap: 4px;
     flex-wrap: nowrap;
     overflow-x: auto;
+    overflow-y: visible;
     scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    padding-bottom: 2px;
   }
   .navbar-nav::-webkit-scrollbar { display: none; }
+  .navbar-nav .nav-item { scroll-snap-align: start; flex-shrink: 0; }
   .navbar-nav .nav-link {
     white-space: nowrap;
     font-size: 0.9rem;
@@ -1241,12 +1243,11 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   }
   /* Reducir margen superior del contenedor principal en móvil */
   .mt-5 { margin-top: 1.2rem; }
-  /* Centrar separadores de sección en móvil */
   .section-separator-pill::before {
     content: "";
     flex: 1;
-    height: 2px;
-    background: linear-gradient(to right, var(--border) 0%, var(--accent-fuchsia) 100%);
+    height: 3px;
+    background: var(--accent-fuchsia);
     margin-right: 15px;
   }
   .pill-separator-line {
@@ -3124,7 +3125,7 @@ body, .nav-link, .btn, .card, .site-main {
 
 .section-separator-line {
   flex: 1;
-  height: 2px;
+  height: 3px;
   background: var(--accent);
   margin-left: 0;
   z-index: 0;
@@ -4309,12 +4310,12 @@ body, .nav-link, .btn, .card, .site-main {
 }
 .pill-separator-line {
   flex-grow: 1;
-  height: 2px;
-  background: linear-gradient(to right, var(--accent-fuchsia) 0%, var(--border) 100%);
+  height: 3px;
+  background: var(--accent-fuchsia);
   margin-left: 15px;
 }
 .dark-theme-pill .pill-separator-line {
-  background: linear-gradient(to right, var(--accent-fuchsia) 0%, rgba(255,255,255,0.1) 100%);
+  background: var(--accent-fuchsia);
 }
 
 /* ── 3. TOP SEMANAL GRID ── */

@@ -226,3 +226,7 @@ UPDATE `noticia_categoria` nc
     JOIN (SELECT noticia_id, categoria_id, ROW_NUMBER() OVER (PARTITION BY noticia_id ORDER BY categoria_id ASC) AS rn FROM noticia_categoria) sub
     ON nc.noticia_id = sub.noticia_id AND nc.categoria_id = sub.categoria_id
     SET nc.orden = sub.rn;
+
+-- 17. Búsqueda rápida: Índice FULLTEXT para optimizar motor de búsqueda
+-- (Si da error de duplicado en ejecución por ya estar creado, omitir)
+ALTER TABLE `noticias` ADD FULLTEXT INDEX `idx_busqueda_rapida` (`titulo`, `descripcion`, `contenido`);
