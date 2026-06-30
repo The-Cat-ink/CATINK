@@ -329,8 +329,8 @@ $estadosMX = ['AGU'=>'Aguascalientes','BCN'=>'Baja California','BCS'=>'Baja Cali
 }
 .perfil-hero-bg {
   position: absolute; inset: 0;
-  background: linear-gradient(135deg, var(--accent) 0%, #7c1d5e 100%);
-  opacity: .12;
+  background: var(--accent); /* fucsia sólido de la marca, sin degradado */
+  opacity: 1;
 }
 .perfil-hero::after {
   content:''; position:absolute; bottom:0; left:0; right:0; height:60px;
@@ -344,23 +344,24 @@ $estadosMX = ['AGU'=>'Aguascalientes','BCN'=>'Baja California','BCS'=>'Baja Cali
   flex-wrap: wrap;
 }
 .perfil-hero-info { flex: 1; min-width: 200px; }
-.perfil-hero-nombre { font-size: 1.8rem; font-weight: 800; margin: 0 0 4px; }
-.perfil-hero-username { color: var(--muted); font-size: .95rem; margin: 0 0 12px; }
+.perfil-hero-nombre { font-size: 1.8rem; font-weight: 800; margin: 0 0 4px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.18); }
+.perfil-hero-username { color: rgba(255,255,255,.85); font-size: .95rem; margin: 0 0 12px; }
 .perfil-hero-badges { display: flex; flex-wrap: wrap; gap: 8px; }
 .perfil-badge {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 4px 12px; border-radius: 50px; font-size: .78rem; font-weight: 600;
-  background: var(--card-bg); border: 1px solid var(--border); color: var(--muted);
+  background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); color: #fff;
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
 }
-.perfil-badge--admin { background: rgba(239,51,99,.12); border-color: var(--accent); color: var(--accent); }
+.perfil-badge--admin { background: #fff; border-color: #fff; color: var(--accent); }
 .perfil-hero-logout {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 9px 18px; border-radius: 50px; font-size: .88rem; font-weight: 600;
-  border: 1.5px solid var(--accent); color: var(--accent); text-decoration: none;
+  border: 1.5px solid rgba(255,255,255,.75); color: #fff; text-decoration: none;
   transition: background .15s, color .15s;
   white-space: nowrap;
 }
-.perfil-hero-logout:hover { background: var(--accent); color: #fff; }
+.perfil-hero-logout:hover { background: #fff; color: var(--accent); }
 
 /* AVATAR */
 .perfil-avatar-wrap { position: relative; flex-shrink: 0; }
@@ -370,14 +371,14 @@ $estadosMX = ['AGU'=>'Aguascalientes','BCN'=>'Baja California','BCS'=>'Baja Cali
   display: flex; align-items: center; justify-content: center;
   font-size: 2.4rem; font-weight: 800; color: #fff;
   overflow: hidden;
-  border: 4px solid var(--bg);
-  box-shadow: 0 4px 20px rgba(239,51,99,.3);
+  border: 4px solid #fff;
+  box-shadow: 0 6px 22px rgba(0,0,0,.22);
 }
 .perfil-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .perfil-camera {
   position: absolute; bottom: 2px; right: 2px;
   width: 30px; height: 30px; border-radius: 50%;
-  background: var(--accent); color: #fff; border: 2px solid var(--bg);
+  background: var(--accent); color: #fff; border: 2px solid #fff;
   font-size: .85rem; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: transform .15s;
