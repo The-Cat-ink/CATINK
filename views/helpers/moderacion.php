@@ -72,6 +72,24 @@ function esSuperAdminActual() {
     return isset($_SESSION['superadmin']) && $_SESSION['superadmin'] === true;
 }
 
+// Inserta una notificación para un usuario (lector o admin).
+// $tipo: 'lector' | 'admin'. Fail-soft: si la tabla aún no existe
+// (migración pendiente), no rompe la acción principal.
+function crearNotificacion($con, $tipo, $userId, $titulo, $mensaje, $tipoNotif = 'general') {
+    $userId = (int)$userId;
+    if ($userId <= 0 || !in_array($tipo, ['lector', 'admin'], true)) {
+        return false;
+    }
+    $sql = "INSERT INTO notificaciones (tipo_usuario, user_id, tipo, titulo, mensaje)
+            VALUES (?, ?, ?, ?, ?)";
+    $stmt = @$con->prepare($sql);
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param("sisss", $tipo, $userId, $tipoNotif, $titulo, $mensaje);
+    return @$stmt->execute();
+}
+
 // Verifica si el actor de la sesión (lector logueado) está baneado para
 // comentar/like/reportar. Devuelve el texto del baneo o null si puede actuar.
 function baneoLectorActual($con) {

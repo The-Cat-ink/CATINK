@@ -33,6 +33,21 @@ if($user['avatar_id'] ?? null){
 $avatares = $con->query("SELECT * FROM avatares_perfil WHERE activo = 1 ORDER BY creado DESC")->fetch_all(MYSQLI_ASSOC);
 $ent = $user['entidad'] ?? '';
 $estadosMX = ['AGU'=>'Aguascalientes','BCN'=>'Baja California','BCS'=>'Baja California Sur','CAM'=>'Campeche','CHP'=>'Chiapas','CHH'=>'Chihuahua','CMX'=>'Ciudad de México','COA'=>'Coahuila','COL'=>'Colima','DUR'=>'Durango','GUA'=>'Guanajuato','GRO'=>'Guerrero','HID'=>'Hidalgo','JAL'=>'Jalisco','MEX'=>'Estado de México','MIC'=>'Michoacán','MOR'=>'Morelos','NAY'=>'Nayarit','NLE'=>'Nuevo León','OAX'=>'Oaxaca','PUE'=>'Puebla','QUE'=>'Querétaro','ROO'=>'Quintana Roo','SLP'=>'San Luis Potosí','SIN'=>'Sinaloa','SON'=>'Sonora','TAB'=>'Tabasco','TAM'=>'Tamaulipas','TLA'=>'Tlaxcala','VER'=>'Veracruz','YUC'=>'Yucatán','ZAC'=>'Zacatecas'];
+
+// Notificaciones del usuario (avisos de moderación, etc.)
+$notifTipo   = $tipoUsuario === 'admin' ? 'admin' : 'lector';
+$notifUserId = (int)($tipoUsuario === 'admin' ? ($user['id_u'] ?? 0) : ($user['id'] ?? 0));
+$notificaciones = [];
+$notifNoLeidas  = 0;
+if ($notifUserId > 0) {
+    $stmtNotif = @$con->prepare("SELECT * FROM notificaciones WHERE tipo_usuario = ? AND user_id = ? ORDER BY creada DESC LIMIT 20");
+    if ($stmtNotif) {
+        $stmtNotif->bind_param("si", $notifTipo, $notifUserId);
+        $stmtNotif->execute();
+        $notificaciones = $stmtNotif->get_result()->fetch_all(MYSQLI_ASSOC);
+        foreach ($notificaciones as $n) { if (!$n['leida']) $notifNoLeidas++; }
+    }
+}
 ?>
 
 <!-- Notificaciones -->
@@ -80,6 +95,40 @@ $estadosMX = ['AGU'=>'Aguascalientes','BCN'=>'Baja California','BCS'=>'Baja Cali
     </a>
   </div>
 </div>
+
+<!-- NOTIFICACIONES -->
+<?php if (!empty($notificaciones)): ?>
+<div class="perfil-page">
+  <section class="perfil-notif" id="perfilNotif" data-base="<?= basePath() ?>">
+    <div class="perfil-notif-head">
+      <h2><i class="bi bi-bell-fill"></i> Notificaciones
+        <?php if ($notifNoLeidas > 0): ?><span class="perfil-notif-badge"><?= $notifNoLeidas ?></span><?php endif; ?>
+      </h2>
+      <?php if ($notifNoLeidas > 0): ?>
+        <button type="button" class="perfil-notif-marcar" id="btnMarcarNotif"><i class="bi bi-check2-all"></i> Marcar como leídas</button>
+      <?php endif; ?>
+    </div>
+    <ul class="perfil-notif-lista">
+      <?php foreach ($notificaciones as $n):
+        $esSuspension = $n['tipo'] === 'suspension';
+        $icono = $esSuspension ? 'bi-slash-circle-fill' : ($n['tipo'] === 'reactivacion' ? 'bi-check-circle-fill' : 'bi-info-circle-fill');
+      ?>
+        <li class="perfil-notif-item <?= $n['leida'] ? '' : 'is-unread' ?> notif-<?= htmlspecialchars($n['tipo']) ?>">
+          <span class="perfil-notif-icono"><i class="bi <?= $icono ?>"></i></span>
+          <div class="perfil-notif-cuerpo">
+            <div class="perfil-notif-titulo">
+              <?= htmlspecialchars($n['titulo']) ?>
+              <?php if (!$n['leida']): ?><span class="perfil-notif-dot" title="No leída"></span><?php endif; ?>
+            </div>
+            <p class="perfil-notif-msg"><?= nl2br(htmlspecialchars($n['mensaje'])) ?></p>
+            <span class="perfil-notif-fecha"><i class="bi bi-clock"></i> <?= date('d M Y, H:i', strtotime($n['creada'])) ?></span>
+          </div>
+        </li>
+      <?php endforeach; ?>
+    </ul>
+  </section>
+</div>
+<?php endif; ?>
 
 <!-- TABS -->
 <div class="perfil-page">
@@ -320,6 +369,41 @@ $estadosMX = ['AGU'=>'Aguascalientes','BCN'=>'Baja California','BCS'=>'Baja Cali
 @keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(-10px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
 .perfil-toast--ok  { background:#1a7f37; color:#fff; }
 .perfil-toast--err { background:#cf222e; color:#fff; }
+
+/* NOTIFICACIONES */
+.perfil-notif {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px 22px; margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.06);
+}
+.perfil-notif-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+.perfil-notif-head h2 { font-size:1.15rem; margin:0; display:flex; align-items:center; gap:8px; color:var(--text); }
+.perfil-notif-head h2 i { color: var(--accent); }
+.perfil-notif-badge {
+  background:var(--accent); color:#fff; font-size:.72rem; font-weight:700;
+  min-width:20px; height:20px; padding:0 6px; border-radius:10px;
+  display:inline-flex; align-items:center; justify-content:center;
+}
+.perfil-notif-marcar {
+  background:transparent; border:1px solid var(--border); color:var(--muted);
+  border-radius:8px; padding:6px 12px; font-size:.82rem; font-weight:600; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.perfil-notif-marcar:hover { border-color:var(--accent); color:var(--accent); }
+.perfil-notif-lista { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
+.perfil-notif-item {
+  display:flex; gap:14px; padding:14px 16px; border-radius:12px;
+  background:var(--bg); border:1px solid var(--border);
+}
+.perfil-notif-item.is-unread { border-color:var(--accent); background:rgba(239,51,99,0.05); }
+.perfil-notif-item.notif-suspension .perfil-notif-icono { color:#ef3333; }
+.perfil-notif-item.notif-reactivacion .perfil-notif-icono { color:#1a7f37; }
+.perfil-notif-icono { font-size:1.4rem; color:var(--accent); flex-shrink:0; line-height:1.2; }
+.perfil-notif-cuerpo { flex:1; min-width:0; }
+.perfil-notif-titulo { font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px; }
+.perfil-notif-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); display:inline-block; }
+.perfil-notif-msg { margin:4px 0 6px; color:var(--muted); font-size:.9rem; line-height:1.45; }
+.perfil-notif-fecha { font-size:.78rem; color:var(--muted); display:inline-flex; align-items:center; gap:5px; }
 
 /* HERO */
 .perfil-hero {
@@ -650,5 +734,31 @@ if (toast) setTimeout(() => { toast.style.opacity = '0'; toast.style.transition 
 document.addEventListener('turbo:load', initPerfil);
 if (document.readyState !== 'loading') initPerfil();
 else document.addEventListener('DOMContentLoaded', initPerfil);
+</script>
+<script>
+// Marcar notificaciones como leídas
+(() => {
+  const btn = document.getElementById('btnMarcarNotif');
+  if (!btn) return;
+  const base = document.getElementById('perfilNotif').dataset.base;
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    try {
+      const res = await fetch(base + '/controllers/notificaciones.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=marcar_leidas'
+      });
+      const data = await res.json();
+      if (data.ok) {
+        document.querySelectorAll('.perfil-notif-item.is-unread').forEach(el => el.classList.remove('is-unread'));
+        document.querySelectorAll('.perfil-notif-dot').forEach(el => el.remove());
+        const badge = document.querySelector('.perfil-notif-badge');
+        if (badge) badge.remove();
+        btn.remove();
+      }
+    } catch (e) { btn.disabled = false; }
+  });
+})();
 </script>
 <?php include("./../layout/footer.php"); ?>

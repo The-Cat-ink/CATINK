@@ -80,15 +80,22 @@ switch ($action) {
             $sql = "UPDATE $tabla SET baneado_permanente = 1, baneado_hasta = NULL, baneado_motivo = ? WHERE $pk = ?";
             $stmt = $con->prepare($sql);
             $stmt->bind_param("si", $motivo, $userId);
+            $duracionTxt = 'de forma permanente';
         } else {
             $hasta = (new DateTime())->modify($duraciones[$duracion]['modify'])->format('Y-m-d H:i:s');
             $sql = "UPDATE $tabla SET baneado_permanente = 0, baneado_hasta = ?, baneado_motivo = ? WHERE $pk = ?";
             $stmt = $con->prepare($sql);
             $stmt->bind_param("ssi", $hasta, $motivo, $userId);
+            $duracionTxt = 'por ' . $duraciones[$duracion]['label'] . ' (hasta el ' . date('d M Y, H:i', strtotime($hasta)) . ')';
         }
 
         if ($stmt->execute()) {
             $estado = obtenerBaneo($con, $tipo, $userId);
+            // Notificar al usuario suspendido en su perfil
+            $notifMsg = "Tu cuenta ha sido suspendida $duracionTxt. "
+                      . 'Motivo: ' . ($motivo !== null ? $motivo : 'No se especificó un motivo.')
+                      . ' Durante la suspensión no podrás comentar, dar me gusta ni reportar.';
+            crearNotificacion($con, $tipo, $userId, 'Tu cuenta ha sido suspendida', $notifMsg, 'suspension');
             echo json_encode([
                 'ok'       => true,
                 'msg'      => 'Usuario suspendido (' . $duraciones[$duracion]['label'] . ').',
@@ -108,6 +115,10 @@ switch ($action) {
         $stmt = $con->prepare($sql);
         $stmt->bind_param("i", $userId);
         if ($stmt->execute()) {
+            // Notificar al usuario la reactivación de su cuenta
+            crearNotificacion($con, $tipo, $userId, 'Tu suspensión ha sido retirada',
+                'Un moderador retiró la suspensión de tu cuenta. Ya puedes volver a comentar, dar me gusta y reportar con normalidad.',
+                'reactivacion');
             echo json_encode(['ok' => true, 'msg' => 'Suspensión retirada.', 'baneado' => false]);
         } else {
             echo json_encode(['ok' => false, 'msg' => 'Error al retirar la suspensión.']);

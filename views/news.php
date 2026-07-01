@@ -4,6 +4,7 @@ require_once("./../data/conexion.php");
 include("./helpers/videoEmbed.php");
 include("./helpers/socialEmbed.php");
 require_once("./helpers/urlhelper.php");
+require_once("./helpers/moderacion.php");
 // Soportar múltiples formas de acceso a noticias
 if(isset($_GET['slug'])){
     $slug = $_GET['slug'];
@@ -544,11 +545,28 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                           <button class="btn-editar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-pencil"></i> Editar</button>
                           <button class="btn-eliminar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-trash"></i> Eliminar</button>
                         <?php else: ?>
-                          <?php if (isset($_SESSION['tipo'])): ?>
+                          <?php if (isset($_SESSION['tipo']) && empty($_SESSION['superadmin'])): ?>
                             <button class="btn-reportar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-flag"></i> Reportar</button>
                           <?php endif; ?>
-                          <?php if (!empty($_SESSION['superadmin'])): ?>
-                            <button class="btn-eliminar-com btn-mod-eliminar" data-id="<?= $com['id_comentario'] ?>" title="Eliminar como moderador"><i class="bi bi-trash"></i> Eliminar (mod)</button>
+                          <?php if (!empty($_SESSION['superadmin'])):
+                              $modTipoCom    = $com['usuario_id'] ? 'admin' : 'lector';
+                              $modUserIdCom  = (int)($com['usuario_id'] ?: $com['lector_id']);
+                              $modNombreCom  = htmlspecialchars($com['nombre'], ENT_QUOTES);
+                              $modBaneadoCom = $modUserIdCom > 0 ? estaBaneado(obtenerBaneo($con, $modTipoCom, $modUserIdCom)) : false;
+                          ?>
+                            <div class="com-kebab">
+                              <button class="btn-kebab-com" title="Opciones de moderación" aria-label="Opciones de moderación"><i class="bi bi-three-dots-vertical"></i></button>
+                              <div class="com-kebab-menu" hidden>
+                                <button class="btn-eliminar-com btn-mod-eliminar" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-trash"></i> Eliminar</button>
+                                <?php if ($modUserIdCom > 0): ?>
+                                  <?php if ($modBaneadoCom): ?>
+                                    <button class="btn-quitar-com" data-tipo="<?= $modTipoCom ?>" data-userid="<?= $modUserIdCom ?>" data-nombre="<?= $modNombreCom ?>"><i class="bi bi-check-circle"></i> Quitar suspensión</button>
+                                  <?php else: ?>
+                                    <button class="btn-suspender-com" data-tipo="<?= $modTipoCom ?>" data-userid="<?= $modUserIdCom ?>" data-nombre="<?= $modNombreCom ?>"><i class="bi bi-slash-circle"></i> Suspender</button>
+                                  <?php endif; ?>
+                                <?php endif; ?>
+                              </div>
+                            </div>
                           <?php endif; ?>
                         <?php endif; ?>
                       </div>
@@ -576,6 +594,58 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 </div>
               </div>
             </div>
+            <?php if (!empty($_SESSION['superadmin'])): ?>
+            <!-- Modal de suspensión (moderación) -->
+            <div class="modal-reporte" id="modalSuspender" style="display:none;">
+              <div class="modal-reporte-content">
+                <h3><i class="bi bi-slash-circle"></i> Suspender usuario</h3>
+                <p class="modal-suspender-user" id="suspenderUserNombre"></p>
+                <label class="mod-label">Duración de la suspensión</label>
+                <select id="suspenderDuracion">
+                  <?php foreach (duracionesBaneo() as $key => $d): ?>
+                    <option value="<?= $key ?>"><?= htmlspecialchars($d['label']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+                <input type="text" id="suspenderMotivo" maxlength="255" placeholder="Motivo (opcional)">
+                <div class="modal-reporte-btns">
+                  <button id="btnEnviarSuspension" class="btn-comentar"><i class="bi bi-slash-circle"></i> Suspender</button>
+                  <button id="btnCerrarSuspension" class="btn-cancelar">Cancelar</button>
+                </div>
+              </div>
+            </div>
+            <style>
+              .com-kebab { position: relative; display: inline-block; }
+              .btn-kebab-com {
+                background: none; border: none; color: var(--muted); cursor: pointer;
+                padding: 4px 9px; border-radius: 6px; font-size: 1.05rem; line-height: 1;
+              }
+              .btn-kebab-com:hover { background: rgba(239,51,99,0.10); color: var(--accent); }
+              .com-kebab-menu {
+                position: absolute; right: 0; top: calc(100% + 4px); z-index: 30;
+                background: var(--card-bg); border: 1px solid var(--border);
+                border-radius: 10px; padding: 6px; min-width: 165px;
+                flex-direction: column; gap: 2px;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+                display: flex;
+              }
+              .com-kebab-menu[hidden] { display: none; }
+              .com-kebab-menu button {
+                background: none; border: none; text-align: left; width: 100%;
+                padding: 8px 10px; border-radius: 6px; cursor: pointer;
+                color: var(--text); font-size: 0.88rem;
+                display: flex; align-items: center; gap: 8px;
+              }
+              .com-kebab-menu button:hover { background: rgba(239,51,99,0.12); color: var(--accent); }
+              .com-kebab-menu .btn-suspender-com:hover { background: rgba(239,51,51,0.14); color: #ef3333; }
+              .com-kebab-menu .btn-quitar-com:hover { background: rgba(40,167,69,0.14); color: #28a745; }
+              .modal-suspender-user { font-weight: 600; margin: 0 0 6px; color: var(--accent); }
+              #modalSuspender select, #modalSuspender input {
+                width: 100%; margin-bottom: 10px; padding: 9px 12px;
+                border-radius: 8px; border: 1px solid var(--border);
+                background: var(--bg); color: var(--text);
+              }
+            </style>
+            <?php endif; ?>
           </div>
         </div>
         <!-- SIDEBAR -->
@@ -781,6 +851,18 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
   const noticiaId = <?= $id ?>;
   const comBase = '<?= basePath() ?>/controllers/';
 
+  // Intercambia el botón del menú ⋮ entre "Suspender" y "Quitar suspensión"
+  // para todos los comentarios del mismo usuario, sin recargar la página.
+  function actualizarBotonMod(tipo, userId, baneado, nombre) {
+    document.querySelectorAll('.com-kebab-menu .btn-suspender-com, .com-kebab-menu .btn-quitar-com').forEach(b => {
+      if (b.dataset.tipo !== tipo || b.dataset.userid !== String(userId)) return;
+      const nom = (nombre ?? b.dataset.nombre ?? '').replace(/"/g, '&quot;');
+      b.outerHTML = baneado
+        ? `<button class="btn-quitar-com" data-tipo="${tipo}" data-userid="${userId}" data-nombre="${nom}"><i class="bi bi-check-circle"></i> Quitar suspensión</button>`
+        : `<button class="btn-suspender-com" data-tipo="${tipo}" data-userid="${userId}" data-nombre="${nom}"><i class="bi bi-slash-circle"></i> Suspender</button>`;
+    });
+  }
+
   // Contador de caracteres
   const textarea = document.getElementById('comentarioTexto');
   const charCount = document.getElementById('charCount');
@@ -859,6 +941,76 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('button');
     if (!btn) return;
+
+    // KEBAB (menú de moderación) — abrir/cerrar
+    if (btn.classList.contains('btn-kebab-com')) {
+      const menu = btn.nextElementSibling;
+      const abierto = menu && !menu.hidden;
+      document.querySelectorAll('.com-kebab-menu').forEach(m => m.hidden = true);
+      if (menu) menu.hidden = abierto;
+      return;
+    }
+
+    // SUSPENDER — abrir modal
+    if (btn.classList.contains('btn-suspender-com')) {
+      const modal = document.getElementById('modalSuspender');
+      modal.style.display = 'flex';
+      modal.dataset.tipo = btn.dataset.tipo;
+      modal.dataset.userid = btn.dataset.userid;
+      document.getElementById('suspenderUserNombre').textContent = btn.dataset.nombre || '';
+      document.getElementById('suspenderMotivo').value = '';
+      document.querySelectorAll('.com-kebab-menu').forEach(m => m.hidden = true);
+      return;
+    }
+
+    // ENVIAR SUSPENSIÓN
+    if (btn.id === 'btnEnviarSuspension') {
+      const modal = document.getElementById('modalSuspender');
+      const dur = document.getElementById('suspenderDuracion');
+      const durTxt = dur.options[dur.selectedIndex].text;
+      if (!confirm(`¿Suspender a este usuario por: ${durTxt}?`)) return;
+      btn.disabled = true;
+      try {
+        const res = await fetch(comBase + 'moderar_usuario.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `action=ban&tipo=${modal.dataset.tipo}&user_id=${modal.dataset.userid}&duracion=${encodeURIComponent(dur.value)}&motivo=${encodeURIComponent(document.getElementById('suspenderMotivo').value)}`
+        });
+        const data = await res.json();
+        showToast(data.msg, data.ok ? 'success' : 'error');
+        if (data.ok) {
+          modal.style.display = 'none';
+          actualizarBotonMod(modal.dataset.tipo, modal.dataset.userid, true);
+        }
+      } catch (err) { showToast('Error de red.', 'error'); }
+      btn.disabled = false;
+      return;
+    }
+
+    // QUITAR SUSPENSIÓN
+    if (btn.classList.contains('btn-quitar-com')) {
+      if (!confirm('¿Quitar la suspensión a este usuario?')) return;
+      const tipo = btn.dataset.tipo, userId = btn.dataset.userid, nombre = btn.dataset.nombre || '';
+      btn.disabled = true;
+      try {
+        const res = await fetch(comBase + 'moderar_usuario.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `action=unban&tipo=${tipo}&user_id=${userId}`
+        });
+        const data = await res.json();
+        showToast(data.msg, data.ok ? 'success' : 'error');
+        if (data.ok) actualizarBotonMod(tipo, userId, false, nombre);
+      } catch (err) { showToast('Error de red.', 'error'); }
+      document.querySelectorAll('.com-kebab-menu').forEach(m => m.hidden = true);
+      return;
+    }
+
+    // CERRAR MODAL SUSPENSIÓN
+    if (btn.id === 'btnCerrarSuspension') {
+      document.getElementById('modalSuspender').style.display = 'none';
+      return;
+    }
 
     // LIKE
     if (btn.classList.contains('btn-like-com')) {
@@ -982,6 +1134,13 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
     // CERRAR MODAL REPORTE
     if (btn.id === 'btnCerrarReporte') {
       document.getElementById('modalReporte').style.display = 'none';
+    }
+  });
+
+  // Cerrar el menú de moderación al hacer clic fuera de él
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.com-kebab')) {
+      document.querySelectorAll('.com-kebab-menu').forEach(m => m.hidden = true);
     }
   });
 </script>

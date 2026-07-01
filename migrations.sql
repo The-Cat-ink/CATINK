@@ -245,3 +245,18 @@ ALTER TABLE `usuarios`
 -- (Si da error de duplicado en ejecución por ya estar creado, omitir)
 ALTER TABLE `noticias` ADD FULLTEXT INDEX `idx_busqueda_rapida` (`titulo`, `descripcion`, `contenido`);
 
+-- 19. Notificaciones a usuarios (avisos de moderación: suspensión / reactivación)
+--     tipo_usuario + user_id apuntan a lectores.id o usuarios.id_u según corresponda.
+CREATE TABLE IF NOT EXISTS `notificaciones` (
+  `id_notificacion` int(11) NOT NULL AUTO_INCREMENT,
+  `tipo_usuario` enum('lector','admin') NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `tipo` varchar(40) NOT NULL DEFAULT 'general',
+  `titulo` varchar(255) NOT NULL,
+  `mensaje` text NOT NULL,
+  `leida` tinyint(1) NOT NULL DEFAULT 0,
+  `creada` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_notificacion`),
+  KEY `idx_notif_user` (`tipo_usuario`, `user_id`, `leida`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
