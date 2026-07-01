@@ -188,7 +188,7 @@ switch ($action) {
                 SELECT c.*,
                        COALESCE(u.nombre, l.nombre) AS nombre,
                        COALESCE(u.usuario, l.usuario) AS usuario,
-                       COALESCE(ua.imagen, la.imagen) AS avatar_img,
+                       COALESCE(u.foto_personal, ua.imagen, la.imagen) AS avatar_img,
                        IF(c.usuario_id IS NOT NULL, 1, 0) AS es_editor
                 FROM comentarios c
                 LEFT JOIN lectores l ON c.lector_id = l.id

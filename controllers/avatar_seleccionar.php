@@ -30,7 +30,23 @@ $usuario = $_SESSION['usuario'];
 error_log("DEBUG avatar_seleccionar: tipo=$tipo, usuario=$usuario, avatar_id=$avatar_id");
 
 if($tipo === 'admin'){
-    $stmt = $con->prepare("UPDATE usuarios SET avatar_id = ? WHERE usuario = ?");
+    // Obtener foto anterior para borrar el archivo físico
+    $stmtPrev = $con->prepare("SELECT foto_personal FROM usuarios WHERE usuario = ?");
+    $stmtPrev->bind_param("s", $usuario);
+    $stmtPrev->execute();
+    $rowPrev = $stmtPrev->get_result()->fetch_assoc();
+    if($rowPrev && !empty($rowPrev['foto_personal'])){
+        $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false;
+        $fotoPath = $rowPrev['foto_personal'];
+        if(strpos($fotoPath, '..') === false && strpos($fotoPath, '/') !== 0){
+            $fullPath = ($isLocal ? dirname(__DIR__) : '/home/u780114275') . '/' . $fotoPath;
+            if(file_exists($fullPath)){
+                unlink($fullPath);
+            }
+        }
+    }
+
+    $stmt = $con->prepare("UPDATE usuarios SET avatar_id = ?, foto_personal = NULL WHERE usuario = ?");
     $stmt->bind_param("is", $avatar_id, $usuario);
     $stmt->execute();
     error_log("DEBUG: Updated usuarios, affected_rows=" . $stmt->affected_rows);
