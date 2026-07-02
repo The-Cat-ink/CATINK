@@ -192,10 +192,50 @@ $debatidas = $stmtCom->get_result()->fetch_all(MYSQLI_ASSOC);
 $debatidasLeft = array_slice($debatidas, 0, 3);
 $debatidasRight = array_slice($debatidas, 3, 5);
 
-// 8. Lo más Random
-$randomNoticias = array_slice($noticiasGlobales, 4, 25);
-shuffle($randomNoticias);
-$randomNoticias = array_slice($randomNoticias, 0, 4);
+// 8. Lo más Random (Priorizar noticias de la categoría 'Random')
+$stmtRandom = $con->prepare("
+    SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.crop4, n.fecha_publicacion AS fecha,
+           n.likes, n.vistas, n.tipo_publicacion, n.calificacion, u.nombre AS nombre_u,
+           GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias,
+           n.es_estreno, n.seccion_estreno
+    FROM noticias n
+    INNER JOIN usuarios u ON n.autor = u.id_u
+    INNER JOIN noticia_categoria nc ON n.id = nc.noticia_id
+    INNER JOIN categorias c ON nc.categoria_id = c.id_c
+    WHERE n.fecha_publicacion <= NOW() AND n.id IN (
+        SELECT sub_nc.noticia_id 
+        FROM noticia_categoria sub_nc 
+        INNER JOIN categorias sub_c ON sub_nc.categoria_id = sub_c.id_c
+        WHERE sub_c.nombre = 'Random'
+    )
+    GROUP BY n.id
+    ORDER BY RAND()
+    LIMIT 4;
+");
+$stmtRandom->execute();
+$randomNoticias = $stmtRandom->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// Respaldo: si hay menos de 4 noticias en 'Random', rellenar con recientes al azar
+if (count($randomNoticias) < 4) {
+    $necesarias = 4 - count($randomNoticias);
+    $excluirIds = array_map(function($n) { return $n['id']; }, $randomNoticias);
+    
+    // Excluir slider principal para evitar repeticiones visuales inmediatas
+    foreach (array_slice($noticiasGlobales, 0, 5) as $sn) {
+        $excluirIds[] = $sn['id'];
+    }
+    
+    $fallbacks = [];
+    foreach ($noticiasGlobales as $gn) {
+        if (!in_array($gn['id'], $excluirIds)) {
+            $fallbacks[] = $gn;
+        }
+    }
+    shuffle($fallbacks);
+    $adicionales = array_slice($fallbacks, 0, $necesarias);
+    $randomNoticias = array_merge($randomNoticias, $adicionales);
+}
+
 
 // 9. Videos para "No te lo pierdas" (Verticales / TikToks)
 $stmtVid = $con->prepare("SELECT * FROM videos WHERE activo = 1 ORDER BY orden ASC, id_v DESC LIMIT 4");

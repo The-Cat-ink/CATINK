@@ -1,4 +1,12 @@
 <?php
+if(session_status() === PHP_SESSION_NONE){
+    session_start();
+}
+require_once(__DIR__ . "/../views/helpers/urlhelper.php");
+if(!isset($_SESSION['usuario'])){
+    header('Location: ' . basePath() . '/login');
+    exit;
+}
 $noTurboCache = true; // El perfil es un formulario: nunca servir snapshot cacheado de Turbo
 include("./../layout/header.php");
 ?>
@@ -6,10 +14,6 @@ include("./../layout/header.php");
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <?php
 require_once("./../data/conexion.php");
-if(!isset($_SESSION['usuario'])){
-    header('Location: ' . basePath() . '/login');
-    exit;
-}
 $tipoUsuario = $_SESSION['tipo'] ?? 'lector';
 if($tipoUsuario === 'admin'){
     $stmtUser = $con->prepare("SELECT *, registro AS creado FROM usuarios WHERE usuario = ?");
@@ -216,7 +220,18 @@ if ($notifUserId > 0) {
             </div>
             <div class="perfil-field-group">
               <label for="nacimiento">Fecha de Nacimiento</label>
-              <input type="date" id="nacimiento" name="nacimiento" class="input" value="<?= htmlspecialchars($user['fecha_nacimiento'] ?? '') ?>">
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <select id="dob_dia" class="input" style="flex: 1; margin-bottom: 0;">
+                  <option value="" disabled selected>Día</option>
+                </select>
+                <select id="dob_mes" class="input" style="flex: 1.5; margin-bottom: 0;">
+                  <option value="" disabled selected>Mes</option>
+                </select>
+                <select id="dob_anio" class="input" style="flex: 1.2; margin-bottom: 0;">
+                  <option value="" disabled selected>Año</option>
+                </select>
+              </div>
+              <input type="hidden" id="nacimiento" name="nacimiento" value="<?= htmlspecialchars($user['fecha_nacimiento'] ?? '') ?>">
             </div>
           </div>
           <div class="perfil-field-group">
@@ -624,6 +639,72 @@ if ($notifUserId > 0) {
 function initPerfil(){
   if (!document.body || document.body.dataset.perfilInit === '1') return;
   document.body.dataset.perfilInit = '1';
+
+  // ---- FECHA DE NACIMIENTO DROPDOWNS ----
+  (() => {
+    const diaSel = document.getElementById('dob_dia');
+    const mesSel = document.getElementById('dob_mes');
+    const anioSel = document.getElementById('dob_anio');
+    const hiddenInput = document.getElementById('nacimiento');
+    if (!diaSel || !mesSel || !anioSel || !hiddenInput) return;
+
+    // Clear options to avoid duplicates on Turbo loads
+    diaSel.innerHTML = '<option value="" disabled selected>Día</option>';
+    mesSel.innerHTML = '<option value="" disabled selected>Mes</option>';
+    anioSel.innerHTML = '<option value="" disabled selected>Año</option>';
+
+    // Populate days (1-31)
+    for (let d = 1; d <= 31; d++) {
+      const opt = document.createElement('option');
+      opt.value = String(d).padStart(2, '0');
+      opt.textContent = d;
+      diaSel.appendChild(opt);
+    }
+
+    // Populate months (1-12)
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    meses.forEach((m, idx) => {
+      const opt = document.createElement('option');
+      opt.value = String(idx + 1).padStart(2, '0');
+      opt.textContent = m;
+      mesSel.appendChild(opt);
+    });
+
+    // Populate years (current year down to 1900)
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear; y >= 1900; y--) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      anioSel.appendChild(opt);
+    }
+
+    function updateHiddenDate() {
+      const dia = diaSel.value;
+      const mes = mesSel.value;
+      const anio = anioSel.value;
+      if (dia && mes && anio) {
+        hiddenInput.value = `${anio}-${mes}-${dia}`;
+      } else {
+        hiddenInput.value = '';
+      }
+    }
+
+    diaSel.addEventListener('change', updateHiddenDate);
+    mesSel.addEventListener('change', updateHiddenDate);
+    anioSel.addEventListener('change', updateHiddenDate);
+
+    // Set default value if exists
+    const initialDate = hiddenInput.value;
+    if (initialDate) {
+      const parts = initialDate.split('-');
+      if (parts.length === 3) {
+        anioSel.value = parts[0];
+        mesSel.value = parts[1];
+        diaSel.value = parts[2];
+      }
+    }
+  })();
 
 // ---- TABS ----
 document.querySelectorAll('.perfil-tab').forEach(tab => {

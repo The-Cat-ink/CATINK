@@ -452,7 +452,11 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
             <!-- ===================== -->
             <!-- SECCIÓN DE COMENTARIOS -->
             <!-- ===================== -->
-            <?php if ($comentariosHabilitados): ?>
+            <?php
+            $comentariosGlobalesHabilitados = isset($secciones['comentarios']) ? ($secciones['comentarios']['estado'] == 1) : true;
+            if ($comentariosGlobalesHabilitados):
+              if ($comentariosHabilitados):
+            ?>
             <div class="comentarios-section" id="comentarios">
               <h2 class="comentarios-titulo">Comentarios</h2>
               <!-- Formulario -->
@@ -576,6 +580,16 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
               </div>
             </div>
             <?php endif; ?>
+            <?php else: ?>
+                <!-- Botón de pánico activo: comentarios desactivados globalmente -->
+                <div class="comentarios-section" id="comentarios">
+                    <h2 class="comentarios-titulo">Comentarios</h2>
+                    <div class="alert alert-warning text-center" style="background: rgba(239, 51, 99, 0.05); border: 1px solid rgba(239, 51, 99, 0.2); color: var(--accent); border-radius: 10px; padding: 20px; font-weight: 600; margin-top: 15px;">
+                        <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.5rem; display: block; margin-bottom: 8px;"></i>
+                        Los comentarios han sido desactivados temporalmente por la administración.
+                    </div>
+                </div>
+            <?php endif; ?>
             <!-- Modal de reporte -->
             <div class="modal-reporte" id="modalReporte" style="display:none;">
               <div class="modal-reporte-content">
@@ -591,6 +605,91 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 <div class="modal-reporte-btns">
                   <button id="btnEnviarReporte" class="btn-comentar"><i class="bi bi-send"></i> Enviar</button>
                   <button id="btnCerrarReporte" class="btn-cancelar">Cancelar</button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Modal Confirmación Eliminar Comentario Custom (CatInk style) -->
+            <style>
+            .custom-confirm-modal {
+              position: fixed;
+              top: 0; left: 0; width: 100%; height: 100%;
+              background: rgba(0, 0, 0, 0.7);
+              backdrop-filter: blur(5px);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              z-index: 10000;
+              animation: fadeIn 0.2s ease;
+            }
+            .custom-confirm-content {
+              background: var(--card-bg, #1a1a1a);
+              border: 1px solid var(--border, #2d2d2d);
+              border-radius: 12px;
+              padding: 24px;
+              width: 90%;
+              max-width: 380px;
+              text-align: center;
+              box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+              animation: scaleUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            .custom-confirm-content h3 {
+              margin-top: 0;
+              margin-bottom: 12px;
+              font-size: 1.25rem;
+              font-weight: 700;
+              color: var(--accent, #EF3363);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+            }
+            .custom-confirm-content p {
+              color: var(--text, #fff);
+              font-size: 0.92rem;
+              margin-bottom: 24px;
+              line-height: 1.45;
+              opacity: 0.85;
+            }
+            .custom-confirm-buttons {
+              display: flex;
+              gap: 12px;
+              justify-content: center;
+            }
+            .custom-confirm-buttons button {
+              padding: 8px 18px;
+              font-size: 0.88rem;
+              font-weight: 600;
+              border-radius: 6px;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              border: none;
+            }
+            .custom-confirm-buttons #btnConfirmDeleteNo {
+              background: var(--border, #2d2d2d);
+              color: var(--text, #fff);
+            }
+            .custom-confirm-buttons #btnConfirmDeleteNo:hover {
+              background: var(--muted, #444);
+            }
+            .custom-confirm-buttons #btnConfirmDeleteYes {
+              background: var(--accent, #EF3363);
+              color: #fff;
+              box-shadow: 0 4px 12px rgba(239, 51, 99, 0.25);
+            }
+            .custom-confirm-buttons #btnConfirmDeleteYes:hover {
+              background: #bd2148;
+              box-shadow: 0 6px 16px rgba(239, 51, 99, 0.35);
+              transform: translateY(-1px);
+            }
+            </style>
+            <div id="confirmDeleteModal" class="custom-confirm-modal" style="display:none;">
+              <div class="custom-confirm-content">
+                <h3><i class="bi bi-trash-fill"></i> ¿Eliminar comentario?</h3>
+                <p>Esta acción no se puede deshacer. El comentario será borrado permanentemente de la noticia.</p>
+                <div class="custom-confirm-buttons">
+                  <button id="btnConfirmDeleteNo">Cancelar</button>
+                  <button id="btnConfirmDeleteYes">Eliminar</button>
                 </div>
               </div>
             </div>
@@ -931,8 +1030,13 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
             const num = parseInt(countEl.textContent.replace(/\D/g, '')) + 1;
             countEl.textContent = `(${num})`;
           }
+        } else {
+          showToast(data.msg || 'Error al enviar el comentario.', 'error');
         }
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error(e);
+        showToast('Error de red al procesar el comentario.', 'error');
+      }
       btnComentar.disabled = false;
     });
   }
@@ -1040,26 +1144,47 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
 
     // ELIMINAR
     if (btn.classList.contains('btn-eliminar-com')) {
-      if (!confirm('¿Eliminar este comentario?')) return;
       const cid = btn.dataset.id;
-      try {
-        const res = await fetch(comBase + 'comentarios.php', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: `action=eliminar&comentario_id=${cid}`
+      const modal = document.getElementById('confirmDeleteModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        
+        // Remove existing event listeners to avoid double-triggers
+        const confirmYes = document.getElementById('btnConfirmDeleteYes');
+        const confirmNo = document.getElementById('btnConfirmDeleteNo');
+        
+        // Clone buttons to clear all listeners
+        const newYes = confirmYes.cloneNode(true);
+        const newNo = confirmNo.cloneNode(true);
+        confirmYes.parentNode.replaceChild(newYes, confirmYes);
+        confirmNo.parentNode.replaceChild(newNo, confirmNo);
+        
+        newNo.addEventListener('click', () => {
+          modal.style.display = 'none';
         });
-        const data = await res.json();
-        if (data.ok) {
-          const item = document.querySelector(`.comentario-item[data-id="${cid}"]`);
-          if (item) item.remove();
-          const countEl = document.querySelector('.comentarios-count');
-          if (countEl) {
-            const num = Math.max(0, parseInt(countEl.textContent.replace(/\D/g, '')) - 1);
-            countEl.textContent = `(${num})`;
-          }
-        }
-        showToast(data.msg, data.ok ? 'success' : 'error');
-      } catch (e) { console.error(e); }
+        
+        newYes.addEventListener('click', async () => {
+          modal.style.display = 'none';
+          try {
+            const res = await fetch(comBase + 'comentarios.php', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+              body: `action=eliminar&comentario_id=${cid}`
+            });
+            const data = await res.json();
+            if (data.ok) {
+              const item = document.querySelector(`.comentario-item[data-id="${cid}"]`);
+              if (item) item.remove();
+              const countEl = document.querySelector('.comentarios-count');
+              if (countEl) {
+                const num = Math.max(0, parseInt(countEl.textContent.replace(/\D/g, '')) - 1);
+                countEl.textContent = `(${num})`;
+              }
+            }
+            showToast(data.msg, data.ok ? 'success' : 'error');
+          } catch (e) { console.error(e); }
+        });
+      }
     }
 
     // EDITAR

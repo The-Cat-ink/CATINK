@@ -4,6 +4,27 @@ if(session_status() == PHP_SESSION_NONE){
 }
 include(__DIR__ . "/../data/conexion.php");
 
+// Procesar botón de pánico de comentarios
+if (isset($_POST['toggle_panico']) && isset($_SESSION['superadmin']) && $_SESSION['superadmin'] === true) {
+    $nuevoEstado = (int)$_POST['estado_panico'];
+    $stmt = $con->prepare("UPDATE secciones SET estado = ? WHERE nombre = 'comentarios'");
+    $stmt->bind_param("i", $nuevoEstado);
+    $stmt->execute();
+    
+    // Si no se actualizó ninguna fila, insertamos si no existe
+    if ($stmt->affected_rows === 0) {
+        $check = $con->query("SELECT id_s FROM secciones WHERE nombre = 'comentarios'");
+        if ($check->num_rows === 0) {
+            $stmtInsert = $con->prepare("INSERT INTO secciones (nombre, estado) VALUES ('comentarios', ?)");
+            $stmtInsert->bind_param("i", $nuevoEstado);
+            $stmtInsert->execute();
+        }
+    }
+    
+    header("Location: admin.php");
+    exit();
+}
+
 // Procesar actualización de estado de secciones
 if(isset($_POST['actualizarEstado']) && isset($_POST['secciones'])){
     foreach($_POST['secciones'] as $id => $datos){
@@ -139,10 +160,77 @@ function formatNumberShort($num){
             <a href="crear.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Nueva Noticia</a>
         <?php endif; ?> 
          <?php if($superadmin): ?>
+            <style>
+            .btn-panic-deactivate {
+                background: #dc3545;
+                color: #fff;
+                border: none;
+                padding: 6px 14px;
+                font-size: 0.88rem;
+                font-weight: 600;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                text-decoration: none;
+                vertical-align: middle;
+            }
+            .btn-panic-deactivate:hover {
+                background: #bd2130;
+                transform: translateY(-1px);
+                box-shadow: 0 6px 16px rgba(220, 53, 69, 0.35);
+                color: #fff;
+            }
+            .btn-panic-activate {
+                background: #28a745;
+                color: #fff;
+                border: none;
+                padding: 6px 14px;
+                font-size: 0.88rem;
+                font-weight: 600;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                text-decoration: none;
+                vertical-align: middle;
+            }
+            .btn-panic-activate:hover {
+                background: #218838;
+                transform: translateY(-1px);
+                box-shadow: 0 6px 16px rgba(40, 167, 69, 0.35);
+                color: #fff;
+            }
+            </style>
             <a href="paginas.php" class="btn btn-accent"><i class="bi bi-card-text"></i> Editar Páginas Informativas</a>
             <button id="btnAbrirModal" class="btn btn-accent" style="font-weight: 525;">
                 <i class="bi bi-gear"></i> Gestionar Estado de Secciones
             </button>
+            <?php
+            // Obtener estado actual de comentarios
+            $comentariosSecRes = $con->query("SELECT estado FROM secciones WHERE nombre = 'comentarios' LIMIT 1");
+            $comentariosSec = $comentariosSecRes->fetch_assoc();
+            $comentariosActivos = $comentariosSec ? ($comentariosSec['estado'] == 1) : true;
+            ?>
+            <form action="" method="POST" style="display: inline-block; margin-left: 8px; vertical-align: middle;">
+                <?php if ($comentariosActivos): ?>
+                    <input type="hidden" name="estado_panico" value="0">
+                    <button type="submit" name="toggle_panico" class="btn-panic-deactivate">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Desactivar Comentarios (PÁNICO)
+                    </button>
+                <?php else: ?>
+                    <input type="hidden" name="estado_panico" value="1">
+                    <button type="submit" name="toggle_panico" class="btn-panic-activate">
+                        <i class="bi bi-check-circle-fill"></i> Activar Comentarios
+                    </button>
+                <?php endif; ?>
+            </form>
         <?php endif; ?>
     </div>
 

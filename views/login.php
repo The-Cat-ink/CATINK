@@ -109,7 +109,18 @@ if ($tempRegistro) {
             <h6 class="text-center" style="margin-bottom:12px; font-weight:600;">Cuéntanos sobre ti</h6>
             <div class="form-group">
               <label for="fecha_nacimiento">Fecha de nacimiento</label>
-              <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="input" required>
+              <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+                <select id="dob_dia" class="input" style="flex: 1; margin-bottom: 0;" required>
+                  <option value="" disabled selected>Día</option>
+                </select>
+                <select id="dob_mes" class="input" style="flex: 1.5; margin-bottom: 0;" required>
+                  <option value="" disabled selected>Mes</option>
+                </select>
+                <select id="dob_anio" class="input" style="flex: 1.2; margin-bottom: 0;" required>
+                  <option value="" disabled selected>Año</option>
+                </select>
+              </div>
+              <input type="hidden" id="fecha_nacimiento" name="fecha_nacimiento" required>
             </div>
             <div class="form-group">
               <label for="sexo">Sexo</label>
@@ -207,10 +218,7 @@ if ($tempRegistro) {
     </div>
 </div>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+
 
 <style>
 .auth-tab {
@@ -305,15 +313,67 @@ if (tempRegistro) {
   }
 }
 
-flatpickr('#fecha_nacimiento', {
-  locale: 'es',
-  dateFormat: 'Y-m-d',
-  altInput: true,
-  altFormat: 'j F Y',
-  maxDate: 'today',
-  defaultDate: tempRegistro && tempRegistro.fecha_nacimiento ? tempRegistro.fecha_nacimiento : '2000-01-01',
-  disableMobile: false
-});
+// ---- FECHA DE NACIMIENTO DROPDOWNS ----
+(() => {
+  const diaSel = document.getElementById('dob_dia');
+  const mesSel = document.getElementById('dob_mes');
+  const anioSel = document.getElementById('dob_anio');
+  const hiddenInput = document.getElementById('fecha_nacimiento');
+  if (!diaSel || !mesSel || !anioSel || !hiddenInput) return;
+
+  // Populate days (1-31)
+  for (let d = 1; d <= 31; d++) {
+    const opt = document.createElement('option');
+    opt.value = String(d).padStart(2, '0');
+    opt.textContent = d;
+    diaSel.appendChild(opt);
+  }
+
+  // Populate months (1-12)
+  const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  meses.forEach((m, idx) => {
+    const opt = document.createElement('option');
+    opt.value = String(idx + 1).padStart(2, '0');
+    opt.textContent = m;
+    mesSel.appendChild(opt);
+  });
+
+  // Populate years (current year down to 1900)
+  const currentYear = new Date().getFullYear();
+  for (let y = currentYear; y >= 1900; y--) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    anioSel.appendChild(opt);
+  }
+
+  function updateHiddenDate() {
+    const dia = diaSel.value;
+    const mes = mesSel.value;
+    const anio = anioSel.value;
+    if (dia && mes && anio) {
+      hiddenInput.value = `${anio}-${mes}-${dia}`;
+    } else {
+      hiddenInput.value = '';
+    }
+  }
+
+  diaSel.addEventListener('change', updateHiddenDate);
+  mesSel.addEventListener('change', updateHiddenDate);
+  anioSel.addEventListener('change', updateHiddenDate);
+
+  // Set default/initial value
+  let initialDate = tempRegistro && tempRegistro.fecha_nacimiento ? tempRegistro.fecha_nacimiento : '2000-01-01';
+  if (initialDate) {
+    const parts = initialDate.split('-');
+    if (parts.length === 3) {
+      anioSel.value = parts[0];
+      mesSel.value = parts[1];
+      diaSel.value = parts[2];
+      hiddenInput.value = initialDate;
+    }
+  }
+})();
 
 <?php if(isset($_GET['reg_error'])): ?>
 currentStep = 4;
