@@ -6,6 +6,7 @@ include("./../layout/header.php");
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <?php
 require_once("./../data/conexion.php");
+require_once(__DIR__ . "/helpers/moderacion.php");
 if(!isset($_SESSION['usuario'])){
     header('Location: ' . basePath() . '/login');
     exit;
@@ -47,6 +48,33 @@ if ($notifUserId > 0) {
         $notificaciones = $stmtNotif->get_result()->fetch_all(MYSQLI_ASSOC);
         foreach ($notificaciones as $n) { if (!$n['leida']) $notifNoLeidas++; }
     }
+}
+
+// ============================================================
+// MODERACIÓN (solo superadmin): lista de usuarios suspendidos
+// Reúne lectores (comentaristas) y usuarios (admins/editores) que
+// están baneados ahora mismo (permanente o con baneado_hasta futuro).
+// Fail-soft: si la migración de baneo aún no se aplicó, prepare/query
+// falla y la lista queda vacía sin romper la página.
+// ============================================================
+$esSuper   = !empty($_SESSION['superadmin']);
+$baneados  = [];
+if ($esSuper) {
+    $qLec = @$con->query(
+        "SELECT id, nombre, usuario, correo, baneado_hasta, baneado_permanente, baneado_motivo
+         FROM lectores
+         WHERE baneado_permanente = 1 OR (baneado_hasta IS NOT NULL AND baneado_hasta > NOW())
+         ORDER BY baneado_permanente DESC, baneado_hasta DESC"
+    );
+    if ($qLec) { while ($r = $qLec->fetch_assoc()) { $r['tipo'] = 'lector'; $baneados[] = $r; } }
+
+    $qAdm = @$con->query(
+        "SELECT id_u AS id, nombre, usuario, correo, baneado_hasta, baneado_permanente, baneado_motivo
+         FROM usuarios
+         WHERE baneado_permanente = 1 OR (baneado_hasta IS NOT NULL AND baneado_hasta > NOW())
+         ORDER BY baneado_permanente DESC, baneado_hasta DESC"
+    );
+    if ($qAdm) { while ($r = $qAdm->fetch_assoc()) { $r['tipo'] = 'admin'; $baneados[] = $r; } }
 }
 ?>
 
@@ -137,6 +165,11 @@ if ($notifUserId > 0) {
     <button class="perfil-tab" data-tab="personal" role="tab"><i class="bi bi-info-circle-fill"></i> Información</button>
     <?php if($tipoUsuario === 'admin'): ?>
     <button class="perfil-tab" data-tab="publico" role="tab"><i class="bi bi-globe2"></i> Perfil Público</button>
+    <?php endif; ?>
+    <?php if($esSuper): ?>
+    <button class="perfil-tab" data-tab="moderacion" role="tab"><i class="bi bi-shield-lock-fill"></i> Baneos
+      <?php if(count($baneados) > 0): ?><span class="perfil-mod-count"><?= count($baneados) ?></span><?php endif; ?>
+    </button>
     <?php endif; ?>
     <button class="perfil-tab perfil-tab--danger" data-tab="peligro" role="tab"><i class="bi bi-shield-exclamation"></i> Seguridad</button>
   </div>
@@ -295,6 +328,108 @@ if ($notifUserId > 0) {
       </div>
     </div>
   </div>
+
+  <!-- TAB: BANEOS / MODERACIÓN (solo superadmin) -->
+  <?php if($esSuper): ?>
+  <div class="perfil-tab-panel" id="tab-moderacion">
+    <div class="perfil-card" data-base="<?= basePath() ?>" id="modCard">
+      <div class="perfil-card-header">
+        <i class="bi bi-shield-lock-fill"></i>
+        <div>
+          <h2>Gestión de usuarios</h2>
+          <p>Consulta usuarios suspendidos y activos, y modera sus cuentas.</p>
+        </div>
+      </div>
+
+      <!-- Toggle Suspendidos / Activos -->
+      <div class="perfil-mod-toggle">
+        <button type="button" class="perfil-mod-tgl active" data-view="suspendidos">
+          <i class="bi bi-slash-circle"></i> Suspendidos
+          <span class="perfil-mod-count" id="susCount" <?= count($baneados) ? '' : 'style="display:none;"' ?>><?= count($baneados) ?></span>
+        </button>
+        <button type="button" class="perfil-mod-tgl" data-view="activos">
+          <i class="bi bi-person-check"></i> Activos
+        </button>
+      </div>
+
+      <!-- Vista: Suspendidos -->
+      <div class="perfil-mod-view" id="viewSuspendidos">
+        <div class="perfil-mod-list" id="modList">
+          <?php if(empty($baneados)): ?>
+            <div class="perfil-mod-empty" id="modEmpty">
+              <i class="bi bi-check-circle"></i>
+              <p>No hay usuarios suspendidos en este momento.</p>
+            </div>
+          <?php else: foreach($baneados as $b):
+            $bpal = explode(' ', $b['nombre']);
+            $bini = strtoupper(substr($bpal[0],0,1) . (isset($bpal[1]) ? substr($bpal[1],0,1) : ''));
+            $estadoTxt = textoBaneo($b);
+            $perfilUrl = $b['tipo'] === 'admin'
+                ? basePath() . '/autor/' . (int)$b['id']
+                : basePath() . '/usuario/' . (int)$b['id'];
+          ?>
+          <div class="perfil-mod-row" data-tipo="<?= $b['tipo'] ?>" data-userid="<?= (int)$b['id'] ?>">
+            <div class="perfil-mod-avatar"><?= htmlspecialchars($bini) ?></div>
+            <div class="perfil-mod-info">
+              <div class="perfil-mod-nombre">
+                <?= htmlspecialchars($b['nombre']) ?>
+                <span class="perfil-mod-badge perfil-mod-badge--<?= $b['tipo'] ?>">
+                  <?= $b['tipo'] === 'admin' ? 'Editor' : 'Lector' ?>
+                </span>
+              </div>
+              <div class="perfil-mod-user">@<?= htmlspecialchars($b['usuario']) ?></div>
+              <div class="perfil-mod-estado"><i class="bi bi-slash-circle"></i> <?= htmlspecialchars($estadoTxt) ?></div>
+              <?php if(!empty($b['baneado_motivo'])): ?>
+                <div class="perfil-mod-motivo"><i class="bi bi-chat-quote"></i> <?= htmlspecialchars($b['baneado_motivo']) ?></div>
+              <?php endif; ?>
+            </div>
+            <div class="perfil-mod-acciones">
+              <a href="<?= $perfilUrl ?>" class="perfil-mod-ver" title="Ver perfil"><i class="bi bi-box-arrow-up-right"></i> Ver</a>
+              <button type="button" class="perfil-mod-unban"><i class="bi bi-check-circle"></i> Quitar suspensión</button>
+            </div>
+          </div>
+          <?php endforeach; endif; ?>
+        </div>
+      </div>
+
+      <!-- Vista: Activos -->
+      <div class="perfil-mod-view" id="viewActivos" style="display:none;">
+        <div class="perfil-mod-search">
+          <i class="bi bi-search"></i>
+          <input type="text" id="modBuscarActivos" class="input" placeholder="Buscar por nombre o @usuario..." autocomplete="off">
+        </div>
+        <div class="perfil-mod-list" id="modListActivos">
+          <div class="perfil-mod-empty" id="modActivosEmpty">
+            <i class="bi bi-people"></i>
+            <p>Cargando usuarios activos...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Suspender usuario (desde la lista de activos) -->
+  <div id="modSuspenderModal" class="perfil-modal-overlay" style="display:none;">
+    <div class="perfil-modal perfil-modal--danger">
+      <div class="perfil-modal-icon"><i class="bi bi-slash-circle"></i></div>
+      <h3>Suspender a <span id="modSuspNombre"></span></h3>
+      <p>El usuario no podrá comentar, dar me gusta ni reportar mientras dure la suspensión.</p>
+      <label class="perfil-field-group" style="text-align:left; margin-bottom:12px;">
+        <span style="font-size:.85rem; font-weight:600;">Duración</span>
+        <select id="modSuspDuracion" class="input">
+          <?php foreach(duracionesBaneo() as $key => $d): ?>
+            <option value="<?= $key ?>"><?= htmlspecialchars($d['label']) ?></option>
+          <?php endforeach; ?>
+        </select>
+      </label>
+      <input type="text" id="modSuspMotivo" class="input" maxlength="255" placeholder="Motivo (opcional)" style="width:100%; margin-bottom:16px;">
+      <div style="display:flex; gap:10px;">
+        <button type="button" id="modSuspCancel" class="perfil-modal-btn-cancel">Cancelar</button>
+        <button type="button" id="modSuspConfirm" class="perfil-modal-btn-confirm"><i class="bi bi-slash-circle"></i> Suspender</button>
+      </div>
+    </div>
+  </div>
+  <?php endif; ?>
 
 </div><!-- /perfil-page -->
 
@@ -607,6 +742,82 @@ if ($notifUserId > 0) {
 .avatar-option:hover { border-color: var(--accent) !important; }
 .avatar-option.avatar-selected { border-color: var(--accent) !important; }
 
+/* MODERACIÓN */
+.perfil-mod-count {
+  background:#ef3333; color:#fff; font-size:.7rem; font-weight:700;
+  min-width:18px; height:18px; padding:0 5px; border-radius:9px;
+  display:inline-flex; align-items:center; justify-content:center; margin-left:2px;
+}
+.perfil-mod-toggle {
+  display:flex; gap:6px; padding:14px 16px 0; flex-wrap:wrap;
+}
+.perfil-mod-tgl {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 16px; border-radius:50px; cursor:pointer;
+  background:transparent; border:1px solid var(--border); color:var(--muted);
+  font-size:.85rem; font-weight:600; transition:background .15s, color .15s, border-color .15s;
+}
+.perfil-mod-tgl:hover { border-color:var(--accent); color:var(--accent); }
+.perfil-mod-tgl.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.perfil-mod-tgl.active .perfil-mod-count { background:#fff; color:var(--accent); }
+.perfil-mod-search {
+  display:flex; align-items:center; gap:8px; padding:14px 16px 4px;
+  position:relative;
+}
+.perfil-mod-search i { position:absolute; left:28px; color:var(--muted); pointer-events:none; }
+.perfil-mod-search .input { padding-left:34px; }
+.perfil-mod-list { padding: 12px 16px; display:flex; flex-direction:column; gap:10px; }
+.perfil-mod-empty { text-align:center; color:var(--muted); padding:32px 0; }
+.perfil-mod-empty i { font-size:2rem; color:#1a7f37; display:block; margin-bottom:8px; }
+.perfil-mod-empty p { margin:0; font-size:.92rem; }
+.perfil-mod-row {
+  display:flex; align-items:center; gap:14px;
+  padding:14px 16px; border-radius:12px;
+  background:var(--bg); border:1px solid var(--border);
+}
+.perfil-mod-avatar {
+  width:44px; height:44px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg, var(--accent), #7c1d5e);
+  color:#fff; font-weight:700; font-size:.95rem;
+  display:flex; align-items:center; justify-content:center;
+}
+.perfil-mod-info { flex:1; min-width:0; }
+.perfil-mod-nombre { font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.perfil-mod-badge { font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:50px; text-transform:uppercase; letter-spacing:.3px; }
+.perfil-mod-badge--admin  { background:rgba(239,51,99,.12); color:var(--accent); }
+.perfil-mod-badge--lector { background:rgba(120,120,120,.15); color:var(--muted); }
+.perfil-mod-user { font-size:.82rem; color:var(--muted); margin-top:1px; }
+.perfil-mod-estado { font-size:.82rem; color:#ef3333; font-weight:600; margin-top:5px; display:flex; align-items:center; gap:5px; }
+.perfil-mod-motivo { font-size:.8rem; color:var(--muted); margin-top:3px; display:flex; align-items:center; gap:5px; }
+.perfil-mod-acciones { display:flex; flex-direction:column; gap:7px; flex-shrink:0; align-items:stretch; }
+.perfil-mod-ver {
+  display:inline-flex; align-items:center; justify-content:center; gap:5px;
+  font-size:.8rem; font-weight:600; color:var(--muted); text-decoration:none;
+  border:1px solid var(--border); border-radius:8px; padding:6px 12px;
+}
+.perfil-mod-ver:hover { border-color:var(--accent); color:var(--accent); }
+.perfil-mod-unban {
+  display:inline-flex; align-items:center; justify-content:center; gap:5px;
+  font-size:.8rem; font-weight:600; cursor:pointer;
+  background:transparent; color:#1a7f37; border:1px solid #1a7f37;
+  border-radius:8px; padding:6px 12px; white-space:nowrap;
+}
+.perfil-mod-unban:hover { background:#1a7f37; color:#fff; }
+.perfil-mod-unban:disabled { opacity:.6; cursor:not-allowed; }
+.perfil-mod-suspend {
+  display:inline-flex; align-items:center; justify-content:center; gap:5px;
+  font-size:.8rem; font-weight:600; cursor:pointer;
+  background:transparent; color:#ef3333; border:1px solid #ef3333;
+  border-radius:8px; padding:6px 12px; white-space:nowrap;
+}
+.perfil-mod-suspend:hover { background:#ef3333; color:#fff; }
+.perfil-mod-suspend:disabled { opacity:.6; cursor:not-allowed; }
+@media (max-width: 600px) {
+  .perfil-mod-row { flex-wrap:wrap; }
+  .perfil-mod-acciones { flex-direction:row; width:100%; }
+  .perfil-mod-acciones > * { flex:1; }
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .perfil-hero-content { flex-direction: column; text-align: center; }
@@ -758,6 +969,195 @@ else document.addEventListener('DOMContentLoaded', initPerfil);
         btn.remove();
       }
     } catch (e) { btn.disabled = false; }
+  });
+})();
+</script>
+<script>
+// ============================================================
+// Panel de Baneos (solo superadmin): suspendidos + activos
+// ============================================================
+(() => {
+  const card = document.getElementById('modCard');
+  if (!card) return;
+  const base = card.dataset.base;
+  const post = (body) => fetch(base + '/controllers/moderar_usuario.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body
+  }).then(r => r.json());
+
+  const initials = (nombre) => {
+    const p = (nombre || '').trim().split(/\s+/);
+    return ((p[0]?.[0] || '') + (p[1]?.[0] || '')).toUpperCase() || '?';
+  };
+  const esc = (s) => (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+  // ---- Contador de suspendidos (pestaña + toggle) ----
+  const susList = document.getElementById('modList');
+  function refreshSusCount() {
+    const n = susList.querySelectorAll('.perfil-mod-row').length;
+    document.querySelectorAll('.perfil-mod-count').forEach(el => {
+      el.textContent = n;
+      el.style.display = n > 0 ? '' : 'none';
+    });
+    if (n === 0 && !document.getElementById('modEmpty')) {
+      susList.innerHTML = '<div class="perfil-mod-empty" id="modEmpty"><i class="bi bi-check-circle"></i><p>No hay usuarios suspendidos en este momento.</p></div>';
+    }
+  }
+
+  // ---- Toggle de vistas ----
+  const viewSus = document.getElementById('viewSuspendidos');
+  const viewAct = document.getElementById('viewActivos');
+  let activosCargados = false;
+  document.querySelectorAll('.perfil-mod-tgl').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.perfil-mod-tgl').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const activos = btn.dataset.view === 'activos';
+      viewSus.style.display = activos ? 'none' : '';
+      viewAct.style.display = activos ? '' : 'none';
+      if (activos && !activosCargados) { activosCargados = true; cargarActivos(''); }
+    });
+  });
+
+  // ---- Quitar suspensión (vista suspendidos) ----
+  susList.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.perfil-mod-unban');
+    if (!btn) return;
+    const row = btn.closest('.perfil-mod-row');
+    if (!confirm('¿Quitar la suspensión a este usuario?')) return;
+    btn.disabled = true;
+    try {
+      const data = await post(`action=unban&tipo=${row.dataset.tipo}&user_id=${row.dataset.userid}`);
+      if (data.ok) {
+        row.style.transition = 'opacity .25s';
+        row.style.opacity = '0';
+        setTimeout(() => { row.remove(); refreshSusCount(); }, 250);
+      } else { alert(data.msg || 'No se pudo quitar la suspensión.'); btn.disabled = false; }
+    } catch (err) { alert('Error de red.'); btn.disabled = false; }
+  });
+
+  // ---- Lista de usuarios activos (búsqueda server-side) ----
+  const actList = document.getElementById('modListActivos');
+  const inputBuscar = document.getElementById('modBuscarActivos');
+  let buscarTimer = null, buscarToken = 0;
+
+  async function cargarActivos(q) {
+    const token = ++buscarToken;
+    actList.innerHTML = '<div class="perfil-mod-empty"><i class="bi bi-hourglass-split"></i><p>Buscando...</p></div>';
+    try {
+      const data = await post(`action=listar_activos&q=${encodeURIComponent(q)}`);
+      if (token !== buscarToken) return; // llegó una búsqueda más nueva
+      if (!data.ok || !Array.isArray(data.usuarios) || data.usuarios.length === 0) {
+        actList.innerHTML = '<div class="perfil-mod-empty"><i class="bi bi-people"></i><p>' +
+          (q ? 'Sin resultados para tu búsqueda.' : 'No hay usuarios activos.') + '</p></div>';
+        return;
+      }
+      actList.innerHTML = data.usuarios.map(u => {
+        const perfilUrl = base + (u.tipo === 'admin' ? '/autor/' : '/usuario/') + u.id;
+        const badge = u.tipo === 'admin' ? 'Editor' : 'Lector';
+        return `<div class="perfil-mod-row" data-tipo="${u.tipo}" data-userid="${u.id}" data-nombre="${esc(u.nombre)}">
+          <div class="perfil-mod-avatar">${esc(initials(u.nombre))}</div>
+          <div class="perfil-mod-info">
+            <div class="perfil-mod-nombre">${esc(u.nombre)}
+              <span class="perfil-mod-badge perfil-mod-badge--${u.tipo}">${badge}</span>
+            </div>
+            <div class="perfil-mod-user">@${esc(u.usuario)}</div>
+          </div>
+          <div class="perfil-mod-acciones">
+            <a href="${perfilUrl}" class="perfil-mod-ver" title="Ver perfil"><i class="bi bi-box-arrow-up-right"></i> Ver</a>
+            <button type="button" class="perfil-mod-suspend"><i class="bi bi-slash-circle"></i> Suspender</button>
+          </div>
+        </div>`;
+      }).join('');
+    } catch (err) {
+      if (token !== buscarToken) return;
+      actList.innerHTML = '<div class="perfil-mod-empty"><i class="bi bi-wifi-off"></i><p>Error de red.</p></div>';
+    }
+  }
+
+  inputBuscar && inputBuscar.addEventListener('input', () => {
+    clearTimeout(buscarTimer);
+    buscarTimer = setTimeout(() => cargarActivos(inputBuscar.value.trim()), 300);
+  });
+
+  // ---- Modal Suspender ----
+  const modal = document.getElementById('modSuspenderModal');
+  const modalNombre = document.getElementById('modSuspNombre');
+  const selDur = document.getElementById('modSuspDuracion');
+  const inMotivo = document.getElementById('modSuspMotivo');
+  const btnConfirm = document.getElementById('modSuspConfirm');
+  const btnCancel = document.getElementById('modSuspCancel');
+  let objetivo = null; // {tipo, userId, row}
+
+  function abrirModal(tipo, userId, nombre, row) {
+    objetivo = { tipo, userId, row };
+    modalNombre.textContent = nombre;
+    selDur.selectedIndex = 0;
+    inMotivo.value = '';
+    modal.style.display = 'flex';
+  }
+  function cerrarModal() { modal.style.display = 'none'; objetivo = null; }
+
+  actList.addEventListener('click', (e) => {
+    const btn = e.target.closest('.perfil-mod-suspend');
+    if (!btn) return;
+    const row = btn.closest('.perfil-mod-row');
+    abrirModal(row.dataset.tipo, row.dataset.userid, row.dataset.nombre || 'este usuario', row);
+  });
+
+  btnCancel.addEventListener('click', cerrarModal);
+  modal.addEventListener('click', e => { if (e.target === modal) cerrarModal(); });
+
+  btnConfirm.addEventListener('click', async () => {
+    if (!objetivo) return;
+    btnConfirm.disabled = true;
+    try {
+      const body = `action=ban&tipo=${objetivo.tipo}&user_id=${objetivo.userId}` +
+        `&duracion=${encodeURIComponent(selDur.value)}&motivo=${encodeURIComponent(inMotivo.value)}`;
+      const data = await post(body);
+      if (data.ok) {
+        const { tipo, userId, row } = objetivo;
+        const nombre  = (row && row.dataset.nombre) || modalNombre.textContent;
+        const usuario = (row && row.querySelector('.perfil-mod-user')?.textContent.replace(/^@/, '')) || '';
+        const durTxt  = selDur.options[selDur.selectedIndex].text;
+        const estadoTxt = data.estado || (selDur.value === 'perm'
+          ? 'Suspendido permanentemente' : 'Suspendido (' + durTxt + ')');
+        const motivo  = inMotivo.value.trim();
+
+        // Quitar de la lista de activos
+        if (row) {
+          row.style.transition = 'opacity .25s';
+          row.style.opacity = '0';
+          setTimeout(() => row.remove(), 250);
+        }
+        // Inyectar la fila en la lista de suspendidos (ambas vistas quedan consistentes)
+        const empty = document.getElementById('modEmpty');
+        if (empty) empty.remove();
+        const perfilUrl = base + (tipo === 'admin' ? '/autor/' : '/usuario/') + userId;
+        const badge = tipo === 'admin' ? 'Editor' : 'Lector';
+        susList.insertAdjacentHTML('afterbegin',
+          `<div class="perfil-mod-row" data-tipo="${tipo}" data-userid="${userId}">
+            <div class="perfil-mod-avatar">${esc(initials(nombre))}</div>
+            <div class="perfil-mod-info">
+              <div class="perfil-mod-nombre">${esc(nombre)} <span class="perfil-mod-badge perfil-mod-badge--${tipo}">${badge}</span></div>
+              <div class="perfil-mod-user">@${esc(usuario)}</div>
+              <div class="perfil-mod-estado"><i class="bi bi-slash-circle"></i> ${esc(estadoTxt)}</div>
+              ${motivo ? `<div class="perfil-mod-motivo"><i class="bi bi-chat-quote"></i> ${esc(motivo)}</div>` : ''}
+            </div>
+            <div class="perfil-mod-acciones">
+              <a href="${perfilUrl}" class="perfil-mod-ver" title="Ver perfil"><i class="bi bi-box-arrow-up-right"></i> Ver</a>
+              <button type="button" class="perfil-mod-unban"><i class="bi bi-check-circle"></i> Quitar suspensión</button>
+            </div>
+          </div>`);
+        refreshSusCount();
+        cerrarModal();
+        alert(data.msg || 'Usuario suspendido.');
+      } else {
+        alert(data.msg || 'No se pudo suspender al usuario.');
+      }
+    } catch (err) { alert('Error de red.'); }
+    btnConfirm.disabled = false;
   });
 })();
 </script>

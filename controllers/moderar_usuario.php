@@ -18,6 +18,55 @@ $action = $_POST['action'] ?? '';
 $tipo   = $_POST['tipo'] ?? '';            // 'lector' | 'admin'
 $userId = (int)($_POST['user_id'] ?? 0);
 
+// ============================
+// LISTAR USUARIOS ACTIVOS (búsqueda server-side + límite)
+// Se resuelve antes de validar tipo/user_id porque no los necesita.
+// Nunca carga toda la tabla: filtra por texto y limita por tipo, así el
+// panel sigue siendo rápido aunque haya miles de lectores.
+// ============================
+if ($action === 'listar_activos') {
+    $q      = trim($_POST['q'] ?? '');
+    $like   = '%' . $q . '%';
+    $limite = 25; // por tipo
+    $activo = "(baneado_permanente = 0 AND (baneado_hasta IS NULL OR baneado_hasta <= NOW()))";
+    $out    = [];
+
+    // --- Lectores activos ---
+    $sqlL = "SELECT id, nombre, usuario FROM lectores WHERE $activo";
+    if ($q !== '') $sqlL .= " AND (nombre LIKE ? OR usuario LIKE ? OR correo LIKE ?)";
+    $sqlL .= " ORDER BY id DESC LIMIT $limite";
+    $stmt = @$con->prepare($sqlL);
+    if ($stmt) {
+        if ($q !== '') $stmt->bind_param("sss", $like, $like, $like);
+        if ($stmt->execute()) {
+            $res = $stmt->get_result();
+            while ($r = $res->fetch_assoc()) {
+                $out[] = ['tipo' => 'lector', 'id' => (int)$r['id'], 'nombre' => $r['nombre'], 'usuario' => $r['usuario']];
+            }
+        }
+    }
+
+    // --- Admins/editores activos (excluye superadmins y a uno mismo) ---
+    $sqlA = "SELECT * FROM usuarios WHERE $activo";
+    if ($q !== '') $sqlA .= " AND (nombre LIKE ? OR usuario LIKE ? OR correo LIKE ?)";
+    $sqlA .= " ORDER BY id_u DESC LIMIT $limite";
+    $stmt = @$con->prepare($sqlA);
+    if ($stmt) {
+        if ($q !== '') $stmt->bind_param("sss", $like, $like, $like);
+        if ($stmt->execute()) {
+            $res = $stmt->get_result();
+            while ($r = $res->fetch_assoc()) {
+                if (esSuperAdmin($r)) continue;
+                if (isset($_SESSION['usuario']) && $r['usuario'] === $_SESSION['usuario']) continue;
+                $out[] = ['tipo' => 'admin', 'id' => (int)$r['id_u'], 'nombre' => $r['nombre'], 'usuario' => $r['usuario']];
+            }
+        }
+    }
+
+    echo json_encode(['ok' => true, 'usuarios' => $out]);
+    exit;
+}
+
 if ($userId <= 0 || !in_array($tipo, ['lector', 'admin'], true)) {
     echo json_encode(['ok' => false, 'msg' => 'Datos incompletos.']);
     exit;
