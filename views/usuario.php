@@ -1,5 +1,4 @@
 <?php
-include("./../layout/header.php");
 require_once("./../data/conexion.php");
 require_once("./helpers/urlhelper.php");
 require_once("./helpers/moderacion.php");
@@ -27,10 +26,21 @@ $stmt->execute();
 $lector = $stmt->get_result()->fetch_assoc();
 
 if (!$lector) {
+    $pageTitle = "Usuario no encontrado";
+    include("./../layout/header.php");
     echo '<div class="container" style="text-align:center; padding:80px 20px;"><h1>Usuario no encontrado</h1><p style="color:var(--muted);">El perfil que buscas no existe.</p><a href="' . basePath() . '/" class="btn btn-accent" style="margin-top:20px;">Volver al inicio</a></div>';
     include("./../layout/footer.php");
     exit;
 }
+
+// Configurar variables SEO dinámicas antes de incluir el header
+$pageTitle = "Perfil de " . $lector['nombre'];
+$pageDescription = "Mira el perfil y actividad de " . $lector['nombre'] . " (@" . $lector['usuario'] . ") en CatInk.";
+$domain = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'];
+$canonical = $domain . readerUrl($lector['id']);
+$ogImage = $domain . imageUrl($lector['avatar_img'] ?? 'img/catink-og.png');
+
+include("./../layout/header.php");
 
 // ==============================
 // Comentarios públicos del lector

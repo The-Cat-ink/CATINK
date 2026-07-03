@@ -1,10 +1,8 @@
 <?php
-include("./../layout/header.php");
 require_once("./../data/conexion.php");
-include("./helpers/videoEmbed.php");
-include("./helpers/socialEmbed.php");
 require_once("./helpers/urlhelper.php");
 require_once("./helpers/moderacion.php");
+
 // Soportar múltiples formas de acceso a noticias
 if(isset($_GET['slug'])){
     $slug = $_GET['slug'];
@@ -26,6 +24,7 @@ if(isset($_GET['slug'])){
     $where_clause = "n.id = ?";
     $param = 1;
 }
+
 // ==============================
 // Obtener noticia con autor y categorías
 // ==============================
@@ -44,6 +43,7 @@ $stmt->bind_param("s", $param);
 $stmt->execute();
 $result = $stmt->get_result();
 $noticia = $result->fetch_assoc();
+
 // Si no se encontró por slug, intentar decodificar como ID y buscar por ID
 if (!$noticia && isset($_GET['slug'])) {
     $decodedId = decodeId($_GET['slug']);
@@ -67,7 +67,19 @@ if (!$noticia && isset($_GET['slug'])) {
         $noticia = $result->fetch_assoc();
     }
 }
+
 if (!$noticia) die("Noticia no encontrada");
+
+// Configurar variables SEO dinámicas antes de incluir el header
+$pageTitle = $noticia['titulo'];
+$pageDescription = $noticia['descripcion'];
+$domain = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'];
+$canonical = $domain . newsUrl($noticia['slug'] ?? $noticia['id']);
+$ogImage = $domain . imageUrl($noticia['crop1'] ?? $noticia['crop2'] ?? $noticia['crop3'] ?? 'img/catink-og.png');
+
+include("./../layout/header.php");
+include("./helpers/videoEmbed.php");
+include("./helpers/socialEmbed.php");
 // Asegurar que $id siempre tenga el ID numérico de la noticia
 $id = $noticia['id'];
 // Parsear categorías

@@ -144,11 +144,18 @@
     }
 
     if (themeSwitchPill) {
-      themeSwitchPill.addEventListener('click', () => {
+      const toggleTheme = () => {
         const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
         const next = currentTheme === 'dark' ? 'light' : 'dark';
         applyTheme(next);
         localStorage.setItem('theme', next);
+      };
+      themeSwitchPill.addEventListener('click', toggleTheme);
+      themeSwitchPill.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleTheme();
+        }
       });
     }
 

@@ -54,6 +54,7 @@ while ($row = $resCat->fetch_assoc()) $categoriasSeleccionadas[] = $row;
 
 // Fecha actual de publicación para pre-cargar el programador
 $fechaExistente = date('Y-m-d\TH:i', strtotime($noticia['fecha_publicacion']));
+$esProgramada = (strtotime($noticia['fecha_publicacion']) > time());
 
 // URLs de imágenes usando imageUrl() para servir correctamente
 // Nota: imageUrl('') devuelve el placeholder.svg, así que guardamos contra
@@ -528,6 +529,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 
 
       <!-- PROGRAMAR -->
+      <?php if ($esProgramada): ?>
       <div class="cn-section" id="sec-schedule">
         <div class="cn-section-header">
           <div class="cn-section-icon"><i class="bi bi-calendar-event"></i></div>
@@ -542,7 +544,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               </div>
               <div class="cn-toggle-wrap">
                 <label class="cn-toggle">
-                  <input type="checkbox" id="scheduleToggle">
+                  <input type="checkbox" id="scheduleToggle" checked>
                   <div class="cn-toggle-track"></div>
                   <div class="cn-toggle-thumb"></div>
                 </label>
@@ -563,6 +565,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
           </div>
         </div>
       </div><!-- /sec-schedule -->
+      <?php endif; ?>
       <?php if (!empty($ACL['editar'])): ?>
       <div style="margin-top:12px;">
         <button type="submit" class="cn-publish-btn" id="btnGuardar" name="guardarEdicion">
@@ -1013,15 +1016,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const schedDate   = document.getElementById('schedDate');
   const schedTime   = document.getElementById('schedTime');
 
-  if (FECHA_EXISTENTE) {
+  if (FECHA_EXISTENTE && schedDate && schedTime) {
     schedDate.value = FECHA_EXISTENTE.slice(0, 10);
     schedTime.value = FECHA_EXISTENTE.slice(11, 16);
   }
-  // Programar desactivado por defecto: campos ocultos hasta que se active
-  schedFields.style.display = schedToggle.checked ? '' : 'none';
+  // Programar desactivado por defecto si no está activo, campos ocultos/visibles según estado
+  if (schedFields && schedToggle) {
+    schedFields.style.display = schedToggle.checked ? '' : 'none';
+  }
 
   schedToggle?.addEventListener('change', () => {
-    schedFields.style.display = schedToggle.checked ? '' : 'none';
+    if (schedFields) {
+      schedFields.style.display = schedToggle.checked ? '' : 'none';
+    }
   });
 
   function nowLocal() {

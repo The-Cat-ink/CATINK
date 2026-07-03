@@ -161,16 +161,24 @@ h2 {
   color: var(--text) !important;
   font-size: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-actions .btn-admin-panel:hover {
   background: var(--card-bg, #E2E8F0);
   border-color: var(--border-hover, #CBD5E0);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .nav-actions .btn-admin-panel:active {
   transform: translateY(0);
+  box-shadow: none;
+}
+
+.nav-actions .btn-admin-panel:focus-visible {
+  outline: 2px solid var(--accent, #EF3363);
+  outline-offset: 2px;
 }
 
 /* ============================
@@ -184,6 +192,11 @@ h2 {
   padding: 4px;
   cursor: pointer;
   transition: background 0.3s ease;
+}
+
+.nav-actions .theme-switch-pill:focus-visible {
+  outline: 2px solid var(--accent, #EF3363);
+  outline-offset: 2px;
 }
 
 .nav-actions .theme-switch-pill .theme-icon {
@@ -219,12 +232,24 @@ h2 {
   color: var(--text) !important;
   font-size: 18px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-actions .btn-outline-secondary:hover {
   background: var(--card-bg, #E2E8F0);
   border-color: var(--border-hover, #CBD5E0);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.nav-actions .btn-outline-secondary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.nav-actions .btn-outline-secondary:focus-visible {
+  outline: 2px solid var(--accent, #EF3363);
+  outline-offset: 2px;
 }
 
 /* ============================

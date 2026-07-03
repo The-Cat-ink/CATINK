@@ -1,5 +1,4 @@
-﻿<?php
-include("./../layout/header.php");
+<?php
 require_once("./../data/conexion.php");
 require_once("./helpers/urlhelper.php");
 require_once("./helpers/helper.php");
@@ -28,10 +27,21 @@ $stmt->execute();
 $editor = $stmt->get_result()->fetch_assoc();
 
 if (!$editor) {
+    $pageTitle = "Editor no encontrado";
+    include("./../layout/header.php");
     echo '<div class="container" style="text-align:center; padding:80px 20px;"><h1>Editor no encontrado</h1><p style="color:var(--muted);">El perfil que buscas no existe.</p><a href="' . basePath() . '/" class="btn btn-accent" style="margin-top:20px;">Volver al inicio</a></div>';
     include("./../layout/footer.php");
     exit;
 }
+
+// Configurar variables SEO dinámicas antes de incluir el header
+$pageTitle = "Artículos de " . $editor['nombre'];
+$pageDescription = "Explora el perfil de " . $editor['nombre'] . " (@" . $editor['usuario'] . ") y lee todos sus artículos publicados en CatInk.";
+$domain = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'];
+$canonical = $domain . authorUrl($editor['id_u']);
+$ogImage = $domain . imageUrl($editor['foto_personal'] ?? 'img/catink-og.png');
+
+include("./../layout/header.php");
 
 // ==============================
 // Obtener artículos del editor

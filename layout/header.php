@@ -193,25 +193,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div class="nav-actions">
       <!-- SWITCH DE TEMA PILL-SHAPED -->
-      <div class="theme-switch-pill" title="Cambiar tema">
+      <div class="theme-switch-pill" title="Cambiar tema" tabindex="0" role="button" aria-label="Alternar modo oscuro o claro">
         <span class="theme-icon active" id="themeIconSun">
-          <i class="bi bi-sun"></i>
+          <i class="bi bi-sun-fill"></i>
         </span>
         <span class="theme-icon" id="themeIconMoon">
-          <i class="bi bi-moon"></i>
+          <i class="bi bi-moon-stars-fill"></i>
         </span>
       </div>
 
       <?php if(isset($_SESSION['usuario'])): ?>
         <?php if(($_SESSION['ACL']['noticias']['crear'] ?? false) || ($_SESSION['superadmin'] ?? false)): ?>
-          <a href="<?= basePath() ?>/views/crear.php" class="btn btn-outline-secondary" title="Crear Noticia">
-            <i class="bi bi-pencil"></i>
+          <a href="<?= basePath() ?>/views/crear.php" class="btn btn-outline-secondary" title="Crear Noticia" aria-label="Crear publicación">
+            <i class="bi bi-pencil-square"></i>
           </a>
         <?php endif; ?>
 
         <?php if($_SESSION['superadmin'] ?? false): ?>
-          <a href="<?= basePath() ?>/views/admin.php" class="btn-admin-panel" title="Panel de Administración">
-            <i class="bi bi-speedometer2"></i>
+          <a href="<?= basePath() ?>/views/admin.php" class="btn-admin-panel" title="Panel de Administración" aria-label="Panel de administración">
+            <i class="bi bi-grid-1x2"></i>
           </a>
         <?php endif; ?>
 
