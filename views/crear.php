@@ -1320,10 +1320,13 @@ function onFileSelected(e) {
   reader.onload = ev => {
     const fullSrc = ev.target.result;
 
-    // Guardar original escalado en crop1 para que editar.php pueda re-recortar desde el original
+    // Guardar original escalado en crop1 para que editar.php pueda re-recortar desde el original.
+    // Base de mayor resolución/calidad (2560px, JPEG 0.95): al editar, los recortes se regeneran
+    // desde crop1, así que una base más nítida evita la degradación acumulada en cada edición.
+    // Sigue siendo JPEG (mismo formato de siempre) y es una sola imagen, no impacta el peso del POST.
     const origImg = new Image();
     origImg.onload = function() {
-      const MAX = 1920;
+      const MAX = 2560;
       let w = origImg.naturalWidth, h = origImg.naturalHeight;
       if (w > MAX || h > MAX) {
         if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -1332,7 +1335,7 @@ function onFileSelected(e) {
       const tmpC = document.createElement('canvas');
       tmpC.width = w; tmpC.height = h;
       tmpC.getContext('2d').drawImage(origImg, 0, 0, w, h);
-      document.getElementById('crop1').value = tmpC.toDataURL('image/jpeg', 0.92);
+      document.getElementById('crop1').value = tmpC.toDataURL('image/jpeg', 0.95);
     };
     origImg.src = fullSrc;
 
@@ -1419,7 +1422,9 @@ function autoFillMiniature(srcDataUrl) {
     const sx = (tmpImg.width  - sw) / 2;
     const sy = (tmpImg.height - sh) / 2;
     const canvas = document.createElement('canvas');
-    canvas.width  = Math.min(Math.round(sw), 1920);
+    // 2560px: la miniatura 16:9 también alimenta el hero del artículo, que en pantallas
+    // HiDPI se muestra a ~2x; con más resolución deja de verse suave. Mismo formato (PNG 16:9).
+    canvas.width  = Math.min(Math.round(sw), 2560);
     canvas.height = Math.round(canvas.width / ratio);
     const ctx3 = canvas.getContext('2d');
     ctx3.imageSmoothingEnabled = true;

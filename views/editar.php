@@ -1275,9 +1275,11 @@ function onFileSelected(e) {
   reader.onload = ev => {
     const fullSrc = ev.target.result;
 
+    // Base crop1 de mayor resolución/calidad (2560px, JPEG 0.95): al reemplazar la imagen y
+    // volver a recortar, se parte de una base más nítida y se evita la degradación acumulada.
     const origImg = new Image();
     origImg.onload = function() {
-      const MAX = 1920;
+      const MAX = 2560;
       let w = origImg.naturalWidth, h = origImg.naturalHeight;
       if (w > MAX || h > MAX) {
         if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -1286,7 +1288,7 @@ function onFileSelected(e) {
       const tmpC = document.createElement('canvas');
       tmpC.width = w; tmpC.height = h;
       tmpC.getContext('2d').drawImage(origImg, 0, 0, w, h);
-      document.getElementById('crop1').value = tmpC.toDataURL('image/jpeg', 0.92);
+      document.getElementById('crop1').value = tmpC.toDataURL('image/jpeg', 0.95);
     };
     origImg.src = fullSrc;
 
