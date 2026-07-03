@@ -2795,6 +2795,57 @@ a.comentario-autor:hover { color: var(--accent); }
 .toast-msg.toast-error { border-left-color: #e53e3e; }
 .toast-msg.toast-success { border-left-color: #38a169; }
 @keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+
+/* ===== Card central de aviso de moderación (estilo tarjeta de sanción) ===== */
+.mod-aviso-overlay {
+  position: fixed; inset: 0; z-index: 100000;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+  background: rgba(3, 7, 15, 0.74);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+}
+.mod-aviso-overlay.is-open { display: flex; animation: modAvisoFade .2s ease; }
+.mod-aviso-card {
+  position: relative; width: 100%; max-width: 500px;
+  background: #0c141f;
+  border: 1px solid rgba(239, 51, 99, 0.30);
+  border-radius: 16px;
+  padding: 34px 34px 30px;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,.55);
+  animation: modAvisoPop .25s ease;
+}
+.mod-aviso-top {
+  width: 54px; height: 3px; margin: 0 auto 18px;
+  background: var(--accent, #EF3363); border-radius: 3px;
+}
+.mod-aviso-titulo {
+  margin: 0; color: #ffffff;
+  font-size: 1.5rem; font-weight: 800;
+  letter-spacing: 1.5px; text-transform: uppercase;
+}
+.mod-aviso-sep {
+  height: 1px; margin: 16px 0 18px;
+  background: linear-gradient(90deg, transparent, rgba(239,51,99,.35), transparent);
+}
+.mod-aviso-texto {
+  margin: 0 0 16px; color: #e6eef8;
+  font-size: .98rem; line-height: 1.6;
+}
+.mod-aviso-nota {
+  margin: 0 0 26px; color: #9fb0c3;
+  font-size: .86rem; line-height: 1.55;
+}
+.mod-aviso-btn {
+  background: var(--accent, #EF3363); color: #fff; border: none;
+  padding: 12px 42px; border-radius: 10px; cursor: pointer;
+  font-size: .95rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+  transition: opacity .2s ease, transform .15s ease;
+}
+.mod-aviso-btn:hover { opacity: .85; transform: translateY(-1px); }
+.mod-aviso-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@keyframes modAvisoFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modAvisoPop { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
 @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(40px); } }
 /* Transición global para el modo oscuro */
 body, .nav-link, .btn, .card, .site-main {

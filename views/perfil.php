@@ -54,6 +54,25 @@ if ($notifUserId > 0) {
     }
 }
 
+// Comentarios publicados por el usuario (para mostrarlos en su propio perfil)
+$misComentarios = [];
+if ($notifUserId > 0) {
+    $colUsuario = $tipoUsuario === 'admin' ? 'usuario_id' : 'lector_id';
+    $sqlMisCom = "SELECT c.id_comentario, c.contenido, c.fecha_publicacion,
+                         n.id AS noticia_id, n.slug AS noticia_slug, n.titulo AS noticia_titulo,
+                         (SELECT COUNT(*) FROM likes_comentarios lc WHERE lc.comentario_id = c.id_comentario) AS total_likes
+                  FROM comentarios c
+                  INNER JOIN noticias n ON c.noticia_id = n.id
+                  WHERE c.$colUsuario = ? AND c.estado = 'activo'
+                  ORDER BY c.fecha_publicacion DESC LIMIT 30";
+    $stmtMisCom = @$con->prepare($sqlMisCom);
+    if ($stmtMisCom) {
+        $stmtMisCom->bind_param("i", $notifUserId);
+        $stmtMisCom->execute();
+        $misComentarios = $stmtMisCom->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+}
+
 // ============================================================
 // MODERACIÓN (solo superadmin): lista de usuarios suspendidos
 // Reúne lectores (comentaristas) y usuarios (admins/editores) que
@@ -128,45 +147,15 @@ if ($esSuper) {
   </div>
 </div>
 
-<!-- NOTIFICACIONES -->
-<?php if (!empty($notificaciones)): ?>
-<div class="perfil-page">
-  <section class="perfil-notif" id="perfilNotif" data-base="<?= basePath() ?>">
-    <div class="perfil-notif-head">
-      <h2><i class="bi bi-bell-fill"></i> Notificaciones
-        <?php if ($notifNoLeidas > 0): ?><span class="perfil-notif-badge"><?= $notifNoLeidas ?></span><?php endif; ?>
-      </h2>
-      <?php if ($notifNoLeidas > 0): ?>
-        <button type="button" class="perfil-notif-marcar" id="btnMarcarNotif"><i class="bi bi-check2-all"></i> Marcar como leídas</button>
-      <?php endif; ?>
-    </div>
-    <ul class="perfil-notif-lista">
-      <?php foreach ($notificaciones as $n):
-        $esSuspension = $n['tipo'] === 'suspension';
-        $icono = $esSuspension ? 'bi-slash-circle-fill' : ($n['tipo'] === 'reactivacion' ? 'bi-check-circle-fill' : 'bi-info-circle-fill');
-      ?>
-        <li class="perfil-notif-item <?= $n['leida'] ? '' : 'is-unread' ?> notif-<?= htmlspecialchars($n['tipo']) ?>">
-          <span class="perfil-notif-icono"><i class="bi <?= $icono ?>"></i></span>
-          <div class="perfil-notif-cuerpo">
-            <div class="perfil-notif-titulo">
-              <?= htmlspecialchars($n['titulo']) ?>
-              <?php if (!$n['leida']): ?><span class="perfil-notif-dot" title="No leída"></span><?php endif; ?>
-            </div>
-            <p class="perfil-notif-msg"><?= nl2br(htmlspecialchars($n['mensaje'])) ?></p>
-            <span class="perfil-notif-fecha"><i class="bi bi-clock"></i> <?= date('d M Y, H:i', strtotime($n['creada'])) ?></span>
-          </div>
-        </li>
-      <?php endforeach; ?>
-    </ul>
-  </section>
-</div>
-<?php endif; ?>
-
 <!-- TABS -->
 <div class="perfil-page">
   <div class="perfil-tabs" role="tablist">
     <button class="perfil-tab active" data-tab="cuenta" role="tab"><i class="bi bi-person-fill"></i> Cuenta</button>
     <button class="perfil-tab" data-tab="personal" role="tab"><i class="bi bi-info-circle-fill"></i> Información</button>
+    <button class="perfil-tab" data-tab="notificaciones" role="tab"><i class="bi bi-bell-fill"></i> Notificaciones
+      <?php if($notifNoLeidas > 0): ?><span class="perfil-notif-badge"><?= $notifNoLeidas ?></span><?php endif; ?>
+    </button>
+    <button class="perfil-tab" data-tab="comentarios" role="tab"><i class="bi bi-chat-left-text-fill"></i> Mis comentarios</button>
     <?php if($tipoUsuario === 'admin'): ?>
     <button class="perfil-tab" data-tab="publico" role="tab"><i class="bi bi-globe2"></i> Perfil Público</button>
     <?php endif; ?>
@@ -321,6 +310,81 @@ if ($esSuper) {
     <?php endif; ?>
 
   </form><!-- /form -->
+
+  <!-- TAB: NOTIFICACIONES -->
+  <div class="perfil-tab-panel" id="tab-notificaciones">
+    <section class="perfil-notif" id="perfilNotif" data-base="<?= basePath() ?>">
+      <div class="perfil-notif-head">
+        <h2><i class="bi bi-bell-fill"></i> Notificaciones
+          <?php if ($notifNoLeidas > 0): ?><span class="perfil-notif-badge"><?= $notifNoLeidas ?></span><?php endif; ?>
+        </h2>
+        <?php if ($notifNoLeidas > 0): ?>
+          <button type="button" class="perfil-notif-marcar" id="btnMarcarNotif"><i class="bi bi-check2-all"></i> Marcar como leídas</button>
+        <?php endif; ?>
+      </div>
+      <?php if (empty($notificaciones)): ?>
+        <div class="perfil-notif-empty">
+          <i class="bi bi-bell-slash"></i>
+          <p>No tienes notificaciones por ahora.</p>
+        </div>
+      <?php else: ?>
+        <ul class="perfil-notif-lista">
+          <?php foreach ($notificaciones as $n):
+            $esSuspension = $n['tipo'] === 'suspension';
+            $icono = $esSuspension ? 'bi-slash-circle-fill' : ($n['tipo'] === 'reactivacion' ? 'bi-check-circle-fill' : 'bi-info-circle-fill');
+          ?>
+            <li class="perfil-notif-item <?= $n['leida'] ? '' : 'is-unread' ?> notif-<?= htmlspecialchars($n['tipo']) ?>">
+              <span class="perfil-notif-icono"><i class="bi <?= $icono ?>"></i></span>
+              <div class="perfil-notif-cuerpo">
+                <div class="perfil-notif-titulo">
+                  <?= htmlspecialchars($n['titulo']) ?>
+                  <?php if (!$n['leida']): ?><span class="perfil-notif-dot" title="No leída"></span><?php endif; ?>
+                </div>
+                <p class="perfil-notif-msg"><?= nl2br(htmlspecialchars($n['mensaje'])) ?></p>
+                <span class="perfil-notif-fecha"><i class="bi bi-clock"></i> <?= date('d M Y, H:i', strtotime($n['creada'])) ?></span>
+              </div>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
+    </section>
+  </div>
+
+  <!-- TAB: MIS COMENTARIOS -->
+  <div class="perfil-tab-panel" id="tab-comentarios">
+    <div class="perfil-card">
+      <div class="perfil-card-header">
+        <i class="bi bi-chat-left-text-fill"></i>
+        <div>
+          <h2>Mis comentarios</h2>
+          <p>Los comentarios que has publicado en las notas.</p>
+        </div>
+      </div>
+      <div class="perfil-comentarios">
+        <?php if (empty($misComentarios)): ?>
+          <div class="perfil-notif-empty">
+            <i class="bi bi-chat-left-dots"></i>
+            <p>Aún no has publicado comentarios.</p>
+          </div>
+        <?php else: ?>
+          <?php foreach ($misComentarios as $com):
+            $url = newsUrl($com['noticia_slug'] ?: $com['noticia_id']);
+          ?>
+            <div class="perfil-comentario-card">
+              <p class="perfil-comentario-texto"><?= nl2br(htmlspecialchars($com['contenido'])) ?></p>
+              <div class="perfil-comentario-meta">
+                <span><i class="bi bi-heart-fill"></i> <?= (int)$com['total_likes'] ?></span>
+                <span><i class="bi bi-clock"></i> <?= date('d M Y, H:i', strtotime($com['fecha_publicacion'])) ?></span>
+              </div>
+              <a href="<?= $url ?>" class="perfil-comentario-noticia">
+                <i class="bi bi-link-45deg"></i> En: <?= htmlspecialchars($com['noticia_titulo']) ?>
+              </a>
+            </div>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
 
   <!-- TAB: SEGURIDAD / ZONA DE PELIGRO (fuera del form para evitar submit accidental) -->
   <div class="perfil-tab-panel" id="tab-peligro">
@@ -554,6 +618,17 @@ if ($esSuper) {
 .perfil-notif-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); display:inline-block; }
 .perfil-notif-msg { margin:4px 0 6px; color:var(--muted); font-size:.9rem; line-height:1.45; }
 .perfil-notif-fecha { font-size:.78rem; color:var(--muted); display:inline-flex; align-items:center; gap:5px; }
+.perfil-notif-empty { text-align:center; color:var(--muted); padding:36px 0; }
+.perfil-notif-empty i { font-size:2rem; display:block; margin-bottom:8px; color:var(--muted); }
+.perfil-notif-empty p { margin:0; font-size:.92rem; }
+
+/* MIS COMENTARIOS */
+.perfil-comentarios { padding:16px 20px 20px; display:flex; flex-direction:column; gap:12px; }
+.perfil-comentario-card { background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
+.perfil-comentario-texto { margin:0 0 10px; color:var(--text); line-height:1.5; }
+.perfil-comentario-meta { display:flex; gap:16px; flex-wrap:wrap; color:var(--muted); font-size:.82rem; margin-bottom:8px; }
+.perfil-comentario-noticia { display:inline-flex; align-items:center; gap:4px; color:var(--accent); text-decoration:none; font-size:.88rem; font-weight:600; }
+.perfil-comentario-noticia:hover { text-decoration:underline; }
 
 /* HERO */
 .perfil-hero {

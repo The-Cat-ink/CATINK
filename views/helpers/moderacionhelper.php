@@ -3,38 +3,12 @@
  * Helper de moderación de comentarios usando la API gratuita de Vector Profanity
  */
 
-if (!function_exists('esContenidoInapropiado')) {
-    /**
-     * Evalúa si un texto contiene lenguaje profano u ofensivo.
-     * Realiza un chequeo local en español y complementa con la API de Vector Profanity (threshold de 0.7).
-     * Realiza una petición POST a vector.profanity.dev con un timeout estricto de 2 segundos.
-     * En caso de error o timeout, realiza una caída suave (fail-soft) retornando false.
-     * 
-     * @param string $texto El contenido del comentario a evaluar.
-     * @return bool True si contiene lenguaje ofensivo, False en caso contrario o si falla la API.
-     */
-    function esContenidoInapropiado($texto, $con = null) {
-        $texto = trim($texto);
-        if (empty($texto)) {
-            return false;
-        }
-
-        // 0. Chequeo contra el diccionario completo de la base de datos si la conexión está disponible
-        if ($con) {
-            require_once(__DIR__ . '/filtrohelper.php');
-            if (filtrarPalabras($con, $texto) !== $texto) {
-                return true;
-            }
-        }
-
-        // 1. Chequeo local por expresiones regulares optimizadas (evita falsos positivos como disputa o capítulo)
-        // Normalizar texto (pasar a minúsculas y quitar acentos)
-        $textoNormalizado = mb_strtolower($texto, 'UTF-8');
-        $buscarAcentos    = ['á', 'é', 'í', 'ó', 'ú', 'ü', 'ñ'];
-        $quitarAcentos    = ['a', 'e', 'i', 'o', 'u', 'u', 'n'];
-        $textoNormalizado = str_replace($buscarAcentos, $quitarAcentos, $textoNormalizado);
-
-        $patterns = [
+// Lista de patrones regex de lenguaje ofensivo. Centralizada para que la
+// usen tanto la detección (esContenidoInapropiado) como el detalle de qué
+// palabras se encontraron (palabrasOfensivasDetectadas).
+if (!function_exists('patronesOfensivos')) {
+    function patronesOfensivos() {
+        return [
             // Autolesión / Suicidio
             '/\b(suicid[a-z]*|matat[e]?|desviv[a-z]*|kys)\b/i',
             // Maricón / Marica
@@ -84,8 +58,46 @@ if (!function_exists('esContenidoInapropiado')) {
             // Jergas específicas o términos despectivos reportados
             '/\b(amargasaurio|aguada)\b/i'
         ];
+    }
+}
 
-        foreach ($patterns as $pattern) {
+// Normaliza el texto (minúsculas y sin acentos) para el chequeo por regex.
+if (!function_exists('normalizarTextoModeracion')) {
+    function normalizarTextoModeracion($texto) {
+        $textoNormalizado = mb_strtolower($texto, 'UTF-8');
+        $buscarAcentos    = ['á', 'é', 'í', 'ó', 'ú', 'ü', 'ñ'];
+        $quitarAcentos    = ['a', 'e', 'i', 'o', 'u', 'u', 'n'];
+        return str_replace($buscarAcentos, $quitarAcentos, $textoNormalizado);
+    }
+}
+
+if (!function_exists('esContenidoInapropiado')) {
+    /**
+     * Evalúa si un texto contiene lenguaje profano u ofensivo.
+     * Realiza un chequeo local en español y complementa con la API de Vector Profanity (threshold de 0.7).
+     * Realiza una petición POST a vector.profanity.dev con un timeout estricto de 2 segundos.
+     * En caso de error o timeout, realiza una caída suave (fail-soft) retornando false.
+     *
+     * @param string $texto El contenido del comentario a evaluar.
+     * @return bool True si contiene lenguaje ofensivo, False en caso contrario o si falla la API.
+     */
+    function esContenidoInapropiado($texto, $con = null) {
+        $texto = trim($texto);
+        if (empty($texto)) {
+            return false;
+        }
+
+        // 0. Chequeo contra el diccionario completo de la base de datos si la conexión está disponible
+        if ($con) {
+            require_once(__DIR__ . '/filtrohelper.php');
+            if (filtrarPalabras($con, $texto) !== $texto) {
+                return true;
+            }
+        }
+
+        // 1. Chequeo local por expresiones regulares optimizadas (evita falsos positivos como disputa o capítulo)
+        $textoNormalizado = normalizarTextoModeracion($texto);
+        foreach (patronesOfensivos() as $pattern) {
             if (preg_match($pattern, $textoNormalizado)) {
                 return true;
             }
@@ -132,5 +144,65 @@ if (!function_exists('esContenidoInapropiado')) {
         }
 
         return false;
+    }
+}
+
+if (!function_exists('palabrasOfensivasDetectadas')) {
+    /**
+     * Devuelve la lista de palabras/expresiones ofensivas detectadas en el texto
+     * (tal como las escribió el usuario), combinando el diccionario de la BD y los
+     * patrones locales. Sirve para decirle al usuario exactamente qué se detectó.
+     * Nota: si la detección proviene únicamente de la API externa, puede volver vacío.
+     *
+     * @return string[] Palabras únicas encontradas.
+     */
+    function palabrasOfensivasDetectadas($texto, $con = null) {
+        $texto = trim($texto);
+        $encontradas = [];
+        if ($texto === '') {
+            return $encontradas;
+        }
+
+        // Coincidencias del diccionario de la base de datos
+        if ($con) {
+            require_once(__DIR__ . '/filtrohelper.php');
+            foreach (palabrasBaneadasEncontradas($con, $texto) as $p) {
+                $encontradas[] = $p;
+            }
+        }
+
+        // Coincidencias de los patrones locales
+        $textoNormalizado = normalizarTextoModeracion($texto);
+        foreach (patronesOfensivos() as $pattern) {
+            if (preg_match($pattern, $textoNormalizado, $m)) {
+                $encontradas[] = trim($m[0]);
+            }
+        }
+
+        // Normalizar: sin vacíos, sin duplicados (case-insensitive)
+        $unicas = [];
+        foreach ($encontradas as $p) {
+            $p = trim($p);
+            if ($p === '') continue;
+            $clave = mb_strtolower($p, 'UTF-8');
+            $unicas[$clave] = $p;
+        }
+        return array_values($unicas);
+    }
+}
+
+if (!function_exists('textoPalabrasOfensivas')) {
+    /**
+     * Formatea la lista de palabras detectadas para mostrarla al usuario,
+     * entre comillas y separadas por comas. Limita la cantidad para no saturar.
+     */
+    function textoPalabrasOfensivas($palabras, $max = 5) {
+        $palabras = array_slice($palabras, 0, $max);
+        if (empty($palabras)) {
+            return '';
+        }
+        return implode(', ', array_map(function ($p) {
+            return '“' . $p . '”';
+        }, $palabras));
     }
 }

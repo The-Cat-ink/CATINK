@@ -11,7 +11,7 @@ if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'lector' || !isset($_SESS
 
 $banTxt = baneoLectorActual($con);
 if ($banTxt) {
-    echo json_encode(['ok' => false, 'msg' => 'Tu cuenta está suspendida. ' . $banTxt]);
+    echo json_encode(['ok' => false, 'persist' => true, 'msg' => 'Tu cuenta está suspendida temporalmente. ' . $banTxt . ' Podrás volver a participar cuando termine la suspensión. ¡Te esperamos de vuelta con buena onda!']);
     exit;
 }
 

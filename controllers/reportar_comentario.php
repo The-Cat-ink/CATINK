@@ -11,7 +11,7 @@ if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'lector' || !isset($_SESS
 
 $banTxt = baneoLectorActual($con);
 if ($banTxt) {
-    echo json_encode(['ok' => false, 'msg' => 'Tu cuenta está suspendida. ' . $banTxt]);
+    echo json_encode(['ok' => false, 'persist' => true, 'msg' => 'Tu cuenta está suspendida temporalmente. ' . $banTxt . ' Podrás volver a participar cuando termine la suspensión. ¡Te esperamos de vuelta con buena onda!']);
     exit;
 }
 
@@ -66,7 +66,7 @@ if ($stmt->execute()) {
             $stmtBan->execute();
 
             // Registrar notificación de suspensión
-            crearNotificacion($con, 'lector', $autorLectorId, 'Cuenta Suspendida', 'Tu cuenta ha sido suspendida automáticamente por 24 horas debido a que tus comentarios han acumulado más de 5 reportes por parte de la comunidad.', 'moderacion');
+            crearNotificacion($con, 'lector', $autorLectorId, 'Tu cuenta quedó suspendida temporalmente', 'En CatInk queremos mantener un ambiente sano y respetuoso para toda la comunidad. Varios de tus comentarios acumularon más de 5 reportes de otros usuarios, por eso tu cuenta quedó suspendida por 24 horas. No es un castigo: es un recordatorio de que aquí buscamos que todos se sientan a gusto. ¡Te esperamos de vuelta con buena onda!', 'moderacion');
 
             // Ocultar todos sus comentarios activos de forma preventiva
             $stmtHide = $con->prepare("UPDATE comentarios SET estado = 'oculto' WHERE lector_id = ? AND estado = 'activo'");

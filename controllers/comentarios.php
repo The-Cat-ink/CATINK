@@ -45,7 +45,11 @@ if (in_array($action, ['crear', 'editar'], true)) {
     $banId   = $tipoUsuario === 'lector' ? $lectorId : $usuarioId;
     $banRow  = obtenerBaneo($con, $banTipo, $banId);
     if ($banRow && estaBaneado($banRow)) {
-        echo json_encode(['ok' => false, 'msg' => 'Tu cuenta está suspendida. ' . (textoBaneo($banRow) ?? '')]);
+        echo json_encode([
+            'ok' => false,
+            'persist' => true,
+            'msg' => 'Tu cuenta está suspendida temporalmente. ' . (textoBaneo($banRow) ?? '') . ' Podrás volver a participar cuando termine la suspensión. ¡Te esperamos de vuelta con buena onda!'
+        ]);
         exit;
     }
 }
@@ -105,10 +109,17 @@ switch ($action) {
         // ============================
         // FILTRO DE CENSURA Y BANEO AUTOMÁTICO
         // ============================
-        if (esContenidoInapropiado($contenido, $con)) {
+        // Solo se bloquea/sanciona si hay palabras ofensivas CONCRETAS detectadas
+        // (diccionario o patrones locales). Si no hay coincidencias no se banea:
+        // así se evitan falsos positivos y siempre se puede decir qué palabras fueron.
+        $palabrasDetectadas = palabrasOfensivasDetectadas($contenido, $con);
+        if (!empty($palabrasDetectadas)) {
+            $listaPalabras = textoPalabrasOfensivas($palabrasDetectadas);
+            $detalle = " Detectamos: {$listaPalabras}.";
+
             if ($tipoUsuario === 'lector' && $lectorId) {
                 // Registrar notificación de intento ofensivo
-                crearNotificacion($con, 'lector', $lectorId, 'Comentario bloqueado por lenguaje ofensivo', 'Intentaste publicar un comentario con lenguaje no permitido. Por favor respeta nuestras normas.', 'comentario_ofensivo');
+                crearNotificacion($con, 'lector', $lectorId, 'Tu comentario no se publicó', "En CatInk cuidamos que este sea un espacio sano y respetuoso para toda la comunidad.{$detalle} Te invitamos a reformular tu comentario sin lenguaje ofensivo. ¡Gracias por ayudarnos a mantener la buena onda!", 'comentario_ofensivo');
 
                 // Incrementar intentos profanos
                 $stmtInc = $con->prepare("UPDATE lectores SET intentos_profanos = intentos_profanos + 1 WHERE id = ?");
@@ -132,36 +143,38 @@ switch ($action) {
                 if ($totalNotifOfensivo >= 5 || $intentos >= 3) {
                     // Suspender por 24 horas
                     $baneadoHasta = date('Y-m-d H:i:s', strtotime('+24 hours'));
-                    $motivo = ($totalNotifOfensivo >= 5) 
-                        ? "Acumulación de 5 notificaciones de comentario ofensivo" 
+                    $motivo = ($totalNotifOfensivo >= 5)
+                        ? "Acumulación de 5 notificaciones de comentario ofensivo"
                         : "Intento reiterado de publicar contenido obsceno";
-                    
+
                     $stmtBan = $con->prepare("UPDATE lectores SET baneado_hasta = ?, baneado_permanente = 0, baneado_motivo = ?, intentos_profanos = 0 WHERE id = ?");
                     $stmtBan->bind_param("ssi", $baneadoHasta, $motivo, $lectorId);
                     $stmtBan->execute();
 
-                    // Crear notificación interna de suspensión
-                    crearNotificacion($con, 'lector', $lectorId, 'Cuenta Suspendida', 'Tu cuenta ha sido suspendida temporalmente por 24 horas por infringir nuestras normas de convivencia con lenguaje ofensivo.', 'moderacion');
+                    // Crear notificación interna de suspensión (tono de advertencia, no de castigo)
+                    crearNotificacion($con, 'lector', $lectorId, 'Tu cuenta quedó suspendida temporalmente', "En CatInk queremos mantener un ambiente sano y respetuoso para toda la comunidad. Detectamos lenguaje ofensivo de forma reiterada{$detalle} por eso tu cuenta quedó suspendida por 24 horas. No es un castigo: es un recordatorio de que aquí buscamos que todos se sientan a gusto. ¡Te esperamos de vuelta con buena onda!", 'moderacion');
 
                     echo json_encode([
                         'ok' => false,
-                        'msg' => ($totalNotifOfensivo >= 5)
-                            ? 'Tu cuenta ha sido suspendida temporalmente por 24 horas debido a acumular 5 notificaciones de comentarios ofensivos.'
-                            : 'Tu cuenta ha sido suspendida temporalmente por 24 horas debido a intentos reiterados de publicar contenido ofensivo.'
+                        'persist' => true,
+                        'msg' => "Tu cuenta quedó suspendida temporalmente por 24 horas. En CatInk queremos mantener un ambiente sano para toda la comunidad y detectamos lenguaje ofensivo de forma reiterada.{$detalle} Podrás volver a comentar cuando termine la suspensión. ¡Te esperamos de vuelta con buena onda!"
                     ]);
                     exit;
                 } else {
+                    $restantes = max(0, 5 - $totalNotifOfensivo);
                     echo json_encode([
                         'ok' => false,
-                        'msg' => "Comentario bloqueado por lenguaje inapropiado. Advertencia: Tienes {$totalNotifOfensivo} de 5 advertencias antes de suspender tu cuenta."
+                        'persist' => true,
+                        'msg' => "En CatInk buscamos mantener un espacio sano y respetuoso, por eso tu comentario no se publicó.{$detalle} Te pedimos reformularlo sin lenguaje ofensivo. Aviso amistoso: te quedan {$restantes} antes de una suspensión temporal de la cuenta."
                     ]);
                     exit;
                 }
             } else {
-                // Si es admin, solo bloquear
+                // Si es admin, solo bloquear (tono de advertencia)
                 echo json_encode([
                     'ok' => false,
-                    'msg' => 'Comentario bloqueado por lenguaje ofensivo.'
+                    'persist' => true,
+                    'msg' => "En CatInk cuidamos que este sea un espacio sano y respetuoso, por eso tu comentario no se publicó.{$detalle} Te pedimos reformularlo sin lenguaje ofensivo."
                 ]);
                 exit;
             }
@@ -323,10 +336,17 @@ switch ($action) {
         // ============================
         // FILTRO DE CENSURA Y BANEO AUTOMÁTICO EN EDICIÓN
         // ============================
-        if (esContenidoInapropiado($contenido, $con)) {
+        // Solo se bloquea/sanciona si hay palabras ofensivas CONCRETAS detectadas
+        // (diccionario o patrones locales). Si no hay coincidencias no se banea:
+        // así se evitan falsos positivos y siempre se puede decir qué palabras fueron.
+        $palabrasDetectadas = palabrasOfensivasDetectadas($contenido, $con);
+        if (!empty($palabrasDetectadas)) {
+            $listaPalabras = textoPalabrasOfensivas($palabrasDetectadas);
+            $detalle = " Detectamos: {$listaPalabras}.";
+
             if ($tipoUsuario === 'lector' && $lectorId) {
                 // Registrar notificación de intento ofensivo en edición
-                crearNotificacion($con, 'lector', $lectorId, 'Comentario bloqueado por lenguaje ofensivo', 'Intentaste editar un comentario con lenguaje no permitido. Por favor respeta nuestras normas.', 'comentario_ofensivo');
+                crearNotificacion($con, 'lector', $lectorId, 'Tu comentario no se actualizó', "En CatInk cuidamos que este sea un espacio sano y respetuoso para toda la comunidad.{$detalle} Te invitamos a reformular tu comentario sin lenguaje ofensivo. ¡Gracias por ayudarnos a mantener la buena onda!", 'comentario_ofensivo');
 
                 // Incrementar intentos profanos
                 $stmtInc = $con->prepare("UPDATE lectores SET intentos_profanos = intentos_profanos + 1 WHERE id = ?");
@@ -350,35 +370,37 @@ switch ($action) {
                 if ($totalNotifOfensivo >= 5 || $intentos >= 3) {
                     // Suspender por 24 horas
                     $baneadoHasta = date('Y-m-d H:i:s', strtotime('+24 hours'));
-                    $motivo = ($totalNotifOfensivo >= 5) 
-                        ? "Acumulación de 5 notificaciones de comentario ofensivo en edición" 
+                    $motivo = ($totalNotifOfensivo >= 5)
+                        ? "Acumulación de 5 notificaciones de comentario ofensivo en edición"
                         : "Intento reiterado de publicar contenido obsceno en edición";
-                    
+
                     $stmtBan = $con->prepare("UPDATE lectores SET baneado_hasta = ?, baneado_permanente = 0, baneado_motivo = ?, intentos_profanos = 0 WHERE id = ?");
                     $stmtBan->bind_param("ssi", $baneadoHasta, $motivo, $lectorId);
                     $stmtBan->execute();
 
-                    // Crear notificación interna de suspensión
-                    crearNotificacion($con, 'lector', $lectorId, 'Cuenta Suspendida', 'Tu cuenta ha sido suspendida temporalmente por 24 horas por infringir nuestras normas de convivencia con lenguaje ofensivo.', 'moderacion');
+                    // Crear notificación interna de suspensión (tono de advertencia, no de castigo)
+                    crearNotificacion($con, 'lector', $lectorId, 'Tu cuenta quedó suspendida temporalmente', "En CatInk queremos mantener un ambiente sano y respetuoso para toda la comunidad. Detectamos lenguaje ofensivo de forma reiterada{$detalle} por eso tu cuenta quedó suspendida por 24 horas. No es un castigo: es un recordatorio de que aquí buscamos que todos se sientan a gusto. ¡Te esperamos de vuelta con buena onda!", 'moderacion');
 
                     echo json_encode([
                         'ok' => false,
-                        'msg' => ($totalNotifOfensivo >= 5)
-                            ? 'Tu cuenta ha sido suspendida temporalmente por 24 horas debido a acumular 5 notificaciones de comentarios ofensivos.'
-                            : 'Tu cuenta ha sido suspendida temporalmente por 24 horas debido a intentos reiterados de publicar contenido ofensivo.'
+                        'persist' => true,
+                        'msg' => "Tu cuenta quedó suspendida temporalmente por 24 horas. En CatInk queremos mantener un ambiente sano para toda la comunidad y detectamos lenguaje ofensivo de forma reiterada.{$detalle} Podrás volver a comentar cuando termine la suspensión. ¡Te esperamos de vuelta con buena onda!"
                     ]);
                     exit;
                 } else {
+                    $restantes = max(0, 5 - $totalNotifOfensivo);
                     echo json_encode([
                         'ok' => false,
-                        'msg' => "Edición bloqueada por lenguaje inapropiado. Advertencia: Tienes {$totalNotifOfensivo} de 5 advertencias antes de suspender tu cuenta."
+                        'persist' => true,
+                        'msg' => "En CatInk buscamos mantener un espacio sano y respetuoso, por eso tu edición no se guardó.{$detalle} Te pedimos reformularla sin lenguaje ofensivo. Aviso amistoso: te quedan {$restantes} antes de una suspensión temporal de la cuenta."
                     ]);
                     exit;
                 }
             } else {
                 echo json_encode([
                     'ok' => false,
-                    'msg' => 'Edición bloqueada por lenguaje ofensivo.'
+                    'persist' => true,
+                    'msg' => "En CatInk cuidamos que este sea un espacio sano y respetuoso, por eso tu edición no se guardó.{$detalle} Te pedimos reformularla sin lenguaje ofensivo."
                 ]);
                 exit;
             }

@@ -164,6 +164,20 @@ switch ($action) {
         $stmt = $con->prepare($sql);
         $stmt->bind_param("i", $userId);
         if ($stmt->execute()) {
+            // Al retirar la suspensión de un lector, restaurar sus oportunidades:
+            // reiniciar el contador de intentos y limpiar las notificaciones de
+            // intento ofensivo (que alimentan el conteo acumulado de advertencias),
+            // para que arranque de nuevo con la cuenta de oportunidades completa.
+            if ($tipo === 'lector') {
+                if ($stmtReset = @$con->prepare("UPDATE lectores SET intentos_profanos = 0 WHERE id = ?")) {
+                    $stmtReset->bind_param("i", $userId);
+                    $stmtReset->execute();
+                }
+                if ($stmtDelNotif = @$con->prepare("DELETE FROM notificaciones WHERE tipo_usuario = 'lector' AND user_id = ? AND tipo = 'comentario_ofensivo'")) {
+                    $stmtDelNotif->bind_param("i", $userId);
+                    $stmtDelNotif->execute();
+                }
+            }
             // Notificar al usuario la reactivación de su cuenta
             crearNotificacion($con, $tipo, $userId, 'Tu suspensión ha sido retirada',
                 'Un moderador retiró la suspensión de tu cuenta. Ya puedes volver a comentar, dar me gusta y reportar con normalidad.',

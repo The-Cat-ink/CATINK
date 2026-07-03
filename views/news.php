@@ -887,7 +887,10 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
 <!-- Scripts de interacción -->
 <script>
   // Toast notifications
-  function showToast(msg, type = '') {
+  // persist = true → es un aviso de moderación: se muestra en una card central
+  // (estilo tarjeta de sanción) que el usuario cierra con el botón "Entiendo".
+  function showToast(msg, type = '', persist = false) {
+    if (persist) { showModAviso(msg); return; }
     let container = document.querySelector('.toast-container');
     if (!container) {
       container = document.createElement('div');
@@ -899,6 +902,35 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
     toast.textContent = msg;
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
+  }
+
+  // Card central de aviso de moderación (estilo tarjeta de sanción).
+  // Se queda en pantalla hasta que el usuario pulsa "Entiendo".
+  function showModAviso(msg) {
+    let overlay = document.getElementById('modAvisoOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'modAvisoOverlay';
+      overlay.className = 'mod-aviso-overlay';
+      overlay.innerHTML = `
+        <div class="mod-aviso-card" role="alertdialog" aria-modal="true" aria-labelledby="modAvisoTitulo" aria-describedby="modAvisoTexto">
+          <div class="mod-aviso-top"></div>
+          <h2 class="mod-aviso-titulo" id="modAvisoTitulo"></h2>
+          <div class="mod-aviso-sep"></div>
+          <p class="mod-aviso-texto" id="modAvisoTexto"></p>
+          <p class="mod-aviso-nota">El respeto y la buena convivencia son la base de nuestra comunidad. Buscamos que CATINK sea un espacio sano donde todas y todos puedan compartir y opinar con libertad. Te invitamos a reflexionar sobre tu mensaje y a seguir siendo parte de esta comunidad de forma positiva. ¡Gracias por ayudarnos a cuidarla!</p>
+          <button type="button" class="mod-aviso-btn">Entiendo</button>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('.mod-aviso-btn').addEventListener('click', () => {
+        overlay.classList.remove('is-open');
+      });
+    }
+    const esSuspension = /suspend/i.test(msg);
+    overlay.querySelector('.mod-aviso-titulo').textContent = esSuspension ? 'Cuenta suspendida' : 'Cuidemos la comunidad';
+    overlay.querySelector('.mod-aviso-texto').textContent = msg;
+    overlay.classList.add('is-open');
+    overlay.querySelector('.mod-aviso-btn').focus();
   }
   // Sumar vistas
   fetch("<?= basePath() ?>/controllers/sumarvistas.php", {
@@ -1031,7 +1063,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
             countEl.textContent = `(${num})`;
           }
         } else {
-          showToast(data.msg || 'Error al enviar el comentario.', 'error');
+          showToast(data.msg || 'Error al enviar el comentario.', 'error', data.persist);
         }
       } catch (e) {
         console.error(e);
@@ -1137,7 +1169,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
             icon.className = 'bi bi-heart';
           }
         } else {
-          showToast(data.msg, 'error');
+          showToast(data.msg, 'error', data.persist);
         }
       } catch (e) { console.error(e); }
     }
@@ -1217,7 +1249,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
         if (data.ok) {
           item.querySelector('.comentario-texto').innerHTML = data.contenido.replace(/\n/g, '<br>');
         } else {
-          showToast(data.msg, 'error');
+          showToast(data.msg, 'error', data.persist);
         }
       } catch (e) { console.error(e); }
     }
@@ -1251,7 +1283,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
           body: `comentario_id=${cid}&motivo=${encodeURIComponent(motivo)}`
         });
         const data = await res.json();
-        showToast(data.msg, data.ok ? 'success' : 'error');
+        showToast(data.msg, data.ok ? 'success' : 'error', data.persist);
         modal.style.display = 'none';
       } catch (e) { console.error(e); }
     }
