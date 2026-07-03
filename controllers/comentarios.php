@@ -4,6 +4,7 @@ header('Content-Type: application/json');
 require_once(__DIR__ . '/../data/conexion.php');
 require_once(__DIR__ . '/../views/helpers/filtrohelper.php');
 require_once(__DIR__ . '/../views/helpers/moderacion.php');
+require_once(__DIR__ . '/../views/helpers/moderacionhelper.php');
 
 // Lectores o admins pueden comentar
 $tipoUsuario = $_SESSION['tipo'] ?? null;
@@ -32,6 +33,14 @@ $action = $_POST['action'] ?? '';
 // BLOQUEAR USUARIOS SUSPENDIDOS (no aplica a 'eliminar')
 // ============================
 if (in_array($action, ['crear', 'editar'], true)) {
+    // 1. Bloqueo global de comentarios (botón de pánico)
+    $resGlobalCfg = $con->query("SELECT estado FROM secciones WHERE nombre = 'comentarios' LIMIT 1");
+    $globalCfg = $resGlobalCfg->fetch_assoc();
+    if ($globalCfg && $globalCfg['estado'] == 0) {
+        echo json_encode(['ok' => false, 'msg' => 'Los comentarios están desactivados temporalmente en todo el sitio.']);
+        exit;
+    }
+
     $banTipo = $tipoUsuario === 'lector' ? 'lector' : 'admin';
     $banId   = $tipoUsuario === 'lector' ? $lectorId : $usuarioId;
     $banRow  = obtenerBaneo($con, $banTipo, $banId);
@@ -91,6 +100,78 @@ switch ($action) {
         if (mb_strlen($contenido) > 1000) {
             echo json_encode(['ok' => false, 'msg' => 'El comentario es demasiado largo (máx. 1000 caracteres).']);
             exit;
+        }
+
+        // ============================
+        // FILTRO DE CENSURA Y BANEO AUTOMÁTICO
+        // ============================
+        if (esContenidoInapropiado($contenido, $con)) {
+            if ($tipoUsuario === 'lector' && $lectorId) {
+                // Registrar notificación de intento ofensivo
+                crearNotificacion($con, 'lector', $lectorId, 'Comentario bloqueado por lenguaje ofensivo', 'Intentaste publicar un comentario con lenguaje no permitido. Por favor respeta nuestras normas.', 'comentario_ofensivo');
+
+                // Incrementar intentos profanos
+                $stmtInc = $con->prepare("UPDATE lectores SET intentos_profanos = intentos_profanos + 1 WHERE id = ?");
+                $stmtInc->bind_param("i", $lectorId);
+                $stmtInc->execute();
+
+                // Consultar intentos actuales
+                $stmtGet = $con->prepare("SELECT intentos_profanos FROM lectores WHERE id = ?");
+                $stmtGet->bind_param("i", $lectorId);
+                $stmtGet->execute();
+                $lectorData = $stmtGet->get_result()->fetch_assoc();
+                $intentos = $lectorData['intentos_profanos'] ?? 0;
+
+                // Contar cuántas notificaciones de comentario ofensivo tiene
+                $stmtNotifCount = $con->prepare("SELECT COUNT(*) as total FROM notificaciones WHERE user_id = ? AND tipo_usuario = 'lector' AND tipo = 'comentario_ofensivo'");
+                $stmtNotifCount->bind_param("i", $lectorId);
+                $stmtNotifCount->execute();
+                $resNotif = $stmtNotifCount->get_result()->fetch_assoc();
+                $totalNotifOfensivo = $resNotif ? (int)$resNotif['total'] : 0;
+
+                if ($totalNotifOfensivo >= 5 || $intentos >= 3) {
+                    // Suspender por 24 horas
+                    $baneadoHasta = date('Y-m-d H:i:s', strtotime('+24 hours'));
+                    $motivo = ($totalNotifOfensivo >= 5) 
+                        ? "Acumulación de 5 notificaciones de comentario ofensivo" 
+                        : "Intento reiterado de publicar contenido obsceno";
+                    
+                    $stmtBan = $con->prepare("UPDATE lectores SET baneado_hasta = ?, baneado_permanente = 0, baneado_motivo = ?, intentos_profanos = 0 WHERE id = ?");
+                    $stmtBan->bind_param("ssi", $baneadoHasta, $motivo, $lectorId);
+                    $stmtBan->execute();
+
+                    // Crear notificación interna de suspensión
+                    crearNotificacion($con, 'lector', $lectorId, 'Cuenta Suspendida', 'Tu cuenta ha sido suspendida temporalmente por 24 horas por infringir nuestras normas de convivencia con lenguaje ofensivo.', 'moderacion');
+
+                    echo json_encode([
+                        'ok' => false,
+                        'msg' => ($totalNotifOfensivo >= 5)
+                            ? 'Tu cuenta ha sido suspendida temporalmente por 24 horas debido a acumular 5 notificaciones de comentarios ofensivos.'
+                            : 'Tu cuenta ha sido suspendida temporalmente por 24 horas debido a intentos reiterados de publicar contenido ofensivo.'
+                    ]);
+                    exit;
+                } else {
+                    echo json_encode([
+                        'ok' => false,
+                        'msg' => "Comentario bloqueado por lenguaje inapropiado. Advertencia: Tienes {$totalNotifOfensivo} de 5 advertencias antes de suspender tu cuenta."
+                    ]);
+                    exit;
+                }
+            } else {
+                // Si es admin, solo bloquear
+                echo json_encode([
+                    'ok' => false,
+                    'msg' => 'Comentario bloqueado por lenguaje ofensivo.'
+                ]);
+                exit;
+            }
+        } else {
+            // Si el comentario es limpio, resetear contador de intentos del lector
+            if ($tipoUsuario === 'lector' && $lectorId) {
+                $stmtReset = $con->prepare("UPDATE lectores SET intentos_profanos = 0 WHERE id = ?");
+                $stmtReset->bind_param("i", $lectorId);
+                $stmtReset->execute();
+            }
         }
 
         // ============================
@@ -188,7 +269,7 @@ switch ($action) {
                 SELECT c.*,
                        COALESCE(u.nombre, l.nombre) AS nombre,
                        COALESCE(u.usuario, l.usuario) AS usuario,
-                       COALESCE(ua.imagen, la.imagen) AS avatar_img,
+                       COALESCE(u.foto_personal, ua.imagen, la.imagen) AS avatar_img,
                        IF(c.usuario_id IS NOT NULL, 1, 0) AS es_editor
                 FROM comentarios c
                 LEFT JOIN lectores l ON c.lector_id = l.id
@@ -237,6 +318,77 @@ switch ($action) {
         if (!$original) {
             echo json_encode(['ok' => false, 'msg' => 'No puedes editar este comentario.']);
             exit;
+        }
+
+        // ============================
+        // FILTRO DE CENSURA Y BANEO AUTOMÁTICO EN EDICIÓN
+        // ============================
+        if (esContenidoInapropiado($contenido, $con)) {
+            if ($tipoUsuario === 'lector' && $lectorId) {
+                // Registrar notificación de intento ofensivo en edición
+                crearNotificacion($con, 'lector', $lectorId, 'Comentario bloqueado por lenguaje ofensivo', 'Intentaste editar un comentario con lenguaje no permitido. Por favor respeta nuestras normas.', 'comentario_ofensivo');
+
+                // Incrementar intentos profanos
+                $stmtInc = $con->prepare("UPDATE lectores SET intentos_profanos = intentos_profanos + 1 WHERE id = ?");
+                $stmtInc->bind_param("i", $lectorId);
+                $stmtInc->execute();
+
+                // Consultar intentos actuales
+                $stmtGet = $con->prepare("SELECT intentos_profanos FROM lectores WHERE id = ?");
+                $stmtGet->bind_param("i", $lectorId);
+                $stmtGet->execute();
+                $lectorData = $stmtGet->get_result()->fetch_assoc();
+                $intentos = $lectorData['intentos_profanos'] ?? 0;
+
+                // Contar cuántas notificaciones de comentario ofensivo tiene
+                $stmtNotifCount = $con->prepare("SELECT COUNT(*) as total FROM notificaciones WHERE user_id = ? AND tipo_usuario = 'lector' AND tipo = 'comentario_ofensivo'");
+                $stmtNotifCount->bind_param("i", $lectorId);
+                $stmtNotifCount->execute();
+                $resNotif = $stmtNotifCount->get_result()->fetch_assoc();
+                $totalNotifOfensivo = $resNotif ? (int)$resNotif['total'] : 0;
+
+                if ($totalNotifOfensivo >= 5 || $intentos >= 3) {
+                    // Suspender por 24 horas
+                    $baneadoHasta = date('Y-m-d H:i:s', strtotime('+24 hours'));
+                    $motivo = ($totalNotifOfensivo >= 5) 
+                        ? "Acumulación de 5 notificaciones de comentario ofensivo en edición" 
+                        : "Intento reiterado de publicar contenido obsceno en edición";
+                    
+                    $stmtBan = $con->prepare("UPDATE lectores SET baneado_hasta = ?, baneado_permanente = 0, baneado_motivo = ?, intentos_profanos = 0 WHERE id = ?");
+                    $stmtBan->bind_param("ssi", $baneadoHasta, $motivo, $lectorId);
+                    $stmtBan->execute();
+
+                    // Crear notificación interna de suspensión
+                    crearNotificacion($con, 'lector', $lectorId, 'Cuenta Suspendida', 'Tu cuenta ha sido suspendida temporalmente por 24 horas por infringir nuestras normas de convivencia con lenguaje ofensivo.', 'moderacion');
+
+                    echo json_encode([
+                        'ok' => false,
+                        'msg' => ($totalNotifOfensivo >= 5)
+                            ? 'Tu cuenta ha sido suspendida temporalmente por 24 horas debido a acumular 5 notificaciones de comentarios ofensivos.'
+                            : 'Tu cuenta ha sido suspendida temporalmente por 24 horas debido a intentos reiterados de publicar contenido ofensivo.'
+                    ]);
+                    exit;
+                } else {
+                    echo json_encode([
+                        'ok' => false,
+                        'msg' => "Edición bloqueada por lenguaje inapropiado. Advertencia: Tienes {$totalNotifOfensivo} de 5 advertencias antes de suspender tu cuenta."
+                    ]);
+                    exit;
+                }
+            } else {
+                echo json_encode([
+                    'ok' => false,
+                    'msg' => 'Edición bloqueada por lenguaje ofensivo.'
+                ]);
+                exit;
+            }
+        } else {
+            // Si el comentario es limpio, resetear intentos del lector
+            if ($tipoUsuario === 'lector' && $lectorId) {
+                $stmtReset = $con->prepare("UPDATE lectores SET intentos_profanos = 0 WHERE id = ?");
+                $stmtReset->bind_param("i", $lectorId);
+                $stmtReset->execute();
+            }
         }
 
         // Guardar historial de edición

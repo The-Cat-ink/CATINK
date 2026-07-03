@@ -66,8 +66,8 @@ if($imagen){
     imagedestroy($imagen);
     $foto_personal = 'uploads/editores/' . $nombreArchivo;
     
-    // Actualizar en BD
-    $stmt = $con->prepare("UPDATE usuarios SET foto_personal = ? WHERE usuario = ?");
+    // Actualizar en BD y limpiar avatar_id
+    $stmt = $con->prepare("UPDATE usuarios SET foto_personal = ?, avatar_id = NULL WHERE usuario = ?");
     $stmt->bind_param("ss", $foto_personal, $usuario);
     $stmt->execute();
     

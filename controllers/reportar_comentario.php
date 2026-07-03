@@ -37,6 +37,44 @@ $stmt = $con->prepare("INSERT INTO reportes_comentarios (comentario_id, lector_i
 $stmt->bind_param("iis", $comentarioId, $lectorId, $motivo);
 
 if ($stmt->execute()) {
+    // Buscar al autor del comentario reportado para ver si acumuló más de 5 reportes
+    $stmtAuthor = $con->prepare("SELECT lector_id FROM comentarios WHERE id_comentario = ?");
+    $stmtAuthor->bind_param("i", $comentarioId);
+    $stmtAuthor->execute();
+    $resAuthor = $stmtAuthor->get_result()->fetch_assoc();
+    $autorLectorId = $resAuthor ? $resAuthor['lector_id'] : null;
+
+    if ($autorLectorId) {
+        $stmtCount = $con->prepare("
+            SELECT COUNT(r.id_reporte) AS total
+            FROM reportes_comentarios r
+            INNER JOIN comentarios c ON r.comentario_id = c.id_comentario
+            WHERE c.lector_id = ?
+        ");
+        $stmtCount->bind_param("i", $autorLectorId);
+        $stmtCount->execute();
+        $resCount = $stmtCount->get_result()->fetch_assoc();
+        $totalReportes = $resCount ? (int)$resCount['total'] : 0;
+
+        if ($totalReportes > 5) {
+            // Suspender cuenta por 24 horas
+            $baneadoHasta = date('Y-m-d H:i:s', strtotime('+24 hours'));
+            $motivoBan = "Baneo automático: cuenta acumuló más de 5 reportes en sus comentarios";
+            
+            $stmtBan = $con->prepare("UPDATE lectores SET baneado_hasta = ?, baneado_permanente = 0, baneado_motivo = ? WHERE id = ?");
+            $stmtBan->bind_param("ssi", $baneadoHasta, $motivoBan, $autorLectorId);
+            $stmtBan->execute();
+
+            // Registrar notificación de suspensión
+            crearNotificacion($con, 'lector', $autorLectorId, 'Cuenta Suspendida', 'Tu cuenta ha sido suspendida automáticamente por 24 horas debido a que tus comentarios han acumulado más de 5 reportes por parte de la comunidad.', 'moderacion');
+
+            // Ocultar todos sus comentarios activos de forma preventiva
+            $stmtHide = $con->prepare("UPDATE comentarios SET estado = 'oculto' WHERE lector_id = ? AND estado = 'activo'");
+            $stmtHide->bind_param("i", $autorLectorId);
+            $stmtHide->execute();
+        }
+    }
+
     echo json_encode(['ok' => true, 'msg' => 'Reporte enviado. Será revisado por el equipo.']);
 } else {
     echo json_encode(['ok' => false, 'msg' => 'Error al enviar el reporte.']);
