@@ -58,7 +58,7 @@ if ($esSuper) {
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 12px;">
-        <h1 style="margin:0;">Gestión de Usuarios</h1>
+        <h1 style="margin:0;">Gestión de administradores/editores</h1>
         <form method="GET" class="admin-search-form" style="display:flex; align-items:center; gap:8px;">
             <i class="bi bi-search admin-search-icon"></i>
             <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar por nombre, usuario o email..." class="admin-search-input">
@@ -104,7 +104,7 @@ if ($esSuper) {
         </div>
         <div class="contenidos-actions">
             <?php if ($ACL['crear']): ?>
-                <a href="./crearu.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear Usuario</a>
+                <a href="./crearu.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear nuevo</a>
             <?php endif; ?>
         </div>
     </div>

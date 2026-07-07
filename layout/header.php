@@ -50,6 +50,12 @@ if(isset($_SESSION['usuario']) && isset($_SESSION['tipo'])){
     if($usuarioActual){
         $fotoPersonal = $usuarioActual['foto_personal'] ?? null;
         $avatarActual = $usuarioActual['avatar_imagen'] ?? null;
+        if($tipo === 'lector'){
+            require_once(__DIR__ . "/../views/helpers/moderacion.php");
+            $lectorBaneado = estaBaneado($usuarioActual);
+            $lectorBanText = textoBaneo($usuarioActual);
+            $lectorApelado = (int)($usuarioActual['apelado'] ?? 0);
+        }
     }
 }
 // =========================
@@ -125,6 +131,331 @@ $menuJson = [
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
+
+<?php if (isset($_SESSION['usuario']) && isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector'): ?>
+  <!-- Estilos del Banner y Modal de Suspensión (Siempre disponibles para este tipo de usuario) -->
+  <style>
+  /* Estilos del Banner */
+  .ban-alert-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 900px;
+    background: linear-gradient(135deg, #EF3363 0%, #c12248 100%);
+    color: #ffffff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(239, 51, 99, 0.3);
+    z-index: 9999;
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ban-alert-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .ban-alert-text {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+  .ban-alert-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+  .ban-alert-btn {
+    background: #ffffff;
+    color: #EF3363;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .ban-alert-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    background: #fdfdfd;
+  }
+  
+  /* Estilos del Modal */
+  .appeal-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+  }
+  .appeal-modal-content {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.25);
+    animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .appeal-modal-content h3 {
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  
+  @keyframes slideUp {
+    from { transform: translate(-50%, 100px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes scaleUp {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  </style>
+
+  <!-- HTML inicial si ya está baneado al cargar la página -->
+  <?php if (!empty($lectorBaneado)): ?>
+    <div class="ban-alert-banner" id="banAlertBanner" data-turbo-permanent>
+      <div class="ban-alert-content">
+        <div class="ban-alert-text">
+          <i class="bi bi-exclamation-triangle-fill ban-alert-icon"></i>
+          <span>
+            <strong>Tu cuenta está suspendida.</strong> <?= htmlspecialchars($lectorBanText) ?>. 
+            <?php if (!empty($usuarioActual['baneado_motivo'])): ?>
+              Motivo: <em style="color: rgba(255,255,255,0.85);">"<?= htmlspecialchars($usuarioActual['baneado_motivo']) ?>"</em>.
+            <?php endif; ?>
+            <?php if ($lectorApelado === 0): ?>
+              Como es tu primera suspensión, tienes la oportunidad de apelar una única vez para recuperar el acceso de forma inmediata.
+            <?php else: ?>
+              Ya has utilizado tu única oportunidad de apelación.
+            <?php endif; ?>
+          </span>
+        </div>
+        <?php if ($lectorApelado === 0): ?>
+          <button type="button" class="ban-alert-btn" id="btnOpenAppeal" onclick="document.getElementById('modalApelar').style.display='flex'">Apelar ahora</button>
+        <?php endif; ?>
+      </div>
+    </div>
+
+    <?php if ($lectorApelado === 0): ?>
+      <!-- Modal de Apelación -->
+      <div id="modalApelar" class="appeal-modal" style="display:none;" data-turbo-permanent>
+        <div class="appeal-modal-content">
+          <h3 style="margin-top:0;"><i class="bi bi-shield-exclamation" style="color:var(--accent);"></i> Apelar Suspensión</h3>
+          <p style="margin: 10px 0 15px; font-size: 0.9rem; line-height: 1.4; color: var(--muted);">
+            Para ser desbaneado de forma inmediata y automática por única ocasión, debes aceptar nuestro reglamento escribiendo la palabra <strong>acepto</strong> a continuación:
+          </p>
+          <div style="margin-bottom:15px;">
+            <input type="text" id="appealInput" placeholder="Escribe 'acepto' aquí..." style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; background:var(--card-bg); color:var(--text); text-align:center; font-weight:bold;">
+            <p id="appealError" style="color:#EF3363; font-size:0.8rem; margin-top:5px; display:none; font-weight:600; text-align:center;">Debes escribir exactamente la palabra "acepto"</p>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="btn-perfil-save" style="background:var(--muted); padding: 8px 16px; font-size: 0.9rem; width: auto;" id="btnCancelAppeal" onclick="document.getElementById('modalApelar').style.display='none'">Cancelar</button>
+            <button type="button" id="btnConfirmAppeal" class="btn-perfil-save" style="padding: 8px 16px; font-size: 0.9rem; width: auto;"><i class="bi bi-check-circle"></i> Confirmar</button>
+          </div>
+        </div>
+      </div>
+    <?php endif; ?>
+  <?php endif; ?>
+
+  <!-- Script de Validación y Polling en Tiempo Real -->
+  <script>
+  function setupAppealScripts() {
+    const btnConfirm = document.getElementById('btnConfirmAppeal');
+    const input = document.getElementById('appealInput');
+    const err = document.getElementById('appealError');
+    const modal = document.getElementById('modalApelar');
+    const btnCancel = document.getElementById('btnCancelAppeal');
+    if (!btnConfirm || !input || !err || !modal) return;
+    
+    if (btnCancel) {
+      btnCancel.addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+    }
+    
+    if (!btnConfirm._hasListener) {
+      btnConfirm._hasListener = true;
+      
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+      
+      btnConfirm.addEventListener('click', async () => {
+        const val = input.value.trim().toLowerCase();
+        if (val !== 'acepto') {
+          err.style.display = 'block';
+          input.focus();
+          return;
+        }
+        err.style.display = 'none';
+        btnConfirm.disabled = true;
+        
+        try {
+          const res = await fetch('<?= basePath() ?>/controllers/apelar_lector.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+          });
+          const data = await res.json();
+          if (data.success) {
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+              container = document.createElement('div');
+              container.className = 'toast-container';
+              document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg toast-success';
+            toast.textContent = data.success;
+            container.appendChild(toast);
+            
+            modal.style.display = 'none';
+            setTimeout(() => {
+              location.reload();
+            }, 1500);
+          } else {
+            alert(data.error || 'No se pudo procesar la apelación.');
+            btnConfirm.disabled = false;
+          }
+        } catch(e) {
+          alert('Error de red al intentar apelar.');
+          btnConfirm.disabled = false;
+        }
+      });
+    }
+  }
+
+  document.addEventListener('turbo:load', () => {
+    // Evitar múltiples intervalos
+    if (window.banCheckInterval) {
+      clearInterval(window.banCheckInterval);
+    }
+    
+    setupAppealScripts();
+    
+    // Si ya existe el botón en la página inicializada por PHP, le enlazamos evento
+    const btnOpenInit = document.getElementById('btnOpenAppeal');
+    if (btnOpenInit) {
+      btnOpenInit.addEventListener('click', () => {
+        const m = document.getElementById('modalApelar');
+        if (m) m.style.display = 'flex';
+      });
+    }
+    
+    const checkBanStatus = async () => {
+      try {
+        const res = await fetch('<?= basePath() ?>/controllers/consultar_baneo.php');
+        const data = await res.json();
+        
+        if (data.banned) {
+          let banner = document.getElementById('banAlertBanner');
+          if (!banner) {
+            // Crear banner
+            banner = document.createElement('div');
+            banner.className = 'ban-alert-banner';
+            banner.id = 'banAlertBanner';
+            banner.setAttribute('data-turbo-permanent', '');
+            
+            const motivoHtml = data.motivo ? ` Motivo: <em style="color: rgba(255,255,255,0.85);">"${data.motivo}"</em>.` : '';
+            const apeladoMsg = data.apelado === 0 
+              ? 'Como es tu primera suspensión, tienes la oportunidad de apelar una única vez para recuperar el acceso de forma inmediata.'
+              : 'Ya has utilizado tu única oportunidad de apelación.';
+            
+            const appealBtn = data.apelado === 0
+              ? `<button type="button" class="ban-alert-btn" id="btnOpenAppeal">Apelar ahora</button>`
+              : '';
+              
+            banner.innerHTML = `
+              <div class="ban-alert-content">
+                <div class="ban-alert-text">
+                  <i class="bi bi-exclamation-triangle-fill ban-alert-icon"></i>
+                  <span>
+                    <strong>Tu cuenta está suspendida.</strong> ${data.ban_text}.${motivoHtml} ${apeladoMsg}
+                  </span>
+                </div>
+                ${appealBtn}
+              </div>
+            `;
+            document.body.appendChild(banner);
+            
+            // Vincular el botón dinámico de apertura
+            const btnOpen = document.getElementById('btnOpenAppeal');
+            if (btnOpen) {
+              btnOpen.addEventListener('click', () => {
+                const m = document.getElementById('modalApelar');
+                if (m) m.style.display = 'flex';
+              });
+            }
+          }
+          
+          if (data.apelado === 0) {
+            let modal = document.getElementById('modalApelar');
+            if (!modal) {
+              modal = document.createElement('div');
+              modal.id = 'modalApelar';
+              modal.className = 'appeal-modal';
+              modal.style.display = 'none';
+              modal.setAttribute('data-turbo-permanent', '');
+              modal.innerHTML = `
+                <div class="appeal-modal-content">
+                  <h3 style="margin-top:0;"><i class="bi bi-shield-exclamation" style="color:var(--accent);"></i> Apelar Suspensión</h3>
+                  <p style="margin: 10px 0 15px; font-size: 0.9rem; line-height: 1.4; color: var(--muted);">
+                    Para ser desbaneado de forma inmediata y automática por única ocasión, debes aceptar nuestro reglamento escribiendo la palabra <strong>acepto</strong> a continuación:
+                  </p>
+                  <div style="margin-bottom:15px;">
+                    <input type="text" id="appealInput" placeholder="Escribe 'acepto' aquí..." style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; background:var(--card-bg); color:var(--text); text-align:center; font-weight:bold;">
+                    <p id="appealError" style="color:#EF3363; font-size:0.8rem; margin-top:5px; display:none; font-weight:600; text-align:center;">Debes escribir exactamente la palabra "acepto"</p>
+                  </div>
+                  <div style="display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" class="btn-perfil-save" style="background:var(--muted); padding: 8px 16px; font-size: 0.9rem; width: auto;" id="btnCancelAppeal">Cancelar</button>
+                    <button type="button" id="btnConfirmAppeal" class="btn-perfil-save" style="padding: 8px 16px; font-size: 0.9rem; width: auto;"><i class="bi bi-check-circle"></i> Confirmar</button>
+                  </div>
+                </div>
+              `;
+              document.body.appendChild(modal);
+            }
+            setupAppealScripts();
+          }
+        } else {
+          // Si no está baneado, quitar banner y modal si existen
+          const banner = document.getElementById('banAlertBanner');
+          if (banner) banner.remove();
+          const modal = document.getElementById('modalApelar');
+          if (modal) modal.remove();
+        }
+      } catch(e) {
+        console.error("Error al consultar baneo:", e);
+      }
+    };
+    
+    checkBanStatus();
+    window.banCheckInterval = setInterval(checkBanStatus, 5000); // Polling cada 5 segundos
+  });
+  </script>
+<?php endif; ?>
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NT5RHZXX"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
