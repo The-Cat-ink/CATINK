@@ -175,7 +175,7 @@ $esperamos = $stmtEsp->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // 7. Lo más debatido
 $stmtCom = $con->prepare("
-    SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion AS fecha,
+    SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.crop4, n.fecha_publicacion AS fecha,
            u.nombre AS nombre_u, GROUP_CONCAT(c2.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias, COUNT(c.id_comentario) as total_comentarios
     FROM noticias n
     INNER JOIN usuarios u ON n.autor = u.id_u
@@ -702,7 +702,7 @@ function tiempoRelativo($fecha) {
                         if (isset($debatidasLeft[$i])): 
                             $row = $debatidasLeft[$i];
                             $url = newsUrlFromRow($row);
-                            $img = img([$row['crop3'], $row['crop1'], $row['crop2']]);
+                            $img = img([$row['crop3'], $row['crop1']]);
                     ?>
                         <!-- Tarjeta Pequeña -->
                         <div class="debatido-card-small" data-url="<?= $url ?>">
@@ -719,7 +719,7 @@ function tiempoRelativo($fecha) {
                 <?php if (isset($debatidasLeft[0])): 
                     $row = $debatidasLeft[0];
                     $url = newsUrlFromRow($row);
-                    $img = img([$row['crop2'], $row['crop1'], $row['crop3']]);
+                    $img = img([$row['crop4'], $row['crop2'], $row['crop1']]);
                 ?>
                     <!-- Tarjeta Grande -->
                     <div class="debatido-card-large" data-url="<?= $url ?>">

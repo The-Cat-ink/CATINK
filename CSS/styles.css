@@ -5107,7 +5107,8 @@ body, .nav-link, .btn, .card, .site-main {
 .debatido-card-large {
   position: relative;
   width: 100%;
-  aspect-ratio: 21/9;
+  height: auto;
+  aspect-ratio: 32/10;
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
@@ -5144,7 +5145,9 @@ body, .nav-link, .btn, .card, .site-main {
 }
 .debatido-card-small {
   position: relative;
-  aspect-ratio: 16/9;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16/10;
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;

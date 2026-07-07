@@ -294,49 +294,72 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 }
 .pv-tab-btn.active { background: var(--accent); color:#fff; border-color: var(--accent); }
 .pv-panel { display:none; }
-.pv-panel.active { display:block; }
+/* Ancho moderado y constante para que todas las previsualizaciones se vean al mismo tamaño */
+.pv-panel.active { display:block; max-width:520px; }
 /* Helpers */
 .pv-bg { width:100%; height:100%; background-size:cover; background-position:center; background-color: var(--border); }
 .pv-card { position:relative; border-radius:8px; overflow:hidden; background:var(--border); }
 .pv-overlay {
   position:absolute; inset:0;
-  background:linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.35) 45%, transparent 75%);
+  background:linear-gradient(to top, rgba(0,0,0,.9) 0%, rgba(0,0,0,.35) 45%, transparent 75%);
   display:flex; flex-direction:column; justify-content:flex-end; padding:8px; color:#fff;
 }
 .pv-tag { display:inline-block; background:var(--accent); color:#fff; font-size:7px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:2px 5px; border-radius:3px; margin-bottom:3px; align-self:flex-start; }
-.pv-title-txt { font-size:10px; font-weight:700; line-height:1.3; }
-.pv-desc-txt  { font-size:8px; color:rgba(255,255,255,.8); margin-top:2px; }
-.pv-label { font-size:9px; color:var(--muted); text-align:center; margin-top:3px; }
-/* ─ Hero ─ */
+.pv-title-txt { font-size:10px; font-weight:700; line-height:1.3; color:#fff; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.pv-desc-txt  { font-size:8px; color:rgba(255,255,255,.8); margin-top:2px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.pv-title-txt.dark { color:var(--text); }
+.pv-desc-txt.dark  { color:var(--muted); }
+.pv-label { font-size:9px; color:var(--muted); text-align:center; margin-top:6px; }
+.pv-meta  { font-size:8px; color:var(--muted); margin-top:auto; padding-top:4px; }
+
+/* Formas de tarjeta que replican el front real */
+.pv-wide   { aspect-ratio:32/10; }   /* card-width-2-3 (Top/Estrenos/Debatido grande) */
+.pv-square { aspect-ratio:16/10; }   /* card-width-1-3 (laterales/cuadradas) */
+
+/* ─ Principal / Hero ─ */
 .pv-hero { aspect-ratio:21/6; border-radius:8px; overflow:hidden; position:relative; }
 .pv-hero-overlay {
   position:absolute; inset:0;
-  /* Sin degradado: la imagen se ve tal cual como en el Inicio real. Sombra para legibilidad del texto. */
   display:flex; flex-direction:column; justify-content:center; padding:14px 18px;
   text-shadow: 0 1px 4px rgba(0,0,0,.85), 0 0 2px rgba(0,0,0,.6);
 }
 .pv-hero-overlay .pv-title-txt { font-size:14px; max-width:55%; }
 .pv-hero-overlay .pv-desc-txt  { font-size:10px; max-width:50%; margin-top:4px; color:rgba(255,255,255,.85); }
-/* ─ Top Semana ─ */
-.pv-top-grid { display:grid; grid-template-columns:2fr 1fr; gap:6px; }
-.pv-top-main { aspect-ratio:21/6; }
-.pv-top-side { aspect-ratio:7/5; }
-/* ─ Recientes ─ */
-.pv-rec-item { display:grid; grid-template-columns:220px 1fr; gap:16px; align-items:start; }
-.pv-rec-thumb { aspect-ratio:7/5; border-radius:8px; overflow:hidden; }
-.pv-rec-info { display:flex; flex-direction:column; gap:5px; padding-top:4px; }
-.pv-rec-title { font-size:15px; font-weight:700; color:var(--text); line-height:1.3; }
-.pv-rec-desc  { font-size:12px; color:var(--muted); }
-.pv-rec-meta  { font-size:11px; color:var(--muted); margin-top:2px; }
-/* ─ Otros (sidebar) ─ */
-.pv-side-cols { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
-.pv-side-head { font-size:11px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
-.pv-side-list { display:flex; flex-direction:column; gap:12px; }
-.pv-side-item { display:grid; grid-template-columns:72px 1fr; gap:12px; align-items:center; }
-.pv-side-circle { width:72px; height:72px; border-radius:50%; overflow:hidden; background:var(--border); }
-.pv-side-name { font-size:13px; font-weight:600; color:var(--text); line-height:1.3; }
-.preview-stub.short { width: 55%; }
-.preview-title-stub { height: 9px; background: var(--border); border-radius: 4px; }
+
+/* ─ Top Semanal / Estrenos: fila ancha + cuadrada ─ */
+.pv-top-grid { display:grid; grid-template-columns:2fr 1fr; gap:6px; align-items:stretch; }
+
+/* ─ Tarjeta horizontal (Reviews / Recientes) ─ */
+.pv-hcard { display:grid; grid-template-columns:210px 1fr; gap:14px; align-items:stretch;
+  background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px; }
+.pv-hcard-thumb { aspect-ratio:16/9; }
+.pv-hcard-body  { display:flex; flex-direction:column; gap:3px; padding:2px 4px; }
+.pv-hcard-body .pv-title-txt { font-size:12px; }
+.pv-hcard-body .pv-desc-txt  { font-size:9px; }
+.pv-badge { position:absolute; top:6px; right:6px; background:var(--accent); color:#fff;
+  font-size:9px; font-weight:800; padding:2px 7px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,.35); }
+
+/* ─ Estrenos: mini card horizontal ─ */
+.pv-est-small { display:grid; grid-template-columns:150px 1fr; gap:12px; margin-top:8px;
+  background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:8px; }
+.pv-est-thumb { aspect-ratio:16/9; }
+
+/* ─ Debatido (fondo oscuro como en el front) ─ */
+.pv-debatido-wrap { background:#0c0c13; border:1px solid rgba(255,255,255,.06); border-radius:10px; padding:10px; }
+.pv-debatido-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+.pv-chat { display:inline-flex; align-items:center; gap:3px; align-self:flex-start;
+  background:var(--accent); color:#fff; font-size:7px; font-weight:700; padding:2px 5px; border-radius:3px; margin-bottom:3px; }
+
+/* ─ Random: tarjeta vertical ─ */
+.pv-random-card  { max-width:230px; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--bg); }
+.pv-random-thumb { aspect-ratio:16/9; border-radius:0; }
+.pv-random-body  { padding:8px; display:flex; flex-direction:column; gap:3px; }
+
+/* En pantallas angostas, reducir el ancho de las miniaturas horizontales */
+@media (max-width: 520px) {
+  .pv-hcard     { grid-template-columns:140px 1fr; gap:10px; }
+  .pv-est-small { grid-template-columns:110px 1fr; }
+}
 
 /* ── EDITOR QUILL ── */
 .cn-editor-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: visible; }
@@ -661,14 +684,17 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
           <div class="preview-section" id="previewSection" style="display:none;">
             <div class="preview-section-title">Vista previa por sección</div>
             <div class="pv-tabs" id="pvTabs">
-              <button type="button" class="pv-tab-btn active" data-tab="hero">Inicio</button>
-              <button type="button" class="pv-tab-btn" data-tab="top">Top Semana</button>
-              <button type="button" class="pv-tab-btn" data-tab="rec">Recientes</button>
-              <button type="button" class="pv-tab-btn" data-tab="side">Otros</button>
+              <button type="button" class="pv-tab-btn active" data-tab="principal">Principal</button>
+              <button type="button" class="pv-tab-btn" data-tab="top">Top Semanal</button>
+              <button type="button" class="pv-tab-btn" data-tab="reviews">Reviews</button>
+              <button type="button" class="pv-tab-btn" data-tab="estrenos">Estrenos</button>
+              <button type="button" class="pv-tab-btn" data-tab="debatido">Debatido</button>
+              <button type="button" class="pv-tab-btn" data-tab="random">Random</button>
+              <button type="button" class="pv-tab-btn" data-tab="recientes">Recientes</button>
             </div>
 
-            <!-- Hero -->
-            <div class="pv-panel active" id="pv-hero">
+            <!-- Principal (Slider / Hero) -->
+            <div class="pv-panel active" id="pv-principal">
               <div class="pv-hero pv-card">
                 <div class="pv-bg" id="pvHeroBg"></div>
                 <div class="pv-hero-overlay">
@@ -677,68 +703,123 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
                   <div class="pv-desc-txt"  id="pvHeroDesc">Descripción corta del artículo...</div>
                 </div>
               </div>
+              <div class="pv-label">Slider principal &middot; banner 21:6</div>
             </div>
 
-            <!-- Top Semana -->
+            <!-- Top Semanal -->
             <div class="pv-panel" id="pv-top">
               <div class="pv-top-grid">
-                <div class="pv-card pv-top-main">
+                <div class="pv-card pv-wide">
                   <div class="pv-bg" id="pvTopMain"></div>
                   <div class="pv-overlay">
                     <span class="pv-tag" id="pvTopCat">CATEGORÍA</span>
                     <div class="pv-title-txt" id="pvTopTitle">Título de la noticia</div>
                   </div>
                 </div>
-                <div class="pv-card pv-top-side">
+                <div class="pv-card pv-square">
                   <div class="pv-bg" id="pvTopSide"></div>
                   <div class="pv-overlay">
-                    <div class="pv-title-txt" style="font-size:8px;color:rgba(255,255,255,.5)">Otra noticia</div>
+                    <div class="pv-title-txt" style="color:rgba(255,255,255,.55)">Otra noticia</div>
                   </div>
                 </div>
               </div>
-              <div class="pv-top-grid" style="margin-top:3px">
-                <div class="pv-label">Tu noticia (banner)</div>
-                <div class="pv-label">Siguiente noticia</div>
-              </div>
+              <div class="pv-label">Tu nota (ancha) &middot; nota lateral (cuadrada)</div>
             </div>
 
-            <!-- Recientes -->
-            <div class="pv-panel" id="pv-rec">
-              <div class="pv-rec-item">
-                <div class="pv-rec-thumb pv-card">
-                  <div class="pv-bg" id="pvRecThumb" style="height:100%;min-height:73px"></div>
+            <!-- Nuestras Reviews -->
+            <div class="pv-panel" id="pv-reviews">
+              <div class="pv-hcard">
+                <div class="pv-hcard-thumb pv-card">
+                  <div class="pv-bg" id="pvRevThumb"></div>
+                  <span class="pv-badge" id="pvRevBadge">8.5</span>
                 </div>
-                <div class="pv-rec-info">
+                <div class="pv-hcard-body">
+                  <span class="pv-tag" id="pvRevCat">CATEGORÍA</span>
+                  <div class="pv-title-txt dark" id="pvRevTitle">Título de la noticia</div>
+                  <div class="pv-desc-txt dark"  id="pvRevDesc">Descripción corta del artículo...</div>
+                  <div class="pv-meta">Publicado ahora &middot; Por ti</div>
+                </div>
+              </div>
+              <div class="pv-label">Nuestras Reviews &middot; miniatura 16:9 (con calificación)</div>
+            </div>
+
+            <!-- Próximos Estrenos -->
+            <div class="pv-panel" id="pv-estrenos">
+              <div class="pv-card pv-wide">
+                <div class="pv-bg" id="pvEstMain"></div>
+                <div class="pv-overlay">
+                  <span class="pv-tag" id="pvEstCat">CATEGORÍA</span>
+                  <div class="pv-title-txt" id="pvEstTitle">Título de la noticia</div>
+                </div>
+              </div>
+              <div class="pv-est-small">
+                <div class="pv-est-thumb pv-card"><div class="pv-bg" id="pvEstThumb"></div></div>
+                <div class="pv-hcard-body">
+                  <span class="pv-tag" id="pvEstSmallCat">CATEGORÍA</span>
+                  <div class="pv-title-txt dark" id="pvEstSmallTitle">Título de la noticia</div>
+                  <div class="pv-meta">Videojuegos / Anime</div>
+                </div>
+              </div>
+              <div class="pv-label">Estreno principal (ancha) &middot; videojuegos/anime (miniatura)</div>
+            </div>
+
+            <!-- Lo más debatido -->
+            <div class="pv-panel" id="pv-debatido">
+              <div class="pv-debatido-wrap">
+                <div class="pv-debatido-row">
+                  <div class="pv-card pv-square">
+                    <div class="pv-bg" id="pvDebSmall"></div>
+                    <div class="pv-overlay">
+                      <span class="pv-chat"><i class="bi bi-chat-fill"></i> 12</span>
+                      <div class="pv-title-txt" id="pvDebSmallTitle">Título de la noticia</div>
+                    </div>
+                  </div>
+                  <div class="pv-card pv-square">
+                    <div class="pv-bg" style="background:#181820"></div>
+                    <div class="pv-overlay">
+                      <span class="pv-chat"><i class="bi bi-chat-fill"></i> 5</span>
+                      <div class="pv-title-txt" style="color:rgba(255,255,255,.55)">Otra noticia</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="pv-card pv-wide">
+                  <div class="pv-bg" id="pvDebLarge"></div>
+                  <div class="pv-overlay">
+                    <span class="pv-chat"><i class="bi bi-chat-fill"></i> 18 comentarios</span>
+                    <div class="pv-title-txt" id="pvDebTitle">Título de la noticia</div>
+                  </div>
+                </div>
+              </div>
+              <div class="pv-label">2 cuadradas arriba &middot; 1 ancha abajo</div>
+            </div>
+
+            <!-- Lo más Random -->
+            <div class="pv-panel" id="pv-random">
+              <div class="pv-random-card">
+                <div class="pv-random-thumb pv-card"><div class="pv-bg" id="pvRandThumb"></div></div>
+                <div class="pv-random-body">
+                  <div class="pv-title-txt dark" id="pvRandTitle">Título de la noticia</div>
+                  <div class="pv-desc-txt dark"  id="pvRandDesc">Descripción corta del artículo...</div>
+                  <div class="pv-meta">ahora &middot; Por ti</div>
+                </div>
+              </div>
+              <div class="pv-label">Lo más Random &middot; tarjeta vertical 16:9</div>
+            </div>
+
+            <!-- Noticias recientes -->
+            <div class="pv-panel" id="pv-recientes">
+              <div class="pv-hcard">
+                <div class="pv-hcard-thumb pv-card">
+                  <div class="pv-bg" id="pvRecThumb"></div>
+                </div>
+                <div class="pv-hcard-body">
                   <span class="pv-tag" id="pvRecCat">CATEGORÍA</span>
-                  <div class="pv-rec-title" id="pvRecTitle">Título de la noticia</div>
-                  <div class="pv-rec-desc"  id="pvRecDesc">Descripción corta...</div>
-                  <div class="pv-rec-meta">Publicado ahora &middot; Por ti</div>
+                  <div class="pv-title-txt dark" id="pvRecTitle">Título de la noticia</div>
+                  <div class="pv-desc-txt dark"  id="pvRecDesc">Descripción corta del artículo...</div>
+                  <div class="pv-meta">Publicado ahora &middot; Por ti</div>
                 </div>
               </div>
-            </div>
-
-            <!-- Sidebar -->
-            <div class="pv-panel" id="pv-side">
-              <div class="pv-side-cols">
-                <div>
-                  <div class="pv-side-head">⏰ Lo más nuevo</div>
-                  <div class="pv-side-list">
-                    <div class="pv-side-item">
-                      <div class="pv-side-circle"><div class="pv-bg" id="pvSide1"></div></div>
-                      <div class="pv-side-name" id="pvSideTitle1">Título de la noticia</div>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <div class="pv-side-head">🔥 Lo más popular</div>
-                  <div class="pv-side-list">
-                    <div class="pv-side-item">
-                      <div class="pv-side-circle"><div class="pv-bg" id="pvSide2"></div></div>
-                      <div class="pv-side-name" id="pvSideTitle2">Título de la noticia</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <div class="pv-label">Noticias recientes &middot; miniatura 16:9</div>
             </div>
 
           </div>
@@ -887,6 +968,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const tCount = document.getElementById('tituloCount');
   titulo?.addEventListener('input', () => { tCount.textContent = titulo.value.length; updateAllPreviews(); });
   document.getElementById('descripcion')?.addEventListener('input', updateAllPreviews);
+  // Refrescar la vista previa cuando cambia el tipo/calificación (badge de Reviews)
+  document.getElementById('tipo_publicacion')?.addEventListener('change', updateAllPreviews);
+  document.getElementById('calificacion')?.addEventListener('input', updateAllPreviews);
 
   const desc   = document.getElementById('descripcion');
   const dCount = document.getElementById('descCount');
@@ -959,6 +1043,7 @@ document.addEventListener('DOMContentLoaded', () => {
       inp.type = 'hidden'; inp.name = 'categoria[]'; inp.value = c.dataset.id;
       catInputs.appendChild(inp);
     });
+    updateAllPreviews();
   }
   function updateCatLabel() {
     const count = catChips.querySelectorAll('.cn-chip').length;
@@ -1472,40 +1557,57 @@ function setPvBg(id, data64) {
 function updateAllPreviews() {
   const c2 = document.getElementById('crop2').value;
   const c3 = document.getElementById('crop3').value;
+  const c4 = document.getElementById('crop4').value;
   const title = document.getElementById('titulo')?.value.trim() || 'Título de la noticia';
   const desc  = document.getElementById('descripcion')?.value.trim() || 'Descripción corta del artículo...';
   const catEl = document.querySelector('#catChips .cn-chip-name');
   const cat   = catEl ? catEl.textContent.trim().toUpperCase() : 'CATEGORÍA';
 
-  // Hero (usa crop2)
-  setPvBg('pvHeroBg', c2);
-  ['pvHeroTitle'].forEach(id => { const e=document.getElementById(id); if(e) e.textContent = title; });
-  ['pvHeroDesc'].forEach(id =>  { const e=document.getElementById(id); if(e) e.textContent = desc;  });
-  ['pvHeroCat'].forEach(id =>   { const e=document.getElementById(id); if(e) e.textContent = cat;   });
+  // Mapeo de recortes tal como los usa el index real:
+  const cWide  = c4 || c2 || c3;   // tarjetas anchas   → img([crop4, crop2, crop1])
+  const cThumb = c3 || c2;         // miniaturas/cuadr. → img([crop3, crop1])
+  const cHero  = c2 || c3;         // slider principal  → img([crop2, crop1])
 
-  // Top Semana (banner = crop2, side = crop3)
-  setPvBg('pvTopMain', c2);
-  setPvBg('pvTopSide', c3);
-  const topTitle = document.getElementById('pvTopTitle');
-  if (topTitle) topTitle.textContent = title;
-  const topCat = document.getElementById('pvTopCat');
-  if (topCat) topCat.textContent = cat;
+  const setTxt = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
 
-  // Recientes (usa crop3)
-  setPvBg('pvRecThumb', c3);
-  const recTitle = document.getElementById('pvRecTitle');
-  if (recTitle) recTitle.textContent = title;
-  const recDesc = document.getElementById('pvRecDesc');
-  if (recDesc) recDesc.textContent = desc;
-  const recCat = document.getElementById('pvRecCat');
-  if (recCat) recCat.textContent = cat;
+  // Principal (Hero / Slider)
+  setPvBg('pvHeroBg', cHero);
+  setTxt('pvHeroCat', cat); setTxt('pvHeroTitle', title); setTxt('pvHeroDesc', desc);
 
-  // Sidebar (usa crop3)
-  setPvBg('pvSide1', c3);
-  setPvBg('pvSide2', c3);
-  ['pvSideTitle1','pvSideTitle2'].forEach(id => {
-    const e = document.getElementById(id); if(e) e.textContent = title;
-  });
+  // Top Semanal (ancha + cuadrada)
+  setPvBg('pvTopMain', cWide);
+  setPvBg('pvTopSide', cThumb);
+  setTxt('pvTopCat', cat); setTxt('pvTopTitle', title);
+
+  // Nuestras Reviews (miniatura + badge de calificación)
+  setPvBg('pvRevThumb', cThumb);
+  setTxt('pvRevCat', cat); setTxt('pvRevTitle', title); setTxt('pvRevDesc', desc);
+  const badge = document.getElementById('pvRevBadge');
+  if (badge) {
+    const esReview = document.getElementById('tipo_publicacion')?.value === 'review';
+    const calif    = parseFloat(document.getElementById('calificacion')?.value);
+    if (esReview && !isNaN(calif)) { badge.textContent = calif.toFixed(1); badge.style.display = ''; }
+    else { badge.style.display = 'none'; }
+  }
+
+  // Próximos Estrenos (ancha + miniatura)
+  setPvBg('pvEstMain', cWide);
+  setPvBg('pvEstThumb', cThumb);
+  setTxt('pvEstCat', cat); setTxt('pvEstTitle', title);
+  setTxt('pvEstSmallCat', cat); setTxt('pvEstSmallTitle', title);
+
+  // Lo más debatido (cuadrada + ancha)
+  setPvBg('pvDebSmall', cThumb);
+  setPvBg('pvDebLarge', cWide);
+  setTxt('pvDebSmallTitle', title); setTxt('pvDebTitle', title);
+
+  // Lo más Random (vertical)
+  setPvBg('pvRandThumb', cThumb);
+  setTxt('pvRandTitle', title); setTxt('pvRandDesc', desc);
+
+  // Noticias recientes (miniatura)
+  setPvBg('pvRecThumb', cThumb);
+  setTxt('pvRecCat', cat); setTxt('pvRecTitle', title); setTxt('pvRecDesc', desc);
 }
 
 /* ── TABS DE VISTA PREVIA ── */

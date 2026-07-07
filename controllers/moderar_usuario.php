@@ -3,6 +3,7 @@ session_start();
 header('Content-Type: application/json');
 require_once(__DIR__ . '/../data/conexion.php');
 require_once(__DIR__ . '/../views/helpers/helper.php');
+require_once(__DIR__ . '/../views/helpers/urlhelper.php');
 require_once(__DIR__ . '/../views/helpers/moderacion.php');
 
 // ============================
@@ -28,28 +29,41 @@ if ($action === 'listar_activos') {
     $q      = trim($_POST['q'] ?? '');
     $like   = '%' . $q . '%';
     $limite = 25; // por tipo
-    $activo = "(baneado_permanente = 0 AND (baneado_hasta IS NULL OR baneado_hasta <= NOW()))";
+    // Condición de "activo" (no baneado); se califica con el alias de cada consulta
+    $activo = fn($t) => "($t.baneado_permanente = 0 AND ($t.baneado_hasta IS NULL OR $t.baneado_hasta <= NOW()))";
     $out    = [];
 
-    // --- Lectores activos ---
-    $sqlL = "SELECT id, nombre, usuario FROM lectores WHERE $activo";
-    if ($q !== '') $sqlL .= " AND (nombre LIKE ? OR usuario LIKE ? OR correo LIKE ?)";
-    $sqlL .= " ORDER BY id DESC LIMIT $limite";
+    // --- Lectores activos (con su avatar del catálogo) ---
+    $sqlL = "SELECT l.id, l.nombre, l.usuario, a.imagen AS avatar_img
+             FROM lectores l
+             LEFT JOIN avatares_perfil a ON a.id_avatar = l.avatar_id
+             WHERE {$activo('l')}";
+    if ($q !== '') $sqlL .= " AND (l.nombre LIKE ? OR l.usuario LIKE ? OR l.correo LIKE ?)";
+    $sqlL .= " ORDER BY l.id DESC LIMIT $limite";
     $stmt = @$con->prepare($sqlL);
     if ($stmt) {
         if ($q !== '') $stmt->bind_param("sss", $like, $like, $like);
         if ($stmt->execute()) {
             $res = $stmt->get_result();
             while ($r = $res->fetch_assoc()) {
-                $out[] = ['tipo' => 'lector', 'id' => (int)$r['id'], 'nombre' => $r['nombre'], 'usuario' => $r['usuario']];
+                $out[] = [
+                    'tipo'    => 'lector',
+                    'id'      => (int)$r['id'],
+                    'nombre'  => $r['nombre'],
+                    'usuario' => $r['usuario'],
+                    'avatar'  => !empty($r['avatar_img']) ? imageUrl($r['avatar_img']) : null,
+                ];
             }
         }
     }
 
     // --- Admins/editores activos (excluye superadmins y a uno mismo) ---
-    $sqlA = "SELECT * FROM usuarios WHERE $activo";
-    if ($q !== '') $sqlA .= " AND (nombre LIKE ? OR usuario LIKE ? OR correo LIKE ?)";
-    $sqlA .= " ORDER BY id_u DESC LIMIT $limite";
+    $sqlA = "SELECT u.*, COALESCE(NULLIF(u.foto_personal, ''), a.imagen) AS avatar_img
+             FROM usuarios u
+             LEFT JOIN avatares_perfil a ON a.id_avatar = u.avatar_id
+             WHERE {$activo('u')}";
+    if ($q !== '') $sqlA .= " AND (u.nombre LIKE ? OR u.usuario LIKE ? OR u.correo LIKE ?)";
+    $sqlA .= " ORDER BY u.id_u DESC LIMIT $limite";
     $stmt = @$con->prepare($sqlA);
     if ($stmt) {
         if ($q !== '') $stmt->bind_param("sss", $like, $like, $like);
@@ -58,7 +72,13 @@ if ($action === 'listar_activos') {
             while ($r = $res->fetch_assoc()) {
                 if (esSuperAdmin($r)) continue;
                 if (isset($_SESSION['usuario']) && $r['usuario'] === $_SESSION['usuario']) continue;
-                $out[] = ['tipo' => 'admin', 'id' => (int)$r['id_u'], 'nombre' => $r['nombre'], 'usuario' => $r['usuario']];
+                $out[] = [
+                    'tipo'    => 'admin',
+                    'id'      => (int)$r['id_u'],
+                    'nombre'  => $r['nombre'],
+                    'usuario' => $r['usuario'],
+                    'avatar'  => !empty($r['avatar_img']) ? imageUrl($r['avatar_img']) : null,
+                ];
             }
         }
     }

@@ -81,7 +81,7 @@ $_SESSION['id_u'] = $fila['id_u'];
   <?php
   // Vistas con JS inline no idempotente para Turbo (init en DOMContentLoaded,
   // const de nivel superior) → forzar recarga completa al navegar hacia ellas.
-  $turboReloadPages = ['crear', 'editar'];
+  $turboReloadPages = ['crear', 'editar', 'usuarios'];
   if (in_array($archivoActual, $turboReloadPages, true)): ?>
   <meta name="turbo-visit-control" content="reload">
   <?php endif; ?>
