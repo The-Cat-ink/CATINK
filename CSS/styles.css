@@ -5487,6 +5487,10 @@ body, .nav-link, .btn, .card, .site-main {
   overflow: hidden;
 }
 
+[data-bs-theme="dark"] .review-verdict-card {
+  --card-bg: #1E2530;
+}
+
 .review-verdict-card::before {
   content: '';
   position: absolute;
