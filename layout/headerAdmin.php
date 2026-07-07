@@ -19,6 +19,7 @@ $mapVistaModulo = [
     'publicidad' => 'publicidad',
     'suscripciones' => 'suscripciones',
     'usuarios' => 'usuarios',
+    'lectores' => 'usuarios',
     'correos' => 'correos',
     'videos' => 'videos'
 ];
@@ -169,6 +170,11 @@ $_SESSION['id_u'] = $fila['id_u'];
             <li class="sidebar-menu-item">
                 <a href="./usuarios.php" class="sidebar-menu-link" data-tooltip="Usuarios">
                     <i class="bi bi-person"></i> <span class="sb-label">Usuarios</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="./lectores.php" class="sidebar-menu-link" data-tooltip="Lectores">
+                    <i class="bi bi-person-badge"></i> <span class="sb-label">Lectores</span>
                 </a>
             </li>
         <?php endif; ?>
