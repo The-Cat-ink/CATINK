@@ -36,3 +36,9 @@ desktop.ini
 # Caché
 cache/
 
+# Archivos de prueba/test (no deben subirse al repositorio)
+test_*.php
+test-*.php
+*_test.php
+tests/
+
