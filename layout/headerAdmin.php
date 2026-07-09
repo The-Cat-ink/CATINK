@@ -82,7 +82,11 @@ $_SESSION['id_u'] = $fila['id_u'];
   <?php
   // Vistas con JS inline no idempotente para Turbo (init en DOMContentLoaded,
   // const de nivel superior) → forzar recarga completa al navegar hacia ellas.
-  $turboReloadPages = ['crear', 'editar', 'usuarios'];
+  $turboReloadPages = [
+      'admin', 'crear', 'crearp', 'crearu', 'editar', 'editarp', 'editaru',
+      'cats', 'contenidos', 'recomendados', 'esperamos', 'publicidad',
+      'correos', 'suscripciones', 'usuarios', 'lectores', 'videos', 'avatares'
+  ];
   if (in_array($archivoActual, $turboReloadPages, true)): ?>
   <meta name="turbo-visit-control" content="reload">
   <?php endif; ?>
@@ -168,8 +172,8 @@ $_SESSION['id_u'] = $fila['id_u'];
         <?php endif; ?>
         <?php if (($_SESSION['ACL']['usuarios']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
-                <a href="./usuarios.php" class="sidebar-menu-link" data-tooltip="Usuarios">
-                    <i class="bi bi-person"></i> <span class="sb-label">Usuarios</span>
+                <a href="./usuarios.php" class="sidebar-menu-link" data-tooltip="Administradores/Editores">
+                    <i class="bi bi-person"></i> <span class="sb-label">Administradores/Editores</span>
                 </a>
             </li>
             <li class="sidebar-menu-item">

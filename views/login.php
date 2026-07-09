@@ -79,7 +79,8 @@ if ($tempRegistro) {
                 '3' => 'El nombre de usuario ya existe.',
                 '4' => 'El correo ya está registrado.',
                 '5' => 'Error al registrar. Intenta de nuevo.',
-                '6' => 'Debes aceptar los términos y condiciones.'
+                '6' => 'Debes aceptar los términos y condiciones.',
+                '7' => 'La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un número.'
               ];
               echo $errores[$_GET['reg_error']] ?? 'Error desconocido.';
             ?>
@@ -189,11 +190,11 @@ if ($tempRegistro) {
             <h6 class="text-center" style="margin-bottom:12px; font-weight:600;">Crea tu contraseña</h6>
             <div class="form-group">
               <label for="reg_pass">Contraseña</label>
-              <input type="password" id="reg_pass" name="pass" class="input" placeholder="Mínimo 6 caracteres..." minlength="6" required>
+              <input type="password" id="reg_pass" name="pass" class="input" placeholder="Mínimo 8 caracteres (A-Z, a-z, 0-9)..." minlength="8" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$" title="Debe contener mínimo 8 caracteres, incluyendo al menos una mayúscula, una minúscula y un número." required>
             </div>
             <div class="form-group">
               <label for="reg_pass2">Confirmar</label>
-              <input type="password" id="reg_pass2" name="pass2" class="input" placeholder="Repite tu contraseña..." minlength="6" required>
+              <input type="password" id="reg_pass2" name="pass2" class="input" placeholder="Repite tu contraseña..." minlength="8" required>
             </div>
             <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:12px;">
               <input type="checkbox" id="recibir_correos" name="recibir_correos" style="width:16px; height:16px; accent-color:var(--accent); margin-top:2px; cursor:pointer;" checked>
@@ -267,12 +268,58 @@ function showPanel(panel){
 
 // Registro steps
 let currentStep = 1;
-function goToStep(n){
+async function goToStep(n){
   if(n > currentStep){
     const cur = document.getElementById('step'+currentStep);
-    const inputs = cur.querySelectorAll('input[required]');
+    const inputs = cur.querySelectorAll('input[required], select[required]');
+    
+    // Primero limpiamos cualquier error de validación personalizado previo
+    for(let inp of inputs){
+      inp.setCustomValidity("");
+    }
+    
     for(let inp of inputs){
       if(!inp.reportValidity()) return;
+    }
+
+    // VALIDACIÓN ASÍNCRONA PASO 1 (Usuario)
+    if (currentStep === 1) {
+      const userInp = document.getElementById('reg_usuario');
+      if (userInp) {
+        userInp.setCustomValidity(""); // Reset
+        const val = userInp.value.trim();
+        try {
+          const res = await fetch(`<?= basePath() ?>/controllers/validar_registro.php?usuario=${encodeURIComponent(val)}`);
+          const data = await res.json();
+          if (data.exists) {
+            userInp.setCustomValidity(data.message);
+            userInp.reportValidity();
+            return;
+          }
+        } catch(e) {
+          console.error("Error al validar usuario:", e);
+        }
+      }
+    }
+
+    // VALIDACIÓN ASÍNCRONA PASO 3 (Correo)
+    if (currentStep === 3) {
+      const emailInp = document.getElementById('correo');
+      if (emailInp) {
+        emailInp.setCustomValidity(""); // Reset
+        const val = emailInp.value.trim();
+        try {
+          const res = await fetch(`<?= basePath() ?>/controllers/validar_registro.php?correo=${encodeURIComponent(val)}`);
+          const data = await res.json();
+          if (data.exists) {
+            emailInp.setCustomValidity(data.message);
+            emailInp.reportValidity();
+            return;
+          }
+        } catch(e) {
+          console.error("Error al validar correo:", e);
+        }
+      }
     }
   }
   currentStep = n;
@@ -295,6 +342,20 @@ document.getElementById('regForm').addEventListener('keydown', function(e){
 document.querySelectorAll('.step-dot').forEach((dot, i) => {
   dot.addEventListener('click', ()=> goToStep(i+1));
 });
+
+// Limpiar la validación conforme el usuario escribe
+const regUsuarioInput = document.getElementById('reg_usuario');
+if (regUsuarioInput) {
+  regUsuarioInput.addEventListener('input', () => {
+    regUsuarioInput.setCustomValidity("");
+  });
+}
+const regCorreoInput = document.getElementById('correo');
+if (regCorreoInput) {
+  regCorreoInput.addEventListener('input', () => {
+    regCorreoInput.setCustomValidity("");
+  });
+}
 
 <?php if($showRegistro): ?>
 showPanel('registro');

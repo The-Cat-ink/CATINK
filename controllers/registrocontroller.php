@@ -41,8 +41,14 @@ if ($pass !== $pass2) {
     exit;
 }
 
+// Validar complejidad de contraseña (Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número)
+if (strlen($pass) < 8 || !preg_match('/[A-Z]/', $pass) || !preg_match('/[a-z]/', $pass) || !preg_match('/\d/', $pass)) {
+    header('Location: ' . basePath() . '/login?modo=registro&reg_error=7');
+    exit;
+}
+
 // ============================
-// VERIFICAR DUPLICADOS EN LECTORES
+// VERIFICAR DUPLICADOS EN LECTORES Y USUARIOS (ADMINS)
 // ============================
 $stmt = $con->prepare("SELECT id FROM lectores WHERE usuario = ?");
 $stmt->bind_param("s", $usuario);
@@ -52,7 +58,23 @@ if ($stmt->get_result()->num_rows > 0) {
     exit;
 }
 
+$stmt = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ?");
+$stmt->bind_param("s", $usuario);
+$stmt->execute();
+if ($stmt->get_result()->num_rows > 0) {
+    header('Location: ' . basePath() . '/login?modo=registro&reg_error=3');
+    exit;
+}
+
 $stmt = $con->prepare("SELECT id FROM lectores WHERE correo = ?");
+$stmt->bind_param("s", $correo);
+$stmt->execute();
+if ($stmt->get_result()->num_rows > 0) {
+    header('Location: ' . basePath() . '/login?modo=registro&reg_error=4');
+    exit;
+}
+
+$stmt = $con->prepare("SELECT id_u FROM usuarios WHERE correo = ?");
 $stmt->bind_param("s", $correo);
 $stmt->execute();
 if ($stmt->get_result()->num_rows > 0) {

@@ -26,14 +26,24 @@ if ($password !== $passConfirm) {
 }
 
 // ========================
-// Validar usuario existente
+// Validar usuario o correo existente en usuarios
 // ========================
-$stmt = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ?");
-$stmt->bind_param("s", $usuario);
+$stmt = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ? OR correo = ?");
+$stmt->bind_param("ss", $usuario, $email);
 $stmt->execute();
-
 if ($stmt->get_result()->num_rows > 0) {
-    echo json_encode(['error' => 'El nombre de usuario ya existe']);
+    echo json_encode(['error' => 'El nombre de usuario o correo electrónico ya está registrado como administrador/editor']);
+    exit;
+}
+
+// ========================
+// Validar usuario o correo existente en lectores
+// ========================
+$stmt = $con->prepare("SELECT id FROM lectores WHERE usuario = ? OR correo = ?");
+$stmt->bind_param("ss", $usuario, $email);
+$stmt->execute();
+if ($stmt->get_result()->num_rows > 0) {
+    echo json_encode(['error' => 'El nombre de usuario o correo electrónico ya está registrado por un lector']);
     exit;
 }
 

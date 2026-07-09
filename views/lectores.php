@@ -43,6 +43,7 @@ if ($q !== '') {
 $stmtCount->execute();
 $totalLectores = $stmtCount->get_result()->fetch_assoc()['total'];
 $totalPaginas = ceil($totalLectores / $porPagina);
+$grandTotalLectores = $con->query("SELECT COUNT(*) as total FROM lectores")->fetch_assoc()['total'];
 if ($totalPaginas < 1) $totalPaginas = 1;
 if ($pagina > $totalPaginas) {
     $pagina = $totalPaginas;
@@ -81,7 +82,12 @@ $esSuper = esSuperAdminActual();
 <div class="container-fluid">
     <!-- Encabezado y Buscador -->
     <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 12px;">
-        <h1 style="margin:0;">Administración de lectores</h1>
+        <h1 style="margin:0; display:flex; align-items:center; gap:10px;">
+            Administración de lectores
+            <span style="font-size: 1rem; background: var(--accent); color: #fff; padding: 4px 10px; border-radius: 20px; font-weight: 600;" title="Total de usuarios registrados">
+                <?= number_format($grandTotalLectores) ?>
+            </span>
+        </h1>
         <form method="GET" class="admin-search-form" style="display:flex; align-items:center; gap:8px;">
             <input type="hidden" name="orden" value="<?= htmlspecialchars($orden) ?>">
             <i class="bi bi-search admin-search-icon"></i>
@@ -188,32 +194,50 @@ $esSuper = esSuperAdminActual();
                                 <!-- Acciones -->
                                 <?php if ($ACL['editar']): ?>
                                     <td>
-                                        <div class="noticias-actions" style="border-top:none; padding:0; justify-content:flex-start; gap:8px;">
-                                            <!-- Promover -->
-                                            <button type="button" class="btn btn-view btn-promover"
+                                        <div class="noticias-actions" style="border-top:none; padding:0; display:flex; align-items:center; justify-content:flex-start; gap:6px; flex-wrap: nowrap;">
+                                            <!-- Editar -->
+                                            <a href="javascript:void(0)" class="btn btn-edit btn-editar-lector"
                                                     data-id="<?= $l['id'] ?>"
                                                     data-nombre="<?= htmlspecialchars($l['nombre'], ENT_QUOTES) ?>"
-                                                    title="Promover a Administrador">
-                                                <i class="bi bi-shield-plus"></i> Promover
-                                            </button>
+                                                    data-usuario="<?= htmlspecialchars($l['usuario'], ENT_QUOTES) ?>"
+                                                    data-correo="<?= htmlspecialchars($l['correo'], ENT_QUOTES) ?>"
+                                                    title="Editar Lector">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+
+                                            <!-- Promover -->
+                                            <a href="javascript:void(0)" class="btn btn-view btn-promover"
+                                                    data-id="<?= $l['id'] ?>"
+                                                    data-nombre="<?= htmlspecialchars($l['nombre'], ENT_QUOTES) ?>"
+                                                    title="Promover a Administrador" style="padding: 0 8px; width: auto; min-width: auto; gap: 4px; display: inline-flex; align-items: center; text-decoration: none;">
+                                                <i class="bi bi-shield-plus"></i> <span style="font-size: 0.72rem; font-weight: 700;">Promover</span>
+                                            </a>
 
                                             <!-- Banear / Desbanear -->
                                             <?php if ($esSuper): ?>
                                                 <?php if ($banned): ?>
-                                                    <button type="button" class="btn btn-edit btn-unban"
+                                                    <a href="javascript:void(0)" class="btn btn-edit btn-unban"
                                                             data-id="<?= $l['id'] ?>"
                                                             title="Quitar Suspensión">
-                                                        <i class="bi bi-check-circle"></i> Desbanear
-                                                    </button>
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </a>
                                                 <?php else: ?>
-                                                    <button type="button" class="btn btn-delete btn-ban"
+                                                    <a href="javascript:void(0)" class="btn btn-delete btn-ban"
                                                             data-id="<?= $l['id'] ?>"
                                                             data-nombre="<?= htmlspecialchars($l['nombre'], ENT_QUOTES) ?>"
                                                             title="Suspender Lector">
-                                                        <i class="bi bi-slash-circle"></i> Banear
-                                                    </button>
+                                                        <i class="bi bi-slash-circle"></i>
+                                                    </a>
                                                 <?php endif; ?>
                                             <?php endif; ?>
+
+                                            <!-- Eliminar -->
+                                            <a href="javascript:void(0)" class="btn btn-delete btn-eliminar-lector"
+                                                    data-id="<?= $l['id'] ?>"
+                                                    data-nombre="<?= htmlspecialchars($l['nombre'], ENT_QUOTES) ?>"
+                                                    title="Eliminar Lector">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
                                         </div>
                                     </td>
                                 <?php endif; ?>
@@ -250,6 +274,33 @@ $esSuper = esSuperAdminActual();
             </ul>
         </div>
     <?php endif; ?>
+</div>
+
+<!-- Modal: Editar Lector -->
+<div id="modalEdit" class="crop-modal" style="display:none;">
+    <div class="crop-modal-content">
+        <h3><i class="bi bi-pencil-square" style="color:var(--accent);"></i> Editar Lector</h3>
+        <p style="color:var(--muted); font-size:0.9rem; margin:5px 0 15px;">Modifica los datos del lector público.</p>
+        <form id="formEdit">
+            <input type="hidden" id="editLectorId">
+            <div style="margin-bottom:12px;">
+                <label for="editNombre" style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; color:var(--text);">Nombre</label>
+                <input type="text" id="editNombre" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:8px; font-size:0.85rem; background:var(--card-bg); color:var(--text);">
+            </div>
+            <div style="margin-bottom:12px;">
+                <label for="editUsuario" style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; color:var(--text);">Usuario</label>
+                <input type="text" id="editUsuario" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:8px; font-size:0.85rem; background:var(--card-bg); color:var(--text);">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label for="editCorreo" style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; color:var(--text);">Correo</label>
+                <input type="email" id="editCorreo" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:8px; font-size:0.85rem; background:var(--card-bg); color:var(--text);">
+            </div>
+            <div class="crop-actions" style="display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" id="btnCancelEdit" class="btn btn-secondary">Cancelar</button>
+                <button type="submit" id="btnConfirmEdit" class="btn btn-accent"><i class="bi bi-check-circle"></i> Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- Modal: Suspender Lector -->
@@ -301,6 +352,22 @@ $esSuper = esSuperAdminActual();
     </div>
 </div>
 
+<!-- Modal: Eliminar Lector -->
+<div id="modalDelete" class="crop-modal" style="display:none;">
+    <div class="crop-modal-content">
+        <h3><i class="bi bi-trash" style="color:#ef3333;"></i> Confirmar Eliminación</h3>
+        <p style="color:var(--muted); font-size:0.9rem; margin:5px 0 20px; line-height: 1.4;">
+            ¿Estás seguro de que deseas eliminar al lector <strong id="deleteNombre"></strong>?
+            <br><br>
+            Esta acción es irreversible y desvinculará sus comentarios, likes y reportes en el sitio.
+        </p>
+        <div class="crop-actions" style="display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" id="btnCancelDelete" class="btn btn-secondary">Cancelar</button>
+            <button type="button" id="btnConfirmDelete" class="btn btn-accent" style="background:#ef3333; border-color:#ef3333;"><i class="bi bi-trash"></i> Eliminar lector</button>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // ── DROPDOWN: ORDENAR POR ──
@@ -317,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── MODAL: SUSPENDER ──
+    // Modales y variables de estado
     const modalBan = document.getElementById('modalBan');
     const banNombre = document.getElementById('banNombre');
     const banDuracion = document.getElementById('banDuracion');
@@ -326,26 +393,121 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCancelBan = document.getElementById('btnCancelBan');
     let banLectorId = null;
 
-    // Abrir Modal Ban
-    document.querySelectorAll('.btn-ban').forEach(btn => {
-        btn.addEventListener('click', () => {
-            banLectorId = btn.dataset.id;
-            banNombre.textContent = btn.dataset.nombre;
-            banDuracion.selectedIndex = 0;
-            banMotivo.value = '';
-            modalBan.style.display = 'flex';
-        });
-    });
+    const modalPromover = document.getElementById('modalPromover');
+    const promoverNombre = document.getElementById('promoverNombre');
+    const btnConfirmPromover = document.getElementById('btnConfirmPromover');
+    const btnCancelPromover = document.getElementById('btnCancelPromover');
+    let promoverLectorId = null;
 
-    // Cerrar Modal Ban
-    const cerrarModalBan = () => {
-        modalBan.style.display = 'none';
-        banLectorId = null;
-    };
+    const modalEdit = document.getElementById('modalEdit');
+    const editLectorIdInput = document.getElementById('editLectorId');
+    const editNombre = document.getElementById('editNombre');
+    const editUsuario = document.getElementById('editUsuario');
+    const editCorreo = document.getElementById('editCorreo');
+    const formEdit = document.getElementById('formEdit');
+    const btnConfirmEdit = document.getElementById('btnConfirmEdit');
+    const btnCancelEdit = document.getElementById('btnCancelEdit');
+    let editLectorId = null;
+
+    const modalDelete = document.getElementById('modalDelete');
+    const deleteNombre = document.getElementById('deleteNombre');
+    const btnConfirmDelete = document.getElementById('btnConfirmDelete');
+    const btnCancelDelete = document.getElementById('btnCancelDelete');
+    let deleteLectorId = null;
+
+    // ── DELEGACIÓN DE EVENTOS EN LA TABLA ──
+    const tableBody = document.querySelector('.contenidos-table tbody');
+    if (tableBody) {
+        tableBody.addEventListener('click', (e) => {
+            // ── ABRIR BAN ──
+            const btnBan = e.target.closest('.btn-ban');
+            if (btnBan) {
+                banLectorId = btnBan.dataset.id;
+                banNombre.textContent = btnBan.dataset.nombre;
+                banDuracion.selectedIndex = 0;
+                banMotivo.value = '';
+                modalBan.style.display = 'flex';
+                return;
+            }
+
+            // ── DESBANEAR ──
+            const btnUnban = e.target.closest('.btn-unban');
+            if (btnUnban) {
+                desbanearLector(btnUnban.dataset.id);
+                return;
+            }
+
+            // ── ABRIR PROMOVER ──
+            const btnPromover = e.target.closest('.btn-promover');
+            if (btnPromover) {
+                promoverLectorId = btnPromover.dataset.id;
+                promoverNombre.textContent = btnPromover.dataset.nombre;
+                modalPromover.style.display = 'flex';
+                return;
+            }
+
+            // ── ABRIR EDITAR ──
+            const btnEdit = e.target.closest('.btn-editar-lector');
+            if (btnEdit) {
+                editLectorId = btnEdit.dataset.id;
+                editLectorIdInput.value = editLectorId;
+                editNombre.value = btnEdit.dataset.nombre;
+                editUsuario.value = btnEdit.dataset.usuario;
+                editCorreo.value = btnEdit.dataset.correo;
+                modalEdit.style.display = 'flex';
+                return;
+            }
+
+            // ── ABRIR ELIMINAR ──
+            const btnDelete = e.target.closest('.btn-eliminar-lector');
+            if (btnDelete) {
+                deleteLectorId = btnDelete.dataset.id;
+                deleteNombre.textContent = btnDelete.dataset.nombre;
+                modalDelete.style.display = 'flex';
+                return;
+            }
+        });
+    }
+
+    // ── CERRAR MODALES ──
+    const cerrarModalBan = () => { modalBan.style.display = 'none'; banLectorId = null; };
     btnCancelBan.addEventListener('click', cerrarModalBan);
     modalBan.addEventListener('click', e => { if (e.target === modalBan) cerrarModalBan(); });
 
-    // Confirmar Ban
+    const cerrarModalPromover = () => { modalPromover.style.display = 'none'; promoverLectorId = null; };
+    btnCancelPromover.addEventListener('click', cerrarModalPromover);
+    modalPromover.addEventListener('click', e => { if (e.target === modalPromover) cerrarModalPromover(); });
+
+    const cerrarModalEdit = () => { modalEdit.style.display = 'none'; editLectorId = null; };
+    btnCancelEdit.addEventListener('click', cerrarModalEdit);
+    modalEdit.addEventListener('click', e => { if (e.target === modalEdit) cerrarModalEdit(); });
+
+    const cerrarModalDelete = () => { modalDelete.style.display = 'none'; deleteLectorId = null; };
+    btnCancelDelete.addEventListener('click', cerrarModalDelete);
+    modalDelete.addEventListener('click', e => { if (e.target === modalDelete) cerrarModalDelete(); });
+
+    // ── OPERACIONES AJAX ──
+
+    // Función auxiliar para notificaciones premium de tipo Toast
+    function showToast(msg, type = '') {
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg' + (type ? ' toast-' + type : '');
+        toast.textContent = msg;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.3s ease';
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 2700);
+    }
+
+    // 1. Confirmar Ban
     btnConfirmBan.addEventListener('click', async () => {
         if (!banLectorId) return;
         btnConfirmBan.disabled = true;
@@ -357,69 +519,40 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (data.ok) {
-                alert(data.msg || 'Lector suspendido correctamente.');
-                location.reload();
+                showToast(data.msg || 'Lector suspendido correctamente.', 'success');
+                setTimeout(() => location.reload(), 1500);
             } else {
-                alert(data.msg || 'No se pudo suspender al lector.');
+                showToast(data.msg || 'No se pudo suspender al lector.', 'error');
             }
         } catch (err) {
-            alert('Error de red.');
+            showToast('Error de red.', 'error');
         } finally {
             btnConfirmBan.disabled = false;
         }
     });
 
-    // ── QUITAR SUSPENSIÓN (DESBANEAR) ──
-    document.querySelectorAll('.btn-unban').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            if (!confirm('¿Estás seguro de que deseas quitar la suspensión a este lector?')) return;
-            btn.disabled = true;
-            try {
-                const res = await fetch('./../controllers/moderar_usuario.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `action=unban&tipo=lector&user_id=${btn.dataset.id}`
-                });
-                const data = await res.json();
-                if (data.ok) {
-                    alert(data.msg || 'Suspensión retirada correctamente.');
-                    location.reload();
-                } else {
-                    alert(data.msg || 'No se pudo quitar la suspensión.');
-                }
-            } catch (err) {
-                alert('Error de red.');
-            } finally {
-                btn.disabled = false;
+    // 2. Desbanear
+    async function desbanearLector(lectorId) {
+        if (!confirm('¿Estás seguro de que deseas quitar la suspensión a este lector?')) return;
+        try {
+            const res = await fetch('./../controllers/moderar_usuario.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `action=unban&tipo=lector&user_id=${lectorId}`
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(data.msg || 'Suspensión retirada correctamente.', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.msg || 'No se pudo quitar la suspensión.', 'error');
             }
-        });
-    });
+        } catch (err) {
+            showToast('Error de red.', 'error');
+        }
+    }
 
-    // ── MODAL: PROMOVER A ADMIN ──
-    const modalPromover = document.getElementById('modalPromover');
-    const promoverNombre = document.getElementById('promoverNombre');
-    const btnConfirmPromover = document.getElementById('btnConfirmPromover');
-    const btnCancelPromover = document.getElementById('btnCancelPromover');
-    let promoverLectorId = null;
-
-    // Abrir Modal Promover
-    document.querySelectorAll('.btn-promover').forEach(btn => {
-        btn.addEventListener('click', () => {
-            promoverLectorId = btn.dataset.id;
-            promoverNombre.textContent = btn.dataset.nombre;
-            modalPromover.style.display = 'flex';
-        });
-    });
-
-    // Cerrar Modal Promover
-    const cerrarModalPromover = () => {
-        modalPromover.style.display = 'none';
-        promoverLectorId = null;
-    };
-    btnCancelPromover.addEventListener('click', cerrarModalPromover);
-    modalPromover.addEventListener('click', e => { if (e.target === modalPromover) cerrarModalPromover(); });
-
-    // Confirmar Promoción
+    // 3. Confirmar Promoción
     btnConfirmPromover.addEventListener('click', async () => {
         if (!promoverLectorId) return;
         btnConfirmPromover.disabled = true;
@@ -431,15 +564,63 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (data.success) {
-                alert(data.success);
-                location.reload();
+                showToast(data.success, 'success');
+                setTimeout(() => location.reload(), 1500);
             } else {
-                alert(data.error || 'No se pudo promover al lector.');
+                showToast(data.error || 'No se pudo promover al lector.', 'error');
             }
         } catch (err) {
-            alert('Error de red.');
+            showToast('Error de red.', 'error');
         } finally {
             btnConfirmPromover.disabled = false;
+        }
+    });
+
+    // 4. Guardar Cambios (Editar)
+    formEdit.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        btnConfirmEdit.disabled = true;
+        try {
+            const res = await fetch('./../controllers/editar_lector.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${editLectorId}&nombre=${encodeURIComponent(editNombre.value)}&usuario=${encodeURIComponent(editUsuario.value)}&correo=${encodeURIComponent(editCorreo.value)}`
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.success, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.error || 'Error al actualizar los datos.', 'error');
+            }
+        } catch (err) {
+            showToast('Error de red.', 'error');
+        } finally {
+            btnConfirmEdit.disabled = false;
+        }
+    });
+
+    // 5. Confirmar Eliminación
+    btnConfirmDelete.addEventListener('click', async () => {
+        if (!deleteLectorId) return;
+        btnConfirmDelete.disabled = true;
+        try {
+            const res = await fetch('./../controllers/eliminar_lector.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${deleteLectorId}`
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.success, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.error || 'Error al eliminar al lector.', 'error');
+            }
+        } catch (err) {
+            showToast('Error de red.', 'error');
+        } finally {
+            btnConfirmDelete.disabled = false;
         }
     });
 });

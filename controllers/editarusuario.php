@@ -14,6 +14,28 @@ $email   = $_POST['email'];
 $password = $_POST['password'] ?? "";
 
 // ========================
+// Validar duplicados en usuarios
+// ========================
+$stmtCheck = $con->prepare("SELECT id_u FROM usuarios WHERE (usuario = ? OR correo = ?) AND id_u != ?");
+$stmtCheck->bind_param("ssi", $usuario, $email, $id);
+$stmtCheck->execute();
+if ($stmtCheck->get_result()->num_rows > 0) {
+    echo json_encode(['error' => 'El nombre de usuario o correo electrónico ya está registrado por otro administrador/editor']);
+    exit;
+}
+
+// ========================
+// Validar duplicados en lectores
+// ========================
+$stmtCheckL = $con->prepare("SELECT id FROM lectores WHERE usuario = ? OR correo = ?");
+$stmtCheckL->bind_param("ss", $usuario, $email);
+$stmtCheckL->execute();
+if ($stmtCheckL->get_result()->num_rows > 0) {
+    echo json_encode(['error' => 'El nombre de usuario o correo electrónico ya está registrado por un lector']);
+    exit;
+}
+
+// ========================
 // FUNCIÓN PERMISOS BITMASK
 // ========================
 function calcPerm($arr){
