@@ -1511,9 +1511,29 @@ function setZonePreview(zoneId, data64) {
 }
 function confirmCrop() {
   if (!cropperInstance) return;
-  const canvas    = cropperInstance.getCroppedCanvas({ maxWidth: 2560, maxHeight: 2560 });
+
+  let options = {
+    imageSmoothingEnabled: true,
+    imageSmoothingQuality: 'high'
+  };
+
+  const cropNum = activeCrop;
+
+  if (cropNum === 2 || cropNum === 4) {
+    // Banner principal y secundario (21:6): forzar 2560px de ancho para excelente nitidez en pantallas Retina
+    options.width = 2560;
+    options.height = 731;
+  } else if (cropNum === 3) {
+    // Miniatura (16:9): forzar 1920px de ancho
+    options.width = 1920;
+    options.height = 1080;
+  } else {
+    options.maxWidth = 2560;
+    options.maxHeight = 2560;
+  }
+
+  const canvas = cropperInstance.getCroppedCanvas(options);
   const srcForAuto = document.getElementById('cropImg').src;
-  const cropNum   = activeCrop;
   const chain     = _chainNextCrop;
   _chainNextCrop  = false;
   zoneCropData[cropNum] = cropperInstance.getData();
@@ -1547,7 +1567,7 @@ function confirmCrop() {
       }
     };
     reader.readAsDataURL(blob);
-  }, 'image/png', 1.0);
+  }, 'image/jpeg', 0.93);
 }
 
 function autoFillMiniature(srcDataUrl) {
