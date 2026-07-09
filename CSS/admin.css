@@ -116,6 +116,7 @@ hr {
     width: var(--sidebar-width);
     box-shadow: 2px 0 10px rgba(0,0,0,0.2);
     transition: transform 0.3s ease;
+    z-index: 1100;
   }
   .sidebar.active {
     transform: translateX(0);
@@ -1966,6 +1967,7 @@ select, input[type="datetime-local"] {
         box-shadow: 2px 0 10px rgba(0,0,0,0.2);
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      z-index: 1100;
     }
     .sidebar.active {
         transform: translateX(0);
