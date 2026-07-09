@@ -4850,7 +4850,6 @@ body, .nav-link, .btn, .card, .site-main {
 .estreno-small-img-wrapper {
   aspect-ratio: 16/9;
   width: 100%;
-  max-height: 200px;
 }
 .estreno-small-img-wrapper img {
   width: 100%;

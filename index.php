@@ -19,7 +19,7 @@ if ($pagina === 1) {
 }
 
 // Contar total para paginación
-$totalResult = $con->query("SELECT COUNT(*) as total FROM noticias WHERE fecha_publicacion <= NOW()");
+$totalResult = $con->query("SELECT COUNT(*) as total FROM noticias WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW()");
 $totalNoticias = $totalResult->fetch_assoc()['total'];
 
 if ($totalNoticias <= 2) {
@@ -36,7 +36,7 @@ $stmtFeed = $con->prepare("
     INNER JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-    WHERE n.fecha_publicacion <= NOW()
+    WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
     GROUP BY n.id
     ORDER BY n.fecha_publicacion DESC
     LIMIT ? OFFSET ?;
@@ -57,7 +57,7 @@ $stmtGlobal = $con->prepare("
     INNER JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-    WHERE n.fecha_publicacion <= NOW()
+    WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
     GROUP BY n.id
     ORDER BY n.fecha_publicacion DESC
     LIMIT 50;
@@ -97,7 +97,7 @@ $stmtReviews = $con->prepare("
     INNER JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-    WHERE n.fecha_publicacion <= NOW()
+    WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
       AND n.tipo_publicacion = 'review'
     GROUP BY n.id
     ORDER BY n.fecha_publicacion DESC
@@ -123,7 +123,7 @@ $stmtRec = $con->prepare("
     LEFT JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-    WHERE (r.noticia_id IS NULL OR n.fecha_publicacion <= NOW())
+    WHERE (r.noticia_id IS NULL OR (n.fecha_publicacion <= NOW() AND n.eliminado_en IS NULL))
     GROUP BY r.id
     ORDER BY r.orden ASC
     LIMIT 10;
@@ -165,7 +165,7 @@ $stmtEsp = $con->prepare("
     LEFT JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-    WHERE (e.noticia_id IS NULL OR n.fecha_publicacion <= NOW())
+    WHERE (e.noticia_id IS NULL OR (n.fecha_publicacion <= NOW() AND n.eliminado_en IS NULL))
     GROUP BY e.id
     ORDER BY e.orden ASC
     LIMIT 10;
@@ -182,7 +182,7 @@ $stmtCom = $con->prepare("
     LEFT JOIN comentarios c ON c.noticia_id = n.id AND c.estado = 'activo'
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c2 ON nc.categoria_id = c2.id_c
-    WHERE n.fecha_publicacion <= NOW()
+    WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
     GROUP BY n.id
     ORDER BY total_comentarios DESC, n.fecha_publicacion DESC
     LIMIT 8
@@ -202,7 +202,7 @@ $stmtRandom = $con->prepare("
     INNER JOIN usuarios u ON n.autor = u.id_u
     INNER JOIN noticia_categoria nc ON n.id = nc.noticia_id
     INNER JOIN categorias c ON nc.categoria_id = c.id_c
-    WHERE n.fecha_publicacion <= NOW() AND n.id IN (
+    WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW() AND n.id IN (
         SELECT sub_nc.noticia_id 
         FROM noticia_categoria sub_nc 
         INNER JOIN categorias sub_c ON sub_nc.categoria_id = sub_c.id_c

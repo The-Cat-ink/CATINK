@@ -296,6 +296,8 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .pv-panel { display:none; }
 /* Ancho moderado y constante para que todas las previsualizaciones se vean al mismo tamaño */
 .pv-panel.active { display:block; max-width:520px; }
+/* Reviews y Estrenos muestran lista + barra lateral, necesitan un poco más de ancho */
+#pv-reviews.active, #pv-estrenos.active { max-width:660px; }
 /* Helpers */
 .pv-bg { width:100%; height:100%; background-size:cover; background-position:center; background-color: var(--border); }
 .pv-card { position:relative; border-radius:8px; overflow:hidden; background:var(--border); }
@@ -336,13 +338,32 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .pv-hcard-body  { display:flex; flex-direction:column; gap:3px; padding:2px 4px; }
 .pv-hcard-body .pv-title-txt { font-size:12px; }
 .pv-hcard-body .pv-desc-txt  { font-size:9px; }
-.pv-badge { position:absolute; top:6px; right:6px; background:var(--accent); color:#fff;
-  font-size:9px; font-weight:800; padding:2px 7px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,.35); }
+/* Badge de calificación circular (como .review-rating-badge del front) */
+.pv-badge { position:absolute; top:6px; right:6px; width:24px; height:24px; padding:0; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--accent); color:#fff; font-size:8px; font-weight:800; box-shadow:0 2px 6px rgba(0,0,0,.35); }
 
-/* ─ Estrenos: mini card horizontal ─ */
-.pv-est-small { display:grid; grid-template-columns:150px 1fr; gap:12px; margin-top:8px;
-  background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:8px; }
-.pv-est-thumb { aspect-ratio:16/9; }
+/* ─ Layout de dos columnas (Reviews / Estrenos): lista + barra lateral ─ */
+.pv-col2 { display:grid; grid-template-columns:1.8fr 1fr; gap:14px; align-items:start; }
+.pv-col2-main { display:flex; flex-direction:column; gap:10px; }
+.pv-col2 .pv-hcard { grid-template-columns:120px 1fr; gap:10px; }
+.pv-est-duo { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+
+/* ─ Barra lateral tipo ranking (calca de .ranking-item-hero del front) ─ */
+.pv-rank { display:flex; flex-direction:column; gap:8px; }
+.pv-rank-title { font-size:10px; font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px; }
+.pv-rank-hero { aspect-ratio:12/5; border:2px solid var(--accent); border-radius:8px; box-shadow:0 4px 12px rgba(239,51,99,.25); }
+.pv-rank-sub  { aspect-ratio:12/5; border-radius:8px; }
+.pv-rank-num  { position:absolute; left:8px; top:40%; transform:translateY(-50%);
+  font-size:46px; font-weight:900; font-style:italic; font-family:'Arial Black',Impact,sans-serif;
+  color:var(--accent); line-height:.8; z-index:2; text-shadow:0 2px 6px rgba(0,0,0,.6); pointer-events:none; }
+.pv-rank-ov { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end;
+  padding:6px 32px 6px 8px; background:linear-gradient(to top, rgba(0,0,0,.95) 0%, rgba(0,0,0,.55) 55%, transparent 100%); }
+.pv-rank-name { font-size:9px; font-weight:750; color:#fff; line-height:1.25; text-shadow:0 2px 4px rgba(0,0,0,.9);
+  overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.pv-rank-score { position:absolute; top:50%; right:8px; transform:translateY(-50%);
+  width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-size:8px; font-weight:800;
+  display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.4); z-index:3; }
 
 /* ─ Debatido (fondo oscuro como en el front) ─ */
 .pv-debatido-wrap { background:#0c0c13; border:1px solid rgba(255,255,255,.06); border-radius:10px; padding:10px; }
@@ -355,10 +376,10 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .pv-random-thumb { aspect-ratio:16/9; border-radius:0; }
 .pv-random-body  { padding:8px; display:flex; flex-direction:column; gap:3px; }
 
-/* En pantallas angostas, reducir el ancho de las miniaturas horizontales */
-@media (max-width: 520px) {
-  .pv-hcard     { grid-template-columns:140px 1fr; gap:10px; }
-  .pv-est-small { grid-template-columns:110px 1fr; }
+/* En pantallas angostas, apilar las dos columnas y reducir miniaturas */
+@media (max-width: 620px) {
+  .pv-col2 { grid-template-columns:1fr; gap:12px; }
+  .pv-hcard, .pv-col2 .pv-hcard { grid-template-columns:140px 1fr; gap:10px; }
 }
 
 /* ── EDITOR QUILL ── */
@@ -726,41 +747,73 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
               <div class="pv-label">Tu nota (ancha) &middot; nota lateral (cuadrada)</div>
             </div>
 
-            <!-- Nuestras Reviews -->
+            <!-- Nuestras Reviews + Lo que más te recomendamos -->
             <div class="pv-panel" id="pv-reviews">
-              <div class="pv-hcard">
-                <div class="pv-hcard-thumb pv-card">
-                  <div class="pv-bg" id="pvRevThumb"></div>
-                  <span class="pv-badge" id="pvRevBadge">8.5</span>
+              <div class="pv-col2">
+                <!-- Columna izquierda: lista de reviews -->
+                <div class="pv-col2-main">
+                  <div class="pv-hcard">
+                    <div class="pv-hcard-thumb pv-card">
+                      <div class="pv-bg" id="pvRevThumb"></div>
+                      <span class="pv-badge" id="pvRevBadge">8.5</span>
+                    </div>
+                    <div class="pv-hcard-body">
+                      <span class="pv-tag" id="pvRevCat">CATEGORÍA</span>
+                      <div class="pv-title-txt dark" id="pvRevTitle">Título de la noticia</div>
+                      <div class="pv-desc-txt dark"  id="pvRevDesc">Descripción corta del artículo...</div>
+                      <div class="pv-meta">Publicado ahora &middot; Por ti</div>
+                    </div>
+                  </div>
                 </div>
-                <div class="pv-hcard-body">
-                  <span class="pv-tag" id="pvRevCat">CATEGORÍA</span>
-                  <div class="pv-title-txt dark" id="pvRevTitle">Título de la noticia</div>
-                  <div class="pv-desc-txt dark"  id="pvRevDesc">Descripción corta del artículo...</div>
-                  <div class="pv-meta">Publicado ahora &middot; Por ti</div>
+                <!-- Columna derecha: Lo que más te recomendamos (puesto 1) -->
+                <div class="pv-rank">
+                  <div class="pv-rank-title">Lo que más te recomendamos</div>
+                  <div class="pv-rank-hero pv-card">
+                    <div class="pv-bg" id="pvRecomHero"></div>
+                    <div class="pv-rank-num">1</div>
+                    <div class="pv-rank-ov"><div class="pv-rank-name" id="pvRecomName">Título de la noticia</div></div>
+                    <div class="pv-rank-score" id="pvRecomScore">10.0</div>
+                  </div>
                 </div>
               </div>
-              <div class="pv-label">Nuestras Reviews &middot; miniatura 16:9 (con calificación)</div>
+              <div class="pv-label">Nuestras Reviews (izq) &middot; Lo que más te recomendamos (der)</div>
             </div>
 
-            <!-- Próximos Estrenos -->
+            <!-- Próximos Estrenos + Lo que más esperamos -->
             <div class="pv-panel" id="pv-estrenos">
-              <div class="pv-card pv-wide">
-                <div class="pv-bg" id="pvEstMain"></div>
-                <div class="pv-overlay">
-                  <span class="pv-tag" id="pvEstCat">CATEGORÍA</span>
-                  <div class="pv-title-txt" id="pvEstTitle">Título de la noticia</div>
+              <div class="pv-col2">
+                <!-- Columna izquierda: card ancha (Películas y Series) + 2 cuadradas (Videojuegos/Anime) -->
+                <div class="pv-col2-main">
+                  <div class="pv-card pv-wide">
+                    <div class="pv-bg" id="pvEstMain"></div>
+                    <div class="pv-overlay">
+                      <span class="pv-tag" id="pvEstCat">CATEGORÍA</span>
+                      <div class="pv-title-txt" id="pvEstTitle">Título de la noticia</div>
+                    </div>
+                  </div>
+                  <div class="pv-est-duo">
+                    <div class="pv-card pv-square">
+                      <div class="pv-bg" id="pvEstThumb"></div>
+                      <div class="pv-overlay"><div class="pv-title-txt" id="pvEstSmallTitle" style="font-size:8px">Videojuegos</div></div>
+                    </div>
+                    <div class="pv-card pv-square">
+                      <div class="pv-bg" id="pvEstThumb2"></div>
+                      <div class="pv-overlay"><div class="pv-title-txt" style="font-size:8px;color:rgba(255,255,255,.6)">Anime</div></div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Columna derecha: Lo que más esperamos (puesto 1) -->
+                <div class="pv-rank">
+                  <div class="pv-rank-title">Lo que más esperamos</div>
+                  <div class="pv-rank-hero pv-card">
+                    <div class="pv-bg" id="pvEspHero"></div>
+                    <div class="pv-rank-num">1</div>
+                    <div class="pv-rank-ov"><div class="pv-rank-name" id="pvEspName">Título de la noticia</div></div>
+                    <div class="pv-rank-score" id="pvEspScore">10.0</div>
+                  </div>
                 </div>
               </div>
-              <div class="pv-est-small">
-                <div class="pv-est-thumb pv-card"><div class="pv-bg" id="pvEstThumb"></div></div>
-                <div class="pv-hcard-body">
-                  <span class="pv-tag" id="pvEstSmallCat">CATEGORÍA</span>
-                  <div class="pv-title-txt dark" id="pvEstSmallTitle">Título de la noticia</div>
-                  <div class="pv-meta">Videojuegos / Anime</div>
-                </div>
-              </div>
-              <div class="pv-label">Estreno principal (ancha) &middot; videojuegos/anime (miniatura)</div>
+              <div class="pv-label">Estreno principal (ancha) + videojuegos/anime (cuadradas) &middot; Lo que más esperamos</div>
             </div>
 
             <!-- Lo más debatido -->
@@ -775,10 +828,10 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
                     </div>
                   </div>
                   <div class="pv-card pv-square">
-                    <div class="pv-bg" style="background:#181820"></div>
+                    <div class="pv-bg" id="pvDebSmall2"></div>
                     <div class="pv-overlay">
                       <span class="pv-chat"><i class="bi bi-chat-fill"></i> 5</span>
-                      <div class="pv-title-txt" style="color:rgba(255,255,255,.55)">Otra noticia</div>
+                      <div class="pv-title-txt" style="color:rgba(255,255,255,.75)">Otra noticia</div>
                     </div>
                   </div>
                 </div>
@@ -1579,25 +1632,40 @@ function updateAllPreviews() {
   setPvBg('pvTopSide', cThumb);
   setTxt('pvTopCat', cat); setTxt('pvTopTitle', title);
 
+  // Calificación (badge / círculos de score): solo si es review con nota
+  const esReview = document.getElementById('tipo_publicacion')?.value === 'review';
+  const calif    = parseFloat(document.getElementById('calificacion')?.value);
+  const showScore = esReview && !isNaN(calif);
+  const scoreTxt  = showScore ? calif.toFixed(1) : '';
+  const setScore = (id) => {
+    const e = document.getElementById(id);
+    if (!e) return;
+    if (showScore) { e.textContent = scoreTxt; e.style.display = ''; }
+    else { e.style.display = 'none'; }
+  };
+
   // Nuestras Reviews (miniatura + badge de calificación)
   setPvBg('pvRevThumb', cThumb);
   setTxt('pvRevCat', cat); setTxt('pvRevTitle', title); setTxt('pvRevDesc', desc);
-  const badge = document.getElementById('pvRevBadge');
-  if (badge) {
-    const esReview = document.getElementById('tipo_publicacion')?.value === 'review';
-    const calif    = parseFloat(document.getElementById('calificacion')?.value);
-    if (esReview && !isNaN(calif)) { badge.textContent = calif.toFixed(1); badge.style.display = ''; }
-    else { badge.style.display = 'none'; }
-  }
+  setScore('pvRevBadge');
+  // Lo que más te recomendamos (puesto 1, usa recorte ancho como en el index)
+  setPvBg('pvRecomHero', cWide);
+  setTxt('pvRecomName', title);
+  setScore('pvRecomScore');
 
-  // Próximos Estrenos (ancha + miniatura)
+  // Próximos Estrenos (ancha + 2 cuadradas)
   setPvBg('pvEstMain', cWide);
   setPvBg('pvEstThumb', cThumb);
+  setPvBg('pvEstThumb2', cThumb);
   setTxt('pvEstCat', cat); setTxt('pvEstTitle', title);
-  setTxt('pvEstSmallCat', cat); setTxt('pvEstSmallTitle', title);
+  // Lo que más esperamos (puesto 1, usa recorte ancho como en el index)
+  setPvBg('pvEspHero', cWide);
+  setTxt('pvEspName', title);
+  setScore('pvEspScore');
 
-  // Lo más debatido (cuadrada + ancha)
+  // Lo más debatido (2 cuadradas + 1 ancha)
   setPvBg('pvDebSmall', cThumb);
+  setPvBg('pvDebSmall2', cThumb);
   setPvBg('pvDebLarge', cWide);
   setTxt('pvDebSmallTitle', title); setTxt('pvDebTitle', title);
 

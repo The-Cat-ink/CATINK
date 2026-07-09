@@ -86,7 +86,7 @@ if ($q !== '') {
         FROM noticias n
         LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
         LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-        WHERE n.fecha_publicacion <= NOW()
+        WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
           AND MATCH(n.titulo, n.descripcion, n.contenido) AGAINST(? IN BOOLEAN MODE)
         GROUP BY n.id
         ORDER BY n.fecha_publicacion DESC
@@ -103,7 +103,7 @@ if ($q !== '') {
         INNER JOIN categorias c_filter ON nc_filter.categoria_id = c_filter.id_c AND c_filter.nombre = ?
         LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
         LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-        WHERE n.fecha_publicacion <= NOW()
+        WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
         GROUP BY n.id
         ORDER BY n.fecha_publicacion DESC
         LIMIT ? OFFSET ?
@@ -117,7 +117,7 @@ if ($q !== '') {
         FROM noticias n
         LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
         LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-        WHERE n.fecha_publicacion <= NOW()
+        WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
         GROUP BY n.id
         ORDER BY n.fecha_publicacion DESC
         LIMIT ? OFFSET ?
@@ -153,7 +153,7 @@ if ($q !== '') {
         FROM noticias n
         LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
         LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-        WHERE n.fecha_publicacion <= NOW()
+        WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
           AND MATCH(n.titulo, n.descripcion, n.contenido) AGAINST(? IN BOOLEAN MODE)
     ");
     $stmtTotal->bind_param("s", $searchQuery);
@@ -164,7 +164,7 @@ if ($q !== '') {
         FROM noticias n
         INNER JOIN noticia_categoria nc ON n.id = nc.noticia_id
         INNER JOIN categorias c ON nc.categoria_id = c.id_c
-        WHERE n.fecha_publicacion <= NOW()
+        WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
         AND c.nombre = ?
     ");
     $stmtTotal->bind_param("s", $categoria);
@@ -172,7 +172,7 @@ if ($q !== '') {
 } else {
     $stmtTotal = $con->prepare("
         SELECT COUNT(*) as total FROM noticias
-        WHERE fecha_publicacion <= NOW()
+        WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW()
     ");
 }
 
@@ -185,7 +185,7 @@ $totalpaginas = ceil($totalNoticias / $porPagina);
 // ==============================
 if ($q !== '' && $totalNoticias == 0 && !isset($_GET['force'])) {
     // 1. Obtener todas las palabras únicas de los títulos en la BD
-    $resWords = $con->query("SELECT DISTINCT titulo FROM noticias WHERE fecha_publicacion <= NOW()");
+    $resWords = $con->query("SELECT DISTINCT titulo FROM noticias WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW()");
     $allDbWords = [];
     if ($resWords) {
         while ($rowWord = $resWords->fetch_assoc()) {
@@ -259,7 +259,7 @@ if ($q !== '' && $totalNoticias == 0 && !isset($_GET['force'])) {
             FROM noticias n
             LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
             LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-            WHERE n.fecha_publicacion <= NOW()
+            WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
               AND MATCH(n.titulo, n.descripcion, n.contenido) AGAINST(? IN BOOLEAN MODE)
             GROUP BY n.id
             ORDER BY n.fecha_publicacion DESC
@@ -291,7 +291,7 @@ if ($q !== '' && $totalNoticias == 0 && !isset($_GET['force'])) {
             FROM noticias n
             LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
             LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-            WHERE n.fecha_publicacion <= NOW()
+            WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
               AND MATCH(n.titulo, n.descripcion, n.contenido) AGAINST(? IN BOOLEAN MODE)
         ");
         $stmtTotal->bind_param("s", $searchQuery);
@@ -307,7 +307,7 @@ if ($q !== '' && $totalNoticias == 0 && !isset($_GET['force'])) {
 $stmtUltimas = $con->prepare("
     SELECT id, slug, titulo, crop3
     FROM noticias
-    WHERE fecha_publicacion <= NOW()
+    WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW()
     ORDER BY fecha_publicacion DESC
     LIMIT 3
 ");
@@ -317,6 +317,7 @@ $ultimas = $stmtUltimas->get_result();
 $stmtPopulares = $con->prepare("
     SELECT id, slug, titulo, crop3
     FROM noticias
+    WHERE eliminado_en IS NULL
     ORDER BY vistas DESC, likes DESC
     LIMIT 3
 ");

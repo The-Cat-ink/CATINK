@@ -51,7 +51,7 @@ $stmtCom = $con->prepare("
            (SELECT COUNT(*) FROM likes_comentarios lc WHERE lc.comentario_id = c.id_comentario) AS total_likes
     FROM comentarios c
     INNER JOIN noticias n ON c.noticia_id = n.id
-    WHERE c.lector_id = ? AND c.estado = 'activo' AND n.fecha_publicacion <= NOW()
+    WHERE c.lector_id = ? AND c.estado = 'activo' AND n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
     ORDER BY c.fecha_publicacion DESC
     LIMIT 30
 ");

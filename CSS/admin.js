@@ -488,7 +488,7 @@
         overlayId: "modalOverlay",
         titleId: "modalTitle",
         inputId: "modalId",
-        formatTitle: title => `¿Eliminar la noticia "${title}"?`,
+        formatTitle: title => `¿Enviar la noticia "${title}" a la papelera?`,
         dataKey: "titulo"
       },
       {
@@ -506,6 +506,14 @@
         inputId: "modalIdU",
         formatTitle: title => `¿Eliminar el usuario "${title}"?`,
         dataKey: "nombre"
+      },
+      {
+        selector: ".btn-delete-def",
+        overlayId: "modalOverlay",
+        titleId: "modalTitle",
+        inputId: "modalId",
+        formatTitle: title => `¿Eliminar definitivamente "${title}"?`,
+        dataKey: "titulo"
       }
     ];
 
@@ -518,7 +526,7 @@
 
     // Event delegation para abrir modales de borrado
     document.body.addEventListener("click", event => {
-      const button = event.target.closest(".btn-delete, .btn-delete-publicidad, .btn-delete-usuario");
+      const button = event.target.closest(".btn-delete, .btn-delete-publicidad, .btn-delete-usuario, .btn-delete-def");
       if (!button) return;
       event.preventDefault();
 

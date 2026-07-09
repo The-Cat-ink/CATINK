@@ -52,7 +52,7 @@ $stmtNews = $con->prepare("
     FROM noticias n
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-    WHERE n.autor = ? AND n.fecha_publicacion <= NOW()
+    WHERE n.autor = ? AND n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
     GROUP BY n.id
     ORDER BY n.fecha_publicacion DESC
     LIMIT 20
@@ -64,7 +64,7 @@ $articulos = $stmtNews->get_result()->fetch_all(MYSQLI_ASSOC);
 // ==============================
 // Contadores
 // ==============================
-$stmtCount = $con->prepare("SELECT COUNT(*) as total FROM noticias WHERE autor = ? AND fecha_publicacion <= NOW()");
+$stmtCount = $con->prepare("SELECT COUNT(*) as total FROM noticias WHERE autor = ? AND eliminado_en IS NULL AND fecha_publicacion <= NOW()");
 $stmtCount->bind_param("i", $id);
 $stmtCount->execute();
 $totalArticulos = $stmtCount->get_result()->fetch_assoc()['total'];

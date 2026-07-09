@@ -15,7 +15,7 @@ try {
         $stmt = $con->prepare("
             SELECT id, titulo, crop3, fecha_publicacion
             FROM noticias
-            WHERE fecha_publicacion <= NOW()
+            WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW()
               AND id NOT IN (SELECT noticia_id FROM esperamos)
             ORDER BY fecha_publicacion DESC
             LIMIT 10
@@ -26,6 +26,7 @@ try {
             SELECT id, titulo, crop3, fecha_publicacion
             FROM noticias
             WHERE titulo LIKE ?
+              AND eliminado_en IS NULL
               AND fecha_publicacion <= NOW()
               AND id NOT IN (SELECT noticia_id FROM esperamos)
             ORDER BY fecha_publicacion DESC

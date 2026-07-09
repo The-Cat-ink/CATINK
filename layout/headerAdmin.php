@@ -192,6 +192,13 @@ $_SESSION['id_u'] = $fila['id_u'];
                 </a>
             </li>
         <?php endif; ?>
+        <?php if ($superadmin): ?>
+            <li class="sidebar-menu-item">
+                <a href="./papelera.php" class="sidebar-menu-link" data-tooltip="Papelera">
+                    <i class="bi bi-trash3"></i> <span class="sb-label">Papelera</span>
+                </a>
+            </li>
+        <?php endif; ?>
     </ul>
     <div class="sidebar-footer">
       <label class="theme-switch-icons sidebar-theme-switch" title="Cambiar tema">

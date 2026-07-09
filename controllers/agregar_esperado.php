@@ -16,7 +16,7 @@ include("./../data/conexion.php");
 
 try {
     // 1. Verificar si la noticia existe y está publicada
-    $stmtCheck = $con->prepare("SELECT id FROM noticias WHERE id = ? AND fecha_publicacion <= NOW()");
+    $stmtCheck = $con->prepare("SELECT id FROM noticias WHERE id = ? AND eliminado_en IS NULL AND fecha_publicacion <= NOW()");
     $stmtCheck->bind_param("i", $noticia_id);
     $stmtCheck->execute();
     if ($stmtCheck->get_result()->num_rows === 0) {

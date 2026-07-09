@@ -37,7 +37,7 @@ if (abs(strtotime(date("H:i:s")) - strtotime($horaProgramada)) <= 60) {
     $ayerMismoHorario = date("Y-m-d H:i:s", strtotime("-24 hours"));
 
     // Seleccionamos solo noticias del último día
-    $sql = "SELECT * FROM noticias WHERE fecha_publicacion BETWEEN ? AND ?";
+    $sql = "SELECT * FROM noticias WHERE eliminado_en IS NULL AND fecha_publicacion BETWEEN ? AND ?";
     $stmt = $con->prepare($sql);
     $stmt->bind_param("ss", $ayerMismoHorario, $hoy);
     $stmt->execute();

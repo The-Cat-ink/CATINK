@@ -98,9 +98,9 @@ if(!$superadmin && !$puedeVerAdmin){
 // ====================================
 $kpis = $con->query("
     SELECT
-        (SELECT COUNT(*) FROM noticias) AS total_noticias,
-        (SELECT COUNT(*) FROM noticias WHERE fecha_publicacion <= NOW()) AS publicadas,
-        (SELECT COUNT(*) FROM noticias WHERE fecha_publicacion > NOW()) AS programadas,
+        (SELECT COUNT(*) FROM noticias WHERE eliminado_en IS NULL) AS total_noticias,
+        (SELECT COUNT(*) FROM noticias WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW()) AS publicadas,
+        (SELECT COUNT(*) FROM noticias WHERE eliminado_en IS NULL AND fecha_publicacion > NOW()) AS programadas,
         (SELECT COUNT(*) FROM noticias_stats) AS total_vistas,
         (SELECT COUNT(*) FROM noticia_likes) AS total_likes
 ")->fetch_assoc();
@@ -127,6 +127,7 @@ $resultNoticias = $con->query("
     FROM noticias n
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
+    WHERE n.eliminado_en IS NULL
     GROUP BY n.id
     ORDER BY n.fecha_publicacion DESC
     LIMIT 5

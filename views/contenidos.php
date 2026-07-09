@@ -50,7 +50,7 @@ if ($busquedaGlobal && $q !== '') {
             u.nombre as autor_nombre, u.foto_personal as autor_foto, u.id_u as autor_id
             FROM noticias n
             LEFT JOIN usuarios u ON n.autor = u.id_u
-            WHERE n.titulo LIKE ?
+            WHERE n.eliminado_en IS NULL AND n.titulo LIKE ?
             ORDER BY n.fecha_publicacion DESC
             LIMIT 50";
     $stmt = $con->prepare($sql);
@@ -61,7 +61,7 @@ if ($busquedaGlobal && $q !== '') {
             u.nombre as autor_nombre, u.foto_personal as autor_foto, u.id_u as autor_id
             FROM noticias n
             LEFT JOIN usuarios u ON n.autor = u.id_u
-            WHERE n.fecha_publicacion BETWEEN ? AND ? AND n.titulo LIKE ?
+            WHERE n.eliminado_en IS NULL AND n.fecha_publicacion BETWEEN ? AND ? AND n.titulo LIKE ?
             ORDER BY n.fecha_publicacion ASC";
     $stmt = $con->prepare($sql);
     $stmt->bind_param("sss", $fechaInicio, $fechaFin, $like);
@@ -70,7 +70,7 @@ if ($busquedaGlobal && $q !== '') {
             u.nombre as autor_nombre, u.foto_personal as autor_foto, u.id_u as autor_id
             FROM noticias n
             LEFT JOIN usuarios u ON n.autor = u.id_u
-            WHERE n.fecha_publicacion BETWEEN ? AND ?
+            WHERE n.eliminado_en IS NULL AND n.fecha_publicacion BETWEEN ? AND ?
             ORDER BY n.fecha_publicacion ASC";
     $stmt = $con->prepare($sql);
     $stmt->bind_param("ss", $fechaInicio, $fechaFin);
@@ -177,7 +177,7 @@ if ($vista === 'mes') {
                u.nombre as autor_nombre, u.foto_personal as autor_foto, u.id_u as autor_id
                FROM noticias n
                LEFT JOIN usuarios u ON n.autor = u.id_u
-               WHERE n.fecha_publicacion BETWEEN ? AND ?
+               WHERE n.eliminado_en IS NULL AND n.fecha_publicacion BETWEEN ? AND ?
                ORDER BY n.fecha_publicacion ASC";
     $stmtMes = $con->prepare($sqlMes);
     $stmtMes->bind_param("ss", $mesInicio, $mesFin);
@@ -941,13 +941,13 @@ document.addEventListener('click', function(e) {
 <div id="modalOverlay" class="crop-modal" style="display: none;">
     <div class="card">
         <div class="crop-modal-content">
-            <h3 id="modalTitle">Confirmar eliminación</h3>
-            <p>¿Estás seguro de que deseas eliminar esta noticia? Esta acción no se puede deshacer.</p>
+            <h3 id="modalTitle">Enviar a la papelera</h3>
+            <p>¿Seguro que la quieres enviar?</p>
             <form id="modalForm" action="../controllers/eliminar_noticia.php" method="POST">
                 <input type="hidden" name="id" id="modalId">
                 <div class="crop-actions">
                     <button type="button" class="btn btn-secondary btn-cancel">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                    <button type="submit" class="btn btn-danger">Enviar a la papelera</button>
                 </div>
             </form>
         </div>

@@ -62,7 +62,7 @@ if ($notifUserId > 0) {
                          (SELECT COUNT(*) FROM likes_comentarios lc WHERE lc.comentario_id = c.id_comentario) AS total_likes
                   FROM comentarios c
                   INNER JOIN noticias n ON c.noticia_id = n.id
-                  WHERE c.$colUsuario = ? AND c.estado = 'activo'
+                  WHERE c.$colUsuario = ? AND c.estado = 'activo' AND n.eliminado_en IS NULL
                   ORDER BY c.fecha_publicacion DESC LIMIT 30";
     $stmtMisCom = @$con->prepare($sqlMisCom);
     if ($stmtMisCom) {

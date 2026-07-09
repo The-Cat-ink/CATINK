@@ -22,7 +22,7 @@ $sql = "
     LEFT JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-    WHERE n.id = ? AND n.fecha_publicacion <= NOW()
+    WHERE n.id = ? AND n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
     GROUP BY n.id
 ";
 $stmt = $con->prepare($sql);

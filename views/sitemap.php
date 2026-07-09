@@ -22,7 +22,7 @@ require_once(__DIR__ . '/../data/env.php');
 $con = @new mysqli(env('DB_HOST','localhost'), env('DB_USER','root'), env('DB_PASS',''), env('DB_NAME','u780114275_cat_ink'));
 if (!$con->connect_error) {
     $con->set_charset('utf8mb4');
-    $newsQuery = $con->prepare('SELECT id, slug, fecha_publicacion FROM noticias WHERE fecha_publicacion <= NOW() ORDER BY fecha_publicacion DESC');
+    $newsQuery = $con->prepare('SELECT id, slug, fecha_publicacion FROM noticias WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW() ORDER BY fecha_publicacion DESC');
     if ($newsQuery && $newsQuery->execute()) {
         $newsResult = $newsQuery->get_result();
         while ($row = $newsResult->fetch_assoc()) {
@@ -35,7 +35,7 @@ if (!$con->connect_error) {
         }
         $newsQuery->close();
     }
-    $catQuery = $con->prepare('SELECT DISTINCT c.nombre FROM categorias c INNER JOIN noticia_categoria nc ON nc.categoria_id = c.id_c INNER JOIN noticias n ON n.id = nc.noticia_id WHERE n.fecha_publicacion <= NOW()');
+    $catQuery = $con->prepare('SELECT DISTINCT c.nombre FROM categorias c INNER JOIN noticia_categoria nc ON nc.categoria_id = c.id_c INNER JOIN noticias n ON n.id = nc.noticia_id WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()');
     if ($catQuery && $catQuery->execute()) {
         $catResult = $catQuery->get_result();
         while ($row = $catResult->fetch_assoc()) {

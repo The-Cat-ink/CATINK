@@ -50,7 +50,7 @@ require(__DIR__."/../PHPMailer/src/SMTP.php");
 $hoy = date("Y-m-d H:i:s");
 $ayerMismoHorario = date("Y-m-d H:i:s", strtotime("-24 hours"));
 
-$sql = "SELECT * FROM noticias WHERE fecha_publicacion BETWEEN ? AND ?";
+$sql = "SELECT * FROM noticias WHERE eliminado_en IS NULL AND fecha_publicacion BETWEEN ? AND ?";
 $stmt = $con->prepare($sql);
 $stmt->bind_param("ss", $ayerMismoHorario, $hoy);
 $stmt->execute();

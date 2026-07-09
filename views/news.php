@@ -35,7 +35,7 @@ $sql = "
     LEFT JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-    WHERE $where_clause AND n.fecha_publicacion <= NOW()
+    WHERE $where_clause AND n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
     GROUP BY n.id
 ";
 $stmt = $con->prepare($sql);
@@ -57,7 +57,7 @@ if (!$noticia && isset($_GET['slug'])) {
             LEFT JOIN usuarios u ON n.autor = u.id_u
             LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
             LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-            WHERE $where_clause AND n.fecha_publicacion <= NOW()
+            WHERE $where_clause AND n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
             GROUP BY n.id
         ";
         $stmt = $con->prepare($sql);
@@ -98,6 +98,7 @@ if(!empty($cats)){
         JOIN categorias c ON nc.categoria_id = c.id_c
         WHERE c.nombre IN ($placeholders)
         AND n.id != ?
+        AND n.eliminado_en IS NULL
         AND n.fecha_publicacion <= NOW()
         ORDER BY n.fecha_publicacion DESC
         LIMIT 3
@@ -115,7 +116,7 @@ if(!empty($cats)){
 $stmtRecientes = $con->prepare("
     SELECT id, slug, titulo, descripcion, crop1, crop2, crop3, fecha_publicacion
     FROM noticias
-    WHERE fecha_publicacion <= NOW()
+    WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW()
     AND id != ?
     ORDER BY fecha_publicacion DESC
     LIMIT 4
@@ -129,7 +130,7 @@ $recientes = $stmtRecientes->get_result();
 $stmtUltimas = $con->prepare("
     SELECT id, slug, titulo, crop1, crop2, crop3
     FROM noticias
-    WHERE fecha_publicacion <= NOW()
+    WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW()
     ORDER BY fecha_publicacion DESC
     LIMIT 3
 ");
@@ -138,6 +139,7 @@ $ultimas = $stmtUltimas->get_result();
 $stmtPopulares = $con->prepare("
     SELECT id, slug, titulo, crop1, crop2, crop3
     FROM noticias
+    WHERE eliminado_en IS NULL
     ORDER BY vistas DESC, likes DESC
     LIMIT 3
 ");

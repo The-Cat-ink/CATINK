@@ -44,7 +44,7 @@ $stmt = $con->prepare("
     FROM noticias n
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-    WHERE n.fecha_publicacion <= NOW()
+    WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
     GROUP BY n.id
     ORDER BY n.fecha_publicacion DESC
     LIMIT ? OFFSET ?
@@ -59,7 +59,7 @@ $result = $stmt->get_result();
 // ==============================
 $stmtTotal = $con->prepare("
     SELECT COUNT(*) as total FROM noticias
-    WHERE fecha_publicacion <= NOW()
+    WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW()
 ");
 
 $stmtTotal->execute();
@@ -72,7 +72,7 @@ $totalpaginas = ceil($totalNoticias / $porPagina);
 $stmtUltimas = $con->prepare("
     SELECT id, slug, titulo, crop3
     FROM noticias
-    WHERE fecha_publicacion <= NOW()
+    WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW()
     ORDER BY fecha_publicacion DESC
     LIMIT 3
 ");
@@ -82,6 +82,7 @@ $ultimas = $stmtUltimas->get_result();
 $stmtPopulares = $con->prepare("
     SELECT id, slug, titulo, crop3
     FROM noticias
+    WHERE eliminado_en IS NULL
     ORDER BY vistas DESC, likes DESC
     LIMIT 3
 ");
