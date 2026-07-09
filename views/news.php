@@ -294,7 +294,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
               $imgSrc = $noticia['crop3'] ?? $noticia['crop2'] ?? $noticia['crop1'] ?? null;
               $img = imageUrl($imgSrc);
             ?>
-            <img src="<?= htmlspecialchars($img) ?>" alt="" class="img-titular">
+            <img src="<?= htmlspecialchars($img) ?>" alt="" class="img-titular" style="view-transition-name: article-img-<?= $noticia['id'] ?>;">
             
             <!-- Categorías -->
             <?php foreach ($cats as $cat): ?>
@@ -782,7 +782,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 <br>
                 <ul class="list-group list-group-flush mb-3">
                   <?php while ($row = $ultimas->fetch_assoc()): ?>
-                    <div class="cardSpecial row row-no-gap">
+                    <div class="cardSpecial row row-no-gap" data-article-id="<?= $row['id'] ?>">
                         <div class="col-md-4">
                             <img src="<?= htmlspecialchars(imageUrl($row['crop3'] ?? $row['crop2'] ?? $row['crop1'])) ?>" class="imgCard card-img-left-rounded" loading="lazy">
                         </div>
@@ -803,7 +803,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 <br>
                 <ul class="list-group list-group-flush">
                   <?php while ($row = $populares->fetch_assoc()): ?>
-                    <div class="cardSpecial row row-no-gap">
+                    <div class="cardSpecial row row-no-gap" data-article-id="<?= $row['id'] ?>">
                         <div class="col-md-4">
                             <img src="<?= htmlspecialchars(imageUrl($row['crop3'] ?? $row['crop2'] ?? $row['crop1'])) ?>" class="imgCard card-img-left-rounded" loading="lazy">
                         </div>

@@ -301,7 +301,7 @@ function tiempoRelativo($fecha) {
 <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel" data-bs-interval="7000">
     <div class="carousel-inner">
         <?php foreach($slider as $i => $row): ?>
-            <div class="carousel-item <?= $i==0?'active':'' ?>" data-url="<?= newsUrlFromRow($row) ?>">
+            <div class="carousel-item <?= $i==0?'active':'' ?>" data-url="<?= newsUrlFromRow($row) ?>" data-article-id="<?= $row['id'] ?>">
                 <picture>
                     <!-- MÓVIL: crop 16:9; cubre hasta 1024px para móviles con zoom reducido -->
                     <source
@@ -355,7 +355,7 @@ function tiempoRelativo($fecha) {
                 $url = newsUrlFromRow($r);
                 $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
             ?>
-                <div class="top-card card-width-2-3" data-url="<?= $url ?>">
+                <div class="top-card card-width-2-3" data-url="<?= $url ?>" data-article-id="<?= $r['id'] ?>">
                     <div class="top-card-img-wrapper">
                         <img src="<?= img([$r['crop4'], $r['crop2'], $r['crop1']]) ?>" alt="">
                     </div>
@@ -377,7 +377,7 @@ function tiempoRelativo($fecha) {
                 $url = newsUrlFromRow($r);
                 $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
             ?>
-                <div class="top-card card-width-1-3" data-url="<?= $url ?>">
+                <div class="top-card card-width-1-3" data-url="<?= $url ?>" data-article-id="<?= $r['id'] ?>">
                     <div class="top-card-img-wrapper">
                         <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="">
                     </div>
@@ -402,7 +402,7 @@ function tiempoRelativo($fecha) {
                     $url = newsUrlFromRow($r);
                     $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
             ?>
-                <div class="top-card card-width-1-3" data-url="<?= $url ?>">
+                <div class="top-card card-width-1-3" data-url="<?= $url ?>" data-article-id="<?= $r['id'] ?>">
                     <div class="top-card-img-wrapper">
                         <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="">
                     </div>
@@ -439,7 +439,7 @@ function tiempoRelativo($fecha) {
                     $url = newsUrlFromRow($r);
                     $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
                 ?>
-                    <div class="horizontal-news-card" data-url="<?= $url ?>">
+                    <div class="horizontal-news-card" data-url="<?= $url ?>" data-article-id="<?= $r['id'] ?>">
                         <div class="h-card-img-wrapper">
                             <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="">
                             <!-- Badge de calificación si existe -->
@@ -846,7 +846,7 @@ function tiempoRelativo($fecha) {
                     $url = newsUrlFromRow($r);
                     $cats = array_filter(array_map('trim', explode(',', $r['categorias'] ?? '')));
                 ?>
-                    <div class="horizontal-news-card" data-url="<?= $url ?>">
+                    <div class="horizontal-news-card" data-url="<?= $url ?>" data-article-id="<?= $r['id'] ?>">
                         <div class="h-card-img-wrapper">
                             <img src="<?= img([$r['crop3'], $r['crop1']]) ?>" alt="" loading="lazy">
                         </div>

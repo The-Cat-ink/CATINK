@@ -416,7 +416,7 @@ if ($q !== '') {
             $img = imageUrl($row['crop3']);
           ?>
 
-          <div class="card mb-3" data-url="<?= newsUrlFromRow($row) ?>">
+          <div class="card mb-3" data-url="<?= newsUrlFromRow($row) ?>" data-article-id="<?= $row['id'] ?>">
             <div class="row row-no-gap">
 
               <div class="col-md-4">
@@ -507,7 +507,7 @@ if ($q !== '') {
               <br>
               <ul class="list-group list-group-flush mb-3">
                 <?php while ($row = $ultimas->fetch_assoc()): ?>
-                  <div class="cardSpecial row row-no-gap">
+                  <div class="cardSpecial row row-no-gap" data-article-id="<?= $row['id'] ?>">
                         <div class="col-md-4">
                             <img src="<?= imageUrl($row['crop3']) ?>" class="imgCard card-img-left-rounded" loading="lazy" decoding="async">
                         </div>
@@ -528,7 +528,7 @@ if ($q !== '') {
               <br>
               <ul class="list-group list-group-flush">
                 <?php while ($row = $populares->fetch_assoc()): ?>
-                  <div class="cardSpecial row row-no-gap">
+                  <div class="cardSpecial row row-no-gap" data-article-id="<?= $row['id'] ?>">
                         <div class="col-md-4">
                             <img src="<?= imageUrl($row['crop3']) ?>" class="imgCard card-img-left-rounded" loading="lazy" decoding="async">
                         </div>

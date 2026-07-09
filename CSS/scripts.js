@@ -83,6 +83,51 @@
   });
   document.addEventListener('keydown', handleDropdownEscape);
 
+  // Capturar el ID de la noticia al hacer clic para View Transitions
+  document.addEventListener('click', function(e) {
+    const card = e.target.closest('[data-article-id]');
+    if (card) {
+      const articleId = card.getAttribute('data-article-id');
+      const img = card.querySelector('img');
+      if (img && articleId) {
+        // Limpiar cualquier otra asignación previa en la página actual
+        document.querySelectorAll('[style*="view-transition-name"]').forEach(el => {
+          el.style.viewTransitionName = '';
+        });
+        // Asignar dinámicamente al elemento clicado
+        img.style.viewTransitionName = 'article-img-' + articleId;
+        sessionStorage.setItem('transitionActiveId', articleId);
+      }
+    }
+  });
+
+  // Habilitar View Transitions API nativa en navegación Turbo Drive
+  document.addEventListener('turbo:before-render', (event) => {
+    if (document.startViewTransition) {
+      const newBody = event.detail.newBody;
+      const articleId = sessionStorage.getItem('transitionActiveId');
+      
+      if (articleId) {
+        const detailImg = newBody.querySelector('.img-titular');
+        if (detailImg) {
+          // 1. Si vamos al detalle de noticia, asignar transition-name al titular nuevo
+          detailImg.style.viewTransitionName = 'article-img-' + articleId;
+        } else {
+          // 2. Si volvemos al listado, asignar transition-name al card correspondiente en la nueva página
+          const listCardImg = newBody.querySelector(`[data-article-id="${articleId}"] img`);
+          if (listCardImg) {
+            listCardImg.style.viewTransitionName = 'article-img-' + articleId;
+          }
+        }
+      }
+
+      event.preventDefault();
+      document.startViewTransition(() => {
+        event.detail.resume();
+      });
+    }
+  });
+
   // Escuchar evento turbo:load en lugar de DOMContentLoaded
   document.addEventListener('turbo:load', function() {
     console.log('Turbo: Página cargada e inicializando scripts.js');
