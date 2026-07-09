@@ -114,6 +114,17 @@
     }
   };
 
+  const toggleMobileSidebar = () => {
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+      setSidebarState(!sidebar.classList.contains('active'));
+    }
+  };
+
+  const closeMobileSidebar = () => {
+    setSidebarState(false);
+  };
+
   // Modal Deletions - Click fuera
   const handleCropModalOutsideClick = (event) => {
     const overlay = event.target.closest(".crop-modal");
@@ -157,10 +168,11 @@
     const sidebarBackdrop = document.getElementById('sidebarBackdrop');
 
     if (sidebarToggle && sidebar) {
-      sidebarToggle.addEventListener('click', () => {
-        setSidebarState(!sidebar.classList.contains('active'));
-      });
-      sidebarBackdrop?.addEventListener('click', () => setSidebarState(false));
+      sidebarToggle.removeEventListener('click', toggleMobileSidebar);
+      sidebarToggle.addEventListener('click', toggleMobileSidebar);
+      
+      sidebarBackdrop?.removeEventListener('click', closeMobileSidebar);
+      sidebarBackdrop?.addEventListener('click', closeMobileSidebar);
 
       // Limpiar y registrar eventos del documento/ventana para móvil
       document.removeEventListener('click', handleMobileSidebarOutsideClick);
@@ -718,5 +730,4 @@
 
 
   document.addEventListener('turbo:load', initAdmin);
-  initAdmin();
 })();

@@ -224,6 +224,6 @@ $_SESSION['id_u'] = $fila['id_u'];
 </div>
 <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 <main class="site-main">
-  <button id="sidebarToggle" class="btn btn-outline-secondary d-md-none mb-3 siderbar-toggle-mobile">
+  <button id="sidebarToggle" class="btn btn-outline-secondary d-md-none mb-3 sidebar-toggle-mobile">
     <i class="bi bi-list"></i> Menú
   </button>
