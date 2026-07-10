@@ -1028,7 +1028,7 @@ function tiempoRelativo($fecha) {
             section.style.setProperty('--bleed-right', rightOffset + 'px');
         });
     }
-    document.addEventListener('DOMContentLoaded', fixBleedSections);
+    document.addEventListener('turbo:load', fixBleedSections);
     window.addEventListener('resize', fixBleedSections);
     fixBleedSections();
 </script>
@@ -1040,7 +1040,8 @@ function tiempoRelativo($fecha) {
     let currentVideoIndex = 0;
     let playlistVideos = [];
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('turbo:load', () => {
+        currentVideoIndex = 0;
         fetch('./controllers/youtube_proxy.php')
             .then(r => r.json())
             .then(data => {

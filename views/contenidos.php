@@ -344,7 +344,7 @@ if ($vista === 'mes') {
                                         </span>
                                         <span class="card-time"><i class="bi bi-clock"></i> <?= $fechaPublicacion->format('H:i') ?></span>
                                     </div>
-                                    <img src="<?= $img ?>" alt="" class="card-img-top" loading="lazy" decoding="async">
+                                    <img src="<?= $img ?>" alt="" class="card-img-top" draggable="false" loading="lazy" decoding="async">
                                     <h6><?= htmlspecialchars($row['titulo']) ?></h6>
                                     <div class="card-metrics">
                                         <span><i class="bi bi-eye"></i> <?= number_format($row['vistas']) ?></span>
