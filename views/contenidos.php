@@ -746,6 +746,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Error de conexión al reprogramar');
                 location.reload();
             });
+        });
         // Click para llevar a editar noticia (sólo si no está arrastrando)
         document.addEventListener('click', function(e) {
             if (isDragging) return;
