@@ -530,6 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const monthOffset = <?= $monthOffset ?>;
     const baseUrl = window.location.pathname;
     const canEdit = <?= !empty($ACL['editar']) ? 'true' : 'false' ?>;
+    let isDragging = false;
 
     function goToWeek(offset) {
         window.location.href = `${baseUrl}?week=${offset}&vista=${vista}&filtro=${filtro}`;
@@ -600,6 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('dragstart', function(e) {
             const card = e.target.closest('[draggable="true"][data-id]');
             if (!card) return;
+            isDragging = true;
             draggedEl = card;
             draggedId = card.dataset.id;
             card.classList.add('dragging');
@@ -612,6 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
             draggedEl = null;
             draggedId = null;
+            setTimeout(() => { isDragging = false; }, 50);
         });
 
         // Drop zones: day-column y month-cell
@@ -743,6 +746,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Error de conexión al reprogramar');
                 location.reload();
             });
+        // Click para llevar a editar noticia (sólo si no está arrastrando)
+        document.addEventListener('click', function(e) {
+            if (isDragging) return;
+
+            // Ignorar si se hace clic en botones, enlaces o acciones de la tarjeta
+            if (e.target.closest('.noticias-actions') || e.target.closest('a') || e.target.closest('button')) {
+                return;
+            }
+
+            // Buscar tarjeta en vista semanal
+            const card = e.target.closest('.noticias-card');
+            if (card && card.dataset.id) {
+                window.location.href = `editar.php?id=${card.dataset.id}`;
+                return;
+            }
+
+            // Buscar tarjeta en vista mensual
+            const monthItem = e.target.closest('.month-news-item');
+            if (monthItem && monthItem.dataset.id) {
+                window.location.href = `editar.php?id=${monthItem.dataset.id}`;
+                return;
+            }
         });
     }
 });
