@@ -11,9 +11,6 @@
 */
 
 (function () {
-  if (window.adminJsInitialized) return;
-  window.adminJsInitialized = true;
-
   // --- VARIABLES Y CONFIGURACIONES DE ALTO NIVEL ---
   let collapseTimer;
   const desktopMQ = window.matchMedia('(min-width: 769px)');

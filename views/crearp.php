@@ -198,7 +198,7 @@
 
   <h1 class="cn-page-title">Nueva Publicidad</h1>
 
-  <form id="formPublicidad" action="./../../controllers/guardar_publicidad.php" method="POST" enctype="multipart/form-data">
+  <form id="formPublicidad" action="./../controllers/guardar_publicidad.php" method="POST" enctype="multipart/form-data">
     <input type="hidden" name="autor" value="<?= $fila['id_u'] ?? '' ?>">
     <input type="hidden" name="imagenCrop" id="imagenCrop" value="">
 

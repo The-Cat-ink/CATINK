@@ -53,7 +53,7 @@
     <div class="mt-3">
         <a href="./../views/publicidad.php" class="btn btn-secondary"><i class="bi bi-arrow-return-left"></i> Volver</a>
     </div>
-    <form action="./../../controllers/editar_publicidad.php" method="POST" enctype="multipart/form-data">
+    <form action="./../controllers/editar_publicidad.php" method="POST" enctype="multipart/form-data">
         <div class="form-card card">
             <input type="hidden" name="id_pub" value="<?= $publicidad['id_pub'] ?>">
             

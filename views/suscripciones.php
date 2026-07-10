@@ -109,7 +109,7 @@ $otros = $totalSuscripciones - $hombres - $mujeres;
     <!-- Toolbar -->
     <div class="contenidos-toolbar">
         <div class="contenidos-tabs" style="display:flex; align-items:center; gap:8px;">
-            <button type="button" class="btn btn-outline-secondary" onclick="toggleSelectAll()" style="padding:6px 12px; font-size:0.85rem; border-radius:8px;">
+            <button type="button" class="btn btn-outline-secondary" onclick="selectAll()" style="padding:6px 12px; font-size:0.85rem; border-radius:8px;">
                 <i class="bi bi-check-all"></i> Marcar todos
             </button>
             <button type="button" class="btn btn-outline-secondary" onclick="deselectAll()" style="padding:6px 12px; font-size:0.85rem; border-radius:8px;">
@@ -212,6 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// Llamado por el checkbox del header: alterna según el estado del propio checkbox
 function toggleSelectAll() {
     const checkboxes = document.querySelectorAll('.subscriber-checkbox');
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
@@ -220,6 +221,19 @@ function toggleSelectAll() {
     checkboxes.forEach(checkbox => {
         checkbox.checked = allChecked;
     });
+    
+    updateSendButton();
+}
+
+// Llamado por el botón "Marcar todos": siempre selecciona todo
+function selectAll() {
+    const checkboxes = document.querySelectorAll('.subscriber-checkbox');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    selectAllCheckbox.checked = true;
     
     updateSendButton();
 }
