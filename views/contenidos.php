@@ -330,7 +330,7 @@ if ($vista === 'mes') {
                                     $estadoClass = $row['_estado'];
                                 ?>
                                 <?php $puedeMover = ($estadoClass !== 'publicado' && !empty($ACL['editar'])); ?>
-                                <div class="noticias-card estado-<?= $estadoClass ?>" <?= $puedeMover ? 'draggable="true"' : '' ?> data-id="<?= $row['id'] ?>">
+                                <div class="noticias-card estado-<?= $estadoClass ?>" <?= $puedeMover ? 'draggable="true"' : '' ?> data-id="<?= $row['id'] ?>" data-url="<?= newsUrlFromRow($row) ?>">
                                     <div class="card-status-bar"></div>
                                     <div class="card-header d-flex justify-content-between">
                                         <span class="estado-badge estado-<?= $estadoClass ?>">
@@ -417,7 +417,7 @@ if ($vista === 'mes') {
                             <?php if (!empty($noticiasDelDia)): ?>
                                 <div class="month-cell-news">
                                     <?php foreach (array_slice($noticiasDelDia, 0, 3) as $n): ?>
-                                        <div class="month-news-item estado-<?= $n['_estado'] ?>" draggable="true" data-id="<?= $n['id'] ?>" title="<?= htmlspecialchars($n['titulo']) ?>">
+                                        <div class="month-news-item estado-<?= $n['_estado'] ?>" draggable="true" data-id="<?= $n['id'] ?>" data-url="<?= newsUrlFromRow($n) ?>" title="<?= htmlspecialchars($n['titulo']) ?>">
                                             <span class="month-news-dot"></span>
                                             <span class="month-news-title"><?= htmlspecialchars(mb_strimwidth($n['titulo'], 0, 22, '...')) ?></span>
                                         </div>
@@ -747,7 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 location.reload();
             });
         });
-        // Click para llevar a editar noticia (sólo si no está arrastrando)
+        // Click para llevar a la noticia directamente (sólo si no está arrastrando)
         document.addEventListener('click', function(e) {
             if (isDragging) return;
 
@@ -758,15 +758,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Buscar tarjeta en vista semanal
             const card = e.target.closest('.noticias-card');
-            if (card && card.dataset.id) {
-                window.location.href = `editar.php?id=${card.dataset.id}`;
+            if (card && card.dataset.url) {
+                window.location.href = card.dataset.url;
                 return;
             }
 
             // Buscar tarjeta en vista mensual
             const monthItem = e.target.closest('.month-news-item');
-            if (monthItem && monthItem.dataset.id) {
-                window.location.href = `editar.php?id=${monthItem.dataset.id}`;
+            if (monthItem && monthItem.dataset.url) {
+                window.location.href = monthItem.dataset.url;
                 return;
             }
         });

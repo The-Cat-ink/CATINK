@@ -1,4 +1,13 @@
 <?php
+if(session_status() == PHP_SESSION_NONE){
+    session_start();
+}
+$condicionFecha = "AND n.fecha_publicacion <= NOW()";
+if (isset($_SESSION['usuario'])) {
+    // Los administradores/editores autenticados pueden previsualizar noticias futuras/programadas
+    $condicionFecha = "";
+}
+
 require_once("./../data/conexion.php");
 require_once("./helpers/urlhelper.php");
 require_once("./helpers/moderacion.php");
@@ -35,7 +44,7 @@ $sql = "
     LEFT JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-    WHERE $where_clause AND n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
+    WHERE $where_clause AND n.eliminado_en IS NULL $condicionFecha
     GROUP BY n.id
 ";
 $stmt = $con->prepare($sql);
@@ -57,7 +66,7 @@ if (!$noticia && isset($_GET['slug'])) {
             LEFT JOIN usuarios u ON n.autor = u.id_u
             LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
             LEFT JOIN categorias c ON nc.categoria_id = c.id_c
-            WHERE $where_clause AND n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
+            WHERE $where_clause AND n.eliminado_en IS NULL $condicionFecha
             GROUP BY n.id
         ";
         $stmt = $con->prepare($sql);
