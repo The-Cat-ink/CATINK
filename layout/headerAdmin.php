@@ -84,7 +84,7 @@ $_SESSION['id_u'] = $fila['id_u'];
   // const de nivel superior) → forzar recarga completa al navegar hacia ellas.
   $turboReloadPages = [
       'admin', 'crear', 'crearp', 'crearu', 'editar', 'editarp', 'editaru',
-      'cats', 'contenidos', 'recomendados', 'esperamos', 'publicidad',
+      'cats', 'contenidos', 'borradores', 'recomendados', 'esperamos', 'publicidad',
       'correos', 'suscripciones', 'usuarios', 'lectores', 'videos', 'avatares'
   ];
   if (in_array($archivoActual, $turboReloadPages, true)): ?>
@@ -122,6 +122,13 @@ $_SESSION['id_u'] = $fila['id_u'];
             <li class="sidebar-menu-item">
                 <a href="<?= basePath() ?>/views/crear.php" class="sidebar-menu-link" data-tooltip="Crear Noticia">
                     <i class="bi bi-pencil-square"></i> <span class="sb-label">Crear Noticia</span>
+                </a>
+            </li>
+        <?php endif; ?>
+        <?php if (($_SESSION['ACL']['noticias']['leer']?? false)): ?>
+            <li class="sidebar-menu-item">
+                <a href="./borradores.php" class="sidebar-menu-link" data-tooltip="Borradores">
+                    <i class="bi bi-journal-text"></i> <span class="sb-label">Borradores</span>
                 </a>
             </li>
         <?php endif; ?>

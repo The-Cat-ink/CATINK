@@ -50,7 +50,7 @@ if ($busquedaGlobal && $q !== '') {
             u.nombre as autor_nombre, u.foto_personal as autor_foto, u.id_u as autor_id
             FROM noticias n
             LEFT JOIN usuarios u ON n.autor = u.id_u
-            WHERE n.eliminado_en IS NULL AND n.titulo LIKE ?
+            WHERE n.eliminado_en IS NULL AND n.fecha_publicacion IS NOT NULL AND n.titulo LIKE ?
             ORDER BY n.fecha_publicacion DESC
             LIMIT 50";
     $stmt = $con->prepare($sql);

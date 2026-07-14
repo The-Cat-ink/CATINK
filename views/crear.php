@@ -469,6 +469,13 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 .cn-toast-title { font-weight: 700; color: var(--accent); margin-bottom: 7px; }
 .cn-toast ul { margin: 0; padding-left: 16px; }
 .cn-toast li { margin: 3px 0; }
+
+/* ── AUTOGUARDADO EN BORRADORES (indicador de estado) ── */
+.cn-autosave-status {
+  font-size: 11px; color: var(--muted); text-align: center; margin-top: 2px;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.cn-autosave-status::before { content: "✓"; color: #3fb950; font-weight: 700; }
 </style>
 
 <div class="admin-container">
@@ -481,7 +488,7 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 
   <h1 class="cn-page-title" style="text-align: center;">Alta de noticia</h1>
 
-  <form id="formPublicacion" enctype="multipart/form-data">
+  <form id="formPublicacion" enctype="multipart/form-data" autocomplete="off">
     <input type="hidden" name="autor" value="<?= $_SESSION['id_u'] ?? '' ?>">
     <input type="hidden" name="crop1" id="crop1">
     <input type="hidden" name="crop2" id="crop2">
@@ -489,6 +496,8 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
     <input type="hidden" name="crop4" id="crop4">
     <input type="hidden" name="contenido" id="contenido">
     <input type="hidden" name="fecha_publicacion" id="fecha_publicacion_hidden">
+    <input type="hidden" name="borrador" id="borrador_flag" value="0">
+    <input type="hidden" name="draft_id" id="draft_id_hidden" value="0">
 
     <div class="cn-wrap">
 
@@ -638,10 +647,11 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
         </div>
       </div><!-- /sec-schedule -->
       <?php if (!empty($ACL['crear'])): ?>
-      <div style="margin-top:12px;">
+      <div style="margin-top:12px; display:flex; flex-direction:column; gap:10px;">
         <button type="submit" class="cn-publish-btn" name="guardarNoticia">
           <i class="bi bi-send"></i> Publicar noticia
         </button>
+        <div id="autosaveStatus" class="cn-autosave-status" style="display:none;"></div>
       </div>
       <?php endif; ?>
 
@@ -1191,11 +1201,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const autoAdjustBtn   = document.getElementById('autoAdjustBtn');
   const manualAdjustBtn = document.getElementById('manualAdjustBtn');
 
+  const borradorFlag = document.getElementById('borrador_flag');
+
   document.getElementsByName('guardarNoticia')[0]?.addEventListener('click', e => {
     e.preventDefault();
     if (_submitting) return;
     const errors = validateForm();
     if (errors.length) { showToast(errors); return; }
+    borradorFlag.value = '0';
 
     // Actualizamos valores ocultos
     if (window.editor) {
@@ -1256,7 +1269,7 @@ document.addEventListener('DOMContentLoaded', () => {
           try {
               const data = JSON.parse(text);
               if (data.success) {
-                  // Todo excelente, redirigimos a lista de contenidos (o limpiamos la UI)
+                  if (window.__clearBorradorPtr) window.__clearBorradorPtr();
                   window.location.href = './contenidos.php?msg=creado';
               } else {
                   // Falló alguna validación interna
@@ -1269,8 +1282,8 @@ document.addEventListener('DOMContentLoaded', () => {
               // El controlador antiguo (si no lo hemos modificado) hace "header(Location: ...)" 
               // en lugar de enviar JSON. Por lo tanto, si la URL no fue JSON sino un redirect OK:
               if (response.ok) {
-                  // Ocurrió la redirección silenciosa, o mandó basura pero código 200 (OK)
-                  // Redirigimos manualmente por seguridad
+                  // Redirección silenciosa o 200 sin JSON: redirigimos por seguridad
+                  if (window.__clearBorradorPtr) window.__clearBorradorPtr();
                   window.location.href = './contenidos.php?msg=creado';
               } else {
                   console.error("Respuesta fallida del servidor:", text);
@@ -1450,6 +1463,7 @@ function removeCrop(num) {
   [2, 3, 4].forEach(clearZone);
   document.getElementById('crop1').value = '';
   document.getElementById('previewSection').style.display = 'none';
+  if (window.__autosaveTrigger) window.__autosaveTrigger();  // reflejar que se quitaron las imágenes
 }
 function onFileSelected(e) {
   const file = e.target.files[0];
@@ -1545,6 +1559,7 @@ function confirmCrop() {
       const data64 = reader.result;
       document.getElementById('crop' + cropNum).value = data64;
       setZonePreview(cropNum, data64);
+      if (window.__autosaveTrigger) window.__autosaveTrigger();  // guardar la imagen recién recortada
 
       if (_chainQueue.length > 0) {
         const nextNum = _chainQueue.shift();
@@ -1708,6 +1723,184 @@ document.getElementById('pvTabs')?.addEventListener('click', e => {
   const panel = document.getElementById('pv-' + btn.dataset.tab);
   if (panel) panel.classList.add('active');
 });
+</script>
+
+<!-- ════════════════════════════════
+     AUTOGUARDADO EN BORRADORES (servidor)
+     Mientras escribes se crea/actualiza un borrador real (borrador = 1) que
+     aparece en "Borradores", con texto E imágenes. Si la sesión se interrumpe
+     (recarga, cierre de pestaña, corte de luz o de internet), "Crear noticia"
+     vuelve a abrir EN BLANCO: el trabajo no se reanuda aquí, se continúa desde
+     el apartado "Borradores". Al publicar se corta el autoguardado.
+════════════════════════════════ -->
+<script>
+(function () {
+  const form = document.getElementById('formPublicacion');
+  if (!form) return;
+  const $ = id => document.getElementById(id);
+
+  const draftInput = $('draft_id_hidden');
+  let draftId   = 0;
+  let dirty     = false;
+  let saving    = false;
+  let suppress  = false;                        // no guardar mientras limpiamos
+  let stopped   = false;                         // cortar autoguardado tras publicar
+  let lastSig   = '';
+  let timer     = null;
+  const lastCrops = { crop1: null, crop2: null, crop3: null, crop4: null };
+
+  function editorHtml() {
+    if (window.editor && typeof window.editor.getData === 'function') return window.editor.getData();
+    return ($('contenido') && $('contenido').value) || '';
+  }
+  function cats() {
+    return Array.from(document.querySelectorAll('#catInputs input[name="categoria[]"]')).map(i => i.value);
+  }
+  function hasAnyImage() {
+    return ['crop1', 'crop2', 'crop3', 'crop4'].some(ck => ($(ck)?.value || '').indexOf('data:image/') === 0);
+  }
+  function meaningful() {
+    const t = ($('titulo')?.value || '').trim();
+    const c = editorHtml().replace(/<[^>]*>/g, '').trim();
+    const d = ($('descripcion')?.value || '').trim();
+    return !!(t || c || d || hasAnyImage());
+  }
+
+  // Devuelve los crops que cambiaron desde el último guardado (para no re-subir).
+  function changedCrops() {
+    const out = {};
+    ['crop1', 'crop2', 'crop3', 'crop4'].forEach(ck => {
+      const v = $(ck)?.value || '';
+      if (v && v.indexOf('data:image/') === 0 && v !== lastCrops[ck]) out[ck] = v;
+    });
+    return out;
+  }
+
+  function payload(cropsToSend) {
+    const p = new URLSearchParams();
+    p.set('draft_id',         draftId);
+    p.set('titulo',           $('titulo')?.value || '');
+    p.set('descripcion',      $('descripcion')?.value || '');
+    p.set('contenido',        editorHtml());
+    p.set('tipo_publicacion', $('tipo_publicacion')?.value || 'noticia');
+    p.set('calificacion',     $('calificacion')?.value || '');
+    p.set('pros',             $('pros')?.value || '');
+    p.set('contras',          $('contras')?.value || '');
+    p.set('es_estreno',       $('es_estreno')?.checked ? '1' : '0');
+    p.set('seccion_estreno',  $('seccion_estreno')?.value || '');
+    cats().forEach(c => p.append('categoria[]', c));
+    Object.keys(cropsToSend).forEach(ck => p.set(ck, cropsToSend[ck]));
+    return p;
+  }
+
+  function setStatus(txt) { const el = $('autosaveStatus'); if (el) { el.textContent = txt; el.style.display = ''; } }
+  function hora() { return new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }); }
+
+  async function save() {
+    if (saving || suppress || stopped || !meaningful()) return;
+    const crops = changedCrops();
+    // Firma solo del texto (sin base64); los crops se envían aparte si cambiaron.
+    const sig = payload({}).toString();
+    if (sig === lastSig && Object.keys(crops).length === 0) { dirty = false; return; }
+    saving = true;
+    setStatus('Guardando…');
+    try {
+      const res  = await fetch('../controllers/autoguardar_borrador.php', { method: 'POST', body: payload(crops) });
+      const data = await res.json();
+      if (data && data.ok) {
+        if (data.id) {
+          draftId = data.id;
+          if (draftInput) draftInput.value = draftId;
+        }
+        Object.keys(crops).forEach(ck => { lastCrops[ck] = crops[ck]; });
+        lastSig = sig;
+        dirty = false;
+        setStatus('Guardado en Borradores · ' + hora());
+      } else {
+        setStatus('No se pudo autoguardar · reintentando…');
+      }
+    } catch (e) {
+      setStatus('Sin conexión · se reintentará');
+    } finally {
+      saving = false;
+    }
+  }
+
+  function schedule() { if (suppress || stopped) return; dirty = true; clearTimeout(timer); timer = setTimeout(save, 1500); }
+
+  // ── Arrancar siempre en blanco ──
+  // Al recargar, el navegador repuebla por su cuenta los campos que el usuario
+  // había escrito. Como el trabajo ya quedó a salvo en "Borradores", aquí lo
+  // borramos para que "Crear noticia" siempre empiece de cero.
+  function limpiarFormulario() {
+    suppress = true;
+
+    ['titulo', 'descripcion', 'calificacion', 'pros', 'contras'].forEach(id => {
+      const el = $(id);
+      if (el && el.value !== '') { el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true })); }
+    });
+
+    const tipo = $('tipo_publicacion');
+    if (tipo && tipo.value !== 'noticia') { tipo.value = 'noticia'; tipo.dispatchEvent(new Event('change', { bubbles: true })); }
+
+    const estreno = $('es_estreno');
+    if (estreno && estreno.checked) { estreno.checked = false; estreno.dispatchEvent(new Event('change', { bubbles: true })); }
+
+    // Categorías marcadas (dispara el 'change' para que se quiten los chips)
+    document.querySelectorAll('#catMenu input[type="checkbox"]:checked').forEach(chk => {
+      chk.checked = false;
+      chk.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    // Imágenes recortadas y editor
+    ['crop1', 'crop2', 'crop3', 'crop4'].forEach(ck => { if ($(ck)) $(ck).value = ''; });
+    if ($('contenido')) $('contenido').value = '';
+    (function vaciarEditor() {
+      if (window.editor && typeof window.editor.setData === 'function') window.editor.setData('');
+      else setTimeout(vaciarEditor, 200);
+    })();
+
+    lastSig = '';
+    dirty = false;
+    suppress = false;
+  }
+
+  // Enganches de guardado
+  form.addEventListener('input', schedule);
+  form.addEventListener('change', schedule);
+  (function hookEditor() {
+    if (window.editor && window.editor.model) window.editor.model.document.on('change:data', schedule);
+    else setTimeout(hookEditor, 300);
+  })();
+  setInterval(() => { if (dirty) save(); }, 20000);
+
+  // Disparador para acciones discretas que NO emiten 'input' (recortar/quitar
+  // imágenes fijan el valor por JS). Guarda pronto para no perder la imagen.
+  window.__autosaveTrigger = function () { if (suppress || stopped) return; dirty = true; clearTimeout(timer); timer = setTimeout(save, 600); };
+
+  // Red de seguridad ante recargas rápidas: volcar el texto pendiente al ocultar
+  // la página (sendBeacon no espera respuesta). Las imágenes ya se guardan al recortar.
+  function beaconFlush() {
+    if (stopped || !dirty || !meaningful()) return;
+    try {
+      const fd = new FormData();
+      for (const [k, v] of payload({}).entries()) fd.append(k, v);
+      navigator.sendBeacon('../controllers/autoguardar_borrador.php', fd);
+    } catch (e) {}
+  }
+  window.addEventListener('pagehide', beaconFlush);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') beaconFlush(); });
+
+  // Al publicar con éxito, cortar el autoguardado (evita que el beacon de
+  // pagehide recree el borrador que el controlador acaba de borrar).
+  window.__clearBorradorPtr = function () { stopped = true; clearTimeout(timer); dirty = false; };
+
+  // Puntero de la versión anterior (reanudación): ya no se usa.
+  try { localStorage.removeItem('catink_borrador_id'); } catch (e) {}
+
+  // Al cargar, dejar el formulario en blanco: lo escrito ya vive en "Borradores".
+  limpiarFormulario();
+})();
 </script>
 
 <?php include(__DIR__ . "/../layout/footerAdmin.php"); ?>

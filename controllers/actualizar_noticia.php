@@ -145,9 +145,12 @@ $checkCreado->execute();
 $resCreado = $checkCreado->get_result()->fetch_assoc();
 $creado_por = $resCreado['creado_por'] ?? $usuario_id;
 
+// Al guardar desde el editor, la noticia deja de ser borrador: se publica con
+// la fecha indicada (borrador = 0). La validación de arriba ya garantiza que
+// tiene título, descripción y contenido.
 $update = $con->prepare("
   UPDATE noticias
-  SET titulo = ?, slug = ?, descripcion = ?, contenido = ?, fecha_publicacion = ?, creado_por = ?, editado_por = ?, tipo_publicacion = ?, calificacion = ?, pros = ?, contras = ?, es_estreno = ?, seccion_estreno = ?
+  SET titulo = ?, slug = ?, descripcion = ?, contenido = ?, fecha_publicacion = ?, creado_por = ?, editado_por = ?, tipo_publicacion = ?, calificacion = ?, pros = ?, contras = ?, es_estreno = ?, seccion_estreno = ?, borrador = 0
   WHERE id = ?
 ");
 // Asegurarse de que creado_por y usuario_id son integers

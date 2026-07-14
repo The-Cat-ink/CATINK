@@ -52,9 +52,12 @@ $categoriasSeleccionadas = [];
 $resCat = $stmtCat->get_result();
 while ($row = $resCat->fetch_assoc()) $categoriasSeleccionadas[] = $row;
 
-// Fecha actual de publicación para pre-cargar el programador
-$fechaExistente = date('Y-m-d\TH:i', strtotime($noticia['fecha_publicacion']));
-$esProgramada = (strtotime($noticia['fecha_publicacion']) > time());
+// Fecha actual de publicación para pre-cargar el programador.
+// Un borrador no tiene fecha (NULL): se precarga con la fecha/hora actual.
+$esBorrador = empty($noticia['fecha_publicacion']);
+$tsPublicacion = $esBorrador ? time() : strtotime($noticia['fecha_publicacion']);
+$fechaExistente = date('Y-m-d\TH:i', $tsPublicacion);
+$esProgramada = (!$esBorrador && $tsPublicacion > time());
 
 // URLs de imágenes usando imageUrl() para servir correctamente
 // Nota: imageUrl('') devuelve el placeholder.svg, así que guardamos contra

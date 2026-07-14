@@ -35,9 +35,9 @@ if (empty($searchTerms)) {
 $searchQuery = implode(' ', $searchTerms);
 
 $stmt = $con->prepare("
-    SELECT id, titulo, slug, crop3 
+    SELECT id, titulo, slug, crop3
     FROM noticias
-    WHERE eliminado_en IS NULL AND MATCH(titulo, descripcion, contenido) AGAINST(? IN BOOLEAN MODE)
+    WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW() AND MATCH(titulo, descripcion, contenido) AGAINST(? IN BOOLEAN MODE)
     ORDER BY id DESC
     LIMIT 10
 ");

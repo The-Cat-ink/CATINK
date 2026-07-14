@@ -102,7 +102,7 @@ $ultimas = $stmtUltimas->get_result();
 $stmtPopulares = $con->prepare("
     SELECT id, slug, titulo, crop3
     FROM noticias
-    WHERE eliminado_en IS NULL
+    WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW()
     ORDER BY vistas DESC, likes DESC
     LIMIT 3
 ");

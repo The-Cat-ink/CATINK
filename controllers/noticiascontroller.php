@@ -116,8 +116,16 @@ $contenido = preg_replace_callback(
     function($m){ return '<div class="social-embed" data-url="'.htmlspecialchars($m[1]).'"></div>'; },
     $contenido
 );
-$fecha_publicacion = $_POST['fecha_publicacion'] ?? date('Y-m-d H:i:s');
-$fecha_publicacion = str_replace('T', ' ', $fecha_publicacion);
+// ¿Se está guardando como borrador? Un borrador no tiene fecha de publicación
+// (queda NULL) para que NO aparezca en el sitio ni se publique solo.
+$esBorrador = intval($_POST['borrador'] ?? 0) === 1;
+
+if ($esBorrador) {
+    $fecha_publicacion = null;
+} else {
+    $fecha_publicacion = $_POST['fecha_publicacion'] ?? date('Y-m-d H:i:s');
+    $fecha_publicacion = str_replace('T', ' ', $fecha_publicacion);
+}
 
 $tipo_publicacion = $_POST['tipo_publicacion'] ?? 'noticia';
 $calificacion = null;
@@ -136,7 +144,15 @@ $seccion_estreno = ($es_estreno === 1 && !empty($_POST['seccion_estreno'])) ? $_
 // ============================
 // VALIDACION
 // ============================
-if (empty($titulo) || empty($descripcion) || empty($contenido)) {
+// Un borrador solo exige título (trabajo en progreso). Una publicación normal
+// exige título, descripción y contenido.
+if ($esBorrador) {
+  if (empty($titulo)) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'error' => 'El borrador necesita al menos un título.']);
+    exit;
+  }
+} elseif (empty($titulo) || empty($descripcion) || empty($contenido)) {
   header('Content-Type: application/json');
   echo json_encode(['success' => false, 'error' => 'Datos incompletos. Revisa título, descripción y contenido.']);
   exit;
@@ -145,15 +161,16 @@ if (empty($titulo) || empty($descripcion) || empty($contenido)) {
 // INSERTAR NOTICIA (YA SIN CATEGORIA)
 // ============================
 $usuario_id = intval($_SESSION['id_u'] ?? 0);
-$sql = "INSERT INTO noticias (titulo, slug, descripcion, autor, contenido, fecha_publicacion, creado_por, editado_por, tipo_publicacion, calificacion, pros, contras, es_estreno, seccion_estreno)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$borrador = $esBorrador ? 1 : 0;
+$sql = "INSERT INTO noticias (titulo, slug, descripcion, autor, contenido, fecha_publicacion, creado_por, editado_por, tipo_publicacion, calificacion, pros, contras, es_estreno, seccion_estreno, borrador)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 $stmt = $con->prepare($sql);
 if (!$stmt) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'error' => 'Error de Base de Datos al preparar la noticia.']);
     exit;
 }
-$stmt->bind_param("sssissiissssis", $titulo, $slug, $descripcion, $autor, $contenido, $fecha_publicacion, $usuario_id, $usuario_id, $tipo_publicacion, $calificacion, $pros, $contras, $es_estreno, $seccion_estreno);
+$stmt->bind_param("sssissiissssisi", $titulo, $slug, $descripcion, $autor, $contenido, $fecha_publicacion, $usuario_id, $usuario_id, $tipo_publicacion, $calificacion, $pros, $contras, $es_estreno, $seccion_estreno, $borrador);
 if (!$stmt->execute()) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'error' => 'Error al guardar la noticia en Base de Datos.']);
@@ -184,6 +201,19 @@ if (!empty($categorias)) {
     $stmtCat->bind_param("iii", $noticiaId, $cat_id, $orden);
     $stmtCat->execute();
   }
+}
+// ============================
+// LIMPIAR BORRADOR DE AUTOGUARDADO
+// ============================
+// Si esta publicación venía de un borrador autoguardado, ya se copió su
+// contenido a la nota nueva: eliminamos el borrador para que no quede
+// duplicado en el apartado "Borradores".
+$draftId = intval($_POST['draft_id'] ?? 0);
+if (!$esBorrador && $draftId > 0 && $draftId !== $noticiaId) {
+    $con->query("DELETE FROM noticia_categoria WHERE noticia_id = " . $draftId);
+    $delDraft = $con->prepare("DELETE FROM noticias WHERE id = ? AND borrador = 1");
+    $delDraft->bind_param("i", $draftId);
+    $delDraft->execute();
 }
 // ============================
 // REDIRECCION / AJAX RESPONSE
