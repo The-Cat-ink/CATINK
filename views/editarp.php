@@ -44,136 +44,225 @@
     while($row = $categoriasResult->fetch_assoc()){
         $categorias[] = $row;
     }
+    // Obtener posiciones (secciones) asignadas actualmente
+    $stmtPos = $con->prepare("SELECT posicion FROM publicidad_posicion WHERE publicidad_id = ?");
+    $stmtPos->bind_param("i", $id_pub);
+    $stmtPos->execute();
+    $resPos = $stmtPos->get_result();
+    $posicionesSeleccionadas = [];
+    while ($row = $resPos->fetch_assoc()) $posicionesSeleccionadas[] = $row['posicion'];
 ?>
 <script>
     const ACL = <?= json_encode($ACL) ?>;
 </script>
-<div class="container">
-    <h2>Editar Publicidad</h2>
-    <div class="mt-3">
-        <a href="./../views/publicidad.php" class="btn btn-secondary"><i class="bi bi-arrow-return-left"></i> Volver</a>
-    </div>
-    <form action="./../controllers/editar_publicidad.php" method="POST" enctype="multipart/form-data" novalidate>
-        <div class="form-card card">
-            <input type="hidden" name="id_pub" value="<?= $publicidad['id_pub'] ?>">
-            
-            <div class="form-group">
-                <label for="Titulo" >Título</label>
-                <input type="text" id="Titulo" name="Titulo" value="<?= htmlspecialchars($publicidad['titulo']) ?>" required>
-            </div>
-            <div class="form-group">
-                <label for="tipo">Tipo de publicidad</label>
-                <!-- Nota: En guardar_publicidad.php no veo que se guarde el 'tipo' en la BD explícitamente en el INSERT mostrado, 
-                     pero estaba en el formulario. Asumiré que tal vez no se guardó o falta la columna. 
-                     Si existe la columna en la BD, debería preseleccionarse. 
-                     Por ahora dejaré el select genérico. -->
-                <select id="tipo" name="tipo" required>
-                    <?php if ($publicidad['tipo'] == 1): ?>
-                        <option value="1" selected>Banner Publicitario</option>
-                        <option value="2">Cuadro Publicitario</option>
-                    <?php else: ?>
-                        <option value="2" selected>Cuadro Publicitario</option>
-                        <option value="1">Banner Publicitario</option>
-                    <?php endif; ?>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="imagen">Imagen Actual</label>
-                <div>
-                    <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="Imagen Actual" style="max-width: 200px; margin-bottom: 10px;" loading="lazy" decoding="async">
-                </div>
-                <label for="imagen">Cambiar Imagen (Opcional)</label>
-                <input type="file" id="imagen" name="imagen" accept="image/*">
-                <input type="hidden" name="imagenCrop" id="imagenCrop" value="">
-                
-                <div id="previewContainer" style="display:none; margin-top: 20px;">
-                    <h4>Vista previa:</h4>
-                    <img id="previewImg" style="max-width: 100%; border: 1px solid #ccc;">
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="url" >Url</label>
-                <span>A donde va a redireccionar</span>
-                <input type="text" id="url" name="url" value="<?= htmlspecialchars($publicidad['url']) ?>" required>
-            </div>
-            <div class="form-group">
-                <label for="estado" >Estado</label>
-                <span>Activo o Inactivo</span>
-                <select id="estado" name="estado" required>
-                    <option value="1" <?= $publicidad['activo'] == 1 ? 'selected' : '' ?>>Activo</option>
-                    <option value="0" <?= $publicidad['activo'] == 0 ? 'selected' : '' ?>>Inactivo</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="Categorias">Categorías</label>
-                <div class="checkbox-group">
-                    <?php
-                        foreach($categorias as $c):
-                            $checked = in_array($c['id_c'], $categoriasSeleccionadas) ? 'checked' : '';
-                    ?>
-                        <label>
-                            <input type="checkbox" name="Categorias[]" value="<?=$c['id_c']?>" <?= $checked ?>>
-                            <?=$c['nombre']?>
-                        </label>
-                    <?php
-                        endforeach;
-                    ?>
-                </div>
-            </div>
-            <div class="form-group">
-                <label style="font-weight:600;display:block;margin-bottom:6px;">Fecha de Inicio</label>
-                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 15px;">
-                    <select id="fechaInicio_dia" class="input" style="width: 70px; margin-bottom: 0;" required>
-                        <option value="" disabled selected>Día</option>
-                    </select>
-                    <select id="fechaInicio_mes" class="input" style="width: 100px; margin-bottom: 0;" required>
-                        <option value="" disabled selected>Mes</option>
-                    </select>
-                    <select id="fechaInicio_anio" class="input" style="width: 85px; margin-bottom: 0;" required>
-                        <option value="" disabled selected>Año</option>
-                    </select>
-                    <span style="color: var(--muted); margin: 0 4px; font-size: 13px;">a las</span>
-                    <select id="fechaInicio_hora" class="input" style="width: 70px; margin-bottom: 0;" required>
-                        <option value="" disabled selected>Hora</option>
-                    </select>
-                    <span style="color: var(--muted)">:</span>
-                    <select id="fechaInicio_min" class="input" style="width: 70px; margin-bottom: 0;" required>
-                        <option value="" disabled selected>Min</option>
-                    </select>
-                </div>
-                <input type="hidden" id="fechaInicio" name="fechaInicio">
+<style>
+/* Estilos .cn-* del formulario de publicidad están en CSS/admin.css
+   (compartidos con crearp.php). Aquí solo el override page-specific. */
+.admin-container { max-width: none !important; padding: 0 !important; }
+</style>
 
-                <label style="font-weight:600;display:block;margin-bottom:6px;">Fecha de Fin</label>
-                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                    <select id="fechaFin_dia" class="input" style="width: 70px; margin-bottom: 0;" required>
-                        <option value="" disabled selected>Día</option>
-                    </select>
-                    <select id="fechaFin_mes" class="input" style="width: 100px; margin-bottom: 0;" required>
-                        <option value="" disabled selected>Mes</option>
-                    </select>
-                    <select id="fechaFin_anio" class="input" style="width: 85px; margin-bottom: 0;" required>
-                        <option value="" disabled selected>Año</option>
-                    </select>
-                    <span style="color: var(--muted); margin: 0 4px; font-size: 13px;">a las</span>
-                    <select id="fechaFin_hora" class="input" style="width: 70px; margin-bottom: 0;" required>
-                        <option value="" disabled selected>Hora</option>
-                    </select>
-                    <span style="color: var(--muted)">:</span>
-                    <select id="fechaFin_min" class="input" style="width: 70px; margin-bottom: 0;" required>
-                        <option value="" disabled selected>Min</option>
-                    </select>
-                </div>
-                <input type="hidden" id="fechaFin" name="fechaFin">
+<div class="admin-container">
+
+  <div class="cn-breadcrumb">
+    <a href="publicidad.php">Publicidad</a>
+    <i class="bi bi-chevron-right"></i>
+    <span>Editar Publicidad</span>
+  </div>
+
+  <h1 class="cn-page-title">Editar Publicidad</h1>
+
+  <form id="formPublicidad" action="./../controllers/editar_publicidad.php" method="POST" enctype="multipart/form-data" novalidate>
+    <input type="hidden" name="id_pub" value="<?= $publicidad['id_pub'] ?>">
+    <input type="hidden" name="imagenCrop" id="imagenCrop" value="">
+
+    <div class="cn-wrap">
+
+      <div class="cn-left-col">
+
+        <!-- INFORMACIÓN BÁSICA -->
+        <div class="cn-section" id="sec-info">
+          <div class="cn-section-header">
+            <div class="cn-section-icon"><i class="bi bi-info-circle"></i></div>
+            <div><p class="cn-section-title">Información Básica</p></div>
+            <i class="bi bi-chevron-down cn-section-toggle"></i>
+          </div>
+          <div class="cn-section-body">
+            <div class="cn-field">
+              <label for="Titulo">Título</label>
+              <input class="cn-input" type="text" id="Titulo" name="Titulo" value="<?= htmlspecialchars($publicidad['titulo']) ?>" placeholder="Nombre de la publicidad..." required>
             </div>
-            <div class="form-actions">
-                <?php if ($ACL['editar']): ?>
-                    <button type="submit" class="btn btn-accent" name="actualizarPublicidad">
-                        Actualizar publicidad
-                    </button>
-                <?php endif; ?>
+            <div class="cn-field">
+              <label for="url">URL de destino</label>
+              <p class="cn-hint-text">A dónde va a redirigir al hacer clic</p>
+              <input class="cn-input" type="text" id="url" name="url" value="<?= htmlspecialchars($publicidad['url']) ?>" placeholder="https://..." required>
             </div>
+          </div>
         </div>
-    </form>
+
+        <!-- CONFIGURACIÓN -->
+        <div class="cn-section" id="sec-config">
+          <div class="cn-section-header">
+            <div class="cn-section-icon"><i class="bi bi-sliders"></i></div>
+            <div><p class="cn-section-title">Configuración</p></div>
+            <i class="bi bi-chevron-down cn-section-toggle"></i>
+          </div>
+          <div class="cn-section-body">
+            <div class="cn-field">
+              <label for="tipo">Tipo de publicidad</label>
+              <select class="cn-input" id="tipo" name="tipo" required>
+                <option value="1" <?= $publicidad['tipo'] == 1 ? 'selected' : '' ?>>Banner Publicitario (4:1)</option>
+                <option value="2" <?= $publicidad['tipo'] == 2 ? 'selected' : '' ?>>Cuadro Publicitario (1:1)</option>
+              </select>
+            </div>
+            <div class="cn-field">
+              <label for="estado">Estado</label>
+              <select class="cn-input" id="estado" name="estado" required>
+                <option value="1" <?= $publicidad['activo'] == 1 ? 'selected' : '' ?>>Activo</option>
+                <option value="0" <?= $publicidad['activo'] == 0 ? 'selected' : '' ?>>Inactivo</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- CATEGORÍAS -->
+        <div class="cn-section" id="sec-cats">
+          <div class="cn-section-header">
+            <div class="cn-section-icon"><i class="bi bi-tag"></i></div>
+            <div><p class="cn-section-title">Categorías</p></div>
+            <i class="bi bi-chevron-down cn-section-toggle"></i>
+          </div>
+          <div class="cn-section-body">
+            <div class="cn-cat-grid">
+              <?php foreach($categorias as $c): $checked = in_array($c['id_c'], $categoriasSeleccionadas) ? 'checked' : ''; ?>
+              <label class="cn-cat-check-item">
+                <input type="checkbox" name="Categorias[]" value="<?= $c['id_c'] ?>" <?= $checked ?>>
+                <?= htmlspecialchars($c['nombre']) ?>
+              </label>
+              <?php endforeach; ?>
+            </div>
+          </div>
+        </div>
+
+        <!-- POSICIONES / SECCIONES -->
+        <div class="cn-section" id="sec-posiciones">
+          <div class="cn-section-header">
+            <div class="cn-section-icon"><i class="bi bi-grid-3x3-gap"></i></div>
+            <div>
+              <p class="cn-section-title">Secciones donde mostrar</p>
+              <p class="cn-section-sub">Si no marcas ninguna, se muestra aleatoriamente en todos los huecos de su forma</p>
+            </div>
+            <i class="bi bi-chevron-down cn-section-toggle"></i>
+          </div>
+          <div class="cn-section-body">
+            <?php $posGrupos = posicionesPublicidad(); ?>
+            <?php foreach($posGrupos as $forma => $posiciones): ?>
+              <div class="cn-pos-group" data-forma="<?= $forma ?>"<?= $forma === 'cuadrado' ? ' style="display:none;"' : '' ?>>
+                <div class="cn-cat-grid">
+                  <?php foreach($posiciones as $key => $label): $cp = in_array($key, $posicionesSeleccionadas) ? 'checked' : ''; ?>
+                  <label class="cn-cat-check-item">
+                    <input type="checkbox" name="posiciones[]" value="<?= $key ?>" <?= $cp ?>>
+                    <?= htmlspecialchars($label) ?>
+                  </label>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        </div>
+
+        <!-- VIGENCIA -->
+        <div class="cn-section" id="sec-vigencia">
+          <div class="cn-section-header">
+            <div class="cn-section-icon"><i class="bi bi-calendar-range"></i></div>
+            <div>
+              <p class="cn-section-title">Vigencia</p>
+              <p class="cn-section-sub">Período de publicación</p>
+            </div>
+            <i class="bi bi-chevron-down cn-section-toggle"></i>
+          </div>
+          <div class="cn-section-body">
+            <div class="cn-field">
+              <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">Fecha de Inicio</label>
+              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                <select id="fechaInicio_dia" class="cn-input" style="width: 70px; padding: 9px 6px;" required><option value="" disabled selected>Día</option></select>
+                <select id="fechaInicio_mes" class="cn-input" style="width: 100px; padding: 9px 6px;" required><option value="" disabled selected>Mes</option></select>
+                <select id="fechaInicio_anio" class="cn-input" style="width: 85px; padding: 9px 6px;" required><option value="" disabled selected>Año</option></select>
+                <span style="color: var(--muted); margin: 0 4px; font-size: 13px;">a las</span>
+                <select id="fechaInicio_hora" class="cn-input" style="width: 70px; padding: 9px 6px;" required><option value="" disabled selected>Hora</option></select>
+                <span style="color: var(--muted)">:</span>
+                <select id="fechaInicio_min" class="cn-input" style="width: 70px; padding: 9px 6px;" required><option value="" disabled selected>Min</option></select>
+              </div>
+              <input type="hidden" id="fechaInicio" name="fechaInicio">
+            </div>
+
+            <div class="cn-field" style="margin-top: 18px;">
+              <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">Fecha de Fin</label>
+              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                <select id="fechaFin_dia" class="cn-input" style="width: 70px; padding: 9px 6px;" required><option value="" disabled selected>Día</option></select>
+                <select id="fechaFin_mes" class="cn-input" style="width: 100px; padding: 9px 6px;" required><option value="" disabled selected>Mes</option></select>
+                <select id="fechaFin_anio" class="cn-input" style="width: 85px; padding: 9px 6px;" required><option value="" disabled selected>Año</option></select>
+                <span style="color: var(--muted); margin: 0 4px; font-size: 13px;">a las</span>
+                <select id="fechaFin_hora" class="cn-input" style="width: 70px; padding: 9px 6px;" required><option value="" disabled selected>Hora</option></select>
+                <span style="color: var(--muted)">:</span>
+                <select id="fechaFin_min" class="cn-input" style="width: 70px; padding: 9px 6px;" required><option value="" disabled selected>Min</option></select>
+              </div>
+              <input type="hidden" id="fechaFin" name="fechaFin">
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTÓN ACTUALIZAR -->
+        <?php if ($ACL['editar']): ?>
+        <div style="margin-top:4px;">
+          <button type="submit" class="cn-publish-btn" name="actualizarPublicidad">
+            <i class="bi bi-check-lg"></i> Actualizar publicidad
+          </button>
+        </div>
+        <?php endif; ?>
+
+      </div><!-- /cn-left-col -->
+
+      <!-- MULTIMEDIA -->
+      <div class="cn-section" id="sec-media">
+        <div class="cn-section-header">
+          <div class="cn-section-icon"><i class="bi bi-images"></i></div>
+          <div>
+            <p class="cn-section-title">Imagen</p>
+            <p class="cn-section-sub">El recorte se ajusta al tipo seleccionado</p>
+          </div>
+          <i class="bi bi-chevron-down cn-section-toggle"></i>
+        </div>
+        <div class="cn-section-body">
+
+          <!-- Imagen actual -->
+          <p class="cn-zone-label">Imagen actual</p>
+          <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="Imagen actual" class="cp-preview-img" style="margin-bottom:16px;" loading="lazy" decoding="async">
+
+          <!-- Zona de subida (cambiar) -->
+          <p class="cn-zone-label">Cambiar imagen (opcional)</p>
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('imagen').click()">
+            <i class="bi bi-cloud-arrow-up cn-zone-icon"></i>
+            <span>Haz clic para seleccionar imagen</span>
+            <span style="font-size:11px">PNG, JPG, WEBP</span>
+          </div>
+          <input type="file" id="imagen" name="imagen" accept="image/*" style="display:none;">
+
+          <!-- Vista previa post-crop -->
+          <div class="cp-preview-wrap" id="previewContainer">
+            <p class="cp-preview-label">Vista previa (nueva imagen)</p>
+            <img id="previewImg" class="cp-preview-img">
+            <button type="button" class="cn-btn-secondary" style="margin-top:10px;width:100%;"
+              onclick="document.getElementById('imagen').click()">
+              <i class="bi bi-arrow-repeat"></i> Cambiar imagen
+            </button>
+          </div>
+
+        </div>
+      </div><!-- /sec-media -->
+
+    </div><!-- /cn-wrap -->
+  </form>
+
 </div>
 
 <!-- ── CROP MODAL (REUTILIZADO DE CREAR NOTICIA) ── -->
@@ -188,8 +277,8 @@
       <div class="crop-area"><img id="cropImg" src=""></div>
     </div>
     <div class="crop-modal-foot">
-      <button type="button" class="btn btn-secondary" onclick="closeCrop()">Cancelar</button>
-      <button type="button" class="btn btn-accent" onclick="confirmCrop()">
+      <button type="button" class="cn-btn-secondary" onclick="closeCrop()">Cancelar</button>
+      <button type="button" class="cn-btn-accent" onclick="confirmCrop()">
         <i class="bi bi-check-lg"></i> Confirmar recorte
       </button>
     </div>
@@ -198,10 +287,42 @@
 
 <script>
 let cropper = null;
+let originalImageData = null; // imagen original (sin recortar) para re-recortar al cambiar de tipo
 
 function getAspectRatio() {
     const tipo = document.getElementById('tipo').value;
-    return tipo === '1' ? 16/9 : 1;
+    // Banner largo: recorte alargado tipo leaderboard (4:1). Cuadrado: 1:1.
+    return tipo === '1' ? 4/1 : 1;
+}
+
+/* Abre el recortador con una imagen (dataURL) y la proporción del tipo actual */
+function openCropper(dataURL) {
+    const cropImg = document.getElementById('cropImg');
+    const cropArea = document.querySelector('.crop-area');
+    if (cropper) { cropper.destroy(); cropper = null; }
+
+    cropImg.src = '';
+    document.getElementById('cropModal').classList.add('open');
+
+    cropImg.onload = function() {
+        const maxW = cropArea.clientWidth || 640;
+        const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
+        cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
+
+        cropper = new Cropper(cropImg, {
+            aspectRatio: getAspectRatio(),
+            viewMode: 1,
+            autoCropArea: 0.98,
+            movable: false,
+            zoomable: false,
+            cropBoxResizable: true,
+            dragMode: 'move',
+            responsive: true,
+            guides: true,
+            background: false,
+        });
+    };
+    cropImg.src = dataURL;
 }
 
 /* Mostrar modal de cropper al seleccionar archivo */
@@ -211,39 +332,33 @@ document.getElementById('imagen').addEventListener('change', function(e) {
 
     const reader = new FileReader();
     reader.onload = function(event) {
-        const cropImg = document.getElementById('cropImg');
-        const cropArea = document.querySelector('.crop-area');
-        if (cropper) { cropper.destroy(); cropper = null; }
-        
-        cropImg.src = '';
-        document.getElementById('cropModal').classList.add('open');
-        
-        cropImg.onload = function() {
-            const maxW = cropArea.clientWidth || 640;
-            const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
-            cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
-
-            cropper = new Cropper(cropImg, {
-                aspectRatio: getAspectRatio(),
-                viewMode: 1,
-                autoCropArea: 0.98,
-                movable: false,
-                zoomable: false,
-                cropBoxResizable: true,
-                dragMode: 'move',
-                responsive: true,
-                guides: true,
-                background: false,
-            });
-        };
-        cropImg.src = event.target.result;
+        originalImageData = event.target.result;
+        openCropper(originalImageData);
     };
     reader.readAsDataURL(file);
 });
 
 document.getElementById('tipo').addEventListener('change', function() {
-    if (cropper) cropper.setAspectRatio(getAspectRatio());
+    updatePosGroups();
+    if (cropper) {
+        // Recortador abierto: basta con cambiar la proporción
+        cropper.setAspectRatio(getAspectRatio());
+    } else if (originalImageData) {
+        // Ya había una imagen recortada: reabrir para recortar con la nueva forma
+        openCropper(originalImageData);
+    }
 });
+
+// Muestra solo las posiciones que coinciden con la forma del tipo elegido.
+function updatePosGroups() {
+    const forma = document.getElementById('tipo').value === '2' ? 'cuadrado' : 'largo';
+    document.querySelectorAll('.cn-pos-group').forEach(g => {
+        const match = g.dataset.forma === forma;
+        g.style.display = match ? '' : 'none';
+        if (!match) g.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+    });
+}
+updatePosGroups();
 
 function confirmCrop() {
     if (!cropper) return;
@@ -261,6 +376,12 @@ function confirmCrop() {
     const previewImg = document.getElementById('previewImg');
     previewImg.src = data64;
     document.getElementById('previewContainer').style.display = 'block';
+
+    const uploadZone = document.getElementById('uploadZone');
+    if (uploadZone) {
+        uploadZone.innerHTML = `<img src="${data64}" style="max-height:150px; border-radius:6px; margin-bottom:5px;"><br><span>Cambiar imagen</span>`;
+        uploadZone.classList.add('has-image');
+    }
 
     closeCrop();
 }

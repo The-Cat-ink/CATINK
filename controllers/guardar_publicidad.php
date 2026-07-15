@@ -65,6 +65,7 @@ function guardarPublicidadBase64Webp($base64, $publicidadId, $calidad = 95) {
 // CONEXION
 // ============================
 include("../data/conexion.php");
+require_once(__DIR__ . "/../views/helpers/publicidadhelper.php");
 // ============================
 // DATOS FORMULARIO
 // ============================
@@ -134,6 +135,21 @@ if (!empty($categorias)) {
     foreach ($categorias as $cat) {
         $stmtCat->bind_param("ii", $publicidadId, $cat);
         $stmtCat->execute();
+    }
+}
+// ============================
+// INSERTAR POSICIONES (secciones)
+// Solo se guardan las posiciones válidas para la FORMA del anuncio (tipo).
+// Sin posiciones = anuncio random en todos los huecos de su forma.
+// ============================
+$posiciones  = $_POST['posiciones'] ?? [];
+$posValidas  = array_keys(posicionesPublicidad()[formaPublicidad($tipo)] ?? []);
+if (!empty($posiciones)) {
+    $stmtPos = $con->prepare("INSERT IGNORE INTO publicidad_posicion (publicidad_id, posicion) VALUES (?, ?)");
+    foreach ($posiciones as $pos) {
+        if (!in_array($pos, $posValidas, true)) continue;
+        $stmtPos->bind_param("is", $publicidadId, $pos);
+        $stmtPos->execute();
     }
 }
 // ============================

@@ -1507,6 +1507,21 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .showcase-box {
   position: relative;
 }
+/* Banner publicitario alargado (tipo leaderboard). La imagen suele ser 16:9;
+   se recorta a una franja horizontal de alto fijo con object-fit: cover para
+   que quede alargada en vez de enorme. Se usa en portada y en publicaciones. */
+.ad-strip {
+  width: 100%;
+  max-width: 1000px;
+  margin: 28px auto;
+}
+.ad-strip .promo-media {
+  width: 100%;
+  aspect-ratio: 4 / 1;
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+}
 .partner-tag {
   position: absolute;
   top: 0;

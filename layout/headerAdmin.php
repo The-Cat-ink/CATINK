@@ -5,6 +5,7 @@ if(session_status() == PHP_SESSION_NONE){
 require_once "./../views/helpers/helper.php";
 require_once "./../views/helpers/urlhelper.php";
 require_once "./../views/helpers/acl.php";
+require_once "./../views/helpers/publicidadhelper.php";
 if (!isset($_SESSION["usuario"])) {
     header("Location: ./../index.php");
     exit();

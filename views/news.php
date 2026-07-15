@@ -154,14 +154,24 @@ $stmtPopulares = $con->prepare("
 ");
 $stmtPopulares->execute();
 $populares = $stmtPopulares->get_result();
-//Obtener banner publicidad
-$stmt = $con->prepare("SELECT * FROM publicidad WHERE activo = 1 AND tipo = 1 ORDER BY RAND() LIMIT 1");
-$stmt->execute();
-$publicidad = $stmt->get_result()->fetch_assoc();
-//Obtener cuadro publicitario
-$stmt = $con->prepare("SELECT * FROM publicidad WHERE activo = 1 AND tipo = 2 ORDER BY RAND() LIMIT 1");
-$stmt->execute();
-$publicidadCuadro = $stmt->get_result()->fetch_assoc();
+// Publicidad por posición (ver views/helpers/publicidadhelper.php). Cada hueco
+// elige su propio anuncio: si el anuncio no tiene posiciones asignadas entra al
+// pool random; si las tiene, solo aparece en las suyas. Los laterales SOLO usan
+// anuncios cuadrados (tipo 2); inicio/medio/final usan banners largos (tipo 1).
+$pubActiva  = !empty($secciones['publicidad']['estado']);
+$pubInicio  = $pubActiva ? obtenerPublicidad($con, 'pub_inicio', 1) : null;
+$pubMedio   = $pubActiva ? obtenerPublicidad($con, 'pub_medio',  1) : null;
+$pubFinal   = $pubActiva ? obtenerPublicidad($con, 'pub_final',  1) : null;
+$pubLateral = $pubActiva ? obtenerPublicidad($con, 'lateral',    2) : null;
+if (!function_exists('adBannerHtml')) {
+    function adBannerHtml($pub, $clase = 'ad-strip') {
+        if (empty($pub)) return '';
+        return '<div class="showcase-box '.$clase.'">'
+             . '<a href="'.htmlspecialchars($pub['url']).'" class="promo-link" data-pub="'.(int)$pub['id_pub'].'">'
+             . '<img src="'.htmlspecialchars(imageUrl($pub['imagen'])).'" alt="" class="promo-media" loading="lazy">'
+             . '</a><span class="partner-tag">ADS</span></div>';
+    }
+}
 // ==============================
 // COMENTARIOS
 // ==============================
@@ -455,13 +465,36 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 </div>
               </div>
             <?php endif; ?>
+            <!-- BANNER PUBLICITARIO (inicio de la publicación) -->
+            <?php echo adBannerHtml($pubInicio); ?>
+
             <!-- Contenido completo de la noticia -->
             <div class="post-content">
               <?php
                 $contenido=$noticia['contenido'];
                 $contenido=procesarEmbedsSociales($contenido);
                 $contenido=bloquearEmbeds($contenido);
-                echo $contenido
+                // Anuncio a la mitad del contenido: se inserta tras el párrafo
+                // central (dividiendo por </p> para no romper etiquetas).
+                if (!empty($pubMedio)) {
+                    $paras = explode('</p>', $contenido);
+                    $n = count($paras);
+                    if ($n >= 3) {
+                        $mid = intdiv($n, 2);
+                        $adMedio = adBannerHtml($pubMedio);
+                        $out = '';
+                        foreach ($paras as $i => $p) {
+                            $out .= $p;
+                            if ($i < $n - 1) $out .= '</p>';
+                            if ($i === $mid) $out .= $adMedio;
+                        }
+                        echo $out;
+                    } else {
+                        echo $contenido;
+                    }
+                } else {
+                    echo $contenido;
+                }
               ?>
             </div>
 
@@ -493,14 +526,8 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                     <i class="bi bi-messenger"></i>
                 </a>
             </div>
-            <?php if ($secciones['publicidad']['estado'] == 1) : ?>
-              <div class="showcase-box">
-                <a href="<?= $publicidad['url'] ?>" class="promo-link" data-pub="<?= $publicidad['id_pub'] ?>">
-                  <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="" class="promo-media" loading="lazy">
-                </a>
-                <span class="partner-tag">ADS</span>
-              </div>
-            <?php endif; ?>
+            <!-- BANNER PUBLICITARIO (final de la publicación) -->
+            <?php echo adBannerHtml($pubFinal); ?>
             <!-- ===================== -->
             <!-- SECCIÓN DE COMENTARIOS -->
             <!-- ===================== -->
@@ -838,10 +865,10 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
         <div class="col-md-3">
           <div class="sidebar-wrapper">
             <div class="card sidebar-card">
-              <?php if($secciones['publicidad']['estado'] == 1) : ?>
+              <?php if($pubActiva && !empty($pubLateral)): ?>
                 <div class="showcase-box">
-                  <a href="<?= $publicidadCuadro['url'] ?>" class="promo-link" data-pub="<?= $publicidadCuadro['id_pub'] ?>">
-                    <img src="<?= imageUrl($publicidadCuadro['imagen']) ?>" class="promo-card-media" loading="lazy">
+                  <a href="<?= htmlspecialchars($pubLateral['url']) ?>" class="promo-link" data-pub="<?= (int)$pubLateral['id_pub'] ?>">
+                    <img src="<?= htmlspecialchars(imageUrl($pubLateral['imagen'])) ?>" class="promo-card-media" loading="lazy">
                   </a>
                   <span class="partner-tag">ADS</span>
                 </div>
@@ -889,6 +916,15 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                     <br>
                   <?php endwhile; ?>
                 </ul>
+                <!-- BANNER PUBLICITARIO (lateral inferior) -->
+                <?php if($pubActiva && !empty($pubLateral)): ?>
+                  <div class="showcase-box mt-3">
+                    <a href="<?= htmlspecialchars($pubLateral['url']) ?>" class="promo-link" data-pub="<?= (int)$pubLateral['id_pub'] ?>">
+                      <img src="<?= htmlspecialchars(imageUrl($pubLateral['imagen'])) ?>" class="promo-card-media" loading="lazy">
+                    </a>
+                    <span class="partner-tag">ADS</span>
+                  </div>
+                <?php endif; ?>
               </div>
               <div class="card-footer">
                   <h3>Siguenos</h3>

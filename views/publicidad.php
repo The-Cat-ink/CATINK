@@ -28,14 +28,22 @@
     $publicidades = $res->fetch_all(MYSQLI_ASSOC);
 
     $hoy = date('Y-m-d');
+
+    // Calcula el estado de una campaña comparando SOLO por fecha (las columnas
+    // son DATETIME, por eso hay que normalizar: comparar el DATETIME completo
+    // contra una fecha suelta marcaba como "programada" algo que inicia hoy).
+    function estadoPublicidad($pub, $hoy) {
+        $ini = !empty($pub['fecha_inicio']) ? date('Y-m-d', strtotime($pub['fecha_inicio'])) : null;
+        $fin = !empty($pub['fecha_fin'])    ? date('Y-m-d', strtotime($pub['fecha_fin']))    : null;
+        if ($ini !== null && $ini > $hoy) return 'programada';
+        if ($fin !== null && $fin >= $hoy) return 'activa';
+        return 'vencida';
+    }
+
     $totalPublicidad = count($publicidades);
-    $activas = count(array_filter($publicidades, function($p) use ($hoy) {
-        return $p['fecha_inicio'] <= $hoy && $p['fecha_fin'] >= $hoy;
-    }));
-    $programadas = count(array_filter($publicidades, function($p) use ($hoy) {
-        return $p['fecha_inicio'] > $hoy;
-    }));
-    $vencidas = $totalPublicidad - $activas - $programadas;
+    $activas     = count(array_filter($publicidades, fn($p) => estadoPublicidad($p, $hoy) === 'activa'));
+    $programadas = count(array_filter($publicidades, fn($p) => estadoPublicidad($p, $hoy) === 'programada'));
+    $vencidas    = $totalPublicidad - $activas - $programadas;
 ?>
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 12px;">
@@ -112,9 +120,7 @@
                             <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron campañas de publicidad.</td></tr>
                         <?php else: ?>
                             <?php foreach($publicidades as $pub):
-                                $estado = 'vencida';
-                                if ($pub['fecha_inicio'] > $hoy) $estado = 'programada';
-                                else if ($pub['fecha_fin'] >= $hoy) $estado = 'activa';
+                                $estado = estadoPublicidad($pub, $hoy);
                             ?>
                                 <tr>
                                     <td><img src="<?= imageUrl($pub['imagen']) ?>" alt="Publicidad" class="table-thumb" style="object-fit:contain;" loading="lazy" decoding="async"></td>

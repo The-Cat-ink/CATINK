@@ -66,6 +66,7 @@ function guardarPublicidadBase64Webp($base64, $publicidadId, $calidad = 95) {
 // CONEXION
 // ============================
 include("../data/conexion.php");
+require_once(__DIR__ . "/../views/helpers/publicidadhelper.php");
 
 // ============================
 // DATOS FORMULARIO
@@ -160,6 +161,25 @@ if (!empty($categorias)) {
     foreach ($categorias as $cat) {
         $stmtCat->bind_param("ii", $id_pub, $cat);
         $stmtCat->execute();
+    }
+}
+
+// ============================
+// ACTUALIZAR POSICIONES (secciones)
+// Se reemplazan por completo; solo se guardan las válidas para la forma (tipo).
+// ============================
+$stmtDelPos = $con->prepare("DELETE FROM publicidad_posicion WHERE publicidad_id = ?");
+$stmtDelPos->bind_param("i", $id_pub);
+$stmtDelPos->execute();
+
+$posiciones = $_POST['posiciones'] ?? [];
+$posValidas = array_keys(posicionesPublicidad()[formaPublicidad($tipo)] ?? []);
+if (!empty($posiciones)) {
+    $stmtPos = $con->prepare("INSERT IGNORE INTO publicidad_posicion (publicidad_id, posicion) VALUES (?, ?)");
+    foreach ($posiciones as $pos) {
+        if (!in_array($pos, $posValidas, true)) continue;
+        $stmtPos->bind_param("is", $id_pub, $pos);
+        $stmtPos->execute();
     }
 }
 

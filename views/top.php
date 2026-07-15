@@ -109,9 +109,7 @@ $stmtPopulares = $con->prepare("
 $stmtPopulares->execute();
 $populares = $stmtPopulares->get_result();
 
-$stmt = $con->prepare("SELECT * FROM publicidad WHERE activo = 1 AND tipo = 2 ORDER BY RAND() LIMIT 1");
-$stmt->execute();
-$publicidadCuadro = $stmt->get_result()->fetch_assoc();
+$publicidadCuadro = obtenerPublicidad($con, 'lateral', 2);
 
 // ==============================
 // BREADCRUMBS JSON-LD
@@ -270,7 +268,7 @@ if ($q !== '') {
       <div class="col-md-3">
         <div class="sidebar-wrapper">
           <div class="card sidebar-card">
-            <?php if($secciones['publicidad']['estado'] == 1) : ?>
+            <?php if(!empty($secciones['publicidad']['estado']) && !empty($publicidadCuadro)) : ?>
                 <div class="showcase-box">
                     <a href="<?php echo htmlspecialchars($publicidadCuadro['url']); ?>" class="promo-link" data-pub="<?php echo htmlspecialchars($publicidadCuadro['id_pub']); ?>">
                         <img src="<?= imageUrl($publicidadCuadro['imagen']) ?>" class="promo-card-media" loading="lazy">

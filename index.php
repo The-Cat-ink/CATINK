@@ -242,20 +242,8 @@ $stmtVid = $con->prepare("SELECT * FROM videos WHERE activo = 1 ORDER BY orden A
 $stmtVid->execute();
 $vidVerticales = $stmtVid->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Obtener publicidad
-$stmtPub = $con->prepare("
-    (SELECT *, 'banner' as tipo_pub FROM publicidad WHERE activo = 1 AND tipo = 1 AND fecha_fin >= NOW() ORDER BY RAND() LIMIT 1)
-    UNION ALL
-    (SELECT *, 'cuadro' as tipo_pub FROM publicidad WHERE activo = 1 AND tipo = 2 AND fecha_fin >= NOW() ORDER BY RAND() LIMIT 1)
-");
-$stmtPub->execute();
-$publicidadResult = $stmtPub->get_result();
-$publicidad = null;
-$publicidadCuadro = null;
-while ($row = $publicidadResult->fetch_assoc()) {
-    if ($row['tipo_pub'] === 'banner') $publicidad = $row;
-    elseif ($row['tipo_pub'] === 'cuadro') $publicidadCuadro = $row;
-}
+// La publicidad de portada se obtiene por posición dentro de renderBannerAd()
+// (cada hueco elige su propio anuncio: ver views/helpers/publicidadhelper.php).
 
 // Secciones activas
 $seccionesResult = $con->query("SELECT nombre, estado FROM secciones");
@@ -274,6 +262,26 @@ function img($fields, $placeholder = 'img/placeholder.svg') {
         }
     }
     return imageUrl($placeholder);
+}
+
+// Helper: renderiza un banner publicitario (largo) para una posición concreta
+// de la portada. Elige el anuncio con obtenerPublicidad() (respeta el targeting
+// por posición; si el anuncio no tiene posiciones asignadas, entra al random).
+// $activo = la sección de publicidad está habilitada.
+function renderBannerAd($con, $posicion, $activo) {
+    if (!$activo) return;
+    $pub = obtenerPublicidad($con, $posicion, 1); // tipo 1 = banner largo
+    if (empty($pub)) return;
+    ?>
+    <div class="container mt-4">
+        <div class="showcase-box ad-strip">
+            <a href="<?= htmlspecialchars($pub['url']) ?>" class="promo-link" data-pub="<?= (int)$pub['id_pub'] ?>">
+                <img src="<?= imageUrl($pub['imagen']) ?>" alt="" class="promo-media" loading="lazy">
+            </a>
+            <span class="partner-tag">ADS</span>
+        </div>
+    </div>
+    <?php
 }
 
 // Helper: calcula tiempo relativo
@@ -335,6 +343,10 @@ function tiempoRelativo($fecha) {
     <?php endforeach; ?>
 </div>
 </div>
+
+<!-- BANNER PUBLICITARIO (tras el carrusel) -->
+<?php $pubActiva = !empty($secciones['publicidad']['estado']); ?>
+<?php renderBannerAd($con, 'home_top', $pubActiva); ?>
 
 <!-- ============================================= -->
 <!-- 3. TOP SEMANAL -->
@@ -510,6 +522,9 @@ function tiempoRelativo($fecha) {
     </div>
 </div>
 
+<!-- BANNER PUBLICITARIO (arriba de Próximos Estrenos) -->
+<?php renderBannerAd($con, 'home_estrenos', $pubActiva); ?>
+
 <!-- ============================================= -->
 <!-- 5. PRÓXIMOS ESTRENOS -->
 <!-- ============================================= -->
@@ -664,6 +679,9 @@ function tiempoRelativo($fecha) {
         </div>
     </div>
 </div>
+
+<!-- BANNER PUBLICITARIO (arriba de No te lo pierdas) -->
+<?php renderBannerAd($con, 'home_novedades', $pubActiva); ?>
 
 <!-- ============================================= -->
 <!-- 6. NO TE LO PIERDAS (VIDEOS VERTICALES) -->
@@ -919,6 +937,9 @@ function tiempoRelativo($fecha) {
         </div>
     </div>
 </div>
+
+<!-- BANNER PUBLICITARIO (debajo de Noticias recientes) -->
+<?php renderBannerAd($con, 'home_recientes', $pubActiva); ?>
 
 <!-- ============================================= -->
 <!-- MODALES Y SCRIPTS -->

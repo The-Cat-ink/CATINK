@@ -4,6 +4,7 @@ if(session_status() === PHP_SESSION_NONE){
 }
 require_once(__DIR__ . "/../data/conexion.php");
 require_once(__DIR__ . "/../views/helpers/urlhelper.php");
+require_once(__DIR__ . "/../views/helpers/publicidadhelper.php");
 // =========================
 // Obtener categorías únicas
 // =========================

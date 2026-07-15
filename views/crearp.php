@@ -11,190 +11,9 @@
 ?>
 
 <style>
-/* ── LAYOUT ── */
-.cn-breadcrumb {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 13px; color: var(--muted); margin-bottom: 16px;
-}
-.cn-breadcrumb a { color: var(--muted); text-decoration: none; }
-.cn-breadcrumb a:hover { color: var(--accent); }
-.cn-breadcrumb span { color: var(--accent); }
-.cn-page-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 20px; color: var(--text); text-align: center; }
+/* Estilos .cn-* del formulario de publicidad están en CSS/admin.css
+   (compartidos con editarp.php). Aquí solo el override page-specific. */
 .admin-container { max-width: none !important; padding: 0 !important; }
-
-.cn-wrap {
-  width: 100%; margin: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-  gap: 16px; align-items: start;
-}
-.cn-left-col { display: flex; flex-direction: column; gap: 16px; }
-@media (max-width: 860px) {
-  .cn-wrap { grid-template-columns: 1fr; }
-}
-
-/* ── SECTION CARD ── */
-.cn-section {
-  background: var(--card-bg); border: 1px solid var(--border);
-  border-radius: 14px; overflow: hidden; transition: box-shadow .2s;
-}
-.cn-section-header {
-  display: flex; align-items: center; gap: 10px;
-  padding: 14px 18px; cursor: pointer; user-select: none;
-  border-bottom: 1px solid var(--border); transition: background .15s;
-}
-.cn-section-header:hover { background: rgba(239,51,99,.04); }
-.cn-section-icon {
-  width: 30px; height: 30px; border-radius: 8px;
-  background: rgba(239,51,99,0.12); color: var(--accent);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 15px; flex-shrink: 0;
-}
-.cn-section-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin: 0; }
-.cn-section-sub   { font-size: 11px; color: var(--muted); margin: 0; }
-.cn-section-toggle {
-  margin-left: auto; color: var(--muted);
-  font-size: 13px; flex-shrink: 0; transition: transform .25s;
-}
-.cn-section.collapsed .cn-section-toggle { transform: rotate(-90deg); }
-.cn-section-body {
-  overflow: hidden; max-height: 3000px; opacity: 1;
-  transition: max-height .35s ease, opacity .25s ease;
-  padding: 18px;
-}
-.cn-section.collapsed .cn-section-body { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
-
-/* ── FORM FIELDS ── */
-.cn-field { margin-bottom: 14px; }
-.cn-field:last-child { margin-bottom: 0; }
-.cn-field label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
-.cn-field .cn-hint-text { font-size: 11px; color: var(--muted); margin-top: 3px; }
-.cn-input {
-  width: 100%; padding: 9px 12px; border-radius: 8px;
-  border: 1px solid var(--border); background: var(--bg); color: var(--text);
-  font-size: 14px; transition: border-color .2s; font-family: inherit;
-}
-.cn-input:focus { outline: none; border-color: var(--accent); }
-
-/* ── CATEGORÍAS ── */
-.cn-cat-grid {
-  display: flex; flex-direction: column; gap: 6px; margin-top: 4px;
-}
-.cn-cat-check-item {
-  display: flex; align-items: center; gap: 8px; padding: 7px 10px;
-  border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text);
-  transition: background .15s; border: 1px solid transparent;
-}
-.cn-cat-check-item:hover { background: rgba(239,51,99,.08); }
-.cn-cat-check-item input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
-
-/* ── FECHAS ── */
-.cn-schedule-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.cn-date-input {
-  display: flex; align-items: center; gap: 8px;
-  padding: 9px 12px; border: 1px solid var(--border);
-  border-radius: 8px; background: var(--bg); color: var(--text); font-size: 13px;
-}
-.cn-date-input i { color: var(--muted); font-size: 15px; }
-.cn-date-input input[type="datetime-local"] {
-  border: none; background: none; color: var(--text);
-  font-size: 13px; padding: 0; outline: none; width: 100%; font-family: inherit;
-}
-
-/* ── UPLOAD ZONE ── */
-.cn-zone-label {
-  font-size: 11px; font-weight: 600; color: var(--muted);
-  text-align: center; margin-bottom: 5px; text-transform: uppercase; letter-spacing:.04em;
-}
-.upload-zone {
-  border: 2px dashed var(--border); border-radius: 10px;
-  background: var(--bg); display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 5px;
-  cursor: pointer; position: relative; overflow: hidden;
-  color: var(--muted); font-size: 0.82rem; text-align: center;
-  padding: 28px 12px; transition: border-color .2s, background .2s;
-}
-.upload-zone:hover { border-color: var(--accent); background: rgba(239,51,99,.04); }
-.upload-zone.has-image { border-style: solid; border-color: var(--accent); padding: 0; }
-.cn-zone-icon { font-size: 26px; }
-
-/* ── CROPPER INLINE ── */
-.crop-inline-wrap {
-  margin-top: 14px; border: 1px solid var(--border);
-  border-radius: 10px; overflow: hidden; display: none;
-}
-.crop-inline-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px; border-bottom: 1px solid var(--border);
-  font-size: 13px; font-weight: 600; color: var(--text);
-}
-.crop-inline-body { padding: 12px; background: var(--bg); }
-.crop-inline-body img { max-width: 100%; display: block; border-radius: 6px; }
-.crop-inline-foot {
-  display: flex; gap: 8px; padding: 10px 14px;
-  border-top: 1px solid var(--border);
-}
-
-/* ── PREVIEW ── */
-.cp-preview-wrap { display: none; margin-top: 14px; }
-.cp-preview-label {
-  font-size: 11px; font-weight: 600; color: var(--muted);
-  text-transform: uppercase; letter-spacing:.04em; margin-bottom: 6px;
-}
-.cp-preview-img {
-  width: 100%; border-radius: 10px; border: 1px solid var(--border);
-  display: block;
-}
-
-/* ── BOTÓN PUBLICAR ── */
-.cn-publish-btn {
-  width: 100%; padding: 13px; background: var(--accent); color: #fff;
-  border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  gap: 8px; transition: background .2s, transform .15s; font-family: inherit;
-}
-.cn-publish-btn:hover { background: #d42a55; transform: translateY(-2px); }
-.cn-publish-btn:active { transform: translateY(0); }
-
-/* ── TOAST VALIDACIÓN ── */
-.cn-toast {
-  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-  background: var(--card-bg, #1a1a2e);
-  border: 1.5px solid var(--accent);
-  border-radius: 12px; padding: 14px 20px; z-index: 9999;
-  font-size: 13px; min-width: 300px; max-width: 460px;
-  box-shadow: 0 12px 40px rgba(239,51,99,.25), 0 4px 16px rgba(0,0,0,.4);
-  display: none; pointer-events: none;
-}
-.cn-toast.show { display: block; animation: toastIn .25s ease; }
-@keyframes toastIn {
-  from { opacity:0; transform: translateX(-50%) translateY(16px); }
-  to   { opacity:1; transform: translateX(-50%) translateY(0); }
-}
-.cn-toast-title {
-  font-weight: 700; color: var(--accent); margin-bottom: 10px;
-  display: flex; align-items: center; gap: 7px; font-size: 13.5px;
-}
-.cn-toast ul { margin: 0; padding: 0; list-style: none; }
-.cn-toast li {
-  margin: 5px 0; color: var(--text, #fff); display: flex; align-items: baseline; gap: 4px;
-  padding: 5px 8px; border-radius: 7px; background: rgba(239,51,99,.08);
-  font-size: 12.5px; line-height: 1.4;
-}
-
-/* ── BOTONES SECUNDARIOS ── */
-.cn-btn-secondary {
-  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
-  cursor: pointer; border: 1px solid var(--border); background: var(--bg);
-  color: var(--text); font-family: inherit; transition: border-color .2s;
-}
-.cn-btn-secondary:hover { border-color: var(--accent); }
-.cn-btn-accent {
-  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
-  cursor: pointer; border: none; background: var(--accent);
-  color: #fff; font-family: inherit;
-}
-.cn-btn-accent:hover { background: #d42a55; }
 </style>
 
 <div class="admin-container">
@@ -250,7 +69,7 @@
             <div class="cn-field">
               <label for="tipo">Tipo de publicidad</label>
               <select class="cn-input" id="tipo" name="tipo" required>
-                <option value="1">Banner Publicitario (16:9)</option>
+                <option value="1">Banner Publicitario (4:1)</option>
                 <option value="2">Cuadro Publicitario (1:1)</option>
               </select>
             </div>
@@ -282,6 +101,33 @@
               </label>
               <?php endforeach; ?>
             </div>
+          </div>
+        </div>
+
+        <!-- POSICIONES / SECCIONES -->
+        <div class="cn-section" id="sec-posiciones">
+          <div class="cn-section-header">
+            <div class="cn-section-icon"><i class="bi bi-grid-3x3-gap"></i></div>
+            <div>
+              <p class="cn-section-title">Secciones donde mostrar</p>
+              <p class="cn-section-sub">Si no marcas ninguna, se muestra aleatoriamente en todos los huecos de su forma</p>
+            </div>
+            <i class="bi bi-chevron-down cn-section-toggle"></i>
+          </div>
+          <div class="cn-section-body">
+            <?php $posGrupos = posicionesPublicidad(); ?>
+            <?php foreach($posGrupos as $forma => $posiciones): ?>
+              <div class="cn-pos-group" data-forma="<?= $forma ?>"<?= $forma === 'cuadrado' ? ' style="display:none;"' : '' ?>>
+                <div class="cn-cat-grid">
+                  <?php foreach($posiciones as $key => $label): ?>
+                  <label class="cn-cat-check-item">
+                    <input type="checkbox" name="posiciones[]" value="<?= $key ?>">
+                    <?= htmlspecialchars($label) ?>
+                  </label>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+            <?php endforeach; ?>
           </div>
         </div>
 
@@ -425,10 +271,42 @@
 
 <script>
 let cropper = null;
+let originalImageData = null; // imagen original (sin recortar) para re-recortar al cambiar de tipo
 
 function getAspectRatio() {
     const tipo = document.getElementById('tipo').value;
-    return tipo === '1' ? 16/9 : 1;
+    // Banner largo: recorte alargado tipo leaderboard (4:1). Cuadrado: 1:1.
+    return tipo === '1' ? 4/1 : 1;
+}
+
+/* Abre el recortador con una imagen (dataURL) y la proporción del tipo actual */
+function openCropper(dataURL) {
+    const cropImg = document.getElementById('cropImg');
+    const cropArea = document.querySelector('.crop-area');
+    if (cropper) { cropper.destroy(); cropper = null; }
+
+    cropImg.src = '';
+    document.getElementById('cropModal').classList.add('open');
+
+    cropImg.onload = function() {
+        const maxW = cropArea.clientWidth || 640;
+        const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
+        cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
+
+        cropper = new Cropper(cropImg, {
+            aspectRatio: getAspectRatio(),
+            viewMode: 1,
+            autoCropArea: 0.98,
+            movable: false,
+            zoomable: false,
+            cropBoxResizable: true,
+            dragMode: 'move',
+            responsive: true,
+            guides: true,
+            background: false,
+        });
+    };
+    cropImg.src = dataURL;
 }
 
 /* Mostrar modal de cropper al seleccionar archivo */
@@ -438,39 +316,35 @@ document.getElementById('imagen').addEventListener('change', function(e) {
 
     const reader = new FileReader();
     reader.onload = function(event) {
-        const cropImg = document.getElementById('cropImg');
-        const cropArea = document.querySelector('.crop-area');
-        if (cropper) { cropper.destroy(); cropper = null; }
-        
-        cropImg.src = '';
-        document.getElementById('cropModal').classList.add('open');
-        
-        cropImg.onload = function() {
-            const maxW = cropArea.clientWidth || 640;
-            const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
-            cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
-
-            cropper = new Cropper(cropImg, {
-                aspectRatio: getAspectRatio(),
-                viewMode: 1,
-                autoCropArea: 0.98,
-                movable: false,
-                zoomable: false,
-                cropBoxResizable: true,
-                dragMode: 'move',
-                responsive: true,
-                guides: true,
-                background: false,
-            });
-        };
-        cropImg.src = event.target.result;
+        originalImageData = event.target.result;
+        openCropper(originalImageData);
     };
     reader.readAsDataURL(file);
 });
 
 document.getElementById('tipo').addEventListener('change', function() {
-    if (cropper) cropper.setAspectRatio(getAspectRatio());
+    updatePosGroups();
+    if (cropper) {
+        // Recortador abierto: basta con cambiar la proporción
+        cropper.setAspectRatio(getAspectRatio());
+    } else if (originalImageData) {
+        // Ya había una imagen recortada: reabrir para recortar con la nueva forma
+        openCropper(originalImageData);
+    }
 });
+
+// Muestra solo las posiciones que coinciden con la forma del tipo elegido.
+// Al ocultar un grupo, desmarca sus casillas para no guardar posiciones de
+// otra forma.
+function updatePosGroups() {
+    const forma = document.getElementById('tipo').value === '2' ? 'cuadrado' : 'largo';
+    document.querySelectorAll('.cn-pos-group').forEach(g => {
+        const match = g.dataset.forma === forma;
+        g.style.display = match ? '' : 'none';
+        if (!match) g.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+    });
+}
+updatePosGroups();
 
 function confirmCrop() {
     if (!cropper) return;
@@ -514,7 +388,7 @@ document.querySelectorAll('.cn-section-header').forEach(header => {
 });
 
 /* ── Validación ── */
-function showToast(errors) {
+function showValidationToast(errors) {
     const toast = document.getElementById('cnToast');
     const list  = document.getElementById('cnToastList');
     const count = document.getElementById('cnToastCount');
@@ -619,7 +493,7 @@ document.getElementById('formPublicidad').addEventListener('submit', function(e)
     const errors = validateForm();
     if (errors.length) {
         e.preventDefault();
-        showToast(errors);
+        showValidationToast(errors);
     }
 });
 
