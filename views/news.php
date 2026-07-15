@@ -361,6 +361,11 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                   <i class="bi bi-pencil-square"></i> Editar
                 </a>
               <?php endif; ?>
+              <?php if (!empty($_SESSION['superadmin'])): ?>
+                <button type="button" id="btnEliminarNoticia" class="like-btn" style="background: transparent; color: var(--accent); border: 1px solid var(--accent); display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <i class="bi bi-trash"></i> Eliminar
+                </button>
+              <?php endif; ?>
             </div>
 
             <?php if (($noticia['tipo_publicacion'] ?? '') === 'review'): ?>
@@ -761,6 +766,21 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
               </div>
             </div>
             <?php if (!empty($_SESSION['superadmin'])): ?>
+            <!-- Modal Confirmación Eliminar Noticia (enviar a papelera) -->
+            <div id="confirmDeleteNoticiaModal" class="custom-confirm-modal" style="display:none;">
+              <div class="custom-confirm-content">
+                <h3><i class="bi bi-trash-fill"></i> ¿Enviar a la papelera?</h3>
+                <p>La noticia dejará de ser visible en el sitio. Podrás restaurarla desde la papelera.</p>
+                <form action="<?= basePath() ?>/controllers/eliminar_noticia.php" method="POST" class="custom-confirm-buttons" style="margin:0;">
+                  <input type="hidden" name="id" value="<?= $id ?>">
+                  <input type="hidden" name="from" value="publica">
+                  <button type="button" id="btnCancelDeleteNoticia" style="background: var(--border, #2d2d2d); color: var(--text, #fff);">Cancelar</button>
+                  <button type="submit" id="btnConfirmDeleteNoticia" style="background: var(--accent, #EF3363); color: #fff;">Eliminar</button>
+                </form>
+              </div>
+            </div>
+            <?php endif; ?>
+            <?php if (!empty($_SESSION['superadmin'])): ?>
             <!-- Modal de suspensión (moderación) -->
             <div class="modal-reporte" id="modalSuspender" style="display:none;">
               <div class="modal-reporte-content">
@@ -1048,6 +1068,16 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
   // ============================
   const noticiaId = <?= $id ?>;
   const comBase = '<?= basePath() ?>/controllers/';
+
+  // ELIMINAR NOTICIA (superadmin): abrir/cerrar modal de confirmación
+  const btnEliminarNoticia = document.getElementById('btnEliminarNoticia');
+  const modalDelNoticia = document.getElementById('confirmDeleteNoticiaModal');
+  if (btnEliminarNoticia && modalDelNoticia) {
+    btnEliminarNoticia.addEventListener('click', () => { modalDelNoticia.style.display = 'flex'; });
+    const cancelDelNoticia = document.getElementById('btnCancelDeleteNoticia');
+    if (cancelDelNoticia) cancelDelNoticia.addEventListener('click', () => { modalDelNoticia.style.display = 'none'; });
+    modalDelNoticia.addEventListener('click', (e) => { if (e.target === modalDelNoticia) modalDelNoticia.style.display = 'none'; });
+  }
 
   // Intercambia el botón del menú ⋮ entre "Suspender" y "Quitar suspensión"
   // para todos los comentarios del mismo usuario, sin recargar la página.

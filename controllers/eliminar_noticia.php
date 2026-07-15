@@ -26,17 +26,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     // No se borran imágenes ni datos; solo se marca como eliminada.
     // Solo el superadmin podrá restaurarla o eliminarla definitivamente.
     // ==========================
-    // Volver a la vista de origen (contenidos por defecto, o borradores)
-    $destino = (($_POST['from'] ?? '') === 'borradores') ? 'borradores' : 'contenidos';
+    // Volver a la vista de origen. Si se eliminó desde la página pública de la
+    // noticia (from=publica) se regresa al inicio del sitio, ya que la noticia
+    // deja de ser visible; en el panel se vuelve a contenidos/borradores.
+    $from = $_POST['from'] ?? '';
 
     $stmt = $con->prepare("UPDATE noticias SET eliminado_en = NOW(), eliminado_por = ? WHERE id = ? AND eliminado_en IS NULL");
     $stmt->bind_param("ii", $eliminadoPor, $id);
-    if ($stmt->execute()) {
-        header("Location: ../views/$destino.php?msg=eliminado");
-    } else {
-        header("Location: ../views/$destino.php?error=no_eliminado");
-    }
+    $ok = $stmt->execute();
     $stmt->close();
+
+    if ($from === 'publica') {
+        header("Location: ../index.php");
+    } else {
+        $destino = ($from === 'borradores') ? 'borradores' : 'contenidos';
+        header("Location: ../views/$destino.php?" . ($ok ? "msg=eliminado" : "error=no_eliminado"));
+    }
 } else {
     header("Location: ../views/contenidos.php");
 }
