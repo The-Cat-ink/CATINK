@@ -48,7 +48,7 @@ $total = count($borradores);
         </div>
     <?php elseif (isset($_GET['msg']) && $_GET['msg'] === 'eliminado'): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-top:12px;">
-            Borrador enviado a la papelera.
+            Borrador eliminado permanentemente.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php elseif (isset($_GET['error'])): ?>
@@ -101,7 +101,7 @@ $total = count($borradores);
                                         <button type="button" class="btn btn-danger btn-del-borrador"
                                                 data-id="<?= $row['id'] ?>"
                                                 data-titulo="<?= htmlspecialchars($row['titulo']) ?>"
-                                                title="Enviar a papelera">
+                                                title="Eliminar borrador">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                         <?php endif; ?>
@@ -137,18 +137,17 @@ $total = count($borradores);
 }
 </style>
 
-<!-- Modal de Confirmación para enviar a papelera -->
+<!-- Modal de Confirmación para eliminar definitivamente -->
 <div id="modalOverlay" class="crop-modal" style="display: none;">
     <div class="card">
         <div class="crop-modal-content">
-            <h3>Enviar a la papelera</h3>
-            <p>El borrador <strong id="modalTitulo"></strong> se moverá a la papelera. Podrás restaurarlo desde ahí.</p>
-            <form id="modalForm" action="../controllers/eliminar_noticia.php" method="POST">
+            <h3>Eliminar borrador</h3>
+            <p>El borrador <strong id="modalTitulo"></strong> se eliminará permanentemente. Esta acción no se puede deshacer.</p>
+            <form id="modalForm" action="../controllers/eliminar_borrador.php" method="POST">
                 <input type="hidden" name="id" id="modalId">
-                <input type="hidden" name="from" value="borradores">
                 <div class="crop-actions">
                     <button type="button" class="btn btn-secondary btn-cancel">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Enviar a papelera</button>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
                 </div>
             </form>
         </div>
