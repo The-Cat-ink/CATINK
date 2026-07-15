@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include("./../layout/headerAdmin.php");
 include("./../data/conexion.php");
 $ACL = $_SESSION['ACL']['noticias'] ?? [
@@ -65,11 +65,11 @@ $cats = array_map('trim', $cats);
             <div class="ql-editor">
                 <?= $noticia['contenido'] ?>
             </div>
-            <div class="ad-container">
-                <a href="<?= $publicidad['url'] ?>" class="banner-button" data-pub="<?= $publicidad['id_pub'] ?>">
-                    <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="" class="banner" loading="lazy">
+            <div class="showcase-box">
+                <a href="<?= $publicidad['url'] ?>" class="promo-link" data-pub="<?= $publicidad['id_pub'] ?>">
+                    <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="" class="promo-media" loading="lazy">
                 </a>
-                <span class="ads-label">ADS</span>
+                <span class="partner-tag">ADS</span>
             </div>
             </div>
         </div>

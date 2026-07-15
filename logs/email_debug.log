@@ -1,0 +1,6 @@
+
+=== Iniciando envío de correos múltiples a las 2026-07-10 11:49:59 ===
+[2026-07-10 11:49:59] Noticias encontradas: 1
+[2026-07-10 11:49:59] Error al inicializar SMTP: Invalid address:  (From): 
+[2026-07-10 11:49:59] Enviando correo a: juano@gmail.com
+[2026-07-10 11:49:59] Excepción enviando correo a juano@gmail.com: SMTP Error: Could not connect to SMTP host. Failed to connect to server

@@ -934,16 +934,16 @@ function tiempoRelativo($fecha) {
     </div>
 </div>
 
-<!-- Conteo de clicks en publicidad -->
+<!-- Conteo de clics en publicidad -->
 <script>
-    document.querySelectorAll(".banner-button").forEach(banner => {
+    document.querySelectorAll(".promo-link").forEach(banner => {
         banner.addEventListener("click", function(e) {
             e.preventDefault();
             let url = this.href;
             let publicidadId = this.dataset.pub;
             let data = new FormData();
             data.append("publicidad_id", publicidadId);
-            fetch("./controllers/publicidad_click.php", {
+            fetch("./controllers/spot_click.php", {
                 method: "POST",
                 body: data
             }).finally(()=>{
@@ -955,7 +955,7 @@ function tiempoRelativo($fecha) {
 
 <!-- Conteo de tiempo y visualizaciones en publicidad -->
 <script>
-    document.querySelectorAll(".banner-button").forEach(banner => {
+    document.querySelectorAll(".promo-link").forEach(banner => {
         let publicidadId = banner.dataset.pub;
         let startTime = null;
         let totalTime = 0;
@@ -975,7 +975,7 @@ function tiempoRelativo($fecha) {
                 let data = new FormData();
                 data.append("publicidad_id", publicidadId);
                 data.append("tiempo", Math.round(totalTime));
-                navigator.sendBeacon("./controllers/publicidad_view.php", data);
+                navigator.sendBeacon("./controllers/spot_view.php", data);
                 totalTime = 0;  
             }
         }, 5000);

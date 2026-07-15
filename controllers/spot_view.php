@@ -39,3 +39,4 @@ $stmt->bind_param("isiss", $publicidad_id, $ip, $tiempo, $pais, $estado);
 $stmt->execute();
 
 echo json_encode(['ok' => true]);
+?>

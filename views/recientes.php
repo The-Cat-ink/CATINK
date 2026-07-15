@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once("./../data/conexion.php");
 require_once("./helpers/urlhelper.php");
 
@@ -249,11 +249,11 @@ if ($q !== '') {
         <div class="sidebar-wrapper">
           <div class="card sidebar-card">
             <?php if($secciones['publicidad']['estado'] == 1) : ?>
-                <div class="ad-container">
-                    <a href="<?php echo htmlspecialchars($publicidadCuadro['url']); ?>" class="banner-button" data-pub="<?php echo htmlspecialchars($publicidadCuadro['id_pub']); ?>">
-                        <img src="<?= imageUrl($publicidadCuadro['imagen']) ?>" class="banner-card-img-top" loading="lazy">
+                <div class="showcase-box">
+                    <a href="<?php echo htmlspecialchars($publicidadCuadro['url']); ?>" class="promo-link" data-pub="<?php echo htmlspecialchars($publicidadCuadro['id_pub']); ?>">
+                        <img src="<?= imageUrl($publicidadCuadro['imagen']) ?>" class="promo-card-media" loading="lazy">
                     </a>
-                    <span class="ads-label">ADS</span>
+                    <span class="partner-tag">ADS</span>
                 </div>
             <?php endif; ?>
             <div class="card-body">

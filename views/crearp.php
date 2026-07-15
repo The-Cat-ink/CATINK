@@ -159,19 +159,28 @@
 /* ── TOAST VALIDACIÓN ── */
 .cn-toast {
   position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-  background: #1a1a2e; color: #fff; border: 1.5px solid var(--accent);
-  border-radius: 10px; padding: 13px 20px; z-index: 9999;
-  font-size: 13px; min-width: 270px; max-width: 400px;
-  box-shadow: 0 8px 28px rgba(0,0,0,.5); display: none;
+  background: var(--card-bg, #1a1a2e);
+  border: 1.5px solid var(--accent);
+  border-radius: 12px; padding: 14px 20px; z-index: 9999;
+  font-size: 13px; min-width: 300px; max-width: 460px;
+  box-shadow: 0 12px 40px rgba(239,51,99,.25), 0 4px 16px rgba(0,0,0,.4);
+  display: none; pointer-events: none;
 }
-.cn-toast.show { display: block; animation: toastIn .22s ease; }
+.cn-toast.show { display: block; animation: toastIn .25s ease; }
 @keyframes toastIn {
-  from { opacity:0; transform: translateX(-50%) translateY(12px); }
+  from { opacity:0; transform: translateX(-50%) translateY(16px); }
   to   { opacity:1; transform: translateX(-50%) translateY(0); }
 }
-.cn-toast-title { font-weight: 700; color: var(--accent); margin-bottom: 7px; }
-.cn-toast ul { margin: 0; padding-left: 16px; }
-.cn-toast li { margin: 3px 0; }
+.cn-toast-title {
+  font-weight: 700; color: var(--accent); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 7px; font-size: 13.5px;
+}
+.cn-toast ul { margin: 0; padding: 0; list-style: none; }
+.cn-toast li {
+  margin: 5px 0; color: var(--text, #fff); display: flex; align-items: baseline; gap: 4px;
+  padding: 5px 8px; border-radius: 7px; background: rgba(239,51,99,.08);
+  font-size: 12.5px; line-height: 1.4;
+}
 
 /* ── BOTONES SECUNDARIOS ── */
 .cn-btn-secondary {
@@ -198,7 +207,7 @@
 
   <h1 class="cn-page-title">Nueva Publicidad</h1>
 
-  <form id="formPublicidad" action="./../controllers/guardar_publicidad.php" method="POST" enctype="multipart/form-data">
+  <form id="formPublicidad" action="./../controllers/guardar_publicidad.php" method="POST" enctype="multipart/form-data" novalidate>
     <input type="hidden" name="autor" value="<?= $fila['id_u'] ?? '' ?>">
     <input type="hidden" name="imagenCrop" id="imagenCrop" value="">
 
@@ -287,21 +296,52 @@
             <i class="bi bi-chevron-down cn-section-toggle"></i>
           </div>
           <div class="cn-section-body">
-            <div class="cn-schedule-fields">
-              <div>
-                <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">Inicio</label>
-                <div class="cn-date-input">
-                  <i class="bi bi-calendar3"></i>
-                  <input type="datetime-local" id="fechaInicio" name="fechaInicio" required>
-                </div>
+            <div class="cn-field">
+              <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">Fecha de Inicio</label>
+              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                <select id="fechaInicio_dia" class="cn-input" style="width: 70px; padding: 9px 6px;" required>
+                  <option value="" disabled selected>Día</option>
+                </select>
+                <select id="fechaInicio_mes" class="cn-input" style="width: 100px; padding: 9px 6px;" required>
+                  <option value="" disabled selected>Mes</option>
+                </select>
+                <select id="fechaInicio_anio" class="cn-input" style="width: 85px; padding: 9px 6px;" required>
+                  <option value="" disabled selected>Año</option>
+                </select>
+                <span style="color: var(--muted); margin: 0 4px; font-size: 13px;">a las</span>
+                <select id="fechaInicio_hora" class="cn-input" style="width: 70px; padding: 9px 6px;" required>
+                  <option value="" disabled selected>Hora</option>
+                </select>
+                <span style="color: var(--muted)">:</span>
+                <select id="fechaInicio_min" class="cn-input" style="width: 70px; padding: 9px 6px;" required>
+                  <option value="" disabled selected>Min</option>
+                </select>
               </div>
-              <div>
-                <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">Fin</label>
-                <div class="cn-date-input">
-                  <i class="bi bi-calendar-x"></i>
-                  <input type="datetime-local" id="fechaFin" name="fechaFin" required>
-                </div>
+              <input type="hidden" id="fechaInicio" name="fechaInicio">
+            </div>
+
+            <div class="cn-field" style="margin-top: 18px;">
+              <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">Fecha de Fin</label>
+              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                <select id="fechaFin_dia" class="cn-input" style="width: 70px; padding: 9px 6px;" required>
+                  <option value="" disabled selected>Día</option>
+                </select>
+                <select id="fechaFin_mes" class="cn-input" style="width: 100px; padding: 9px 6px;" required>
+                  <option value="" disabled selected>Mes</option>
+                </select>
+                <select id="fechaFin_anio" class="cn-input" style="width: 85px; padding: 9px 6px;" required>
+                  <option value="" disabled selected>Año</option>
+                </select>
+                <span style="color: var(--muted); margin: 0 4px; font-size: 13px;">a las</span>
+                <select id="fechaFin_hora" class="cn-input" style="width: 70px; padding: 9px 6px;" required>
+                  <option value="" disabled selected>Hora</option>
+                </select>
+                <span style="color: var(--muted)">:</span>
+                <select id="fechaFin_min" class="cn-input" style="width: 70px; padding: 9px 6px;" required>
+                  <option value="" disabled selected>Min</option>
+                </select>
               </div>
+              <input type="hidden" id="fechaFin" name="fechaFin">
             </div>
           </div>
         </div>
@@ -334,21 +374,7 @@
             <span>Haz clic para seleccionar imagen</span>
             <span style="font-size:11px">PNG, JPG, WEBP</span>
           </div>
-          <input type="file" id="imagen" name="imagen" accept="image/*" required style="display:none;">
-
-          <!-- Cropper inline -->
-          <div class="crop-inline-wrap" id="cropperContainer">
-            <div class="crop-inline-head">
-              <span><i class="bi bi-crop"></i> Recortar imagen</span>
-            </div>
-            <div class="crop-inline-body">
-              <img id="cropImg" style="max-width:100%;">
-            </div>
-            <div class="crop-inline-foot">
-              <button type="button" id="cropConfirmBtn" class="cn-btn-accent"><i class="bi bi-check-lg"></i> Confirmar recorte</button>
-              <button type="button" id="cropCancelBtn" class="cn-btn-secondary">Cancelar</button>
-            </div>
-          </div>
+          <input type="file" id="imagen" name="imagen" accept="image/*" style="display:none;">
 
           <!-- Vista previa post-crop -->
           <div class="cp-preview-wrap" id="previewContainer">
@@ -368,9 +394,32 @@
 
 </div>
 
+<!-- ── CROP MODAL (REUTILIZADO DE CREAR NOTICIA) ── -->
+<div class="crop-modal-overlay" id="cropModal">
+  <div class="crop-modal-box">
+    <div class="crop-modal-head">
+      <i class="bi bi-crop"></i>
+      <span id="cropModalTitle">Recortar imagen</span>
+      <button type="button" onclick="closeCrop()">✕</button>
+    </div>
+    <div class="crop-modal-body">
+      <div class="crop-area"><img id="cropImg" src=""></div>
+    </div>
+    <div class="crop-modal-foot">
+      <button type="button" class="cn-btn-secondary" onclick="closeCrop()">Cancelar</button>
+      <button type="button" class="cn-btn-accent" onclick="confirmCrop()">
+        <i class="bi bi-check-lg"></i> Confirmar recorte
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ── TOAST VALIDACIÓN ── -->
 <div class="cn-toast" id="cnToast">
-  <div class="cn-toast-title"><i class="bi bi-exclamation-circle"></i> Faltan campos requeridos:</div>
+  <div class="cn-toast-title">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <span>Completa los campos obligatorios <span id="cnToastCount" style="font-weight:400;font-size:11px;opacity:.7;"></span></span>
+  </div>
   <ul id="cnToastList"></ul>
 </div>
 
@@ -382,7 +431,7 @@ function getAspectRatio() {
     return tipo === '1' ? 16/9 : 1;
 }
 
-/* Mostrar nombre en zona de upload */
+/* Mostrar modal de cropper al seleccionar archivo */
 document.getElementById('imagen').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -390,24 +439,31 @@ document.getElementById('imagen').addEventListener('change', function(e) {
     const reader = new FileReader();
     reader.onload = function(event) {
         const cropImg = document.getElementById('cropImg');
+        const cropArea = document.querySelector('.crop-area');
+        if (cropper) { cropper.destroy(); cropper = null; }
+        
+        cropImg.src = '';
+        document.getElementById('cropModal').classList.add('open');
+        
+        cropImg.onload = function() {
+            const maxW = cropArea.clientWidth || 640;
+            const imgRatio = cropImg.naturalWidth / cropImg.naturalHeight;
+            cropArea.style.height = Math.min(Math.round(maxW / imgRatio), 480) + 'px';
+
+            cropper = new Cropper(cropImg, {
+                aspectRatio: getAspectRatio(),
+                viewMode: 1,
+                autoCropArea: 0.98,
+                movable: false,
+                zoomable: false,
+                cropBoxResizable: true,
+                dragMode: 'move',
+                responsive: true,
+                guides: true,
+                background: false,
+            });
+        };
         cropImg.src = event.target.result;
-        document.getElementById('cropperContainer').style.display = 'block';
-        document.getElementById('previewContainer').style.display = 'none';
-
-        if (cropper) cropper.destroy();
-
-        cropper = new Cropper(cropImg, {
-            aspectRatio: getAspectRatio(),
-            autoCropArea: 1,
-            responsive: true,
-            restore: true,
-            guides: true,
-            center: true,
-            highlight: true,
-            cropBoxMovable: true,
-            cropBoxResizable: true,
-            toggleDragModeOnDblclick: true,
-        });
     };
     reader.readAsDataURL(file);
 });
@@ -416,8 +472,7 @@ document.getElementById('tipo').addEventListener('change', function() {
     if (cropper) cropper.setAspectRatio(getAspectRatio());
 });
 
-document.getElementById('cropConfirmBtn').addEventListener('click', function(e) {
-    e.preventDefault();
+function confirmCrop() {
     if (!cropper) return;
 
     const canvas = cropper.getCroppedCanvas({
@@ -433,17 +488,22 @@ document.getElementById('cropConfirmBtn').addEventListener('click', function(e) 
     const previewImg = document.getElementById('previewImg');
     previewImg.src = data64;
     document.getElementById('previewContainer').style.display = 'block';
-    document.getElementById('cropperContainer').style.display = 'none';
-});
 
-document.getElementById('cropCancelBtn').addEventListener('click', function(e) {
-    e.preventDefault();
-    document.getElementById('imagen').value = '';
-    document.getElementById('imagenCrop').value = '';
-    document.getElementById('cropperContainer').style.display = 'none';
-    document.getElementById('previewContainer').style.display = 'none';
+    const uploadZone = document.getElementById('uploadZone');
+    if (uploadZone) {
+        uploadZone.innerHTML = `<img src="${data64}" style="max-height:150px; border-radius:6px; margin-bottom:5px;"><br><span>Cambiar imagen</span>`;
+        uploadZone.classList.add('has-image');
+    }
+
+    closeCrop();
+}
+
+function closeCrop() {
+    document.getElementById('cropModal').classList.remove('open');
     if (cropper) { cropper.destroy(); cropper = null; }
-});
+    document.getElementById('cropImg').src = '';
+    document.querySelector('.crop-area').style.height = '';
+}
 
 /* Collapse de secciones */
 document.querySelectorAll('.cn-section-header').forEach(header => {
@@ -457,48 +517,254 @@ document.querySelectorAll('.cn-section-header').forEach(header => {
 function showToast(errors) {
     const toast = document.getElementById('cnToast');
     const list  = document.getElementById('cnToastList');
-    list.innerHTML = errors.map(e => `<li>${e}</li>`).join('');
+    const count = document.getElementById('cnToastCount');
+    if (count) count.textContent = `(${errors.length} problema${errors.length > 1 ? 's' : ''})`;
+    list.innerHTML = errors.map(({ icon, msg }) =>
+        `<li><span style="margin-right:5px;">${icon}</span>${msg}</li>`
+    ).join('');
     toast.classList.add('show');
     clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => toast.classList.remove('show'), 5000);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 7000);
+}
+
+function highlightSection(sectionId) {
+    const sec = document.getElementById(sectionId);
+    if (!sec) return;
+    // Expandir si está colapsada
+    sec.classList.remove('collapsed');
+    // Resaltar con borde rojo temporal
+    sec.style.outline = '2px solid var(--accent)';
+    sec.style.transition = 'outline 0.3s';
+    setTimeout(() => { sec.style.outline = ''; }, 2500);
 }
 
 function validateForm() {
     const errors = [];
+    const sectionsToHighlight = new Set();
+    let firstErrorEl = null;
 
     const titulo = document.getElementById('Titulo').value.trim();
-    if (!titulo) errors.push('Título de la publicidad');
+    if (!titulo) {
+        errors.push({ icon: '📝', msg: 'Título de la publicidad es obligatorio' });
+        sectionsToHighlight.add('sec-info');
+        if (!firstErrorEl) firstErrorEl = document.getElementById('Titulo');
+    }
 
     const url = document.getElementById('url').value.trim();
     if (!url) {
-        errors.push('URL de destino');
+        errors.push({ icon: '🔗', msg: 'URL de destino es obligatoria' });
+        sectionsToHighlight.add('sec-info');
+        if (!firstErrorEl) firstErrorEl = document.getElementById('url');
     } else {
-        try { new URL(url); } catch (_) { errors.push('URL de destino no es válida (debe empezar con https://)'); }
+        try { new URL(url); } catch (_) {
+            errors.push({ icon: '🔗', msg: 'URL no válida — debe empezar con https:// o http://' });
+            sectionsToHighlight.add('sec-info');
+            if (!firstErrorEl) firstErrorEl = document.getElementById('url');
+        }
     }
 
     const inicio = document.getElementById('fechaInicio').value;
-    if (!inicio) errors.push('Fecha de inicio');
+    if (!inicio) {
+        errors.push({ icon: '📅', msg: 'Selecciona la Fecha de Inicio completa (día, mes, año, hora y minutos)' });
+        sectionsToHighlight.add('sec-vigencia');
+        if (!firstErrorEl) firstErrorEl = document.getElementById('sec-vigencia');
+    }
 
     const fin = document.getElementById('fechaFin').value;
     if (!fin) {
-        errors.push('Fecha de fin');
+        errors.push({ icon: '📅', msg: 'Selecciona la Fecha de Fin completa (día, mes, año, hora y minutos)' });
+        sectionsToHighlight.add('sec-vigencia');
+        if (!firstErrorEl) firstErrorEl = document.getElementById('sec-vigencia');
     } else if (inicio && fin <= inicio) {
-        errors.push('La fecha de fin debe ser posterior a la de inicio');
+        errors.push({ icon: '⏱️', msg: 'La fecha de fin debe ser posterior a la de inicio' });
+        sectionsToHighlight.add('sec-vigencia');
+        if (!firstErrorEl) firstErrorEl = document.getElementById('sec-vigencia');
     }
 
-    const imagen = document.getElementById('imagenCrop').value;
-    if (!imagen) errors.push('Imagen (sube y confirma el recorte)');
+    const imagenCrop = document.getElementById('imagenCrop').value;
+    const fileInput  = document.getElementById('imagen');
+    const fileSelected = fileInput && fileInput.files && fileInput.files.length > 0;
+    if (!imagenCrop && !fileSelected) {
+        errors.push({ icon: '🖼️', msg: 'Sube una imagen para la publicidad (y recórtala si lo deseas)' });
+        sectionsToHighlight.add('sec-media');
+        if (!firstErrorEl) firstErrorEl = document.getElementById('uploadZone');
+    }
+
+    // Resaltar secciones con errores
+    sectionsToHighlight.forEach(id => highlightSection(id));
+
+    // Hacer scroll al primer error
+    if (firstErrorEl) {
+        setTimeout(() => {
+            firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
 
     return errors;
 }
 
 document.getElementById('formPublicidad').addEventListener('submit', function(e) {
+    // Forzar actualización de los campos ocultos de fecha antes de validar
+    ['fechaInicio', 'fechaFin'].forEach(prefix => {
+        const dia  = document.getElementById(prefix + '_dia')?.value;
+        const mes  = document.getElementById(prefix + '_mes')?.value;
+        const anio = document.getElementById(prefix + '_anio')?.value;
+        const hora = document.getElementById(prefix + '_hora')?.value;
+        const min  = document.getElementById(prefix + '_min')?.value;
+        if (dia && mes && anio && hora && min) {
+            document.getElementById(prefix).value = `${anio}-${mes}-${dia} ${hora}:${min}:00`;
+        }
+    });
+
     const errors = validateForm();
     if (errors.length) {
         e.preventDefault();
         showToast(errors);
     }
 });
+
+// ---- FECHA Y HORA DROPDOWNS ----
+function initDateTimeDropdowns(prefix, initialValue) {
+  const diaSel = document.getElementById(prefix + '_dia');
+  const mesSel = document.getElementById(prefix + '_mes');
+  const anioSel = document.getElementById(prefix + '_anio');
+  const horaSel = document.getElementById(prefix + '_hora');
+  const minSel = document.getElementById(prefix + '_min');
+  const hiddenInput = document.getElementById(prefix);
+
+  if (!diaSel || !mesSel || !anioSel || !horaSel || !minSel || !hiddenInput) return;
+
+  // Populate days
+  for (let d = 1; d <= 31; d++) {
+    const opt = document.createElement('option');
+    const val = String(d).padStart(2, '0');
+    opt.value = val;
+    opt.textContent = val;
+    diaSel.appendChild(opt);
+  }
+
+  // Populate months
+  const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  meses.forEach((m, idx) => {
+    const opt = document.createElement('option');
+    const val = String(idx + 1).padStart(2, '0');
+    opt.value = val;
+    opt.textContent = m;
+    mesSel.appendChild(opt);
+  });
+
+  // Populate years
+  const currentYear = new Date().getFullYear();
+  let startYear = currentYear;
+  let endYear = currentYear + 10;
+  if (initialValue) {
+    const parts = initialValue.split(/[T ]/);
+    if (parts.length >= 1) {
+      const dateParts = parts[0].split('-');
+      if (dateParts.length === 3) {
+        const initYear = parseInt(dateParts[0]);
+        if (!isNaN(initYear)) {
+          startYear = Math.min(initYear, currentYear);
+          endYear = Math.max(initYear + 5, currentYear + 10);
+        }
+      }
+    }
+  }
+
+  for (let y = startYear; y <= endYear; y++) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    anioSel.appendChild(opt);
+  }
+
+  // Populate hours
+  for (let h = 0; h < 24; h++) {
+    const opt = document.createElement('option');
+    const val = String(h).padStart(2, '0');
+    opt.value = val;
+    opt.textContent = val;
+    horaSel.appendChild(opt);
+  }
+
+  // Populate minutes
+  for (let m = 0; m < 60; m++) {
+    const opt = document.createElement('option');
+    const val = String(m).padStart(2, '0');
+    opt.value = val;
+    opt.textContent = val;
+    minSel.appendChild(opt);
+  }
+
+  function updateHiddenDateTime() {
+    const dia = diaSel.value;
+    const mes = mesSel.value;
+    const anio = anioSel.value;
+    const hora = horaSel.value;
+    const min = minSel.value;
+    if (dia && mes && anio && hora && min) {
+      hiddenInput.value = `${anio}-${mes}-${dia} ${hora}:${min}:00`;
+    } else {
+      hiddenInput.value = '';
+    }
+  }
+
+  diaSel.addEventListener('change', updateHiddenDateTime);
+  mesSel.addEventListener('change', updateHiddenDateTime);
+  anioSel.addEventListener('change', updateHiddenDateTime);
+  horaSel.addEventListener('change', updateHiddenDateTime);
+  minSel.addEventListener('change', updateHiddenDateTime);
+
+  // Set initial value
+  if (initialValue) {
+    const parts = initialValue.split(/[T ]/);
+    if (parts.length >= 1) {
+      const dateParts = parts[0].split('-');
+      if (dateParts.length === 3) {
+        anioSel.value = dateParts[0];
+        mesSel.value = dateParts[1];
+        diaSel.value = dateParts[2];
+      }
+    }
+    if (parts.length >= 2) {
+      const timeParts = parts[1].split(':');
+      if (timeParts.length >= 2) {
+        horaSel.value = timeParts[0];
+        minSel.value = timeParts[1];
+      }
+    }
+    updateHiddenDateTime();
+  }
+}
+
+// Inicializar fechas por defecto en crearp (hoy y en 1 mes)
+function initCrearpFechas() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  const h = String(now.getHours()).padStart(2, '0');
+  const minVal = String(now.getMinutes()).padStart(2, '0');
+  const defaultInicio = `${y}-${m}-${d}T${h}:${minVal}`;
+
+  const nextMonth = new Date();
+  nextMonth.setMonth(nextMonth.getMonth() + 1);
+  const y2 = nextMonth.getFullYear();
+  const m2 = String(nextMonth.getMonth() + 1).padStart(2, '0');
+  const d2 = String(nextMonth.getDate()).padStart(2, '0');
+  const defaultFin = `${y2}-${m2}-${d2}T23:59`;
+
+  initDateTimeDropdowns('fechaInicio', defaultInicio);
+  initDateTimeDropdowns('fechaFin', defaultFin);
+}
+
+// Ejecutar en carga inicial y en navegación con Turbo
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initCrearpFechas);
+} else {
+  initCrearpFechas();
+}
+document.addEventListener('turbo:load', initCrearpFechas);
 </script>
 
 <?php include("./../layout/footerAdmin.php"); ?>
