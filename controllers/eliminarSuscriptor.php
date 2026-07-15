@@ -37,6 +37,9 @@ if (!$stmt->execute()) {
     exit();
 }
 
+require_once(__DIR__ . "/../views/helpers/activity_log.php");
+logActivity($con, 'eliminar', 'suscripciones', 'Eliminó suscriptor ID ' . $id);
+
 header("Location: ./../views/suscripciones.php?success=1");
 exit();
 ?>

@@ -50,6 +50,8 @@ try {
     $stmtInsert = $con->prepare("INSERT INTO recomendados (noticia_id, orden) VALUES (?, ?)");
     $stmtInsert->bind_param("ii", $noticia_id, $nuevoOrden);
     if ($stmtInsert->execute()) {
+        require_once(__DIR__ . "/../views/helpers/activity_log.php");
+        logActivity($con, 'crear', 'recomendados', 'Agregó noticia ID ' . $noticia_id . ' a recomendados');
         echo json_encode(['success' => true, 'id' => $con->insert_id]);
     } else {
         echo json_encode(['success' => false, 'error' => 'Error al agregar la recomendación']);

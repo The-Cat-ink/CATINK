@@ -60,6 +60,8 @@ if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
 }
 
 if ($stmt->execute()) {
+    require_once(__DIR__ . "/../views/helpers/activity_log.php");
+    logActivity($con, 'editar', 'logos', 'Actualizó logo ID ' . $id . ' («' . $nombre . '»)');
     echo json_encode(['ok' => true, 'nombre' => $nombre, 'fecha_expiracion' => $fechaExp, 'imagen' => $nuevaImagen]);
 } else {
     echo json_encode(['ok' => false, 'error' => 'Error al guardar.']);

@@ -3,6 +3,8 @@ session_start();
 include("./aclcontroller.php");
 proteger('publicidad','eliminar');
 include("../data/conexion.php");
+require_once("../views/helpers/activity_log.php");
+
 if (isset($_POST['id'])) {
     $id = intval($_POST['id']);
     // Obtener imagen
@@ -26,5 +28,6 @@ if (isset($_POST['id'])) {
     $stmtDel->bind_param("i", $id);
     $stmtDel->execute();
 }
+logActivity($con, 'eliminar', 'publicidad', 'Eliminó publicidad ID ' . ($id ?? '?'));
 header("Location: ../views/publicidad.php?msg=eliminado");
 exit;

@@ -18,6 +18,8 @@ try {
     $stmt = $con->prepare("DELETE FROM recomendados WHERE id = ?");
     $stmt->bind_param("i", $id);
     if ($stmt->execute()) {
+        require_once(__DIR__ . "/../views/helpers/activity_log.php");
+        logActivity($con, 'eliminar', 'recomendados', 'Eliminó recomendación ID ' . $id);
         echo json_encode(['success' => true]);
     } else {
         echo json_encode(['success' => false, 'error' => 'Error al eliminar la recomendación']);

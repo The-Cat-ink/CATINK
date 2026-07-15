@@ -47,6 +47,8 @@ $stmt = $con->prepare("UPDATE lectores SET nombre = ?, usuario = ?, correo = ? W
 $stmt->bind_param("sssi", $nombre, $usuario, $correo, $id);
 
 if ($stmt->execute()) {
+    require_once(__DIR__ . '/../views/helpers/activity_log.php');
+    logActivity($con, 'editar', 'lectores', 'Actualizó datos del lector ID ' . $id . ' («' . $usuario . '»)');
     echo json_encode(['success' => 'Datos del lector actualizados correctamente']);
 } else {
     echo json_encode(['error' => 'Error al actualizar los datos del lector']);

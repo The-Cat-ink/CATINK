@@ -103,6 +103,8 @@ try {
     $delLec->execute();
 
     $con->commit();
+    require_once(__DIR__ . '/../views/helpers/activity_log.php');
+    logActivity($con, 'editar', 'lectores', 'Promovió al lector ID ' . $id . ' («' . $lector['usuario'] . '») a administrador');
     echo json_encode(['success' => 'Lector promovido a administrador correctamente']);
 } catch (Exception $e) {
     $con->rollback();

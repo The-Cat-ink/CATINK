@@ -2,6 +2,8 @@
 session_start();
 include("./aclcontroller.php");
 proteger('publicidad','editar');
+require_once("../views/helpers/activity_log.php");
+
 // ============================
 // FUNCION GUARDAR IMAGEN BASE64 WEBP
 // ============================
@@ -186,5 +188,6 @@ if (!empty($posiciones)) {
 // ============================
 // REDIRECCION
 // ============================
+logActivity($con, 'editar', 'publicidad', 'Actualizó publicidad ID ' . ($id_pub ?? '?'));
 header("Location: ./../views/publicidad.php");
 exit;

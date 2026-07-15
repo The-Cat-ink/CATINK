@@ -40,6 +40,8 @@ $stmt->bind_param(
     $envio
 );
 if($stmt->execute()){
+    require_once("../views/helpers/activity_log.php");
+    logActivity($con, 'crear', 'correos', 'Creó correo publicitario «' . mb_substr($titulo, 0, 80) . '»');
     header("Location: ../views/correos.php?success=1");
     exit();
 }else{

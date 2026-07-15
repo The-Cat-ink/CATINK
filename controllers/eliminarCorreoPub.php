@@ -36,6 +36,8 @@ if($stmt->execute()){
     if(file_exists($rutaImagen)){
         unlink($rutaImagen);
     }
+    require_once("../views/helpers/activity_log.php");
+    logActivity($con, 'eliminar', 'correos', 'Eliminó correo publicitario ID ' . $id);
     header("Location: ../views/correos.php?deleted=1");
     exit();
 }else{

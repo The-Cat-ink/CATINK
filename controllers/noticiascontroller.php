@@ -5,6 +5,8 @@ session_start();
 include("./aclcontroller.php");
 proteger('noticias','crear');
 date_default_timezone_set('America/Mexico_City');
+require_once(__DIR__ . '/../views/helpers/activity_log.php');
+
 // ============================
 // GUARDAR IMAGEN BASE64
 // ============================
@@ -218,6 +220,8 @@ if (!$esBorrador && $draftId > 0 && $draftId !== $noticiaId) {
 // ============================
 // REDIRECCION / AJAX RESPONSE
 // ============================
+$esBorradorLabel = $esBorrador ? 'borrador' : ($fecha_publicacion > date('Y-m-d H:i:s') ? 'noticia programada' : 'noticia');
+logActivity($con, $esBorrador ? 'borrador' : 'crear', 'noticias', 'Creó ' . $esBorradorLabel . ' «' . mb_substr($titulo, 0, 80) . '» (ID ' . $noticiaId . ')');
 header('Content-Type: application/json');
 echo json_encode(['success' => true, 'id' => $noticiaId]);
 exit;

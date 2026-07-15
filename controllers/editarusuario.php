@@ -2,7 +2,9 @@
 include("./../controllers/aclcontroller.php");
 proteger('usuarios', 'editar');
 include("./../data/conexion.php");
+require_once("./../views/helpers/activity_log.php");
 header('Content-Type: application/json');
+
 
 // ========================
 // DATOS
@@ -96,6 +98,7 @@ if(empty($password)){
 // EJECUTAR
 // ========================
 if ($stmt->execute()) {
+    logActivity($con, 'editar', 'usuarios', 'Actualizó usuario administrador ID ' . $id . ' («' . $usuario . '»)');
     echo json_encode(['success' => 'Usuario actualizado correctamente']);
 } else {
     echo json_encode(['error' => 'Error al actualizar: ' . $stmt->error]);

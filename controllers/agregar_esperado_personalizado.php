@@ -81,6 +81,8 @@ try {
     $stmtInsert->bind_param("ssi", $titulo, $rutaRelativa, $nuevoOrden);
     
     if ($stmtInsert->execute()) {
+        require_once(__DIR__ . "/../views/helpers/activity_log.php");
+        logActivity($con, 'crear', 'esperados', 'Agregó esperado personalizado «' . mb_substr($titulo, 0, 80) . '»');
         echo json_encode([
             'success' => true,
             'id' => $con->insert_id,

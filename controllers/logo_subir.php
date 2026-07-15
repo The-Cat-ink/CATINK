@@ -2,7 +2,9 @@
 include(__DIR__ . "/aclcontroller.php");
 proteger('contenidos', 'crear');
 include(__DIR__ . "/../data/conexion.php");
+require_once(__DIR__ . "/../views/helpers/activity_log.php");
 header('Content-Type: application/json');
+
 
 if (!isset($_FILES['imagen']) || $_FILES['imagen']['error'] !== UPLOAD_ERR_OK) {
     echo json_encode(['ok' => false, 'error' => 'No se recibió imagen.']);
@@ -54,6 +56,7 @@ if (move_uploaded_file($file['tmp_name'], $destino)) {
     $stmt->bind_param("sssi", $rutaRelativa, $nombre, $fechaExp, $nextOrden);
     $stmt->execute();
     $id = $con->insert_id;
+    logActivity($con, 'crear', 'logos', 'Subió logo «' . $nombre . '» (ID ' . $id . ')');
     echo json_encode(['ok' => true, 'id' => $id, 'imagen' => $rutaRelativa, 'nombre' => $nombre, 'fecha_expiracion' => $fechaExp, 'orden' => $nextOrden]);
 } else {
     echo json_encode(['ok' => false, 'error' => 'Error al guardar el archivo.']);

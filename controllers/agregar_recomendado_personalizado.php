@@ -81,6 +81,8 @@ try {
     $stmtInsert->bind_param("ssi", $titulo, $rutaRelativa, $nuevoOrden);
     
     if ($stmtInsert->execute()) {
+        require_once(__DIR__ . "/../views/helpers/activity_log.php");
+        logActivity($con, 'crear', 'recomendados', 'Agregó recomendación personalizada «' . mb_substr($titulo, 0, 80) . '»');
         echo json_encode([
             'success' => true,
             'id' => $con->insert_id,

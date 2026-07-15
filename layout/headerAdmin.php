@@ -210,6 +210,11 @@ $_SESSION['id_u'] = $fila['id_u'];
                     <i class="bi bi-trash3"></i> <span class="sb-label">Papelera</span>
                 </a>
             </li>
+            <li class="sidebar-menu-item">
+                <a href="./actividad.php" class="sidebar-menu-link" data-tooltip="Registro de Actividad">
+                    <i class="bi bi-clock-history"></i> <span class="sb-label">Actividad</span>
+                </a>
+            </li>
         <?php endif; ?>
     </ul>
     <div class="sidebar-footer">

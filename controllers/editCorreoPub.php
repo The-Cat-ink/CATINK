@@ -54,6 +54,8 @@ $stmt->bind_param(
     $id
 );
 if($stmt->execute()){
+    require_once("../views/helpers/activity_log.php");
+    logActivity($con, 'editar', 'correos', 'Actualizó correo publicitario ID ' . $id . ' («' . mb_substr($titulo, 0, 80) . '»)');
     header("Location: ../views/correos.php?success=Correo actualizado correctamente");
 } else {
     header("Location: ../views/correos.php?error=Error al actualizar correo");

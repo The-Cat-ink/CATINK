@@ -3,7 +3,9 @@ session_start();
 include("./../controllers/aclcontroller.php");
 proteger('categorias','eliminar');
 include("./../data/conexion.php");
+require_once("./../views/helpers/activity_log.php");
 header('Content-Type: application/json');
+
 $id_c = intval($_POST['id_c'] ?? 0);
 if($id_c <= 0){
     echo json_encode(['error'=>'ID de categoría inválido']);
@@ -15,6 +17,7 @@ $stmt->execute();
 $stmt = $con->prepare("DELETE FROM categorias WHERE id_c=?");
 $stmt->bind_param("i",$id_c);
 if($stmt->execute()){
+    logActivity($con, 'eliminar', 'categorias', 'Eliminó categoría ID ' . $id_c);
     echo json_encode(['success'=>true]);
 }else{
     echo json_encode(['error'=>'No se pudo eliminar la categoría']);

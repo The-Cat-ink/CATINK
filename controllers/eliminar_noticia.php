@@ -3,6 +3,8 @@ session_start();
 include("./aclcontroller.php");
 proteger('noticias','eliminar');
 include("../data/conexion.php");
+require_once("../views/helpers/activity_log.php");
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     $id = intval($_POST['id']);
 
@@ -31,9 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     // deja de ser visible; en el panel se vuelve a contenidos/borradores.
     $from = $_POST['from'] ?? '';
 
-    $stmt = $con->prepare("UPDATE noticias SET eliminado_en = NOW(), eliminado_por = ? WHERE id = ? AND eliminado_en IS NULL");
-    $stmt->bind_param("ii", $eliminadoPor, $id);
     $ok = $stmt->execute();
+    if ($ok) {
+        logActivity($con, 'eliminar', 'noticias', 'Envió a la papelera noticia ID ' . $id);
+    }
     $stmt->close();
 
     if ($from === 'publica') {

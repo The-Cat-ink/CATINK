@@ -1,6 +1,8 @@
 <?php
 session_start();
 include("../data/conexion.php");
+require_once("../views/helpers/activity_log.php");
+
 
 // Solo el superadmin puede acceder a la papelera
 if (!($_SESSION['superadmin'] ?? false)) {
@@ -34,6 +36,7 @@ $stmt = $con->prepare("UPDATE noticias SET eliminado_en = NULL, eliminado_por = 
 $stmt->bind_param($types, ...$ids);
 
 if ($stmt->execute() && $stmt->affected_rows > 0) {
+    logActivity($con, 'restaurar', 'noticias', 'Restauró ' . count($ids) . ' noticia(s) de la papelera (IDs: ' . implode(', ', $ids) . ')');
     header("Location: ../views/papelera.php?msg=restaurada");
 } else {
     header("Location: ../views/papelera.php?error=no_restaurada");

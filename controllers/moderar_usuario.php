@@ -5,6 +5,7 @@ require_once(__DIR__ . '/../data/conexion.php');
 require_once(__DIR__ . '/../views/helpers/helper.php');
 require_once(__DIR__ . '/../views/helpers/urlhelper.php');
 require_once(__DIR__ . '/../views/helpers/moderacion.php');
+require_once(__DIR__ . '/../views/helpers/activity_log.php');
 
 // ============================
 // Solo superadmin
@@ -162,9 +163,10 @@ switch ($action) {
             $estado = obtenerBaneo($con, $tipo, $userId);
             // Notificar al usuario suspendido en su perfil
             $notifMsg = "Tu cuenta ha sido suspendida $duracionTxt. "
-                      . 'Motivo: ' . ($motivo !== null ? $motivo : 'No se especificó un motivo.')
-                      . ' Durante la suspensión no podrás comentar, dar me gusta ni reportar.';
+                       . 'Motivo: ' . ($motivo !== null ? $motivo : 'No se especificó un motivo.')
+                       . ' Durante la suspensión no podrás comentar, dar me gusta ni reportar.';
             crearNotificacion($con, $tipo, $userId, 'Tu cuenta ha sido suspendida', $notifMsg, 'suspension');
+            logActivity($con, 'banear', 'moderacion', 'Suspendió al usuario ' . $tipo . ' ID ' . $userId . ' (' . $duracionTxt . ')' . ($motivo ? ': ' . $motivo : ''));
             echo json_encode([
                 'ok'       => true,
                 'msg'      => 'Usuario suspendido (' . $duraciones[$duracion]['label'] . ').',
@@ -202,6 +204,7 @@ switch ($action) {
             crearNotificacion($con, $tipo, $userId, 'Tu suspensión ha sido retirada',
                 'Un moderador retiró la suspensión de tu cuenta. Ya puedes volver a comentar, dar me gusta y reportar con normalidad.',
                 'reactivacion');
+            logActivity($con, 'desbanear', 'moderacion', 'Retiró la suspensión al usuario ' . $tipo . ' ID ' . $userId);
             echo json_encode(['ok' => true, 'msg' => 'Suspensión retirada.', 'baneado' => false]);
         } else {
             echo json_encode(['ok' => false, 'msg' => 'Error al retirar la suspensión.']);

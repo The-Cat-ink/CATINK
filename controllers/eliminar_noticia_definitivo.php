@@ -1,6 +1,8 @@
 <?php
 session_start();
 include("../data/conexion.php");
+require_once("../views/helpers/activity_log.php");
+
 
 // Solo el superadmin puede eliminar definitivamente
 if (!($_SESSION['superadmin'] ?? false)) {
@@ -56,6 +58,7 @@ if ($encontradas === 0) {
 $stmt = $con->prepare("DELETE FROM noticias WHERE eliminado_en IS NOT NULL AND id IN ($ph)");
 $stmt->bind_param($types, ...$ids);
 if ($stmt->execute()) {
+    logActivity($con, 'eliminar', 'noticias', 'Eliminó definitivamente ' . count($ids) . ' noticia(s) (IDs: ' . implode(', ', $ids) . ')');
     header("Location: ../views/papelera.php?msg=eliminada_def");
 } else {
     header("Location: ../views/papelera.php?error=no_eliminada");

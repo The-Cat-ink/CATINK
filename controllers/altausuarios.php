@@ -2,7 +2,9 @@
 include("./../controllers/aclcontroller.php");
 proteger('usuarios', 'crear');
 include("./../data/conexion.php");
+require_once("./../views/helpers/activity_log.php");
 header('Content-Type: application/json');
+
 
 // ========================
 // Validar campos obligatorios
@@ -101,6 +103,7 @@ $alt->bind_param(
 );
 
 if ($alt->execute()) {
+    logActivity($con, 'crear', 'usuarios', 'Creó usuario administrador «' . $usuario . '» (' . $nombre . ')');
     echo json_encode(['success' => 'Usuario creado correctamente']);
 } else {
     echo json_encode(['error' => 'Error al registrar usuario']);

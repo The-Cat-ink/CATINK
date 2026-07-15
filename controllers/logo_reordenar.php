@@ -19,4 +19,7 @@ foreach ($ids as $pos => $id) {
     $stmt->execute();
 }
 
+require_once(__DIR__ . "/../views/helpers/activity_log.php");
+logActivity($con, 'editar', 'logos', 'Reordenó los logos de marcas');
+
 echo json_encode(['ok' => true]);

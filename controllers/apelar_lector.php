@@ -50,6 +50,8 @@ $stmtUpd = $con->prepare("
 $stmtUpd->bind_param("i", $lectorId);
 
 if ($stmtUpd->execute()) {
+    require_once(__DIR__ . "/../views/helpers/activity_log.php");
+    logActivity($con, 'apelar', 'lectores', 'El lector ID ' . $lectorId . ' («' . ($lector['usuario'] ?? '') . '») auto-apeló su suspensión con éxito');
     echo json_encode(['success' => 'Apelación aceptada. Tu suspensión ha sido removida por única ocasión.']);
 } else {
     echo json_encode(['error' => 'Error al procesar la apelación']);

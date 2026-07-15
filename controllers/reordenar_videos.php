@@ -39,6 +39,9 @@ try {
         $stmt->execute();
     }
 
+    require_once(__DIR__ . "/../views/helpers/activity_log.php");
+    logActivity($con, 'editar', 'videos', 'Reordenó los videos');
+
     echo json_encode(['success' => true, 'message' => 'Orden actualizado']);
 } catch (Exception $e) {
     http_response_code(500);

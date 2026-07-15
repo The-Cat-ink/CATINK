@@ -3,6 +3,8 @@ session_start();
 include("./aclcontroller.php");
 proteger('noticias','editar');
 include("../data/conexion.php");
+require_once("../views/helpers/activity_log.php");
+
 
 header('Content-Type: application/json');
 
@@ -72,6 +74,7 @@ $update = $con->prepare("UPDATE noticias SET fecha_publicacion = ? WHERE id = ?"
 $update->bind_param("si", $fechaCompleta, $id);
 
 if ($update->execute()) {
+    logActivity($con, 'editar', 'noticias', 'Reprogramó noticia ID ' . $id . ' para ' . $fechaCompleta);
     echo json_encode(['success' => true, 'nueva_fecha' => $fechaCompleta]);
 } else {
     http_response_code(500);

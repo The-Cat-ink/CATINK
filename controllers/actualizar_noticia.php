@@ -4,6 +4,8 @@ include("./aclcontroller.php");
 proteger('noticias','editar');
 include("../data/conexion.php");
 require_once("../views/helpers/urlhelper.php");
+require_once("../views/helpers/activity_log.php");
+
 // ============================
 // FUNCION GUARDAR IMAGEN BASE64
 // ============================
@@ -212,6 +214,7 @@ if (!empty($categorias)) {
 // ============================
 // REDIRECCION
 // ============================
+logActivity($con, 'editar', 'noticias', 'Actualizó la noticia ID ' . $id . ': «' . mb_substr($titulo ?? '', 0, 80) . '»');
 header("Location: ./../views/editar.php?id=$id&msg=actualizado");
 exit;
 ?>

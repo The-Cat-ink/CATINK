@@ -2,6 +2,8 @@
 session_start();
 include("./aclcontroller.php");
 proteger('publicidad','crear');
+require_once("../views/helpers/activity_log.php");
+
 // ============================
 // FUNCION GUARDAR IMAGEN BASE64 WEBP
 // ============================
@@ -155,5 +157,6 @@ if (!empty($posiciones)) {
 // ============================
 // REDIRECCION
 // ============================
+logActivity($con, 'crear', 'publicidad', 'Creó publicidad «' . mb_substr($_POST['Titulo'] ?? '', 0, 80) . '» (ID ' . $publicidadId . ')');
 header("Location: ./../views/publicidad.php");
 exit;

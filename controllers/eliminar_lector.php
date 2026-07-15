@@ -54,6 +54,8 @@ try {
     $delLec->execute();
 
     $con->commit();
+    require_once(__DIR__ . '/../views/helpers/activity_log.php');
+    logActivity($con, 'eliminar', 'lectores', 'Eliminó al lector ID ' . $id . ' («' . $lector['correo'] . '»)');
     echo json_encode(['success' => 'Lector eliminado correctamente']);
 } catch (Exception $e) {
     $con->rollback();

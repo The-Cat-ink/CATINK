@@ -2,7 +2,9 @@
 include(__DIR__ . "/aclcontroller.php");
 proteger('contenidos', 'eliminar');
 include(__DIR__ . "/../data/conexion.php");
+require_once(__DIR__ . "/../views/helpers/activity_log.php");
 header('Content-Type: application/json');
+
 
 $id = intval($_POST['id'] ?? 0);
 if ($id <= 0) {
@@ -25,4 +27,5 @@ if ($row) {
     $stmt->execute();
 }
 
+logActivity($con, 'eliminar', 'logos', 'Eliminó logo ID ' . $id);
 echo json_encode(['ok' => true]);
