@@ -3020,3 +3020,35 @@ input, select, textarea,
 }
 .see-fallback-inner i { font-size: 1.8rem; opacity: .4; }
 .see-fallback-inner p { font-size: 0.8rem; margin: 0; opacity: .6; }
+
+/* ── CROP MODAL (REUTILIZADO) ── */
+.crop-modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.78); z-index: 2000;
+  align-items: center; justify-content: center;
+}
+.crop-modal-overlay.open { display: flex; }
+.crop-modal-box {
+  background: var(--card-bg); border-radius: 14px;
+  width: min(92vw, 700px); overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.4);
+}
+.crop-modal-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 18px; border-bottom: 1px solid var(--border); font-weight: 700;
+}
+.crop-modal-head button {
+  margin-left: auto; background: none; border: none;
+  color: var(--muted); cursor: pointer; font-size: 1.2rem;
+}
+.crop-modal-head button:hover { color: var(--accent); }
+.crop-modal-body { padding: 16px; }
+.crop-area {
+  width: 100%; overflow: hidden;
+  border-radius: 8px; background: var(--bg);
+}
+.crop-area img { max-width: 100%; display: block; }
+.crop-modal-foot {
+  display: flex; gap: 10px; padding: 14px 18px;
+  border-top: 1px solid var(--border); justify-content: flex-end;
+}

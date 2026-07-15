@@ -319,8 +319,14 @@ $menuJson = [
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
           });
+
+          if (!res.ok) {
+            throw new Error('HTTP ' + res.status);
+          }
+
           const data = await res.json();
-          if (data.success) {
+
+          function showAppealToast(msg, type) {
             let container = document.querySelector('.toast-container');
             if (!container) {
               container = document.createElement('div');
@@ -328,20 +334,34 @@ $menuJson = [
               document.body.appendChild(container);
             }
             const toast = document.createElement('div');
-            toast.className = 'toast-msg toast-success';
-            toast.textContent = data.success;
+            toast.className = 'toast-msg toast-' + (type || 'success');
+            toast.textContent = msg;
             container.appendChild(toast);
-            
+            setTimeout(() => toast.remove(), 3200);
+          }
+
+          if (data.success) {
             modal.style.display = 'none';
-            setTimeout(() => {
-              location.reload();
-            }, 1500);
+            showAppealToast(data.success, 'success');
+            setTimeout(() => { location.reload(); }, 1600);
           } else {
-            alert(data.error || 'No se pudo procesar la apelación.');
+            showAppealToast(data.error || 'No se pudo procesar la apelación.', 'error');
             btnConfirm.disabled = false;
           }
         } catch(e) {
-          alert('Error de red al intentar apelar.');
+          (function(){
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+              container = document.createElement('div');
+              container.className = 'toast-container';
+              document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg toast-error';
+            toast.textContent = 'Error de conexión al intentar apelar. Inténtalo de nuevo.';
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3200);
+          })();
           btnConfirm.disabled = false;
         }
       });

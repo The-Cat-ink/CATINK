@@ -37,3 +37,4 @@ $stmt->bind_param("isss", $publicidad_id, $ip, $pais, $estado);
 $stmt->execute();
 
 echo json_encode(['ok' => true]);
+?>

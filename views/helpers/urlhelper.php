@@ -139,6 +139,11 @@ function imageUrl($path) {
         return $path;
     }
     
+    // Mapear rutas de publicidad antiguas a la nueva carpeta segura de ad-blockers
+    if (strpos($path, 'uploads/publicidad/') === 0) {
+        $path = str_replace('uploads/publicidad/', 'uploads/spots/', $path);
+    }
+    
     // Convertir rutas antiguas de img/ a uploads/
     if (strpos($path, 'img/avatares/') === 0 || strpos($path, 'img/editores/') === 0 || strpos($path, 'img/publicidad/') === 0) {
         // Extraer el nombre del archivo
@@ -149,7 +154,7 @@ function imageUrl($path) {
         } else if (strpos($path, 'img/editores/') === 0) {
             $path = 'uploads/editores/' . $filename;
         } else if (strpos($path, 'img/publicidad/') === 0) {
-            $path = 'uploads/publicidad/' . $filename;
+            $path = 'uploads/spots/' . $filename;
         }
     }
     

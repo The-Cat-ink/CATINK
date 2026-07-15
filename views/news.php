@@ -465,11 +465,11 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 </a>
             </div>
             <?php if ($secciones['publicidad']['estado'] == 1) : ?>
-              <div class="ad-container">
-                <a href="<?= $publicidad['url'] ?>" class="banner-button" data-pub="<?= $publicidad['id_pub'] ?>">
-                  <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="" class="banner" loading="lazy">
+              <div class="showcase-box">
+                <a href="<?= $publicidad['url'] ?>" class="promo-link" data-pub="<?= $publicidad['id_pub'] ?>">
+                  <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="" class="promo-media" loading="lazy">
                 </a>
-                <span class="ads-label">ADS</span>
+                <span class="partner-tag">ADS</span>
               </div>
             <?php endif; ?>
             <!-- ===================== -->
@@ -775,11 +775,11 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
           <div class="sidebar-wrapper">
             <div class="card sidebar-card">
               <?php if($secciones['publicidad']['estado'] == 1) : ?>
-                <div class="ad-container">
-                  <a href="<?= $publicidadCuadro['url'] ?>" class="banner-button" data-pub="<?= $publicidadCuadro['id_pub'] ?>">
-                    <img src="<?= imageUrl($publicidadCuadro['imagen']) ?>" class="banner-card-img-top" loading="lazy">
+                <div class="showcase-box">
+                  <a href="<?= $publicidadCuadro['url'] ?>" class="promo-link" data-pub="<?= $publicidadCuadro['id_pub'] ?>">
+                    <img src="<?= imageUrl($publicidadCuadro['imagen']) ?>" class="promo-card-media" loading="lazy">
                   </a>
-                  <span class="ads-label">ADS</span>
+                  <span class="partner-tag">ADS</span>
                 </div>
               <?php endif; ?>
               <div class="card-body">

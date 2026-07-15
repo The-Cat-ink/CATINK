@@ -21,7 +21,7 @@ function guardarPublicidadBase64Webp($base64, $publicidadId, $calidad = 95) {
     }
     
     $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false;
-    $dirUploads = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/uploads/publicidad/";
+    $dirUploads = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/uploads/spots/";
     
     if (!is_dir($dirUploads)) {
         if (!mkdir($dirUploads, 0755, true)) {
@@ -59,7 +59,7 @@ function guardarPublicidadBase64Webp($base64, $publicidadId, $calidad = 95) {
         return null;
     }
     
-    return "uploads/publicidad/" . $nombre;
+    return "uploads/spots/" . $nombre;
 }
 // ============================
 // CONEXION
@@ -102,7 +102,7 @@ if (!empty($_POST['imagenCrop'])) {
 // Si no hay crop pero hay archivo, guardar el archivo directamente
 elseif (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
     $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false;
-    $dirUploads = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/uploads/publicidad/";
+    $dirUploads = ($isLocal ? dirname(__DIR__) : dirname(dirname(__DIR__))) . "/uploads/spots/";
     
     if (!is_dir($dirUploads)) {
         mkdir($dirUploads, 0755, true);
@@ -114,7 +114,7 @@ elseif (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK
     $rutaFisica = $dirUploads . $nombre;
     
     if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaFisica)) {
-        $imagenFinal = "uploads/publicidad/" . $nombre;
+        $imagenFinal = "uploads/spots/" . $nombre;
     }
 }
 // ============================
