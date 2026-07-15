@@ -183,7 +183,31 @@ $stmtComentarios = $con->prepare("
 $stmtComentarios->bind_param("i", $id);
 $stmtComentarios->execute();
 $comentarios = $stmtComentarios->get_result();
-$totalComentarios = $comentarios->num_rows;
+
+// Organizar en hilos (modelo de un nivel): raíces + respuestas por parent_id
+$raices = [];
+$respuestas = [];
+while ($c = $comentarios->fetch_assoc()) {
+    if (!empty($c['parent_id'])) {
+        $respuestas[$c['parent_id']][] = $c;
+    } else {
+        $raices[] = $c;
+    }
+}
+// Respuestas huérfanas (padre eliminado/oculto): promoverlas a primer nivel
+$rootIdSet = array_flip(array_column($raices, 'id_comentario'));
+foreach ($respuestas as $pid => $lista) {
+    if (!isset($rootIdSet[$pid])) {
+        foreach ($lista as $huerfano) $raices[] = $huerfano;
+        unset($respuestas[$pid]);
+    }
+}
+// Raíces más recientes primero; respuestas dentro del hilo en orden cronológico
+usort($raices, fn($a, $b) => strcmp($b['fecha_publicacion'], $a['fecha_publicacion']));
+foreach ($respuestas as $pid => $lista) {
+    usort($respuestas[$pid], fn($a, $b) => strcmp($a['fecha_publicacion'], $b['fecha_publicacion']));
+}
+$totalComentarios = count($raices) + array_sum(array_map('count', $respuestas));
 
 // Config de comentarios para esta noticia
 $stmtCfgCom = $con->prepare("SELECT permitir_comentarios, moderacion_previa FROM config_comentarios WHERE noticia_id = ?");
@@ -524,82 +548,102 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 <?php if ($totalComentarios === 0): ?>
                   <p class="comentarios-vacio" id="comentariosVacio">Sé el primero en comentar.</p>
                 <?php endif; ?>
-                <?php while ($com = $comentarios->fetch_assoc()): ?>
-                  <?php $perfilUrl = commentAuthorUrl($com); ?>
-                  <div class="comentario-item" data-id="<?= $com['id_comentario'] ?>">
-                    <div class="comentario-avatar-col">
-                      <?php if ($perfilUrl): ?><a href="<?= $perfilUrl ?>" class="comentario-perfil-link" title="Ver perfil"><?php endif; ?>
-                      <?php if (!empty($com['avatar_img'])): ?>
-                        <img src="<?= imageUrl($com['avatar_img']) ?>" alt="" class="comentario-avatar" loading="lazy" decoding="async">
-                      <?php else: ?>
-                        <div class="comentario-avatar-placeholder"><?= strtoupper(mb_substr($com['nombre'], 0, 1)) ?></div>
-                      <?php endif; ?>
-                      <?php if ($perfilUrl): ?></a><?php endif; ?>
-                    </div>
-                    <div class="comentario-body">
-                      <div class="comentario-header">
-                        <?php if ($perfilUrl): ?>
-                          <a href="<?= $perfilUrl ?>" class="comentario-autor comentario-perfil-link"><?= htmlspecialchars($com['nombre']) ?></a>
+                <?php
+                // Renderiza un comentario (raíz o respuesta). Reutilizada para
+                // ambos niveles para no duplicar el marcado.
+                if (!function_exists('renderComentarioItem')):
+                function renderComentarioItem($com, $con, $misLikes, $puedeResponder, $esRespuesta = false) {
+                    $perfilUrl = commentAuthorUrl($com);
+                    $yaLiked = isset($misLikes[$com['id_comentario']]);
+                    $esMiComentario = false;
+                    if (isset($_SESSION['tipo'])) {
+                        if ($_SESSION['tipo'] === 'lector' && isset($_SESSION['id_lector']) && $com['lector_id'] == $_SESSION['id_lector']) $esMiComentario = true;
+                        if ($_SESSION['tipo'] === 'admin' && $com['usuario_id']) {
+                            $stmtMyId = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ?");
+                            $stmtMyId->bind_param("s", $_SESSION['usuario']);
+                            $stmtMyId->execute();
+                            $myId = $stmtMyId->get_result()->fetch_assoc();
+                            if ($myId && $myId['id_u'] == $com['usuario_id']) $esMiComentario = true;
+                        }
+                    }
+                    $autorResp = $com['usuario'] ?? $com['nombre'];
+                    ?>
+                    <div class="comentario-item<?= $esRespuesta ? ' comentario-respuesta' : '' ?>" data-id="<?= $com['id_comentario'] ?>">
+                      <div class="comentario-avatar-col">
+                        <?php if ($perfilUrl): ?><a href="<?= $perfilUrl ?>" class="comentario-perfil-link" title="Ver perfil"><?php endif; ?>
+                        <?php if (!empty($com['avatar_img'])): ?>
+                          <img src="<?= imageUrl($com['avatar_img']) ?>" alt="" class="comentario-avatar" loading="lazy" decoding="async">
                         <?php else: ?>
-                          <strong class="comentario-autor"><?= htmlspecialchars($com['nombre']) ?></strong>
+                          <div class="comentario-avatar-placeholder"><?= strtoupper(mb_substr($com['nombre'], 0, 1)) ?></div>
                         <?php endif; ?>
-                        <?php if ($com['es_editor']): ?>
-                          <span class="badge-editor">Editor</span>
-                        <?php endif; ?>
-                        <span class="comentario-fecha"><?= date('d M Y, H:i', strtotime($com['fecha_publicacion'])) ?></span>
+                        <?php if ($perfilUrl): ?></a><?php endif; ?>
                       </div>
-                      <p class="comentario-texto"><?= nl2br(htmlspecialchars($com['contenido'])) ?></p>
-                      <div class="comentario-acciones">
-                        <?php
-                          $yaLiked = isset($misLikes[$com['id_comentario']]);
-                          $esMiComentario = false;
-                          if (isset($_SESSION['tipo'])) {
-                              if ($_SESSION['tipo'] === 'lector' && isset($_SESSION['id_lector']) && $com['lector_id'] == $_SESSION['id_lector']) $esMiComentario = true;
-                              if ($_SESSION['tipo'] === 'admin' && $com['usuario_id']) {
-                                  $stmtMyId = $con->prepare("SELECT id_u FROM usuarios WHERE usuario = ?");
-                                  $stmtMyId->bind_param("s", $_SESSION['usuario']);
-                                  $stmtMyId->execute();
-                                  $myId = $stmtMyId->get_result()->fetch_assoc();
-                                  if ($myId && $myId['id_u'] == $com['usuario_id']) $esMiComentario = true;
-                              }
-                          }
-                        ?>
-                        <button class="btn-like-com <?= $yaLiked ? 'liked' : '' ?>" data-id="<?= $com['id_comentario'] ?>">
-                          <i class="bi <?= $yaLiked ? 'bi-heart-fill' : 'bi-heart' ?>"></i>
-                          <span class="like-count"><?= (int)$com['total_likes'] ?></span>
-                        </button>
-                        <?php if ($esMiComentario): ?>
-                          <button class="btn-editar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-pencil"></i> Editar</button>
-                          <button class="btn-eliminar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-trash"></i> Eliminar</button>
-                        <?php else: ?>
-                          <?php if (isset($_SESSION['tipo']) && empty($_SESSION['superadmin'])): ?>
-                            <button class="btn-reportar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-flag"></i> Reportar</button>
+                      <div class="comentario-body">
+                        <div class="comentario-header">
+                          <?php if ($perfilUrl): ?>
+                            <a href="<?= $perfilUrl ?>" class="comentario-autor comentario-perfil-link"><?= htmlspecialchars($com['nombre']) ?></a>
+                          <?php else: ?>
+                            <strong class="comentario-autor"><?= htmlspecialchars($com['nombre']) ?></strong>
                           <?php endif; ?>
-                          <?php if (!empty($_SESSION['superadmin'])):
-                              $modTipoCom    = $com['usuario_id'] ? 'admin' : 'lector';
-                              $modUserIdCom  = (int)($com['usuario_id'] ?: $com['lector_id']);
-                              $modNombreCom  = htmlspecialchars($com['nombre'], ENT_QUOTES);
-                              $modBaneadoCom = $modUserIdCom > 0 ? estaBaneado(obtenerBaneo($con, $modTipoCom, $modUserIdCom)) : false;
-                          ?>
-                            <div class="com-kebab">
-                              <button class="btn-kebab-com" title="Opciones de moderación" aria-label="Opciones de moderación"><i class="bi bi-three-dots-vertical"></i></button>
-                              <div class="com-kebab-menu" hidden>
-                                <button class="btn-eliminar-com btn-mod-eliminar" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-trash"></i> Eliminar</button>
-                                <?php if ($modUserIdCom > 0): ?>
-                                  <?php if ($modBaneadoCom): ?>
-                                    <button class="btn-quitar-com" data-tipo="<?= $modTipoCom ?>" data-userid="<?= $modUserIdCom ?>" data-nombre="<?= $modNombreCom ?>"><i class="bi bi-check-circle"></i> Quitar suspensión</button>
-                                  <?php else: ?>
-                                    <button class="btn-suspender-com" data-tipo="<?= $modTipoCom ?>" data-userid="<?= $modUserIdCom ?>" data-nombre="<?= $modNombreCom ?>"><i class="bi bi-slash-circle"></i> Suspender</button>
+                          <?php if ($com['es_editor']): ?>
+                            <span class="badge-editor">Editor</span>
+                          <?php endif; ?>
+                          <span class="comentario-fecha"><?= date('d M Y, H:i', strtotime($com['fecha_publicacion'])) ?></span>
+                        </div>
+                        <p class="comentario-texto"><?= nl2br(htmlspecialchars($com['contenido'])) ?></p>
+                        <div class="comentario-acciones">
+                          <button class="btn-like-com <?= $yaLiked ? 'liked' : '' ?>" data-id="<?= $com['id_comentario'] ?>">
+                            <i class="bi <?= $yaLiked ? 'bi-heart-fill' : 'bi-heart' ?>"></i>
+                            <span class="like-count"><?= (int)$com['total_likes'] ?></span>
+                          </button>
+                          <?php if ($puedeResponder): ?>
+                            <button class="btn-responder-com" data-id="<?= $com['id_comentario'] ?>" data-respuesta="<?= $esRespuesta ? '1' : '0' ?>" data-autor="<?= htmlspecialchars($autorResp, ENT_QUOTES) ?>"><i class="bi bi-reply"></i> Responder</button>
+                          <?php endif; ?>
+                          <?php if ($esMiComentario): ?>
+                            <button class="btn-editar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-pencil"></i> Editar</button>
+                            <button class="btn-eliminar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-trash"></i> Eliminar</button>
+                          <?php else: ?>
+                            <?php if (isset($_SESSION['tipo']) && empty($_SESSION['superadmin'])): ?>
+                              <button class="btn-reportar-com" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-flag"></i> Reportar</button>
+                            <?php endif; ?>
+                            <?php if (!empty($_SESSION['superadmin'])):
+                                $modTipoCom    = $com['usuario_id'] ? 'admin' : 'lector';
+                                $modUserIdCom  = (int)($com['usuario_id'] ?: $com['lector_id']);
+                                $modNombreCom  = htmlspecialchars($com['nombre'], ENT_QUOTES);
+                                $modBaneadoCom = $modUserIdCom > 0 ? estaBaneado(obtenerBaneo($con, $modTipoCom, $modUserIdCom)) : false;
+                            ?>
+                              <div class="com-kebab">
+                                <button class="btn-kebab-com" title="Opciones de moderación" aria-label="Opciones de moderación"><i class="bi bi-three-dots-vertical"></i></button>
+                                <div class="com-kebab-menu" hidden>
+                                  <button class="btn-eliminar-com btn-mod-eliminar" data-id="<?= $com['id_comentario'] ?>"><i class="bi bi-trash"></i> Eliminar</button>
+                                  <?php if ($modUserIdCom > 0): ?>
+                                    <?php if ($modBaneadoCom): ?>
+                                      <button class="btn-quitar-com" data-tipo="<?= $modTipoCom ?>" data-userid="<?= $modUserIdCom ?>" data-nombre="<?= $modNombreCom ?>"><i class="bi bi-check-circle"></i> Quitar suspensión</button>
+                                    <?php else: ?>
+                                      <button class="btn-suspender-com" data-tipo="<?= $modTipoCom ?>" data-userid="<?= $modUserIdCom ?>" data-nombre="<?= $modNombreCom ?>"><i class="bi bi-slash-circle"></i> Suspender</button>
+                                    <?php endif; ?>
                                   <?php endif; ?>
-                                <?php endif; ?>
+                                </div>
                               </div>
-                            </div>
+                            <?php endif; ?>
                           <?php endif; ?>
-                        <?php endif; ?>
+                        </div>
                       </div>
+                    </div>
+                    <?php
+                }
+                endif;
+                ?>
+                <?php foreach ($raices as $com): ?>
+                  <div class="comentario-hilo" data-root="<?= $com['id_comentario'] ?>">
+                    <?php renderComentarioItem($com, $con, $misLikes, $puedeComentarr, false); ?>
+                    <div class="comentario-respuestas">
+                      <?php foreach (($respuestas[$com['id_comentario']] ?? []) as $hijo): ?>
+                        <?php renderComentarioItem($hijo, $con, $misLikes, $puedeComentarr, true); ?>
+                      <?php endforeach; ?>
                     </div>
                   </div>
-                <?php endwhile; ?>
+                <?php endforeach; ?>
               </div>
             </div>
             <?php endif; ?>
@@ -1026,6 +1070,54 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
     });
   }
 
+  // Construye el marcado de un comentario (raíz o respuesta). Reutilizada por
+  // el alta de comentarios y de respuestas. Como solo un usuario con sesión
+  // puede llegar aquí, siempre incluye "Responder" y las acciones del autor.
+  function buildComentarioHtml(c, esRespuesta = false) {
+    const perfilUrl = c.usuario_id
+      ? `<?= basePath() ?>/autor/${c.usuario_id}`
+      : (c.lector_id ? `<?= basePath() ?>/usuario/${c.lector_id}` : null);
+    const innerAvatar = c.avatar_img
+      ? `<img src="<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(c.avatar_img)}" alt="" class="comentario-avatar" loading="lazy" decoding="async">`
+      : `<div class="comentario-avatar-placeholder">${c.nombre.charAt(0).toUpperCase()}</div>`;
+    const avatarHtml = perfilUrl
+      ? `<a href="${perfilUrl}" class="comentario-perfil-link" title="Ver perfil">${innerAvatar}</a>`
+      : innerAvatar;
+    const autorHtml = perfilUrl
+      ? `<a href="${perfilUrl}" class="comentario-autor comentario-perfil-link">${c.nombre}</a>`
+      : `<strong class="comentario-autor">${c.nombre}</strong>`;
+    const fecha = new Date(c.fecha_publicacion).toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const badgeHtml = c.es_editor == 1 ? '<span class="badge-editor">Editor</span>' : '';
+    const autorAttr = (c.usuario || c.nombre || '').replace(/"/g, '&quot;');
+    return `
+      <div class="comentario-item${esRespuesta ? ' comentario-respuesta' : ''}" data-id="${c.id_comentario}">
+        <div class="comentario-avatar-col">${avatarHtml}</div>
+        <div class="comentario-body">
+          <div class="comentario-header">
+            ${autorHtml}
+            ${badgeHtml}
+            <span class="comentario-fecha">${fecha}</span>
+          </div>
+          <p class="comentario-texto">${c.contenido.replace(/\n/g, '<br>')}</p>
+          <div class="comentario-acciones">
+            <button class="btn-like-com" data-id="${c.id_comentario}"><i class="bi bi-heart"></i> <span class="like-count">0</span></button>
+            <button class="btn-responder-com" data-id="${c.id_comentario}" data-respuesta="${esRespuesta ? '1' : '0'}" data-autor="${autorAttr}"><i class="bi bi-reply"></i> Responder</button>
+            <button class="btn-editar-com" data-id="${c.id_comentario}"><i class="bi bi-pencil"></i> Editar</button>
+            <button class="btn-eliminar-com" data-id="${c.id_comentario}"><i class="bi bi-trash"></i> Eliminar</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Suma 1 al contador de comentarios de la cabecera de la sección.
+  function incrementarContadorComentarios() {
+    const countEl = document.querySelector('.comentarios-count');
+    if (countEl) {
+      const num = parseInt(countEl.textContent.replace(/\D/g, '')) + 1;
+      countEl.textContent = `(${num})`;
+    }
+  }
+
   // CREAR COMENTARIO
   const btnComentar = document.getElementById('btnComentar');
   if (btnComentar) {
@@ -1041,50 +1133,14 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
         });
         const data = await res.json();
         if (data.ok && data.comentario) {
-          const c = data.comentario;
-          const perfilUrl = c.usuario_id
-            ? `<?= basePath() ?>/autor/${c.usuario_id}`
-            : (c.lector_id ? `<?= basePath() ?>/usuario/${c.lector_id}` : null);
-          const innerAvatar = c.avatar_img
-            ? `<img src="<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(c.avatar_img)}" alt="" class="comentario-avatar" loading="lazy" decoding="async">`
-            : `<div class="comentario-avatar-placeholder">${c.nombre.charAt(0).toUpperCase()}</div>`;
-          const avatarHtml = perfilUrl
-            ? `<a href="${perfilUrl}" class="comentario-perfil-link" title="Ver perfil">${innerAvatar}</a>`
-            : innerAvatar;
-          const autorHtml = perfilUrl
-            ? `<a href="${perfilUrl}" class="comentario-autor comentario-perfil-link">${c.nombre}</a>`
-            : `<strong class="comentario-autor">${c.nombre}</strong>`;
-          const fecha = new Date(c.fecha_publicacion).toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-          const badgeHtml = c.es_editor == 1 ? '<span class="badge-editor">Editor</span>' : '';
-          const html = `
-            <div class="comentario-item" data-id="${c.id_comentario}">
-              <div class="comentario-avatar-col">${avatarHtml}</div>
-              <div class="comentario-body">
-                <div class="comentario-header">
-                  ${autorHtml}
-                  ${badgeHtml}
-                  <span class="comentario-fecha">${fecha}</span>
-                </div>
-                <p class="comentario-texto">${c.contenido.replace(/\n/g, '<br>')}</p>
-                <div class="comentario-acciones">
-                  <button class="btn-like-com" data-id="${c.id_comentario}"><i class="bi bi-heart"></i> <span class="like-count">0</span></button>
-                  <button class="btn-editar-com" data-id="${c.id_comentario}"><i class="bi bi-pencil"></i> Editar</button>
-                  <button class="btn-eliminar-com" data-id="${c.id_comentario}"><i class="bi bi-trash"></i> Eliminar</button>
-                </div>
-              </div>
-            </div>`;
           const lista = document.getElementById('comentariosLista');
           const vacio = document.getElementById('comentariosVacio');
           if (vacio) vacio.remove();
-          lista.insertAdjacentHTML('afterbegin', html);
+          const hilo = `<div class="comentario-hilo" data-root="${data.comentario.id_comentario}">${buildComentarioHtml(data.comentario, false)}<div class="comentario-respuestas"></div></div>`;
+          lista.insertAdjacentHTML('afterbegin', hilo);
           textarea.value = '';
           charCount.textContent = '0';
-          // Actualizar contador
-          const countEl = document.querySelector('.comentarios-count');
-          if (countEl) {
-            const num = parseInt(countEl.textContent.replace(/\D/g, '')) + 1;
-            countEl.textContent = `(${num})`;
-          }
+          incrementarContadorComentarios();
         } else {
           showToast(data.msg || 'Error al enviar el comentario.', 'error', data.persist);
         }
@@ -1283,6 +1339,73 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
       const editArea = item.querySelector('.edit-textarea');
       const textoOriginal = editArea.value;
       item.querySelector('.comentario-texto').innerHTML = textoOriginal.replace(/\n/g, '<br>');
+    }
+
+    // RESPONDER - abrir formulario inline
+    if (btn.classList.contains('btn-responder-com')) {
+      const cid = btn.dataset.id;
+      const esResp = btn.dataset.respuesta === '1';
+      const item = btn.closest('.comentario-item');
+      if (!item) return;
+      // Un solo formulario de respuesta abierto a la vez
+      document.querySelectorAll('.comentario-reply-form').forEach(f => f.remove());
+      // Si se responde a una respuesta, prellenar la mención para dar contexto
+      const mention = (esResp && btn.dataset.autor) ? `@${btn.dataset.autor} ` : '';
+      const form = document.createElement('div');
+      form.className = 'comentario-reply-form';
+      form.dataset.parent = cid;
+      form.innerHTML = `
+        <textarea class="reply-textarea" maxlength="1000" placeholder="Escribe una respuesta..."></textarea>
+        <div class="comentario-form-footer">
+          <button class="btn-comentar btn-enviar-reply" data-parent="${cid}"><i class="bi bi-reply"></i> Responder</button>
+          <button class="btn-cancelar btn-cancelar-reply">Cancelar</button>
+        </div>`;
+      item.querySelector('.comentario-body').appendChild(form);
+      const ta = form.querySelector('.reply-textarea');
+      ta.value = mention;
+      ta.focus();
+      ta.setSelectionRange(ta.value.length, ta.value.length);
+      return;
+    }
+
+    // CANCELAR RESPUESTA
+    if (btn.classList.contains('btn-cancelar-reply')) {
+      const form = btn.closest('.comentario-reply-form');
+      if (form) form.remove();
+      return;
+    }
+
+    // ENVIAR RESPUESTA
+    if (btn.classList.contains('btn-enviar-reply')) {
+      const form = btn.closest('.comentario-reply-form');
+      const parentId = btn.dataset.parent;
+      const ta = form.querySelector('.reply-textarea');
+      const contenido = ta.value.trim();
+      if (!contenido) return;
+      btn.disabled = true;
+      try {
+        const res = await fetch(comBase + 'comentarios.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `action=crear&noticia_id=${noticiaId}&parent_id=${parentId}&contenido=${encodeURIComponent(contenido)}`
+        });
+        const data = await res.json();
+        if (data.ok && data.comentario) {
+          const hilo = form.closest('.comentario-hilo');
+          const cont = hilo ? hilo.querySelector('.comentario-respuestas') : null;
+          if (cont) cont.insertAdjacentHTML('beforeend', buildComentarioHtml(data.comentario, true));
+          form.remove();
+          incrementarContadorComentarios();
+        } else {
+          showToast(data.msg || 'Error al enviar la respuesta.', 'error', data.persist);
+          btn.disabled = false;
+        }
+      } catch (e) {
+        console.error(e);
+        showToast('Error de red al procesar la respuesta.', 'error');
+        btn.disabled = false;
+      }
+      return;
     }
 
     // REPORTAR - abrir modal

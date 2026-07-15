@@ -2772,6 +2772,30 @@ a.comentario-autor:hover { color: var(--accent); }
   background: var(--card-bg); color: var(--text);
   font-family: inherit; min-height: 60px; margin-bottom: 8px;
 }
+/* Respuestas (comentarios anidados) */
+.comentario-hilo { border-bottom: 1px solid var(--border); }
+.comentario-hilo > .comentario-item { border-bottom: none; }
+.comentario-respuestas {
+  margin-left: 52px;
+  border-left: 2px solid var(--border);
+  padding-left: 14px;
+}
+.comentario-respuestas .comentario-item { border-bottom: none; padding: 12px 0; }
+.comentario-respuesta .comentario-avatar,
+.comentario-respuesta .comentario-avatar-placeholder { width: 32px; height: 32px; font-size: 0.9rem; }
+.btn-responder-com:hover { color: var(--accent) !important; }
+/* Formulario de respuesta inline */
+.comentario-reply-form { margin-top: 10px; }
+.reply-textarea {
+  width: 100%; border: 1px solid var(--accent); border-radius: 8px;
+  padding: 8px 10px; font-size: 0.95rem; resize: vertical;
+  background: var(--card-bg); color: var(--text);
+  font-family: inherit; min-height: 60px;
+}
+.reply-textarea:focus { outline: none; border-color: var(--accent); }
+@media (max-width: 768px) {
+  .comentario-respuestas { margin-left: 24px; padding-left: 10px; }
+}
 /* Modal reporte */
 .modal-reporte {
   position: fixed; inset: 0; background: rgba(0,0,0,0.5);

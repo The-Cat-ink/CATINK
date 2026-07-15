@@ -107,6 +107,26 @@ switch ($action) {
         }
 
         // ============================
+        // COMENTARIO PADRE (respuesta)
+        // ============================
+        // Modelo de hilo de un nivel: si se responde a una respuesta, se ancla
+        // al comentario raíz del hilo para no crear niveles más profundos.
+        $parentId = (int)($_POST['parent_id'] ?? 0);
+        if ($parentId > 0) {
+            $stmtParent = $con->prepare("SELECT id_comentario, parent_id FROM comentarios WHERE id_comentario = ? AND noticia_id = ? AND estado = 'activo'");
+            $stmtParent->bind_param("ii", $parentId, $noticiaId);
+            $stmtParent->execute();
+            $parentRow = $stmtParent->get_result()->fetch_assoc();
+            if (!$parentRow) {
+                echo json_encode(['ok' => false, 'msg' => 'El comentario al que respondes ya no está disponible.']);
+                exit;
+            }
+            if (!empty($parentRow['parent_id'])) {
+                $parentId = (int)$parentRow['parent_id'];
+            }
+        }
+
+        // ============================
         // FILTRO DE CENSURA Y BANEO AUTOMÁTICO
         // ============================
         // Solo se bloquea/sanciona si hay palabras ofensivas CONCRETAS detectadas
@@ -207,10 +227,12 @@ switch ($action) {
         // DETECCIÓN DE DUPLICADOS
         // ============================
         $stmtDuplicate = $con->prepare("
-            SELECT COUNT(*) as count FROM comentarios 
+            SELECT COUNT(*) as count FROM comentarios
             WHERE lector_id = ? AND noticia_id = ? AND contenido = ?
+              AND (parent_id <=> ?)
         ");
-        $stmtDuplicate->bind_param("iis", $lectorId, $noticiaId, $contenido);
+        $dupParent = $parentId > 0 ? $parentId : null;
+        $stmtDuplicate->bind_param("iisi", $lectorId, $noticiaId, $contenido, $dupParent);
         $stmtDuplicate->execute();
         $dupCheck = $stmtDuplicate->get_result()->fetch_assoc();
         
@@ -272,8 +294,9 @@ switch ($action) {
         // Estado: admins publican directo, lectores dependen de config
         $estado = $esEditor ? 'activo' : (($cfg && $cfg['moderacion_previa'] == 1) ? 'oculto' : 'activo');
 
-        $stmt = $con->prepare("INSERT INTO comentarios (noticia_id, lector_id, usuario_id, contenido, estado) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("iiiss", $noticiaId, $lectorId, $usuarioId, $contenido, $estado);
+        $parentParam = $parentId > 0 ? $parentId : null;
+        $stmt = $con->prepare("INSERT INTO comentarios (noticia_id, lector_id, usuario_id, parent_id, contenido, estado) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("iiiiss", $noticiaId, $lectorId, $usuarioId, $parentParam, $contenido, $estado);
 
         if ($stmt->execute()) {
             $msg = ($estado === 'oculto') ? 'Tu comentario fue enviado y será revisado antes de publicarse.' : 'Comentario publicado.';
