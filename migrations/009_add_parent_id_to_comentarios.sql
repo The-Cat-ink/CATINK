@@ -8,5 +8,5 @@
 --              de a quién se responde se conserva con una mención @usuario en el
 --              texto.
 
-ALTER TABLE `comentarios` ADD COLUMN IF NOT EXISTS `parent_id` int(11) DEFAULT NULL AFTER `usuario_id`;
+ALTER TABLE `comentarios` ADD COLUMN `parent_id` int(11) DEFAULT NULL AFTER `usuario_id`;
 ALTER TABLE `comentarios` ADD KEY `idx_comentarios_parent` (`parent_id`);
