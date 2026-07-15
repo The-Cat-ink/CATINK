@@ -19,7 +19,59 @@ if (empty($ACL['crear'])) {
 $categoriasResult = $con->query("SELECT id_c, nombre FROM categorias ORDER BY nombre ASC");
 $categorias = [];
 while($row = $categoriasResult->fetch_assoc()) $categorias[] = $row;
+
+// ── Continuar borrador ──
+// Solo cuando se entra por continuar_borrador.php (que ya validó el id). Entrar
+// directo a crear.php siempre abre en blanco.
+$borradorId = isset($BORRADOR_ID) ? intval($BORRADOR_ID) : 0;
+$borradorData = null;
+if ($borradorId > 0) {
+    $stmtB = $con->prepare("
+        SELECT id, titulo, descripcion, contenido, tipo_publicacion, calificacion, pros, contras,
+               es_estreno, seccion_estreno, fecha_programada, crop1, crop2, crop3, crop4
+        FROM noticias
+        WHERE id = ? AND borrador = 1 AND eliminado_en IS NULL
+    ");
+    $stmtB->bind_param("i", $borradorId);
+    $stmtB->execute();
+    $b = $stmtB->get_result()->fetch_assoc();
+
+    if ($b) {
+        $catsB = [];
+        $rcB = $con->prepare("SELECT categoria_id FROM noticia_categoria WHERE noticia_id = ? ORDER BY orden ASC");
+        $rcB->bind_param("i", $borradorId);
+        $rcB->execute();
+        $resCB = $rcB->get_result();
+        while ($rowCB = $resCB->fetch_assoc()) $catsB[] = (int)$rowCB['categoria_id'];
+
+        $cropsB = [];
+        foreach (['crop1', 'crop2', 'crop3', 'crop4'] as $ck) {
+            $cropsB[$ck] = !empty($b[$ck]) ? imageUrl($b[$ck]) : null;
+        }
+
+        $borradorData = [
+            'id'               => (int)$b['id'],
+            'titulo'           => $b['titulo'],
+            'descripcion'      => $b['descripcion'],
+            'contenido'        => $b['contenido'],
+            'tipo_publicacion' => $b['tipo_publicacion'],
+            'calificacion'     => $b['calificacion'],
+            'pros'             => $b['pros'],
+            'contras'          => $b['contras'],
+            'es_estreno'       => (int)$b['es_estreno'],
+            'seccion_estreno'  => $b['seccion_estreno'],
+            // 'YYYY-MM-DD HH:MM' para repoblar el programador
+            'fecha_programada' => !empty($b['fecha_programada']) ? date('Y-m-d H:i', strtotime($b['fecha_programada'])) : null,
+            'categorias'       => $catsB,
+            'crops'            => $cropsB,
+        ];
+    } else {
+        $borradorId = 0;
+    }
+}
+$esContinuacion = $borradorData !== null;
 ?>
+<script>const BORRADOR = <?= $borradorData ? json_encode($borradorData) : 'null' ?>;</script>
 
 <style>
 /* ── LAYOUT ── */
@@ -481,12 +533,20 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
 <div class="admin-container">
 
   <div class="cn-breadcrumb">
-    <a href="contenidos.php">Contenido</a>
-    <i class="bi bi-chevron-right"></i>
-    <span>Crear Noticia</span>
+    <?php if ($esContinuacion): ?>
+      <a href="borradores.php">Borradores</a>
+      <i class="bi bi-chevron-right"></i>
+      <span>Continuar Borrador</span>
+    <?php else: ?>
+      <a href="contenidos.php">Contenido</a>
+      <i class="bi bi-chevron-right"></i>
+      <span>Crear Noticia</span>
+    <?php endif; ?>
   </div>
 
-  <h1 class="cn-page-title" style="text-align: center;">Alta de noticia</h1>
+  <h1 class="cn-page-title" style="text-align: center;">
+    <?= $esContinuacion ? 'Continuar borrador' : 'Alta de noticia' ?>
+  </h1>
 
   <form id="formPublicacion" enctype="multipart/form-data" autocomplete="off">
     <input type="hidden" name="autor" value="<?= $_SESSION['id_u'] ?? '' ?>">
@@ -1776,9 +1836,19 @@ document.getElementById('pvTabs')?.addEventListener('click', e => {
     return out;
   }
 
+  // Fecha del programador, si está activado. Se guarda en el borrador para no
+  // tener que volver a programar la nota al continuarla.
+  function fechaProgramada() {
+    if (!$('scheduleToggle')?.checked) return '';
+    const d = $('schedDate')?.value || '';
+    const t = $('schedTime')?.value || '';
+    return (d && t) ? (d + ' ' + t) : '';
+  }
+
   function payload(cropsToSend) {
     const p = new URLSearchParams();
     p.set('draft_id',         draftId);
+    p.set('fecha_programada', fechaProgramada());
     p.set('titulo',           $('titulo')?.value || '');
     p.set('descripcion',      $('descripcion')?.value || '');
     p.set('contenido',        editorHtml());
@@ -1846,6 +1916,9 @@ document.getElementById('pvTabs')?.addEventListener('click', e => {
     const estreno = $('es_estreno');
     if (estreno && estreno.checked) { estreno.checked = false; estreno.dispatchEvent(new Event('change', { bubbles: true })); }
 
+    const prog = $('scheduleToggle');
+    if (prog && prog.checked) { prog.checked = false; prog.dispatchEvent(new Event('change', { bubbles: true })); }
+
     // Categorías marcadas (dispara el 'change' para que se quiten los chips)
     document.querySelectorAll('#catMenu input[type="checkbox"]:checked').forEach(chk => {
       chk.checked = false;
@@ -1863,6 +1936,71 @@ document.getElementById('pvTabs')?.addEventListener('click', e => {
     lastSig = '';
     dirty = false;
     suppress = false;
+  }
+
+  // ── Continuar un borrador (se entró por continuar_borrador.php) ──
+  function urlToBase64(url) {
+    return fetch(url)
+      .then(r => r.blob())
+      .then(blob => new Promise(res => { const fr = new FileReader(); fr.onloadend = () => res(fr.result); fr.readAsDataURL(blob); }));
+  }
+
+  async function precargar(d) {
+    suppress = true;                       // no reguardar mientras repoblamos
+    draftId = d.id;                        // el autoguardado sigue sobre ESTE borrador
+    if (draftInput) draftInput.value = draftId;
+
+    const setEl = (id, val, ev) => { const el = $(id); if (!el) return; el.value = val ?? ''; if (ev) el.dispatchEvent(new Event(ev, { bubbles: true })); };
+    setEl('titulo', d.titulo, 'input');
+    setEl('descripcion', d.descripcion, 'input');
+    setEl('tipo_publicacion', d.tipo_publicacion || 'noticia', 'change');
+    if (d.calificacion) setEl('calificacion', d.calificacion, 'input');
+    setEl('pros', d.pros);
+    setEl('contras', d.contras);
+    if ($('es_estreno')) { $('es_estreno').checked = !!d.es_estreno; $('es_estreno').dispatchEvent(new Event('change', { bubbles: true })); }
+    if (d.seccion_estreno) setEl('seccion_estreno', d.seccion_estreno, 'change');
+
+    // Programación: si el borrador ya venía programado, no hay que volver a programarlo
+    if (d.fecha_programada && $('scheduleToggle')) {
+      $('scheduleToggle').checked = true;
+      $('scheduleToggle').dispatchEvent(new Event('change', { bubbles: true }));
+      setEl('schedDate', d.fecha_programada.slice(0, 10));
+      setEl('schedTime', d.fecha_programada.slice(11, 16));
+    }
+
+    // Contenido, en cuanto el editor esté listo
+    (function aplicar() {
+      if (window.editor && typeof window.editor.setData === 'function') window.editor.setData(d.contenido || '');
+      else setTimeout(aplicar, 200);
+    })();
+
+    // Categorías (el 'change' reconstruye los chips)
+    (d.categorias || []).forEach(id => {
+      const chk = document.querySelector('#catMenu input[type="checkbox"][value="' + id + '"]');
+      if (chk && !chk.checked) { chk.checked = true; chk.dispatchEvent(new Event('change', { bubbles: true })); }
+    });
+
+    // Imágenes: los crops guardados vuelven a base64 para las zonas y el preview
+    let algunaImg = false;
+    for (const ck of ['crop1', 'crop2', 'crop3', 'crop4']) {
+      const url = d.crops ? d.crops[ck] : null;
+      if (!url) continue;
+      try {
+        const b64 = await urlToBase64(url);
+        if ($(ck)) $(ck).value = b64;
+        lastCrops[ck] = b64;                        // ya está guardado: no re-subirlo
+        const zona = ck.replace('crop', '');
+        if (typeof setZonePreview === 'function' && zona !== '1') setZonePreview(zona, b64);
+        algunaImg = true;
+      } catch (e) { /* imagen no disponible: continuar */ }
+    }
+    if (algunaImg) { const pv = $('previewSection'); if (pv) pv.style.display = 'block'; }
+    if (typeof updateAllPreviews === 'function') updateAllPreviews();
+
+    lastSig = payload({}).toString();
+    dirty = false;
+    suppress = false;
+    setStatus('Continuando borrador · guardado ' + hora());
   }
 
   // Enganches de guardado
@@ -1898,8 +2036,20 @@ document.getElementById('pvTabs')?.addEventListener('click', e => {
   // Puntero de la versión anterior (reanudación): ya no se usa.
   try { localStorage.removeItem('catink_borrador_id'); } catch (e) {}
 
-  // Al cargar, dejar el formulario en blanco: lo escrito ya vive en "Borradores".
-  limpiarFormulario();
+  // Al cargar: si venimos de "Continuar borrador", repoblar ese borrador; si no,
+  // arrancar en blanco (lo escrito antes ya vive en "Borradores").
+  //
+  // Debe correr DESPUÉS del init de la vista (que engancha los chips de
+  // categoría y los previews en DOMContentLoaded, y precarga el programador con
+  // la fecha de hoy). Si lo hiciéramos ahora, en pleno parseo, los eventos que
+  // dispara la precarga no tendrían quien los escuche y el init pisaría la
+  // fecha programada del borrador.
+  function iniciar() {
+    if (typeof BORRADOR !== 'undefined' && BORRADOR) precargar(BORRADOR);
+    else limpiarFormulario();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar, { once: true });
+  else iniciar();
 })();
 </script>
 

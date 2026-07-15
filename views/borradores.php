@@ -93,7 +93,7 @@ $total = count($borradores);
                                 <td>
                                     <div class="noticias-actions papelera-actions">
                                         <?php if (!empty($ACL['editar'])): ?>
-                                        <a href="editar.php?id=<?= $row['id'] ?>" class="btn btn-edit" title="Continuar edición y publicar">
+                                        <a href="continuar_borrador.php?id=<?= $row['id'] ?>" class="btn btn-edit" title="Continuar donde te quedaste">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                         <?php endif; ?>

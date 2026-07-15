@@ -58,6 +58,15 @@ if ($tipo_publicacion === 'review') {
     $contras = ($_POST['contras'] ?? '') !== '' ? trim($_POST['contras']) : null;
 }
 
+// Fecha del programador. Se guarda aparte de fecha_publicacion (que sigue en
+// NULL) para que el borrador NO se publique solo al llegar la hora, pero al
+// continuarlo no haya que volver a programarlo.
+$fecha_programada = null;
+$fp = trim($_POST['fecha_programada'] ?? '');
+if ($fp !== '' && ($ts = strtotime($fp)) !== false) {
+    $fecha_programada = date('Y-m-d H:i:s', $ts);
+}
+
 $es_estreno = isset($_POST['es_estreno']) ? intval($_POST['es_estreno']) : 0;
 $seccion_estreno = ($es_estreno === 1 && !empty($_POST['seccion_estreno'])) ? $_POST['seccion_estreno'] : null;
 $categorias = $_POST['categoria'] ?? [];
@@ -88,13 +97,15 @@ if ($draftId > 0) {
     // ── Actualizar el borrador existente ──
     $sql = "UPDATE noticias
             SET titulo = ?, slug = ?, descripcion = ?, contenido = ?, tipo_publicacion = ?,
-                calificacion = ?, pros = ?, contras = ?, es_estreno = ?, seccion_estreno = ?, editado_por = ?
+                calificacion = ?, pros = ?, contras = ?, es_estreno = ?, seccion_estreno = ?,
+                fecha_programada = ?, editado_por = ?
             WHERE id = ? AND borrador = 1";
     $stmt = $con->prepare($sql);
     $stmt->bind_param(
-        "ssssssssisii",
+        "ssssssssissii",
         $titulo, $slug, $descripcion, $contenido, $tipo_publicacion,
-        $calificacion, $pros, $contras, $es_estreno, $seccion_estreno, $usuario_id, $draftId
+        $calificacion, $pros, $contras, $es_estreno, $seccion_estreno,
+        $fecha_programada, $usuario_id, $draftId
     );
     $stmt->execute();
 } else {
@@ -102,13 +113,13 @@ if ($draftId > 0) {
     $fecha = null;
     $sql = "INSERT INTO noticias
             (titulo, slug, descripcion, autor, contenido, fecha_publicacion, creado_por, editado_por,
-             tipo_publicacion, calificacion, pros, contras, es_estreno, seccion_estreno, borrador)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";
+             tipo_publicacion, calificacion, pros, contras, es_estreno, seccion_estreno, fecha_programada, borrador)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";
     $stmt = $con->prepare($sql);
     $stmt->bind_param(
-        "sssissiissssis",
+        "sssissiissssiss",
         $titulo, $slug, $descripcion, $usuario_id, $contenido, $fecha, $usuario_id, $usuario_id,
-        $tipo_publicacion, $calificacion, $pros, $contras, $es_estreno, $seccion_estreno
+        $tipo_publicacion, $calificacion, $pros, $contras, $es_estreno, $seccion_estreno, $fecha_programada
     );
     if (!$stmt->execute()) {
         echo json_encode(['ok' => false, 'msg' => 'error_insert']);

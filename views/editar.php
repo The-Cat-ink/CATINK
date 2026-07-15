@@ -13,7 +13,7 @@ if (empty($ACL['editar'])) { header("Location: admin.php"); exit(); }
 if (!isset($_GET['id']))    { header("Location: contenidos.php"); exit; }
 $id = intval($_GET['id']);
 
-$stmt = $con->prepare("SELECT id, titulo, descripcion, contenido, fecha_publicacion, crop1, crop2, crop3, crop4, creado_por, editado_por, ultima_edicion, tipo_publicacion, calificacion, pros, contras, es_estreno, seccion_estreno FROM noticias WHERE id = ? AND eliminado_en IS NULL");
+$stmt = $con->prepare("SELECT id, titulo, descripcion, contenido, fecha_publicacion, fecha_programada, crop1, crop2, crop3, crop4, creado_por, editado_por, ultima_edicion, tipo_publicacion, calificacion, pros, contras, es_estreno, seccion_estreno FROM noticias WHERE id = ? AND eliminado_en IS NULL");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $noticia = $stmt->get_result()->fetch_assoc();
@@ -52,12 +52,25 @@ $categoriasSeleccionadas = [];
 $resCat = $stmtCat->get_result();
 while ($row = $resCat->fetch_assoc()) $categoriasSeleccionadas[] = $row;
 
-// Fecha actual de publicación para pre-cargar el programador.
-// Un borrador no tiene fecha (NULL): se precarga con la fecha/hora actual.
+// Fecha para pre-cargar el programador.
+// Un borrador no tiene fecha de publicación (NULL). Si al escribirlo se dejó
+// programado, esa fecha quedó en `fecha_programada`: la reusamos para no tener
+// que volver a programar la nota. Si no, se precarga con la fecha/hora actual.
 $esBorrador = empty($noticia['fecha_publicacion']);
-$tsPublicacion = $esBorrador ? time() : strtotime($noticia['fecha_publicacion']);
+$fechaProgramada = $noticia['fecha_programada'] ?? null;
+
+if ($esBorrador) {
+    $tsPublicacion = !empty($fechaProgramada) ? strtotime($fechaProgramada) : time();
+} else {
+    $tsPublicacion = strtotime($noticia['fecha_publicacion']);
+}
 $fechaExistente = date('Y-m-d\TH:i', $tsPublicacion);
-$esProgramada = (!$esBorrador && $tsPublicacion > time());
+
+// Se muestra el programador si la nota ya está programada a futuro, o si es un
+// borrador que traía una fecha programada desde "Crear noticia".
+$esProgramada = $esBorrador
+    ? !empty($fechaProgramada)
+    : ($tsPublicacion > time());
 
 // URLs de imágenes usando imageUrl() para servir correctamente
 // Nota: imageUrl('') devuelve el placeholder.svg, así que guardamos contra
