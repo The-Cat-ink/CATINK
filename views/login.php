@@ -511,6 +511,13 @@ function initLogin() {
         wrapper.style.position = 'relative';
         wrapper.style.width = '100%';
         
+        // Transferir márgenes del input al wrapper para evitar que descuadren el botón absoluto
+        const computedStyle = window.getComputedStyle(input);
+        wrapper.style.marginTop = computedStyle.marginTop;
+        wrapper.style.marginBottom = computedStyle.marginBottom;
+        input.style.marginTop = '0px';
+        input.style.marginBottom = '0px';
+        
         input.parentNode.insertBefore(wrapper, input);
         wrapper.appendChild(input);
         
@@ -521,27 +528,37 @@ function initLogin() {
         btn.className = 'password-toggle-btn';
         btn.style.position = 'absolute';
         btn.style.right = '12px';
-        btn.style.top = '50%';
-        btn.style.transform = 'translateY(-50%)';
+        btn.style.top = '0';
+        btn.style.height = '100%';
         btn.style.background = 'none';
         btn.style.border = 'none';
         btn.style.color = 'var(--text-muted, #999)';
         btn.style.cursor = 'pointer';
         btn.style.padding = '0';
+        btn.style.margin = '0';
         btn.style.display = 'none';
         btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
         btn.style.zIndex = '10';
         btn.innerHTML = '<i class="bi bi-eye" style="font-size: 1.15rem; color: #999;"></i>';
         
         wrapper.appendChild(btn);
         
-        input.addEventListener('input', () => {
+        const updateBtnVisibility = () => {
           if (input.value.length > 0) {
             btn.style.display = 'flex';
           } else {
             btn.style.display = 'none';
           }
-        });
+        };
+
+        input.addEventListener('input', updateBtnVisibility);
+        input.addEventListener('change', updateBtnVisibility);
+        
+        // Verificaciones periódicas iniciales para capturar autofill del navegador
+        updateBtnVisibility();
+        setTimeout(updateBtnVisibility, 100);
+        setTimeout(updateBtnVisibility, 500);
         
         btn.addEventListener('click', () => {
           const icon = btn.querySelector('i');
