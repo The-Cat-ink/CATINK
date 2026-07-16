@@ -382,8 +382,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     });
 
-    // Validación final al enviar
-    form.addEventListener('submit', (e) => {
+    // Validación final y envío.
+    // El controlador responde JSON, así que el formulario se envía siempre por
+    // fetch: un submit normal lo intercepta Turbo, que espera HTML o una
+    // redirección, y descarta la respuesta sin avisar (el botón parecía muerto).
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
         let valido = true;
 
@@ -397,12 +401,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Usuario
         if (!usuarioValido) {
-            alert('El nombre de usuario no es válido o ya existe');
+            showToast('El nombre de usuario no es válido o ya existe', 'error');
             valido = false;
         }
 
-        if (!valido) {
-            e.preventDefault();
+        if (!valido) return;
+
+        const btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+            let data = null;
+            try { data = await res.json(); } catch (_) {}
+
+            if (!data) {
+                showToast('El servidor respondió con un error (' + res.status + ')', 'error');
+                btn.disabled = false;
+                return;
+            }
+            if (data.success) {
+                showToast(data.success, 'success');
+                setTimeout(() => { window.location.href = 'usuarios.php'; }, 1200);
+            } else {
+                showToast(data.error || 'No se pudo crear el usuario', 'error');
+                btn.disabled = false;
+            }
+        } catch (_) {
+            showToast('Error de conexión al crear el usuario', 'error');
+            btn.disabled = false;
         }
     });
 

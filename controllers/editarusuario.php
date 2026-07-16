@@ -85,7 +85,7 @@ if(empty($password)){
 // ========================
 } else {
     if($password !== $_POST['confirm_password']){
-        header("Location: ./../views/editaru.php?id=$id&error=pass");
+        echo json_encode(['error' => 'Las contraseñas no coinciden']);
         exit;
     }
     $passHash = password_hash($password, PASSWORD_BCRYPT);

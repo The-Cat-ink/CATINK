@@ -180,4 +180,42 @@ $user = $stmt->get_result()->fetch_assoc();
         </div>
     </form>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('editUserForm');
+    if (!form) return;
+
+    // El controlador responde JSON: hay que enviarlo por fetch. Con un submit
+    // normal Turbo intercepta la respuesta, no encuentra HTML ni redirección y
+    // la descarta en silencio, dejando el botón sin efecto aparente.
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) btn.disabled = true;
+
+        try {
+            const res = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+            let data = null;
+            try { data = await res.json(); } catch (_) {}
+
+            if (!data) {
+                showToast('El servidor respondió con un error (' + res.status + ')', 'error');
+                if (btn) btn.disabled = false;
+                return;
+            }
+            if (data.success) {
+                showToast(data.success, 'success');
+                setTimeout(() => { window.location.href = 'usuarios.php'; }, 1200);
+            } else {
+                showToast(data.error || 'No se pudo actualizar el usuario', 'error');
+                if (btn) btn.disabled = false;
+            }
+        } catch (_) {
+            showToast('Error de conexión al actualizar el usuario', 'error');
+            if (btn) btn.disabled = false;
+        }
+    });
+});
+</script>
 <?php include("./../layout/footerAdmin.php"); ?>
