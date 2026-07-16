@@ -130,7 +130,31 @@ if ($stmt->execute()) {
     // Guardar el correo por si hay un doble envío posterior
     $_SESSION['last_reg_email'] = $correo;
 
-    // Si aceptó recibir correos, registrar en suscripciones
+    // Limpiar datos temporales de registro
+    unset($_SESSION['temp_registro']);
+
+    // ============================
+    // REDIRIGIR AL USUARIO INMEDIATAMENTE
+    // ============================
+    header('Location: ' . basePath() . '/login?registro=verificar&email=' . urlencode($correo));
+
+    // Cerrar la conexión con el navegador para que no espere las tareas lentas
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+    ignore_user_abort(true);
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } else {
+        if (ob_get_level() > 0) ob_end_flush();
+        flush();
+    }
+
+    // ============================
+    // TAREAS EN SEGUNDO PLANO (el usuario ya fue redirigido)
+    // ============================
+
+    // Suscripciones + geolocalización
     if (isset($_POST['recibir_correos'])) {
         $ip = 'Desconocido';
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
@@ -144,7 +168,8 @@ if ($stmt->execute()) {
         $pais = 'Desconocido';
         $estado = 'Desconocido';
         try {
-            $geoJson = @file_get_contents("http://ip-api.com/json/" . urlencode($ip));
+            $ctx = stream_context_create(['http' => ['timeout' => 3]]);
+            $geoJson = @file_get_contents("http://ip-api.com/json/" . urlencode($ip), false, $ctx);
             if ($geoJson !== false) {
                 $geo = json_decode($geoJson, true);
                 $pais = $geo['country'] ?? 'Desconocido';
@@ -161,54 +186,54 @@ if ($stmt->execute()) {
     }
 
     // Enviar correo de verificación
-    try {
-        $mail = new PHPMailer(true);
-        $mail->isSMTP();
-        $mail->Host = env('SMTP_HOST');
-        $mail->SMTPAuth = true;
-        $mail->Username = env('SMTP_USERNAME');
-        $mail->Password = env('SMTP_PASSWORD');
-        $mail->SMTPSecure = env('SMTP_SECURE');
-        $mail->Port = env('SMTP_PORT');
+    $smtpHost = env('SMTP_HOST');
+    if (!empty($smtpHost)) {
+        try {
+            $mail = new PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Timeout = 10;
+            $mail->SMTPKeepAlive = false;
+            $mail->Host = $smtpHost;
+            $mail->SMTPAuth = true;
+            $mail->Username = env('SMTP_USERNAME');
+            $mail->Password = env('SMTP_PASSWORD');
+            $mail->SMTPSecure = env('SMTP_SECURE');
+            $mail->Port = env('SMTP_PORT');
 
-        $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
-        $mail->addAddress($correo, $nombre);
+            $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
+            $mail->addAddress($correo, $nombre);
 
-        $proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-        $domain = $_SERVER['HTTP_HOST'] ?? 'catink.test';
-        $verifyUrl = "{$proto}://{$domain}" . basePath() . "/verificar.php?token=" . urlencode($token);
+            $proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+            $domain = $_SERVER['HTTP_HOST'] ?? 'catink.test';
+            $verifyUrl = "{$proto}://{$domain}" . basePath() . "/verificar.php?token=" . urlencode($token);
 
-        $mail->isHTML(true);
-        $mail->Subject = "Verifica tu cuenta en CatInk";
+            $mail->isHTML(true);
+            $mail->Subject = "Verifica tu cuenta en CatInk";
 
-        $htmlBody = "
-        <div style='font-family: Arial, sans-serif; max-width:600px; margin:auto; background:#f9f9f9; padding:20px; border-radius:10px; border: 1px solid #eee;'>
-            <h2 style='color:#EF3363; text-align:center;'>¡Te damos la bienvenida a CatInk!</h2>
-            <p>Hola <strong>{$nombre}</strong>,</p>
-            <p>Gracias por registrarte en nuestra plataforma de noticias y comunidad. Para activar tu cuenta y empezar a participar, por favor confirma tu dirección de correo haciendo clic en el siguiente botón:</p>
-            <p style='text-align:center; margin:30px 0;'>
-                <a href='{$verifyUrl}' style='display:inline-block; padding:12px 30px; background:#EF3363; color:#fff; text-decoration:none; border-radius:5px; font-weight:bold; box-shadow: 0 4px 6px rgba(239, 51, 99, 0.2);'>
-                    Verificar mi cuenta
-                </a>
-            </p>
-            <p style='color:#666; font-size:12px;'>Si no puedes hacer clic en el botón, copia y pega el siguiente enlace en tu navegador:</p>
-            <p style='color:#EF3363; font-size:12px; word-break:break-all;'>{$verifyUrl}</p>
-            <hr style='border:none; border-top:1px solid #ddd; margin:20px 0;'>
-            <p style='color:#999; font-size:11px; text-align:center;'>© 2026 CatInk. Todos los derechos reservados.</p>
-        </div>";
+            $htmlBody = "
+            <div style='font-family: Arial, sans-serif; max-width:600px; margin:auto; background:#f9f9f9; padding:20px; border-radius:10px; border: 1px solid #eee;'>
+                <h2 style='color:#EF3363; text-align:center;'>¡Te damos la bienvenida a CatInk!</h2>
+                <p>Hola <strong>{$nombre}</strong>,</p>
+                <p>Gracias por registrarte en nuestra plataforma de noticias y comunidad. Para activar tu cuenta y empezar a participar, por favor confirma tu dirección de correo haciendo clic en el siguiente botón:</p>
+                <p style='text-align:center; margin:30px 0;'>
+                    <a href='{$verifyUrl}' style='display:inline-block; padding:12px 30px; background:#EF3363; color:#fff; text-decoration:none; border-radius:5px; font-weight:bold; box-shadow: 0 4px 6px rgba(239, 51, 99, 0.2);'>
+                        Verificar mi cuenta
+                    </a>
+                </p>
+                <p style='color:#666; font-size:12px;'>Si no puedes hacer clic en el botón, copia y pega el siguiente enlace en tu navegador:</p>
+                <p style='color:#EF3363; font-size:12px; word-break:break-all;'>{$verifyUrl}</p>
+                <hr style='border:none; border-top:1px solid #ddd; margin:20px 0;'>
+                <p style='color:#999; font-size:11px; text-align:center;'>© 2026 CatInk. Todos los derechos reservados.</p>
+            </div>";
 
-        $mail->Body = $htmlBody;
-        $mail->send();
+            $mail->Body = $htmlBody;
+            $mail->send();
 
-    } catch (Exception $e) {
-        error_log("Error enviando correo de verificacion: " . $e->getMessage());
+        } catch (Exception $e) {
+            error_log("Error enviando correo de verificacion: " . $e->getMessage());
+        }
     }
 
-    // Limpiar datos temporales de registro
-    unset($_SESSION['temp_registro']);
-
-    // Redirección al login pidiendo que verifique correo
-    header('Location: ' . basePath() . '/login?registro=verificar&email=' . urlencode($correo));
     exit;
 } else {
     $stmt->close();
