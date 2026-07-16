@@ -184,6 +184,15 @@ if ($stmt->execute()) {
             $mail->SMTPSecure = env('SMTP_SECURE');
             $mail->Port = env('SMTP_PORT');
 
+            // Ignorar errores de certificado SSL (común en servidores de correo locales/cPanel)
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+
             $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
             $mail->addAddress($correo, $nombre);
 
@@ -213,7 +222,7 @@ if ($stmt->execute()) {
             $mail->Body = $htmlBody;
             $mail->send();
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Error enviando correo de verificacion: " . $e->getMessage());
         }
     }
