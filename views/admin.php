@@ -742,6 +742,25 @@ window.addEventListener('click', e => {
     if(e.target === modal) modal.style.display = 'none';
 });
 
+// Función auxiliar para notificaciones premium de tipo Toast
+function showToast(msg, type = '') {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'toast-msg' + (type ? ' toast-' + type : '');
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.transition = 'opacity 0.3s ease';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 2700);
+}
+
 // Lógica de Zona de Peligro (Restablecer)
 const btnOpenRestModal = document.getElementById('btnOpenRestModal');
 const modalRestConfirm = document.getElementById('modalRestConfirm');
@@ -759,13 +778,13 @@ if (btnOpenRestModal) {
         // Validar que se seleccionó al menos un módulo
         const checkedCount = document.querySelectorAll('.mod-check:checked').length;
         if (checkedCount === 0) {
-            alert('Por favor, selecciona al menos un tipo de datos para restablecer.');
+            showToast('Por favor, selecciona al menos un tipo de datos para restablecer.', 'error');
             return;
         }
 
         // Validar que se ingresaron las fechas
         if (!restFechaInicio.value || !restFechaFin.value) {
-            alert('Por favor, ingresa el rango de fechas de inicio y fin.');
+            showToast('Por favor, ingresa el rango de fechas de inicio y fin.', 'error');
             return;
         }
 
