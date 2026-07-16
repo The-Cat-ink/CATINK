@@ -350,114 +350,128 @@ async function goToStep(n){
 function nextStep(n){ goToStep(n); }
 function prevStep(n){ goToStep(n); }
 
-document.getElementById('regForm').addEventListener('keydown', function(e){
-  if(e.key === 'Enter' && currentStep < 4){
-    e.preventDefault();
-    goToStep(currentStep + 1);
+function initLogin() {
+  if (!document.body || document.body.dataset.loginInit === '1') return;
+  document.body.dataset.loginInit = '1';
+
+  const regForm = document.getElementById('regForm');
+  if (regForm) {
+    regForm.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' && currentStep < 4){
+        e.preventDefault();
+        goToStep(currentStep + 1);
+      }
+    });
   }
-});
 
-document.querySelectorAll('.step-dot').forEach((dot, i) => {
-  dot.addEventListener('click', ()=> goToStep(i+1));
-});
-
-// Limpiar la validación conforme el usuario escribe
-const regUsuarioInput = document.getElementById('reg_usuario');
-if (regUsuarioInput) {
-  regUsuarioInput.addEventListener('input', () => {
-    regUsuarioInput.setCustomValidity("");
+  document.querySelectorAll('.step-dot').forEach((dot, i) => {
+    dot.addEventListener('click', ()=> goToStep(i+1));
   });
-}
-const regCorreoInput = document.getElementById('correo');
-if (regCorreoInput) {
-  regCorreoInput.addEventListener('input', () => {
-    regCorreoInput.setCustomValidity("");
-  });
-}
 
-<?php if($showRegistro): ?>
-showPanel('registro');
-<?php endif; ?>
-
-const tempRegistro = <?= json_encode($tempRegistro) ?>;
-if (tempRegistro) {
-  if (tempRegistro.nombre) document.getElementById('nombre').value = tempRegistro.nombre;
-  if (tempRegistro.usuario) document.getElementById('reg_usuario').value = tempRegistro.usuario;
-  if (tempRegistro.correo) document.getElementById('correo').value = tempRegistro.correo;
-  if (tempRegistro.sexo) document.getElementById('sexo').value = tempRegistro.sexo;
-  if (tempRegistro.entidad) document.getElementById('entidad').value = tempRegistro.entidad;
-  if (tempRegistro.recibir_correos === 0) {
-    const rc = document.getElementById('recibir_correos');
-    if (rc) rc.checked = false;
+  // Limpiar la validación conforme el usuario escribe
+  const regUsuarioInput = document.getElementById('reg_usuario');
+  if (regUsuarioInput) {
+    regUsuarioInput.addEventListener('input', () => {
+      regUsuarioInput.setCustomValidity("");
+    });
   }
-}
+  const regCorreoInput = document.getElementById('correo');
+  if (regCorreoInput) {
+    regCorreoInput.addEventListener('input', () => {
+      regCorreoInput.setCustomValidity("");
+    });
+  }
 
-// ---- FECHA DE NACIMIENTO DROPDOWNS ----
-(() => {
+  // ---- FECHA DE NACIMIENTO DROPDOWNS ----
   const diaSel = document.getElementById('dob_dia');
   const mesSel = document.getElementById('dob_mes');
   const anioSel = document.getElementById('dob_anio');
   const hiddenInput = document.getElementById('fecha_nacimiento');
-  if (!diaSel || !mesSel || !anioSel || !hiddenInput) return;
+  if (diaSel && mesSel && anioSel && hiddenInput) {
+    // Clear options to avoid duplicates or empty states on Turbo loads
+    diaSel.innerHTML = '<option value="" disabled selected>Día</option>';
+    mesSel.innerHTML = '<option value="" disabled selected>Mes</option>';
+    anioSel.innerHTML = '<option value="" disabled selected>Año</option>';
 
-  // Populate days (1-31)
-  for (let d = 1; d <= 31; d++) {
-    const opt = document.createElement('option');
-    opt.value = String(d).padStart(2, '0');
-    opt.textContent = d;
-    diaSel.appendChild(opt);
-  }
+    // Populate days (1-31)
+    for (let d = 1; d <= 31; d++) {
+      const opt = document.createElement('option');
+      opt.value = String(d).padStart(2, '0');
+      opt.textContent = d;
+      diaSel.appendChild(opt);
+    }
 
-  // Populate months (1-12)
-  const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-  meses.forEach((m, idx) => {
-    const opt = document.createElement('option');
-    opt.value = String(idx + 1).padStart(2, '0');
-    opt.textContent = m;
-    mesSel.appendChild(opt);
-  });
+    // Populate months (1-12)
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    meses.forEach((m, idx) => {
+      const opt = document.createElement('option');
+      opt.value = String(idx + 1).padStart(2, '0');
+      opt.textContent = m;
+      mesSel.appendChild(opt);
+    });
 
-  // Populate years (current year down to 1900)
-  const currentYear = new Date().getFullYear();
-  for (let y = currentYear; y >= 1900; y--) {
-    const opt = document.createElement('option');
-    opt.value = y;
-    opt.textContent = y;
-    anioSel.appendChild(opt);
-  }
+    // Populate years (current year down to 1900)
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear; y >= 1900; y--) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      anioSel.appendChild(opt);
+    }
 
-  function updateHiddenDate() {
-    const dia = diaSel.value;
-    const mes = mesSel.value;
-    const anio = anioSel.value;
-    if (dia && mes && anio) {
-      hiddenInput.value = `${anio}-${mes}-${dia}`;
-    } else {
-      hiddenInput.value = '';
+    function updateHiddenDate() {
+      const dia = diaSel.value;
+      const mes = mesSel.value;
+      const anio = anioSel.value;
+      if (dia && mes && anio) {
+        hiddenInput.value = `${anio}-${mes}-${dia}`;
+      } else {
+        hiddenInput.value = '';
+      }
+    }
+
+    diaSel.addEventListener('change', updateHiddenDate);
+    mesSel.addEventListener('change', updateHiddenDate);
+    anioSel.addEventListener('change', updateHiddenDate);
+
+    // Set default/initial value
+    const tempRegistro = <?= json_encode($tempRegistro) ?>;
+    let initialDate = tempRegistro && tempRegistro.fecha_nacimiento ? tempRegistro.fecha_nacimiento : '2000-01-01';
+    if (initialDate) {
+      const parts = initialDate.split('-');
+      if (parts.length === 3) {
+        anioSel.value = parts[0];
+        mesSel.value = parts[1];
+        diaSel.value = parts[2];
+        hiddenInput.value = initialDate;
+      }
+    }
+
+    // Pre-fill temp registration values
+    if (tempRegistro) {
+      if (tempRegistro.nombre) document.getElementById('nombre').value = tempRegistro.nombre;
+      if (tempRegistro.usuario) document.getElementById('reg_usuario').value = tempRegistro.usuario;
+      if (tempRegistro.correo) document.getElementById('correo').value = tempRegistro.correo;
+      if (tempRegistro.sexo) document.getElementById('sexo').value = tempRegistro.sexo;
+      if (tempRegistro.entidad) document.getElementById('entidad').value = tempRegistro.entidad;
+      if (tempRegistro.recibir_correos === 0) {
+        const rc = document.getElementById('recibir_correos');
+        if (rc) rc.checked = false;
+      }
     }
   }
 
-  diaSel.addEventListener('change', updateHiddenDate);
-  mesSel.addEventListener('change', updateHiddenDate);
-  anioSel.addEventListener('change', updateHiddenDate);
+  <?php if(isset($_GET['reg_error'])): ?>
+  currentStep = 4;
+  goToStep(4);
+  <?php endif; ?>
 
-  // Set default/initial value
-  let initialDate = tempRegistro && tempRegistro.fecha_nacimiento ? tempRegistro.fecha_nacimiento : '2000-01-01';
-  if (initialDate) {
-    const parts = initialDate.split('-');
-    if (parts.length === 3) {
-      anioSel.value = parts[0];
-      mesSel.value = parts[1];
-      diaSel.value = parts[2];
-      hiddenInput.value = initialDate;
-    }
-  }
-})();
+  <?php if($showRegistro): ?>
+  showPanel('registro');
+  <?php endif; ?>
+}
 
-<?php if(isset($_GET['reg_error'])): ?>
-currentStep = 4;
-goToStep(4);
-<?php endif; ?>
+document.addEventListener('turbo:load', initLogin);
 </script>
 </body>
 </html>
