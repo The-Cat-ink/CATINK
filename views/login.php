@@ -469,6 +469,13 @@ function initLogin() {
   <?php if($showRegistro): ?>
   showPanel('registro');
   <?php endif; ?>
+
+  // Limpiar parámetros de la URL para que no persistan al recargar la página
+  if (window.history.replaceState && window.location.search) {
+    if (window.location.search.includes('registro') || window.location.search.includes('error')) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }
 }
 
 document.addEventListener('turbo:load', initLogin);
