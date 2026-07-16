@@ -6,9 +6,9 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once(__DIR__ . '/../data/conexion.php');
 require_once(__DIR__ . '/../views/helpers/activity_log.php');
 
-// 1. Validar que el usuario sea Superadmin
-$superadmin = $_SESSION['superadmin'] ?? false;
-if (!$superadmin) {
+// 1. Validar que el usuario sea Administrador
+$tipo = $_SESSION['tipo'] ?? '';
+if ($tipo !== 'admin') {
     header('Location: ../views/admin.php');
     exit;
 }

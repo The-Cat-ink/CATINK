@@ -407,7 +407,7 @@ function formatNumberShort($num){
         </div>
     </div>
 
-    <?php if($superadmin): ?>
+    <?php if(isset($_SESSION['usuario'])): ?>
         <!-- ZONA DE PELIGRO: RESTABLECIMIENTO GRANULAR -->
         <div class="card shadow-sm mb-4 border-danger" style="border: 1px solid #dc3545 !important; border-radius: 12px; background: rgba(220, 53, 69, 0.02); margin-top: 24px;">
             <div class="card-header bg-danger text-white d-flex align-items-center gap-2" style="border-top-left-radius: 11px; border-top-right-radius: 11px; padding: 12px 20px; background-color: #dc3545 !important;">
