@@ -2,6 +2,7 @@
 date_default_timezone_set("America/Mexico_City");
 include(__DIR__ . "/../data/env.php");
 include(__DIR__ . "/../data/conexion.php");
+require_once(__DIR__ . "/../views/helpers/urlhelper.php");
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -83,7 +84,7 @@ try {
     $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
     $mail->addAddress($email, $usuario['nombre']);
 
-    $resetUrl = "https://www.catink.com.mx/reset_contrasena?token=" . urlencode($token);
+    $resetUrl = siteUrl() . "/reset_contrasena?token=" . urlencode($token);
 
     $mail->isHTML(true);
     $mail->Subject = "Recuperar tu contraseña en CatInk";

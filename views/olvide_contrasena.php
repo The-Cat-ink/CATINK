@@ -28,7 +28,7 @@ $error = $_GET['error'] ?? '';
             </p>
         <?php endif; ?>
         
-        <form method="POST" action="./../controllers/solicitar_reset_contrasena.php">
+        <form method="POST" action="<?= basePath() ?>/controllers/solicitar_reset_contrasena.php">
             <div class="form-group">
                 <label for="email">Correo Electrónico</label>
                 <input type="email" class="input" id="email" name="email" required placeholder="tu@email.com">

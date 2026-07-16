@@ -8,6 +8,21 @@ function basePath(){
     // producción
     return "";
 }
+// URL absoluta del sitio (https://dominio + subcarpeta), para enlaces que
+// viajan fuera del navegador: correos, sitemap, metadatos.
+function siteUrl(){
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    if (strpos($host, 'localhost') !== false) {
+        $esquema = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        return $esquema . '://' . $host . basePath();
+    }
+    // En producción la URL es fija a propósito. No se deduce de HTTP_HOST,
+    // que lo controla quien hace la petición: podría pedir un reset con otra
+    // cabecera Host y recibir el enlace apuntando a un dominio suyo.
+    $url = function_exists('env') ? env('APP_URL', 'https://www.catink.com.mx') : 'https://www.catink.com.mx';
+    return rtrim($url, '/');
+}
+
 function encodeId($id){
     return rtrim(strtr(base64_encode($id), '+/', '-_'), '=');
 }

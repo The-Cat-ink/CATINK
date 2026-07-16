@@ -44,7 +44,7 @@ if (empty($token)) {
                 <a href="<?= basePath() ?>/olvide_contrasena" class="btn-perfil-save" style="display:inline-block; text-decoration:none;">Solicitar Nuevo Enlace</a>
             </div>
         <?php elseif ($token_valido): ?>
-            <form method="POST" action="./../controllers/actualizar_contrasena.php" id="formReset">
+            <form method="POST" action="<?= basePath() ?>/controllers/actualizar_contrasena.php" id="formReset">
                 <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
                 
                 <div class="form-group">
