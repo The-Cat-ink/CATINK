@@ -45,7 +45,8 @@ if ($tempRegistro) {
           <p style="color:#28a745; text-align:center; margin-bottom:12px;">
             <?php
               if ($_GET['registro'] === 'verificar') {
-                  echo '¡Registro exitoso! Te enviamos un correo de verificación. Por favor, revisa tu bandeja de entrada (y la carpeta de spam) y haz clic en el enlace para activar tu cuenta.';
+                  $email = isset($_GET['email']) ? htmlspecialchars($_GET['email']) : 'tu correo';
+                  echo '¡Te enviamos un correo de verificación a <strong>' . $email . '</strong>! Revisa tu bandeja de entrada (o carpeta de spam) y haz clic en el enlace para activar tu cuenta.';
               } elseif ($_GET['registro'] === 'verificado') {
                   echo '¡Tu cuenta ha sido verificada con éxito! Ya puedes iniciar sesión.';
               } else {
@@ -490,11 +491,69 @@ function initLogin() {
   showPanel('registro');
   <?php endif; ?>
 
+  // Configurar los botones de ver/ocultar contraseña (ojo)
+  setupPasswordToggles();
+
   // Limpiar parámetros de la URL para que no persistan al recargar la página
   if (window.history.replaceState && window.location.search) {
     if (window.location.search.includes('registro') || window.location.search.includes('error')) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
+  }
+
+  function setupPasswordToggles() {
+    const passwordInputs = document.querySelectorAll('input[type="password"]');
+    passwordInputs.forEach(input => {
+      if (!input.parentElement.classList.contains('password-wrapper')) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'password-wrapper';
+        wrapper.style.position = 'relative';
+        wrapper.style.width = '100%';
+        
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+        
+        input.style.paddingRight = '40px';
+        
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'password-toggle-btn';
+        btn.style.position = 'absolute';
+        btn.style.right = '12px';
+        btn.style.top = '50%';
+        btn.style.transform = 'translateY(-50%)';
+        btn.style.background = 'none';
+        btn.style.border = 'none';
+        btn.style.color = 'var(--text-muted, #999)';
+        btn.style.cursor = 'pointer';
+        btn.style.padding = '0';
+        btn.style.display = 'none';
+        btn.style.alignItems = 'center';
+        btn.style.zIndex = '10';
+        btn.innerHTML = '<i class="bi bi-eye" style="font-size: 1.15rem; color: #999;"></i>';
+        
+        wrapper.appendChild(btn);
+        
+        input.addEventListener('input', () => {
+          if (input.value.length > 0) {
+            btn.style.display = 'flex';
+          } else {
+            btn.style.display = 'none';
+          }
+        });
+        
+        btn.addEventListener('click', () => {
+          const icon = btn.querySelector('i');
+          if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+          } else {
+            input.type = 'password';
+            icon.className = 'bi bi-eye';
+          }
+        });
+      }
+    });
   }
 }
 

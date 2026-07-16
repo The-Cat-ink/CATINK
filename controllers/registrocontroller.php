@@ -187,7 +187,7 @@ if ($stmt->execute()) {
     unset($_SESSION['temp_registro']);
 
     // Redirección al login pidiendo que verifique correo
-    header('Location: ' . basePath() . '/login?registro=verificar');
+    header('Location: ' . basePath() . '/login?registro=verificar&email=' . urlencode($correo));
     exit;
 } else {
     $stmt->close();
