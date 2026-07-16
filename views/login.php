@@ -42,11 +42,29 @@ if ($tempRegistro) {
       <!-- Panel LOGIN -->
       <div class="auth-panel" id="panelLogin" style="<?= $showRegistro ? 'display:none;' : '' ?>">
         <?php if(isset($_GET['registro'])): ?>
-          <p style="color:#28a745; text-align:center; margin-bottom:12px;">¡Cuenta creada! Inicia sesión.</p>
+          <p style="color:#28a745; text-align:center; margin-bottom:12px;">
+            <?php
+              if ($_GET['registro'] === 'verificar') {
+                  echo '¡Registro exitoso! Te enviamos un correo de verificación. Por favor, revisa tu bandeja de entrada (y la carpeta de spam) y haz clic en el enlace para activar tu cuenta.';
+              } elseif ($_GET['registro'] === 'verificado') {
+                  echo '¡Tu cuenta ha sido verificada con éxito! Ya puedes iniciar sesión.';
+              } else {
+                  echo '¡Cuenta creada! Inicia sesión.';
+              }
+            ?>
+          </p>
         <?php endif; ?>
         <?php if(isset($_GET['error'])): ?>
           <p style="color:#EF3363; text-align:center; margin-bottom:12px;">
-            <?= ($_GET['error'] == '1') ? 'Completa todos los campos.' : 'Usuario o contraseña incorrectos.' ?>
+            <?php
+              if ($_GET['error'] == '1') {
+                  echo 'Completa todos los campos.';
+              } elseif ($_GET['error'] == '3') {
+                  echo 'Tu cuenta no está verificada. Por favor, revisa tu correo para verificar tu cuenta.';
+              } else {
+                  echo 'Usuario o contraseña incorrectos.';
+              }
+            ?>
           </p>
         <?php endif; ?>
         <form action="<?= basePath() ?>/controllers/logincontroller.php" method="POST">

@@ -23,6 +23,7 @@ if (!function_exists('posicionesPublicidad')) {
             ],
             'cuadrado' => [ // tipo 2
                 'lateral'        => 'Laterales (sidebar)',
+                'home_lateral'   => 'Portada: junto a banners (index)',
             ],
         ];
     }

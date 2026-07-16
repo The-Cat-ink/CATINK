@@ -1,4 +1,11 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require_once(__DIR__ . "/../PHPMailer/src/PHPMailer.php");
+require_once(__DIR__ . "/../PHPMailer/src/Exception.php");
+require_once(__DIR__ . "/../PHPMailer/src/SMTP.php");
+
 include("../data/conexion.php");
 include("../views/helpers/urlhelper.php");
 
@@ -86,13 +93,14 @@ if ($stmt->get_result()->num_rows > 0) {
 // INSERTAR LECTOR (tabla lectores)
 // ============================
 $passHash = password_hash($pass, PASSWORD_BCRYPT);
+$token = bin2hex(random_bytes(32));
 
 $stmt = $con->prepare("
     INSERT INTO lectores 
-    (nombre, usuario, correo, password_hash, fecha_nacimiento, sexo, entidad)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    (nombre, usuario, correo, password_hash, fecha_nacimiento, sexo, entidad, verificado, token_verificacion)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
 ");
-$stmt->bind_param("sssssss", $nombre, $usuario, $correo, $passHash, $fecha_nacimiento, $sexo, $entidad);
+$stmt->bind_param("ssssssss", $nombre, $usuario, $correo, $passHash, $fecha_nacimiento, $sexo, $entidad, $token);
 
 if ($stmt->execute()) {
     $lector_id = $stmt->insert_id;
@@ -128,23 +136,58 @@ if ($stmt->execute()) {
         $stmtSub->close();
     }
 
-    // Inicio de sesión automático
+    // Enviar correo de verificación
+    try {
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host = env('SMTP_HOST');
+        $mail->SMTPAuth = true;
+        $mail->Username = env('SMTP_USERNAME');
+        $mail->Password = env('SMTP_PASSWORD');
+        $mail->SMTPSecure = env('SMTP_SECURE');
+        $mail->Port = env('SMTP_PORT');
+
+        $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
+        $mail->addAddress($correo, $nombre);
+
+        $proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+        $domain = $_SERVER['HTTP_HOST'] ?? 'catink.test';
+        $verifyUrl = "{$proto}://{$domain}" . basePath() . "/verificar.php?token=" . urlencode($token);
+
+        $mail->isHTML(true);
+        $mail->Subject = "Verifica tu cuenta en CatInk";
+
+        $htmlBody = "
+        <div style='font-family: Arial, sans-serif; max-width:600px; margin:auto; background:#f9f9f9; padding:20px; border-radius:10px; border: 1px solid #eee;'>
+            <h2 style='color:#EF3363; text-align:center;'>¡Te damos la bienvenida a CatInk!</h2>
+            <p>Hola <strong>{$nombre}</strong>,</p>
+            <p>Gracias por registrarte en nuestra plataforma de noticias y comunidad. Para activar tu cuenta y empezar a participar, por favor confirma tu dirección de correo haciendo clic en el siguiente botón:</p>
+            <p style='text-align:center; margin:30px 0;'>
+                <a href='{$verifyUrl}' style='display:inline-block; padding:12px 30px; background:#EF3363; color:#fff; text-decoration:none; border-radius:5px; font-weight:bold; box-shadow: 0 4px 6px rgba(239, 51, 99, 0.2);'>
+                    Verificar mi cuenta
+                </a>
+            </p>
+            <p style='color:#666; font-size:12px;'>Si no puedes hacer clic en el botón, copia y pega el siguiente enlace en tu navegador:</p>
+            <p style='color:#EF3363; font-size:12px; word-break:break-all;'>{$verifyUrl}</p>
+            <hr style='border:none; border-top:1px solid #ddd; margin:20px 0;'>
+            <p style='color:#999; font-size:11px; text-align:center;'>© 2026 CatInk. Todos los derechos reservados.</p>
+        </div>";
+
+        $mail->Body = $htmlBody;
+        $mail->send();
+
+    } catch (Exception $e) {
+        error_log("Error enviando correo de verificacion: " . $e->getMessage());
+    }
+
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
-    session_regenerate_id(true);
-    $_SESSION['usuario'] = $usuario;
-    $_SESSION['tipo'] = 'lector';
-    $_SESSION['id_lector'] = $lector_id;
-    $_SESSION['nombre_completo'] = $nombre;
-    $_SESSION['superadmin'] = false;
-    $_SESSION['ACL'] = [];
-
     // Limpiar datos temporales de registro
     unset($_SESSION['temp_registro']);
 
-    // Redirección al perfil
-    header('Location: ' . basePath() . '/perfil');
+    // Redirección al login pidiendo que verifique correo
+    header('Location: ' . basePath() . '/login?registro=verificar');
     exit;
 } else {
     $stmt->close();

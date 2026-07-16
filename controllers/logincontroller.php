@@ -63,6 +63,10 @@ $result = $stmt->get_result();
 if ($result && $result->num_rows > 0) {
     $lector = $result->fetch_assoc();
     if (password_verify($pass, $lector['password_hash'])) {
+        if ($lector['verificado'] == 0) {
+            header('Location: ' . basePath() . '/login?error=3');
+            exit();
+        }
         session_start();
         session_regenerate_id(true);
         $_SESSION['usuario'] = $lector['usuario'];
