@@ -21,6 +21,7 @@ if ($tempRegistro) {
     <title>Iniciar Sesión - CatInk</title>
     <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light');</script>
     <link rel="stylesheet" href="<?= basePath() ?>/CSS/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Favicon -->
     <link rel="icon" href="<?= basePath() ?>/catink-icon.ico?v=2" type="image/x-icon">
     <link rel="icon" href="<?= basePath() ?>/img/catink-icon.png?v=2" type="image/png">
