@@ -190,6 +190,10 @@ if ($ejecutado) {
             $mail = new PHPMailer(true);
             $mail->isSMTP();
             $mail->Timeout = 5; // Timeout muy bajo de 5 segundos para que nunca se cuelgue la UI
+            // Timeout solo cubre la conexion; las lecturas usan Timelimit (300s
+            // por defecto). Un SMTP que acepta y calla dejaba el boton en
+            // "Registrando..." hasta 5 minutos.
+            $mail->getSMTPInstance()->Timelimit = 5;
             $mail->SMTPKeepAlive = false;
             $mail->Host = $smtpHost;
             $mail->SMTPAuth = true;

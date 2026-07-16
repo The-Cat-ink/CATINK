@@ -74,6 +74,9 @@ $stmt->execute();
 try {
     $mail = new PHPMailer(true);
     $mail->isSMTP();
+    $mail->Timeout = 10;
+    $mail->getSMTPInstance()->Timelimit = 10; // sin esto, un SMTP colgado bloquea hasta 300s
+
     $mail->Host = env('SMTP_HOST');
     $mail->SMTPAuth = true;
     $mail->Username = env('SMTP_USERNAME');
