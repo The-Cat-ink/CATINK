@@ -159,10 +159,34 @@ $populares = $stmtPopulares->get_result();
 // pool random; si las tiene, solo aparece en las suyas. Los laterales SOLO usan
 // anuncios cuadrados (tipo 2); inicio/medio/final usan banners largos (tipo 1).
 $pubActiva  = !empty($secciones['publicidad']['estado']);
+
 $pubInicio  = $pubActiva ? obtenerPublicidad($con, 'pub_inicio', 1) : null;
-$pubMedio   = $pubActiva ? obtenerPublicidad($con, 'pub_medio',  1) : null;
-$pubFinal   = $pubActiva ? obtenerPublicidad($con, 'pub_final',  1) : null;
-$pubLateral = $pubActiva ? obtenerPublicidad($con, 'lateral',    2) : null;
+$excludeBanners = [];
+if ($pubInicio) {
+    $excludeBanners[] = (int)$pubInicio['id_pub'];
+}
+
+$pubMedio   = $pubActiva ? obtenerPublicidad($con, 'pub_medio',  1, $excludeBanners) : null;
+if (empty($pubMedio) && $pubActiva) {
+    $pubMedio = obtenerPublicidad($con, 'pub_medio', 1);
+}
+if ($pubMedio) {
+    $excludeBanners[] = (int)$pubMedio['id_pub'];
+}
+
+$pubFinal   = $pubActiva ? obtenerPublicidad($con, 'pub_final',  1, $excludeBanners) : null;
+if (empty($pubFinal) && $pubActiva) {
+    $pubFinal = obtenerPublicidad($con, 'pub_final', 1);
+}
+
+$pubLateralTop = $pubActiva ? obtenerPublicidad($con, 'lateral',    2) : null;
+$pubLateralBottom = null;
+if ($pubActiva && $pubLateralTop) {
+    $pubLateralBottom = obtenerPublicidad($con, 'lateral', 2, [$pubLateralTop['id_pub']]);
+    if (empty($pubLateralBottom)) {
+        $pubLateralBottom = $pubLateralTop;
+    }
+}
 if (!function_exists('adBannerHtml')) {
     function adBannerHtml($pub, $clase = 'ad-strip') {
         if (empty($pub)) return '';
@@ -865,10 +889,10 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
         <div class="col-md-3">
           <div class="sidebar-wrapper">
             <div class="card sidebar-card">
-              <?php if($pubActiva && !empty($pubLateral)): ?>
+              <?php if($pubActiva && !empty($pubLateralTop)): ?>
                 <div class="showcase-box">
-                  <a href="<?= htmlspecialchars($pubLateral['url']) ?>" class="promo-link" data-pub="<?= (int)$pubLateral['id_pub'] ?>">
-                    <img src="<?= htmlspecialchars(imageUrl($pubLateral['imagen'])) ?>" class="promo-card-media" loading="lazy">
+                  <a href="<?= htmlspecialchars($pubLateralTop['url']) ?>" class="promo-link" data-pub="<?= (int)$pubLateralTop['id_pub'] ?>">
+                    <img src="<?= htmlspecialchars(imageUrl($pubLateralTop['imagen'])) ?>" class="promo-card-media" loading="lazy">
                   </a>
                   <span class="partner-tag">ADS</span>
                 </div>
@@ -917,10 +941,10 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                   <?php endwhile; ?>
                 </ul>
                 <!-- BANNER PUBLICITARIO (lateral inferior) -->
-                <?php if($pubActiva && !empty($pubLateral)): ?>
+                <?php if($pubActiva && !empty($pubLateralBottom)): ?>
                   <div class="showcase-box mt-3">
-                    <a href="<?= htmlspecialchars($pubLateral['url']) ?>" class="promo-link" data-pub="<?= (int)$pubLateral['id_pub'] ?>">
-                      <img src="<?= htmlspecialchars(imageUrl($pubLateral['imagen'])) ?>" class="promo-card-media" loading="lazy">
+                    <a href="<?= htmlspecialchars($pubLateralBottom['url']) ?>" class="promo-link" data-pub="<?= (int)$pubLateralBottom['id_pub'] ?>">
+                      <img src="<?= htmlspecialchars(imageUrl($pubLateralBottom['imagen'])) ?>" class="promo-card-media" loading="lazy">
                     </a>
                     <span class="partner-tag">ADS</span>
                   </div>

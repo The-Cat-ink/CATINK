@@ -46,8 +46,20 @@ if (!function_exists('obtenerPublicidad')) {
      *
      * @return array|null Fila de publicidad o null si no hay ninguno.
      */
-    function obtenerPublicidad($con, $posicion, $tipo) {
+    function obtenerPublicidad($con, $posicion, $tipo, $excludeIds = []) {
         $tipo = (int)$tipo;
+        
+        if (!is_array($excludeIds)) {
+            $excludeIds = $excludeIds ? [$excludeIds] : [];
+        }
+        $excludeIds = array_map('intval', $excludeIds);
+        
+        $excludeCond = "";
+        if (!empty($excludeIds)) {
+            $idsStr = implode(',', $excludeIds);
+            $excludeCond = " AND p.id_pub NOT IN ($idsStr) ";
+        }
+        
         $sql = "
             SELECT p.*
             FROM publicidad p
@@ -60,7 +72,8 @@ if (!function_exists('obtenerPublicidad')) {
                              WHERE pp.publicidad_id = p.id_pub AND pp.posicion = ?)
                  OR NOT EXISTS (SELECT 1 FROM publicidad_posicion pp2
                                  WHERE pp2.publicidad_id = p.id_pub)
-                  )
+                   )
+              $excludeCond
             ORDER BY RAND()
             LIMIT 1
         ";
