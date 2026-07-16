@@ -1,3 +1,4 @@
+<?php
 include("./../layout/headerAdmin.php");
 include("./../data/conexion.php");
 

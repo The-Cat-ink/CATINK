@@ -66,6 +66,10 @@ $perm_avatares      = calcPerm($_POST['avatares'] ?? []);
 // ========================
 // SI NO CAMBIA CONTRASEÑA
 // ========================
+// Todo el bloque va dentro del try: mysqli lanza excepción ya en prepare() si
+// a la tabla le faltan las columnas de permisos de la migración 011, y sin
+// capturarla el fallo sale como un 500 mudo.
+try {
 if(empty($password)){
     $stmt = $con->prepare("
         UPDATE usuarios SET
@@ -106,9 +110,14 @@ if(empty($password)){
 // ========================
 // EJECUTAR
 // ========================
-if ($stmt->execute()) {
+    $stmt->execute();
     logActivity($con, 'editar', 'usuarios', 'Actualizó usuario administrador ID ' . $id . ' («' . $usuario . '»)');
     echo json_encode(['success' => 'Usuario actualizado correctamente']);
-} else {
-    echo json_encode(['error' => 'Error al actualizar: ' . $stmt->error]);
+} catch (\Throwable $e) {
+    error_log('Error al actualizar usuario: ' . $e->getMessage());
+    $detalle = 'Error al actualizar el usuario.';
+    if (!empty($_SESSION['superadmin'])) {
+        $detalle .= ' ' . $e->getMessage();
+    }
+    echo json_encode(['error' => $detalle]);
 }

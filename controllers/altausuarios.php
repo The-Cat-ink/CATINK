@@ -88,37 +88,48 @@ $passHash = password_hash($password, PASSWORD_BCRYPT);
 // ========================
 // Insertar usuario
 // ========================
-$alt = $con->prepare("
-INSERT INTO usuarios 
-(nombre, usuario, correo, pass, perm_publicidad, perm_noticias, perm_categorias, perm_suscripciones, perm_usuarios, perm_correos, perm_videos, perm_lectores, perm_recomendados, perm_esperamos, perm_paginas, perm_actividad, perm_papelera, perm_avatares)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-");
+// mysqli lanza excepción si la consulta no se puede preparar (por ejemplo,
+// si a la tabla le faltan las columnas de permisos de la migración 011).
+// Sin capturarla, el error sale como un 500 mudo que no dice nada.
+try {
+    $alt = $con->prepare("
+    INSERT INTO usuarios
+    (nombre, usuario, correo, pass, perm_publicidad, perm_noticias, perm_categorias, perm_suscripciones, perm_usuarios, perm_correos, perm_videos, perm_lectores, perm_recomendados, perm_esperamos, perm_paginas, perm_actividad, perm_papelera, perm_avatares)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ");
 
-$alt->bind_param(
-    "ssssiiiiiiiiiiiiii",
-    $nombre,
-    $usuario,
-    $email,
-    $passHash,
-    $perm_publicidad,
-    $perm_noticias,
-    $perm_categorias,
-    $perm_suscripciones,
-    $perm_usuarios,
-    $perm_correos,
-    $perm_videos,
-    $perm_lectores,
-    $perm_recomendados,
-    $perm_esperamos,
-    $perm_paginas,
-    $perm_actividad,
-    $perm_papelera,
-    $perm_avatares
-);
+    $alt->bind_param(
+        "ssssiiiiiiiiiiiiii",
+        $nombre,
+        $usuario,
+        $email,
+        $passHash,
+        $perm_publicidad,
+        $perm_noticias,
+        $perm_categorias,
+        $perm_suscripciones,
+        $perm_usuarios,
+        $perm_correos,
+        $perm_videos,
+        $perm_lectores,
+        $perm_recomendados,
+        $perm_esperamos,
+        $perm_paginas,
+        $perm_actividad,
+        $perm_papelera,
+        $perm_avatares
+    );
 
-if ($alt->execute()) {
+    $alt->execute();
     logActivity($con, 'crear', 'usuarios', 'Creó usuario administrador «' . $usuario . '» (' . $nombre . ')');
     echo json_encode(['success' => 'Usuario creado correctamente']);
-} else {
-    echo json_encode(['error' => 'Error al registrar usuario']);
+
+} catch (\Throwable $e) {
+    error_log('Error al crear usuario: ' . $e->getMessage());
+    $detalle = 'Error al registrar usuario.';
+    // El detalle técnico solo para el superadmin.
+    if (!empty($_SESSION['superadmin'])) {
+        $detalle .= ' ' . $e->getMessage();
+    }
+    echo json_encode(['error' => $detalle]);
 }

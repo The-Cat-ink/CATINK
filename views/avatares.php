@@ -1,3 +1,4 @@
+<?php
 include(__DIR__ . "/../layout/headerAdmin.php");
 include(__DIR__ . "/../data/conexion.php");
 

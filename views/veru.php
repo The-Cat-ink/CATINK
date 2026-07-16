@@ -11,20 +11,34 @@ if (!($ACL['leer'])) {
     exit();
 }
 include("./../data/conexion.php");
-$id = $_GET['id'];
-$stmt = $con->prepare("SELECT * FROM usuarios WHERE id_u = $id");
+$id = (int)($_GET['id'] ?? 0);
+$stmt = $con->prepare("SELECT * FROM usuarios WHERE id_u = ?");
+$stmt->bind_param("i", $id);
 $stmt->execute();
 $usuario = $stmt->get_result()->fetch_assoc();
-function mostrarPermisos($perm) {
-    $permisos = [];
-    if ($perm & 1) $permisos[] = "Crear";
-    if ($perm & 2) $permisos[] = "Ver";
-    if ($perm & 4) $permisos[] = "Editar";
-    if ($perm & 8) $permisos[] = "Eliminar";
-    if ($perm == 0) return "Sin acceso";
-    if ($perm == 15) return "Acceso completo";
-    return implode(", ", $permisos);
+if (!$usuario) {
+    header("Location: usuarios.php");
+    exit();
 }
+
+// Mismos módulos y orden que crearu.php / editaru.php
+$modulosConfig = [
+    'publicidad' => 'Publicidad',
+    'noticias' => 'Noticias',
+    'categorias' => 'Categorías',
+    'correos' => 'Correos',
+    'suscripciones' => 'Suscripciones',
+    'usuarios' => 'Administradores/Editores',
+    'videos' => 'Videos',
+    'lectores' => 'Lectores',
+    'recomendados' => 'Recomendados',
+    'esperamos' => 'Próximos Estrenos',
+    'paginas' => 'Páginas y Logos',
+    'actividad' => 'Bitácora de Actividades',
+    'papelera' => 'Papelera de Noticias',
+    'avatares' => 'Fotos de Perfil'
+];
+$acciones = [1 => 'Crear', 2 => 'Ver', 4 => 'Editar', 8 => 'Eliminar'];
 ?>
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -35,22 +49,56 @@ function mostrarPermisos($perm) {
             <h5 class="card-title">Detalles del usuario</h5>
         </div>
         <div class="card-body">
-            <div class="row">
-                <div class="col">
-                    <p class="card-text"><strong>ID:</strong> <?= $usuario['id_u'] ?></p>
-                    <p class="card-text"><strong>Nombre:</strong> <?= $usuario['nombre'] ?></p>
-                    <p class="card-text"><strong>Email:</strong> <?= $usuario['correo'] ?></p>
+            <style>
+            .perm-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                padding: 4px 10px;
+                border-radius: 999px;
+                font-size: 0.8rem;
+                font-weight: 500;
+                border: 1px solid var(--border);
+                background: var(--bg);
+                color: var(--muted, #888);
+            }
+            .perm-chip.on {
+                border-color: var(--accent);
+                background: rgba(239, 51, 99, 0.08);
+                color: var(--accent);
+            }
+            </style>
+            <div class="form-group" style="margin-bottom: 24px;">
+                <p class="card-text"><strong>ID:</strong> <?= htmlspecialchars($usuario['id_u']) ?></p>
+                <p class="card-text"><strong>Nombre:</strong> <?= htmlspecialchars($usuario['nombre']) ?></p>
+                <p class="card-text"><strong>Usuario:</strong> <?= htmlspecialchars($usuario['usuario']) ?></p>
+                <p class="card-text"><strong>Email:</strong> <?= htmlspecialchars($usuario['correo']) ?></p>
+            </div>
+
+            <h5 style="font-weight:600; margin-bottom:15px;"><i class="bi bi-shield-lock-fill text-accent"></i> Permisos</h5>
+            <div class="row-permisos" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                <?php foreach ($modulosConfig as $slug => $nombre):
+                    $permActual = (int)($usuario['perm_' . $slug] ?? 0); ?>
+                <div class="col-permiso" style="max-width: 100%;">
+                    <div class="card" style="border: 1px solid var(--border); border-radius: 12px; background: var(--card-bg); overflow: hidden; height: 100%; display: flex; flex-direction: column;">
+                        <div class="card-header d-flex justify-content-between align-items-center" style="padding: 12px 16px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.02);">
+                            <h6 class="mb-0" style="font-weight:600; font-size: 0.95rem; margin: 0;"><?= $nombre ?></h6>
+                            <?php if ($permActual === 0): ?>
+                                <span style="font-size:0.75rem; color:var(--muted, #888);">Sin acceso</span>
+                            <?php elseif ($permActual === 15): ?>
+                                <span style="font-size:0.75rem; color:var(--accent); font-weight:600;">Completo</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="card-body" style="padding: 16px; display:flex; flex-wrap:wrap; gap:6px;">
+                            <?php foreach ($acciones as $bit => $etiqueta): ?>
+                                <span class="perm-chip <?= ($permActual & $bit) ? 'on' : '' ?>">
+                                    <?= ($permActual & $bit) ? '&check;' : '&times;' ?> <?= $etiqueta ?>
+                                </span>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
                 </div>
-                <div class="col">
-                    <h5 class="card-text"><strong>Permisos:</strong></h5>
-                    <p><strong>Categorías:</strong> <?= mostrarPermisos($usuario['perm_categorias']) ?></p>
-                    <p><strong>Noticias:</strong> <?= mostrarPermisos($usuario['perm_noticias']) ?></p>
-                    <p><strong>Publicidad:</strong> <?= mostrarPermisos($usuario['perm_publicidad']) ?></p>
-                    <p><strong>Suscripciones:</strong> <?= mostrarPermisos($usuario['perm_suscripciones']) ?></p>
-                    <p><strong>Usuarios:</strong> <?= mostrarPermisos($usuario['perm_usuarios']) ?></p>
-                    <p><strong>Correos:</strong> <?= mostrarPermisos($usuario['perm_correos']) ?></p>
-                    <p><strong>Videos:</strong> <?= mostrarPermisos($usuario['perm_videos']) ?></p>
-                </div>
+                <?php endforeach; ?>
             </div>
         </div>
         <div class="card-footer">
