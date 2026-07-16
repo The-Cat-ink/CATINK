@@ -134,27 +134,8 @@ if ($stmt->execute()) {
     unset($_SESSION['temp_registro']);
 
     // ============================
-    // REDIRIGIR AL USUARIO INMEDIATAMENTE
+    // 1. SUSCRIPCIONES Y GEOLOCALIZACIÓN (SÍNCRONO - Max 2s)
     // ============================
-    header('Location: ' . basePath() . '/login?registro=verificar&email=' . urlencode($correo));
-
-    // Cerrar la conexión con el navegador para que no espere las tareas lentas
-    if (session_status() === PHP_SESSION_ACTIVE) {
-        session_write_close();
-    }
-    ignore_user_abort(true);
-    if (function_exists('fastcgi_finish_request')) {
-        fastcgi_finish_request();
-    } else {
-        if (ob_get_level() > 0) ob_end_flush();
-        flush();
-    }
-
-    // ============================
-    // TAREAS EN SEGUNDO PLANO (el usuario ya fue redirigido)
-    // ============================
-
-    // Suscripciones + geolocalización
     if (isset($_POST['recibir_correos'])) {
         $ip = 'Desconocido';
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
@@ -168,7 +149,8 @@ if ($stmt->execute()) {
         $pais = 'Desconocido';
         $estado = 'Desconocido';
         try {
-            $ctx = stream_context_create(['http' => ['timeout' => 3]]);
+            // Establecer un timeout de 2 segundos para la geolocalización externa
+            $ctx = stream_context_create(['http' => ['timeout' => 2]]);
             $geoJson = @file_get_contents("http://ip-api.com/json/" . urlencode($ip), false, $ctx);
             if ($geoJson !== false) {
                 $geo = json_decode($geoJson, true);
@@ -176,7 +158,7 @@ if ($stmt->execute()) {
                 $estado = $geo['regionName'] ?? 'Desconocido';
             }
         } catch (Exception $e) {
-            // Ignorar errores de geolocalización
+            // Ignorar errores de geolocalización para que no detenga el flujo
         }
 
         $stmtSub = $con->prepare("INSERT INTO suscripciones (nombre_completo, correo, sexo, ip, pais, estado) VALUES (?, ?, ?, ?, ?, ?)");
@@ -185,13 +167,15 @@ if ($stmt->execute()) {
         $stmtSub->close();
     }
 
-    // Enviar correo de verificación
+    // ============================
+    // 2. ENVIAR CORREO DE VERIFICACIÓN (SÍNCRONO - Max 5s)
+    // ============================
     $smtpHost = env('SMTP_HOST');
     if (!empty($smtpHost)) {
         try {
             $mail = new PHPMailer(true);
             $mail->isSMTP();
-            $mail->Timeout = 10;
+            $mail->Timeout = 5; // Timeout muy bajo de 5 segundos para que nunca se cuelgue la UI
             $mail->SMTPKeepAlive = false;
             $mail->Host = $smtpHost;
             $mail->SMTPAuth = true;
@@ -234,6 +218,10 @@ if ($stmt->execute()) {
         }
     }
 
+    // ============================
+    // 3. REDIRIGIR AL USUARIO
+    // ============================
+    header('Location: ' . basePath() . '/login?registro=verificar&email=' . urlencode($correo));
     exit;
 } else {
     $stmt->close();
