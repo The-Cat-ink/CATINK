@@ -55,7 +55,14 @@ $perm_categorias    = calcPerm($_POST['categorias'] ?? []);
 $perm_suscripciones = calcPerm($_POST['suscripciones'] ?? []);
 $perm_usuarios      = calcPerm($_POST['usuarios'] ?? []);
 $perm_correos       = calcPerm($_POST['correos'] ?? []);
-$perm_videos       = calcPerm($_POST['videos'] ?? []);
+$perm_videos        = calcPerm($_POST['videos'] ?? []);
+$perm_lectores      = calcPerm($_POST['lectores'] ?? []);
+$perm_recomendados  = calcPerm($_POST['recomendados'] ?? []);
+$perm_esperamos     = calcPerm($_POST['esperamos'] ?? []);
+$perm_paginas       = calcPerm($_POST['paginas'] ?? []);
+$perm_actividad     = calcPerm($_POST['actividad'] ?? []);
+$perm_papelera      = calcPerm($_POST['papelera'] ?? []);
+$perm_avatares      = calcPerm($_POST['avatares'] ?? []);
 // ========================
 // SI NO CAMBIA CONTRASEÑA
 // ========================
@@ -63,13 +70,14 @@ if(empty($password)){
     $stmt = $con->prepare("
         UPDATE usuarios SET
         nombre=?, usuario=?, correo=?,
-        perm_publicidad=?, perm_noticias=?, perm_categorias=?, perm_suscripciones=?, perm_usuarios=?, perm_correos=?, perm_videos=?
+        perm_publicidad=?, perm_noticias=?, perm_categorias=?, perm_suscripciones=?, perm_usuarios=?, perm_correos=?, perm_videos=?, perm_lectores=?, perm_recomendados=?, perm_esperamos=?, perm_paginas=?, perm_actividad=?, perm_papelera=?, perm_avatares=?
         WHERE id_u=?
     ");
     $stmt->bind_param(
-        "sssiiiiiiii",
+        "sssiiiiiiiiiiiiiii",
         $nombre, $usuario, $email,
         $perm_publicidad, $perm_noticias, $perm_categorias, $perm_suscripciones, $perm_usuarios, $perm_correos, $perm_videos,
+        $perm_lectores, $perm_recomendados, $perm_esperamos, $perm_paginas, $perm_actividad, $perm_papelera, $perm_avatares,
         $id
     );
 // ========================
@@ -84,13 +92,14 @@ if(empty($password)){
     $stmt = $con->prepare("
         UPDATE usuarios SET
         nombre=?, usuario=?, correo=?, pass=?,
-        perm_publicidad=?, perm_noticias=?, perm_categorias=?, perm_suscripciones=?, perm_usuarios=?, perm_correos=?, perm_videos=?
+        perm_publicidad=?, perm_noticias=?, perm_categorias=?, perm_suscripciones=?, perm_usuarios=?, perm_correos=?, perm_videos=?, perm_lectores=?, perm_recomendados=?, perm_esperamos=?, perm_paginas=?, perm_actividad=?, perm_papelera=?, perm_avatares=?
         WHERE id_u=?
     ");
     $stmt->bind_param(
-        "ssssiiiiiiii",
+        "ssssiiiiiiiiiiiiiii",
         $nombre, $usuario, $email, $passHash,
         $perm_publicidad, $perm_noticias, $perm_categorias, $perm_suscripciones, $perm_usuarios, $perm_correos, $perm_videos,
+        $perm_lectores, $perm_recomendados, $perm_esperamos, $perm_paginas, $perm_actividad, $perm_papelera, $perm_avatares,
         $id
     );
 }

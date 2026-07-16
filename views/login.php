@@ -12,6 +12,9 @@ $tempRegistro = $_SESSION['temp_registro'] ?? null;
 if ($tempRegistro) {
     unset($_SESSION['temp_registro']);
 }
+// Generar token anti doble envío para el formulario de registro
+$regFormToken = bin2hex(random_bytes(16));
+$_SESSION['reg_form_token'] = $regFormToken;
 ?>
 <!DOCTYPE html>
 <html lang="es" data-bs-theme="light">
@@ -21,6 +24,7 @@ if ($tempRegistro) {
     <title>Iniciar Sesión - CatInk</title>
     <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light');</script>
     <link rel="stylesheet" href="<?= basePath() ?>/CSS/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Favicon -->
     <link rel="icon" href="<?= basePath() ?>/catink-icon.ico?v=2" type="image/x-icon">
     <link rel="icon" href="<?= basePath() ?>/img/catink-icon.png?v=2" type="image/png">
@@ -42,11 +46,30 @@ if ($tempRegistro) {
       <!-- Panel LOGIN -->
       <div class="auth-panel" id="panelLogin" style="<?= $showRegistro ? 'display:none;' : '' ?>">
         <?php if(isset($_GET['registro'])): ?>
-          <p style="color:#28a745; text-align:center; margin-bottom:12px;">¡Cuenta creada! Inicia sesión.</p>
+          <p style="color:#28a745; text-align:center; margin-bottom:12px;">
+            <?php
+              if ($_GET['registro'] === 'verificar') {
+                  $email = isset($_GET['email']) ? htmlspecialchars($_GET['email']) : 'tu correo';
+                  echo '¡Te enviamos un correo de verificación a <strong>' . $email . '</strong>! Revisa tu bandeja de entrada (o carpeta de spam) y haz clic en el enlace para activar tu cuenta.';
+              } elseif ($_GET['registro'] === 'verificado') {
+                  echo '¡Tu cuenta ha sido verificada con éxito! Ya puedes iniciar sesión.';
+              } else {
+                  echo '¡Cuenta creada! Inicia sesión.';
+              }
+            ?>
+          </p>
         <?php endif; ?>
         <?php if(isset($_GET['error'])): ?>
           <p style="color:#EF3363; text-align:center; margin-bottom:12px;">
-            <?= ($_GET['error'] == '1') ? 'Completa todos los campos.' : 'Usuario o contraseña incorrectos.' ?>
+            <?php
+              if ($_GET['error'] == '1') {
+                  echo 'Completa todos los campos.';
+              } elseif ($_GET['error'] == '3') {
+                  echo 'Tu cuenta no está verificada. Por favor, revisa tu correo para verificar tu cuenta.';
+              } else {
+                  echo 'Usuario o contraseña incorrectos.';
+              }
+            ?>
           </p>
         <?php endif; ?>
         <form action="<?= basePath() ?>/controllers/logincontroller.php" method="POST">
@@ -94,6 +117,7 @@ if ($tempRegistro) {
           <span class="step-dot" id="dot4"></span>
         </div>
         <form action="<?= basePath() ?>/controllers/registrocontroller.php" method="POST" id="regForm">
+          <input type="hidden" name="form_token" value="<?= $regFormToken ?>">
           <div class="reg-step" id="step1">
             <h6 class="text-center" style="margin-bottom:12px; font-weight:600;">¿Cómo te llamas?</h6>
             <div class="form-group">
@@ -332,114 +356,240 @@ async function goToStep(n){
 function nextStep(n){ goToStep(n); }
 function prevStep(n){ goToStep(n); }
 
-document.getElementById('regForm').addEventListener('keydown', function(e){
-  if(e.key === 'Enter' && currentStep < 4){
-    e.preventDefault();
-    goToStep(currentStep + 1);
-  }
-});
-
-document.querySelectorAll('.step-dot').forEach((dot, i) => {
-  dot.addEventListener('click', ()=> goToStep(i+1));
-});
-
-// Limpiar la validación conforme el usuario escribe
-const regUsuarioInput = document.getElementById('reg_usuario');
-if (regUsuarioInput) {
-  regUsuarioInput.addEventListener('input', () => {
-    regUsuarioInput.setCustomValidity("");
-  });
-}
-const regCorreoInput = document.getElementById('correo');
-if (regCorreoInput) {
-  regCorreoInput.addEventListener('input', () => {
-    regCorreoInput.setCustomValidity("");
-  });
-}
-
-<?php if($showRegistro): ?>
-showPanel('registro');
-<?php endif; ?>
-
-const tempRegistro = <?= json_encode($tempRegistro) ?>;
-if (tempRegistro) {
-  if (tempRegistro.nombre) document.getElementById('nombre').value = tempRegistro.nombre;
-  if (tempRegistro.usuario) document.getElementById('reg_usuario').value = tempRegistro.usuario;
-  if (tempRegistro.correo) document.getElementById('correo').value = tempRegistro.correo;
-  if (tempRegistro.sexo) document.getElementById('sexo').value = tempRegistro.sexo;
-  if (tempRegistro.entidad) document.getElementById('entidad').value = tempRegistro.entidad;
-  if (tempRegistro.recibir_correos === 0) {
-    const rc = document.getElementById('recibir_correos');
-    if (rc) rc.checked = false;
-  }
-}
-
-// ---- FECHA DE NACIMIENTO DROPDOWNS ----
-(() => {
+function initLogin() {
   const diaSel = document.getElementById('dob_dia');
+  // Si los selects ya tienen opciones pobladas, no reinicializar los dropdowns
+  const alreadyPopulated = diaSel && diaSel.options.length > 1;
+
+  const regForm = document.getElementById('regForm');
+  if (regForm && !regForm.dataset.eventsInit) {
+    regForm.dataset.eventsInit = '1';
+    regForm.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' && currentStep < 4){
+        e.preventDefault();
+        goToStep(currentStep + 1);
+      }
+    });
+
+    let isSubmitting = false;
+    regForm.addEventListener('submit', function(e) {
+      if (isSubmitting) {
+        e.preventDefault();
+        return;
+      }
+      isSubmitting = true;
+      const submitBtn = regForm.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Registrando...";
+      }
+    });
+  }
+
+  document.querySelectorAll('.step-dot').forEach((dot, i) => {
+    if (!dot.dataset.eventsInit) {
+      dot.dataset.eventsInit = '1';
+      dot.addEventListener('click', () => {
+        const targetStep = i + 1;
+        if (targetStep <= currentStep) {
+          goToStep(targetStep);
+        }
+      });
+    }
+  });
+
+  const regUsuarioInput = document.getElementById('reg_usuario');
+  if (regUsuarioInput && !regUsuarioInput.dataset.eventsInit) {
+    regUsuarioInput.dataset.eventsInit = '1';
+    regUsuarioInput.addEventListener('input', () => {
+      regUsuarioInput.setCustomValidity("");
+    });
+  }
+  const regCorreoInput = document.getElementById('correo');
+  if (regCorreoInput && !regCorreoInput.dataset.eventsInit) {
+    regCorreoInput.dataset.eventsInit = '1';
+    regCorreoInput.addEventListener('input', () => {
+      regCorreoInput.setCustomValidity("");
+    });
+  }
+
+  // ---- FECHA DE NACIMIENTO DROPDOWNS ----
   const mesSel = document.getElementById('dob_mes');
   const anioSel = document.getElementById('dob_anio');
   const hiddenInput = document.getElementById('fecha_nacimiento');
-  if (!diaSel || !mesSel || !anioSel || !hiddenInput) return;
+  if (diaSel && mesSel && anioSel && hiddenInput && !alreadyPopulated) {
+    // Clear options to avoid duplicates or empty states on Turbo loads
+    diaSel.innerHTML = '<option value="" disabled selected>Día</option>';
+    mesSel.innerHTML = '<option value="" disabled selected>Mes</option>';
+    anioSel.innerHTML = '<option value="" disabled selected>Año</option>';
 
-  // Populate days (1-31)
-  for (let d = 1; d <= 31; d++) {
-    const opt = document.createElement('option');
-    opt.value = String(d).padStart(2, '0');
-    opt.textContent = d;
-    diaSel.appendChild(opt);
-  }
+    // Populate days (1-31)
+    for (let d = 1; d <= 31; d++) {
+      const opt = document.createElement('option');
+      opt.value = String(d).padStart(2, '0');
+      opt.textContent = d;
+      diaSel.appendChild(opt);
+    }
 
-  // Populate months (1-12)
-  const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-  meses.forEach((m, idx) => {
-    const opt = document.createElement('option');
-    opt.value = String(idx + 1).padStart(2, '0');
-    opt.textContent = m;
-    mesSel.appendChild(opt);
-  });
+    // Populate months (1-12)
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    meses.forEach((m, idx) => {
+      const opt = document.createElement('option');
+      opt.value = String(idx + 1).padStart(2, '0');
+      opt.textContent = m;
+      mesSel.appendChild(opt);
+    });
 
-  // Populate years (current year down to 1900)
-  const currentYear = new Date().getFullYear();
-  for (let y = currentYear; y >= 1900; y--) {
-    const opt = document.createElement('option');
-    opt.value = y;
-    opt.textContent = y;
-    anioSel.appendChild(opt);
-  }
+    // Populate years (current year down to 1900)
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear; y >= 1900; y--) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      anioSel.appendChild(opt);
+    }
 
-  function updateHiddenDate() {
-    const dia = diaSel.value;
-    const mes = mesSel.value;
-    const anio = anioSel.value;
-    if (dia && mes && anio) {
-      hiddenInput.value = `${anio}-${mes}-${dia}`;
-    } else {
-      hiddenInput.value = '';
+    function updateHiddenDate() {
+      const dia = diaSel.value;
+      const mes = mesSel.value;
+      const anio = anioSel.value;
+      if (dia && mes && anio) {
+        hiddenInput.value = `${anio}-${mes}-${dia}`;
+      } else {
+        hiddenInput.value = '';
+      }
+    }
+
+    diaSel.addEventListener('change', updateHiddenDate);
+    mesSel.addEventListener('change', updateHiddenDate);
+    anioSel.addEventListener('change', updateHiddenDate);
+
+    // Set default/initial value
+    const tempRegistro = <?= json_encode($tempRegistro) ?>;
+    let initialDate = tempRegistro && tempRegistro.fecha_nacimiento ? tempRegistro.fecha_nacimiento : '2000-01-01';
+    if (initialDate) {
+      const parts = initialDate.split('-');
+      if (parts.length === 3) {
+        anioSel.value = parts[0];
+        mesSel.value = parts[1];
+        diaSel.value = parts[2];
+        hiddenInput.value = initialDate;
+      }
+    }
+
+    // Pre-fill temp registration values
+    if (tempRegistro) {
+      if (tempRegistro.nombre) document.getElementById('nombre').value = tempRegistro.nombre;
+      if (tempRegistro.usuario) document.getElementById('reg_usuario').value = tempRegistro.usuario;
+      if (tempRegistro.correo) document.getElementById('correo').value = tempRegistro.correo;
+      if (tempRegistro.sexo) document.getElementById('sexo').value = tempRegistro.sexo;
+      if (tempRegistro.entidad) document.getElementById('entidad').value = tempRegistro.entidad;
+      if (tempRegistro.recibir_correos === 0) {
+        const rc = document.getElementById('recibir_correos');
+        if (rc) rc.checked = false;
+      }
     }
   }
 
-  diaSel.addEventListener('change', updateHiddenDate);
-  mesSel.addEventListener('change', updateHiddenDate);
-  anioSel.addEventListener('change', updateHiddenDate);
+  <?php if(isset($_GET['reg_error'])): ?>
+  currentStep = 4;
+  goToStep(4);
+  <?php endif; ?>
 
-  // Set default/initial value
-  let initialDate = tempRegistro && tempRegistro.fecha_nacimiento ? tempRegistro.fecha_nacimiento : '2000-01-01';
-  if (initialDate) {
-    const parts = initialDate.split('-');
-    if (parts.length === 3) {
-      anioSel.value = parts[0];
-      mesSel.value = parts[1];
-      diaSel.value = parts[2];
-      hiddenInput.value = initialDate;
+  <?php if($showRegistro): ?>
+  showPanel('registro');
+  <?php endif; ?>
+
+  // Configurar los botones de ver/ocultar contraseña (ojo)
+  setupPasswordToggles();
+
+  // Limpiar parámetros de la URL para que no persistan al recargar la página
+  if (window.history.replaceState && window.location.search) {
+    if (window.location.search.includes('registro') || window.location.search.includes('error')) {
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
   }
-})();
 
-<?php if(isset($_GET['reg_error'])): ?>
-currentStep = 4;
-goToStep(4);
-<?php endif; ?>
+  function setupPasswordToggles() {
+    const passwordInputs = document.querySelectorAll('input[type="password"]');
+    passwordInputs.forEach(input => {
+      if (!input.parentElement.classList.contains('password-wrapper')) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'password-wrapper';
+        wrapper.style.position = 'relative';
+        wrapper.style.width = '100%';
+        
+        // Transferir márgenes del input al wrapper para evitar que descuadren el botón absoluto
+        const computedStyle = window.getComputedStyle(input);
+        wrapper.style.marginTop = computedStyle.marginTop;
+        wrapper.style.marginBottom = computedStyle.marginBottom;
+        input.style.marginTop = '0px';
+        input.style.marginBottom = '0px';
+        
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+        
+        input.style.paddingRight = '40px';
+        
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'password-toggle-btn';
+        btn.style.position = 'absolute';
+        btn.style.right = '12px';
+        btn.style.top = '0';
+        btn.style.height = '100%';
+        btn.style.background = 'none';
+        btn.style.border = 'none';
+        btn.style.color = 'var(--text-muted, #999)';
+        btn.style.cursor = 'pointer';
+        btn.style.padding = '0';
+        btn.style.margin = '0';
+        btn.style.display = 'none';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+        btn.style.zIndex = '10';
+        btn.innerHTML = '<i class="bi bi-eye" style="font-size: 1.15rem; color: #999;"></i>';
+        
+        wrapper.appendChild(btn);
+        
+        const updateBtnVisibility = () => {
+          if (input.value.length > 0) {
+            btn.style.display = 'flex';
+          } else {
+            btn.style.display = 'none';
+          }
+        };
+
+        input.addEventListener('input', updateBtnVisibility);
+        input.addEventListener('change', updateBtnVisibility);
+        
+        // Verificaciones periódicas iniciales para capturar autofill del navegador
+        updateBtnVisibility();
+        setTimeout(updateBtnVisibility, 100);
+        setTimeout(updateBtnVisibility, 500);
+        
+        btn.addEventListener('click', () => {
+          const icon = btn.querySelector('i');
+          if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+          } else {
+            input.type = 'password';
+            icon.className = 'bi bi-eye';
+          }
+        });
+      }
+    });
+  }
+}
+
+// Soportar tanto navegación Turbo como carga directa de la página
+document.addEventListener('turbo:load', initLogin);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initLogin);
+} else {
+  initLogin();
+}
 </script>
 </body>
 </html>

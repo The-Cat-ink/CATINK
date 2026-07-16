@@ -1,6 +1,10 @@
-<?php
     include("./../layout/headerAdmin.php");
     include("./../data/conexion.php");
+    
+    if (empty($ACL['leer'])) {
+        header("Location: admin.php");
+        exit();
+    }
     require_once("./../views/helpers/urlhelper.php");
 
     // Logos de marcas

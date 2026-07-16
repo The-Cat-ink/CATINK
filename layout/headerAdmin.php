@@ -15,14 +15,18 @@ $archivoActual = basename($_SERVER['PHP_SELF'], ".php");
 $mapVistaModulo = [
     'cats' => 'categorias',
     'contenidos' => 'noticias',
-    'recomendados' => 'noticias',
-    'esperamos' => 'noticias',
+    'recomendados' => 'recomendados',
+    'esperamos' => 'esperamos',
     'publicidad' => 'publicidad',
     'suscripciones' => 'suscripciones',
     'usuarios' => 'usuarios',
-    'lectores' => 'usuarios',
+    'lectores' => 'lectores',
     'correos' => 'correos',
-    'videos' => 'videos'
+    'videos' => 'videos',
+    'paginas' => 'paginas',
+    'actividad' => 'actividad',
+    'papelera' => 'papelera',
+    'avatares' => 'avatares'
 ];
 $superadmin = $_SESSION['superadmin'] ?? false;
 // cargar acl globalmente
@@ -112,13 +116,11 @@ $_SESSION['id_u'] = $fila['id_u'];
     </div>
     <ul class="sidebar-menu">
         <li class="sidebar-menu-item"></li>
-        <?php if ($superadmin): ?>
-            <li class="sidebar-menu-item">
-                <a href="./admin.php" class="sidebar-menu-link" data-tooltip="Inicio">
-                    <i class="bi bi-house"></i> <span class="sb-label">Inicio</span>
-                </a>
-            </li>
-        <?php endif; ?>
+        <li class="sidebar-menu-item">
+            <a href="./admin.php" class="sidebar-menu-link" data-tooltip="Inicio">
+                <i class="bi bi-house"></i> <span class="sb-label">Inicio</span>
+            </a>
+        </li>
         <?php if (($_SESSION['ACL']['noticias']['crear']?? false)): ?>
             <li class="sidebar-menu-item">
                 <a href="<?= basePath() ?>/views/crear.php" class="sidebar-menu-link" data-tooltip="Crear Noticia">
@@ -146,11 +148,15 @@ $_SESSION['id_u'] = $fila['id_u'];
                     <i class="bi bi-newspaper"></i> <span class="sb-label">Contenido</span>
                 </a>
             </li>
+        <?php endif; ?>
+        <?php if (($_SESSION['ACL']['recomendados']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
                 <a href="./recomendados.php" class="sidebar-menu-link" data-tooltip="Recomendados">
                     <i class="bi bi-star"></i> <span class="sb-label">Recomendados</span>
                 </a>
             </li>
+        <?php endif; ?>
+        <?php if (($_SESSION['ACL']['esperamos']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
                 <a href="./esperamos.php" class="sidebar-menu-link" data-tooltip="Lo más Esperado">
                     <i class="bi bi-hourglass-split"></i> <span class="sb-label">Lo más Esperado</span>
@@ -184,6 +190,8 @@ $_SESSION['id_u'] = $fila['id_u'];
                     <i class="bi bi-person"></i> <span class="sb-label">Administradores/Editores</span>
                 </a>
             </li>
+        <?php endif; ?>
+        <?php if (($_SESSION['ACL']['lectores']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
                 <a href="./lectores.php" class="sidebar-menu-link" data-tooltip="Lectores">
                     <i class="bi bi-person-badge"></i> <span class="sb-label">Lectores</span>
@@ -197,19 +205,21 @@ $_SESSION['id_u'] = $fila['id_u'];
                 </a>
             </li>
         <?php endif; ?>
-        <?php if ($superadmin || ($_SESSION['ACL']['usuarios']['leer']?? false)): ?>
+        <?php if (($_SESSION['ACL']['avatares']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
                 <a href="./avatares.php" class="sidebar-menu-link" data-tooltip="Fotos de Perfil">
                     <i class="bi bi-person-circle"></i> <span class="sb-label">Fotos de Perfil</span>
                 </a>
             </li>
         <?php endif; ?>
-        <?php if ($superadmin): ?>
+        <?php if (($_SESSION['ACL']['papelera']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
                 <a href="./papelera.php" class="sidebar-menu-link" data-tooltip="Papelera">
                     <i class="bi bi-trash3"></i> <span class="sb-label">Papelera</span>
                 </a>
             </li>
+        <?php endif; ?>
+        <?php if (($_SESSION['ACL']['actividad']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
                 <a href="./actividad.php" class="sidebar-menu-link" data-tooltip="Registro de Actividad">
                     <i class="bi bi-clock-history"></i> <span class="sb-label">Actividad</span>

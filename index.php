@@ -285,14 +285,65 @@ function renderBannerAd($con, $posicion, $activo) {
     
     // Guardar ID para evitar duplicarlo en los siguientes banners de esta carga
     $GLOBALS['loaded_ad_ids'][] = (int)$pub['id_pub'];
+
+    // Intentar obtener un anuncio de tipo cuadrado (tipo 2) para colocarlo al lado
+    $excludeSquare = $GLOBALS['loaded_square_ad_ids'] ?? [];
+    $squarePub = obtenerPublicidad($con, 'home_lateral', 2, $excludeSquare);
+    if (empty($squarePub) && !empty($excludeSquare)) {
+        $squarePub = obtenerPublicidad($con, 'home_lateral', 2);
+    }
+
+    if (!empty($squarePub)) {
+        $GLOBALS['loaded_square_ad_ids'][] = (int)$squarePub['id_pub'];
+        
+        // Decidir lado: intercalar usando un contador global con semilla aleatoria
+        if (!isset($GLOBALS['ad_counter'])) {
+            $GLOBALS['ad_counter'] = random_int(0, 1);
+        }
+        $side = ($GLOBALS['ad_counter'] % 2 === 0) ? 'left' : 'right';
+        $GLOBALS['ad_counter']++;
+    }
     ?>
     <div class="container mt-4">
-        <div class="showcase-box ad-strip">
-            <a href="<?= htmlspecialchars($pub['url']) ?>" class="promo-link" data-pub="<?= (int)$pub['id_pub'] ?>">
-                <img src="<?= imageUrl($pub['imagen']) ?>" alt="" class="promo-media" loading="lazy">
-            </a>
-            <span class="partner-tag">ADS</span>
-        </div>
+        <?php if (!empty($squarePub)): ?>
+            <div class="ad-combined-container">
+                <?php if ($side === 'left'): ?>
+                    <!-- Anuncio Cuadrado Izquierda -->
+                    <div class="showcase-box ad-square-box">
+                        <a href="<?= htmlspecialchars($squarePub['url']) ?>" class="promo-link" data-pub="<?= (int)$squarePub['id_pub'] ?>">
+                            <img src="<?= imageUrl($squarePub['imagen']) ?>" alt="" class="promo-media-square" loading="lazy">
+                        </a>
+                        <span class="partner-tag">ADS</span>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Anuncio Horizontal Principal -->
+                <div class="showcase-box ad-horizontal-box">
+                    <a href="<?= htmlspecialchars($pub['url']) ?>" class="promo-link" data-pub="<?= (int)$pub['id_pub'] ?>">
+                        <img src="<?= imageUrl($pub['imagen']) ?>" alt="" class="promo-media-horizontal" loading="lazy">
+                    </a>
+                    <span class="partner-tag">ADS</span>
+                </div>
+
+                <?php if ($side === 'right'): ?>
+                    <!-- Anuncio Cuadrado Derecha -->
+                    <div class="showcase-box ad-square-box">
+                        <a href="<?= htmlspecialchars($squarePub['url']) ?>" class="promo-link" data-pub="<?= (int)$squarePub['id_pub'] ?>">
+                            <img src="<?= imageUrl($squarePub['imagen']) ?>" alt="" class="promo-media-square" loading="lazy">
+                        </a>
+                        <span class="partner-tag">ADS</span>
+                    </div>
+                <?php endif; ?>
+            </div>
+        <?php else: ?>
+            <!-- Mostrar solo el banner horizontal tradicional si no hay cuadrados disponibles -->
+            <div class="showcase-box ad-strip">
+                <a href="<?= htmlspecialchars($pub['url']) ?>" class="promo-link" data-pub="<?= (int)$pub['id_pub'] ?>">
+                    <img src="<?= imageUrl($pub['imagen']) ?>" alt="" class="promo-media" loading="lazy">
+                </a>
+                <span class="partner-tag">ADS</span>
+            </div>
+        <?php endif; ?>
     </div>
     <?php
 }

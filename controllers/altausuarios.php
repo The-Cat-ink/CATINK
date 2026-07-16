@@ -70,8 +70,15 @@ $perm_noticias      = calcPerm($_POST['noticias'] ?? []);
 $perm_categorias    = calcPerm($_POST['categorias'] ?? []);
 $perm_suscripciones = calcPerm($_POST['suscripciones'] ?? []);
 $perm_usuarios      = calcPerm($_POST['usuarios'] ?? []);
-$perm_correos = calcPerm($_POST['correos'] ?? []);
-$perm_videos = calcPerm($_POST['videos'] ?? []);
+$perm_correos       = calcPerm($_POST['correos'] ?? []);
+$perm_videos        = calcPerm($_POST['videos'] ?? []);
+$perm_lectores      = calcPerm($_POST['lectores'] ?? []);
+$perm_recomendados  = calcPerm($_POST['recomendados'] ?? []);
+$perm_esperamos     = calcPerm($_POST['esperamos'] ?? []);
+$perm_paginas       = calcPerm($_POST['paginas'] ?? []);
+$perm_actividad     = calcPerm($_POST['actividad'] ?? []);
+$perm_papelera      = calcPerm($_POST['papelera'] ?? []);
+$perm_avatares      = calcPerm($_POST['avatares'] ?? []);
 
 // ========================
 // Hash seguro de contraseña
@@ -83,12 +90,12 @@ $passHash = password_hash($password, PASSWORD_BCRYPT);
 // ========================
 $alt = $con->prepare("
 INSERT INTO usuarios 
-(nombre, usuario, correo, pass, perm_publicidad, perm_noticias, perm_categorias, perm_suscripciones, perm_usuarios, perm_correos, perm_videos)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+(nombre, usuario, correo, pass, perm_publicidad, perm_noticias, perm_categorias, perm_suscripciones, perm_usuarios, perm_correos, perm_videos, perm_lectores, perm_recomendados, perm_esperamos, perm_paginas, perm_actividad, perm_papelera, perm_avatares)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ");
 
 $alt->bind_param(
-    "ssssiiiiiii",
+    "ssssiiiiiiiiiiiiii",
     $nombre,
     $usuario,
     $email,
@@ -99,7 +106,14 @@ $alt->bind_param(
     $perm_suscripciones,
     $perm_usuarios,
     $perm_correos,
-    $perm_videos
+    $perm_videos,
+    $perm_lectores,
+    $perm_recomendados,
+    $perm_esperamos,
+    $perm_paginas,
+    $perm_actividad,
+    $perm_papelera,
+    $perm_avatares
 );
 
 if ($alt->execute()) {

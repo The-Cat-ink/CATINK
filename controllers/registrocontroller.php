@@ -1,6 +1,37 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require_once(__DIR__ . "/../PHPMailer/src/PHPMailer.php");
+require_once(__DIR__ . "/../PHPMailer/src/Exception.php");
+require_once(__DIR__ . "/../PHPMailer/src/SMTP.php");
+
 include("../data/conexion.php");
 include("../views/helpers/urlhelper.php");
+
+// ============================
+// PROTECCIÓN CONTRA DOBLE ENVÍO (servidor)
+// ============================
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$formToken = $_POST['form_token'] ?? '';
+if (empty($formToken) || !isset($_SESSION['reg_form_token']) || $formToken !== $_SESSION['reg_form_token']) {
+    // Token inválido o ya usado — probable doble envío
+    // Si el registro ya fue exitoso la primera vez, redirigir al éxito
+    if (isset($_SESSION['last_reg_email'])) {
+        $lastEmail = $_SESSION['last_reg_email'];
+        unset($_SESSION['last_reg_email']);
+        unset($_SESSION['temp_registro']);
+        header('Location: ' . basePath() . '/login?registro=verificar&email=' . urlencode($lastEmail));
+        exit;
+    }
+    header('Location: ' . basePath() . '/login?modo=registro');
+    exit;
+}
+// Invalidar el token inmediatamente para que no se pueda reusar
+unset($_SESSION['reg_form_token']);
 
 $nombre  = trim($_POST['nombre'] ?? '');
 $usuario = trim($_POST['usuario'] ?? '');
@@ -13,9 +44,6 @@ $entidad = trim($_POST['entidad'] ?? '');
 $terminos_condiciones = $_POST['terminos_condiciones'] ?? '';
 
 // Guardar datos temporales para rellenar el formulario en caso de error
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 $_SESSION['temp_registro'] = [
     'nombre' => $nombre,
     'usuario' => $usuario,
@@ -86,19 +114,28 @@ if ($stmt->get_result()->num_rows > 0) {
 // INSERTAR LECTOR (tabla lectores)
 // ============================
 $passHash = password_hash($pass, PASSWORD_BCRYPT);
+$token = bin2hex(random_bytes(32));
 
 $stmt = $con->prepare("
     INSERT INTO lectores 
-    (nombre, usuario, correo, password_hash, fecha_nacimiento, sexo, entidad)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    (nombre, usuario, correo, password_hash, fecha_nacimiento, sexo, entidad, verificado, token_verificacion)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
 ");
-$stmt->bind_param("sssssss", $nombre, $usuario, $correo, $passHash, $fecha_nacimiento, $sexo, $entidad);
+$stmt->bind_param("ssssssss", $nombre, $usuario, $correo, $passHash, $fecha_nacimiento, $sexo, $entidad, $token);
 
 if ($stmt->execute()) {
     $lector_id = $stmt->insert_id;
     $stmt->close();
 
-    // Si aceptó recibir correos, registrar en suscripciones
+    // Guardar el correo por si hay un doble envío posterior
+    $_SESSION['last_reg_email'] = $correo;
+
+    // Limpiar datos temporales de registro
+    unset($_SESSION['temp_registro']);
+
+    // ============================
+    // 1. SUSCRIPCIONES Y GEOLOCALIZACIÓN (SÍNCRONO - Max 2s)
+    // ============================
     if (isset($_POST['recibir_correos'])) {
         $ip = 'Desconocido';
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
@@ -111,16 +148,6 @@ if ($stmt->execute()) {
 
         $pais = 'Desconocido';
         $estado = 'Desconocido';
-        try {
-            $geoJson = @file_get_contents("http://ip-api.com/json/" . urlencode($ip));
-            if ($geoJson !== false) {
-                $geo = json_decode($geoJson, true);
-                $pais = $geo['country'] ?? 'Desconocido';
-                $estado = $geo['regionName'] ?? 'Desconocido';
-            }
-        } catch (Exception $e) {
-            // Ignorar errores de geolocalización
-        }
 
         $stmtSub = $con->prepare("INSERT INTO suscripciones (nombre_completo, correo, sexo, ip, pais, estado) VALUES (?, ?, ?, ?, ?, ?)");
         $stmtSub->bind_param("ssssss", $nombre, $correo, $sexo, $ip, $pais, $estado);
@@ -128,23 +155,70 @@ if ($stmt->execute()) {
         $stmtSub->close();
     }
 
-    // Inicio de sesión automático
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
+    // ============================
+    // 2. ENVIAR CORREO DE VERIFICACIÓN (SÍNCRONO - Max 5s)
+    // ============================
+    $smtpHost = env('SMTP_HOST');
+    if (!empty($smtpHost)) {
+        try {
+            $mail = new PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Timeout = 5; // Timeout muy bajo de 5 segundos para que nunca se cuelgue la UI
+            $mail->SMTPKeepAlive = false;
+            $mail->Host = $smtpHost;
+            $mail->SMTPAuth = true;
+            $mail->Username = env('SMTP_USERNAME');
+            $mail->Password = env('SMTP_PASSWORD');
+            $mail->SMTPSecure = env('SMTP_SECURE');
+            $mail->Port = env('SMTP_PORT');
+
+            // Ignorar errores de certificado SSL (común en servidores de correo locales/cPanel)
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+
+            $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
+            $mail->addAddress($correo, $nombre);
+
+            $proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+            $domain = $_SERVER['HTTP_HOST'] ?? 'catink.test';
+            $verifyUrl = "{$proto}://{$domain}" . basePath() . "/verificar.php?token=" . urlencode($token);
+
+            $mail->isHTML(true);
+            $mail->Subject = "Verifica tu cuenta en CatInk";
+
+            $htmlBody = "
+            <div style='font-family: Arial, sans-serif; max-width:600px; margin:auto; background:#f9f9f9; padding:20px; border-radius:10px; border: 1px solid #eee;'>
+                <h2 style='color:#EF3363; text-align:center;'>¡Te damos la bienvenida a CatInk!</h2>
+                <p>Hola <strong>{$nombre}</strong>,</p>
+                <p>Gracias por registrarte en nuestra plataforma de noticias y comunidad. Para activar tu cuenta y empezar a participar, por favor confirma tu dirección de correo haciendo clic en el siguiente botón:</p>
+                <p style='text-align:center; margin:30px 0;'>
+                    <a href='{$verifyUrl}' style='display:inline-block; padding:12px 30px; background:#EF3363; color:#fff; text-decoration:none; border-radius:5px; font-weight:bold; box-shadow: 0 4px 6px rgba(239, 51, 99, 0.2);'>
+                        Verificar mi cuenta
+                    </a>
+                </p>
+                <p style='color:#666; font-size:12px;'>Si no puedes hacer clic en el botón, copia y pega el siguiente enlace en tu navegador:</p>
+                <p style='color:#EF3363; font-size:12px; word-break:break-all;'>{$verifyUrl}</p>
+                <hr style='border:none; border-top:1px solid #ddd; margin:20px 0;'>
+                <p style='color:#999; font-size:11px; text-align:center;'>© 2026 CatInk. Todos los derechos reservados.</p>
+            </div>";
+
+            $mail->Body = $htmlBody;
+            $mail->send();
+
+        } catch (\Throwable $e) {
+            error_log("Error enviando correo de verificacion: " . $e->getMessage());
+        }
     }
-    session_regenerate_id(true);
-    $_SESSION['usuario'] = $usuario;
-    $_SESSION['tipo'] = 'lector';
-    $_SESSION['id_lector'] = $lector_id;
-    $_SESSION['nombre_completo'] = $nombre;
-    $_SESSION['superadmin'] = false;
-    $_SESSION['ACL'] = [];
 
-    // Limpiar datos temporales de registro
-    unset($_SESSION['temp_registro']);
-
-    // Redirección al perfil
-    header('Location: ' . basePath() . '/perfil');
+    // ============================
+    // 3. REDIRIGIR AL USUARIO
+    // ============================
+    header('Location: ' . basePath() . '/login?registro=verificar&email=' . urlencode($correo));
     exit;
 } else {
     $stmt->close();

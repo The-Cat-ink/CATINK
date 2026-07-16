@@ -1639,3 +1639,7 @@ INSERT IGNORE INTO `filtro_diccionario` (`palabra_baneada`, `reemplazo`) VALUES
 ('zunga', '***'),
 ('zurdo', '***'),
 ('zurumbatico', '***');
+
+-- 69. Columnas para el sistema de verificación de correo de lectores
+ALTER TABLE `lectores` ADD COLUMN IF NOT EXISTS `verificado` TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE `lectores` ADD COLUMN IF NOT EXISTS `token_verificacion` VARCHAR(100) NULL DEFAULT NULL;

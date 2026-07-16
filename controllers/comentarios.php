@@ -481,8 +481,8 @@ switch ($action) {
             }
         }
 
-        $stmtDel = $con->prepare("UPDATE comentarios SET estado = 'eliminado' WHERE id_comentario = ?");
-        $stmtDel->bind_param("i", $comentarioId);
+        $stmtDel = $con->prepare("UPDATE comentarios SET estado = 'eliminado' WHERE id_comentario = ? OR parent_id = ?");
+        $stmtDel->bind_param("ii", $comentarioId, $comentarioId);
 
         if ($stmtDel->execute()) {
             echo json_encode(['ok' => true, 'msg' => 'Comentario eliminado.']);

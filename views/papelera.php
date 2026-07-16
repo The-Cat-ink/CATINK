@@ -1,14 +1,10 @@
-<?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-// La papelera es exclusiva del superadmin
-if (!($_SESSION['superadmin'] ?? false)) {
+include("./../layout/headerAdmin.php");
+include("./../data/conexion.php");
+
+if (empty($ACL['leer'])) {
     header("Location: admin.php");
     exit();
 }
-include("./../layout/headerAdmin.php");
-include("./../data/conexion.php");
 
 // ============================
 // Noticias en la papelera

@@ -155,6 +155,24 @@ function formatNumberShort($num){
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Bienvenido, <?= htmlspecialchars($fila['usuario']) ?></h1>
     </div>
+
+    <!-- Alertas de Restablecimiento de Sistema -->
+    <?php if (isset($_GET['restablecido'])): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2); border-radius:8px; margin-bottom:16px; padding: 12px 20px;">
+            <i class="bi bi-check-circle-fill"></i> ¡El restablecimiento se realizó con éxito! Módulos borrados: <strong><?= htmlspecialchars($_GET['modulos_borrados'] ?? '') ?></strong>.
+        </div>
+    <?php elseif (isset($_GET['restablecer_error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="background:rgba(220,53,69,0.1); color:#dc3545; border:1px solid rgba(220,53,69,0.2); border-radius:8px; margin-bottom:16px; padding: 12px 20px;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <?php 
+                if ($_GET['restablecer_error'] == '1') {
+                    echo 'Por favor, completa todos los campos obligatorios del formulario e ingresa la palabra clave exacta en mayúsculas.';
+                } else {
+                    echo 'Ocurrió un error interno en el servidor al intentar restablecer el sistema. Intenta de nuevo.';
+                }
+            ?>
+        </div>
+    <?php endif; ?>
     <!-- BOTONES -->
     <div class="mb-4">
         <?php if($ACLNoticias['crear']): ?>
@@ -388,6 +406,98 @@ function formatNumberShort($num){
             </div>
         </div>
     </div>
+
+    <?php if(isset($_SESSION['usuario'])): ?>
+        <!-- ZONA DE PELIGRO: RESTABLECIMIENTO GRANULAR -->
+        <div class="card shadow-sm mb-4 border-danger" style="border: 1px solid #dc3545 !important; border-radius: 12px; background: rgba(220, 53, 69, 0.02); margin-top: 24px;">
+            <div class="card-header bg-danger text-white d-flex align-items-center gap-2" style="border-top-left-radius: 11px; border-top-right-radius: 11px; padding: 12px 20px; background-color: #dc3545 !important;">
+                <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+                <h5 class="mb-0" style="font-weight: 600; color: #fff;">Zona de Peligro: Restablecer Información del Sistema</h5>
+            </div>
+            <div class="card-body" style="padding: 24px;">
+                <p class="text-muted small mb-4">Esta sección permite eliminar de forma masiva y permanente los contenidos seleccionados en un rango de fechas. Las cuentas de administradores, editores y suscriptores no se verán afectadas bajo ninguna circunstancia. Puedes decidir si deseas o no borrar cuentas de lectores.</p>
+                <form action="<?= basePath() ?>/controllers/restablecer_granular.php" method="POST" id="formRestablecer">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 col-12">
+                            <label for="rest_fecha_inicio" style="font-weight: 600; display: block; margin-bottom: 8px;">Fecha de Inicio:</label>
+                            <input type="date" id="rest_fecha_inicio" name="fecha_inicio" required class="form-control" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <label for="rest_fecha_fin" style="font-weight: 600; display: block; margin-bottom: 8px;">Fecha de Fin:</label>
+                            <input type="date" id="rest_fecha_fin" name="fecha_fin" required class="form-control" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label style="font-weight: 600; display: block; margin-bottom: 12px;">Selecciona qué información deseas borrar en el rango especificado:</label>
+                        <div class="row row-cols-1 row-cols-md-3 g-3" style="margin-left: 2px;">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input mod-check" type="checkbox" name="modulos[]" value="noticias" id="chkNoticias" checked>
+                                    <label class="form-check-label" for="chkNoticias" style="font-weight: 500; cursor: pointer; color: var(--text);">Noticias y Estadísticas</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input mod-check" type="checkbox" name="modulos[]" value="comentarios" id="chkComentarios" checked>
+                                    <label class="form-check-label" for="chkComentarios" style="font-weight: 500; cursor: pointer; color: var(--text);">Comentarios y Reacciones</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input mod-check" type="checkbox" name="modulos[]" value="suscripciones" id="chkSuscripciones">
+                                    <label class="form-check-label" for="chkSuscripciones" style="font-weight: 500; cursor: pointer; color: var(--text);">Suscripciones</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input mod-check" type="checkbox" name="modulos[]" value="lectores" id="chkLectores">
+                                    <label class="form-check-label" for="chkLectores" style="font-weight: 500; cursor: pointer; color: var(--text);">Cuentas de Lectores</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input mod-check" type="checkbox" name="modulos[]" value="notificaciones" id="chkNotificaciones" checked>
+                                    <label class="form-check-label" for="chkNotificaciones" style="font-weight: 500; cursor: pointer; color: var(--text);">Notificaciones de Sistema</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input mod-check" type="checkbox" name="modulos[]" value="actividades" id="chkActividades">
+                                    <label class="form-check-label" for="chkActividades" style="font-weight: 500; cursor: pointer; color: var(--text);">Bitácora de Actividad</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="btnOpenRestModal" class="btn btn-danger" style="background:#dc3545; color:#fff; border:none; padding:12px 24px; font-weight:600; border-radius:8px; cursor:pointer; width:100%; transition: all 0.2s; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);">
+                        <i class="bi bi-trash3-fill"></i> Iniciar Restablecimiento
+                    </button>
+
+                    <!-- Modal de Confirmación Interno -->
+                    <div id="modalRestConfirm" class="modal-nativo" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+                        <div class="modal-content-nativo" style="border: 2px solid #dc3545; max-width: 450px; border-radius: 12px; background: var(--card-bg); overflow: hidden; margin: 15% auto; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
+                            <div class="modal-header-nativo" style="background: #dc3545; color: #fff; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+                                <h5 class="mb-0" style="color: #fff; font-weight: 600;"><i class="bi bi-exclamation-triangle-fill"></i> ¿Confirmar Restablecimiento?</h5>
+                                <span id="closeRestModal" class="cerrar" style="color:#fff; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+                            </div>
+                            <div class="modal-body-nativo" style="padding: 20px;">
+                                <p style="font-weight:600; color:#dc3545; margin-bottom: 12px;">¡Atención! Esta acción borrará permanentemente los datos indicados.</p>
+                                <p class="small mb-3" style="color: var(--text);">Se eliminarán los registros seleccionados desde el <strong id="lblFechaIni" style="color: var(--text);"></strong> hasta el <strong id="lblFechaFin" style="color: var(--text);"></strong>.</p>
+                                <p class="small mb-3" style="font-weight: 500; color: var(--text);">Escribe la palabra <strong style="color:#dc3545;">RESTABLECER</strong> en mayúsculas para proceder:</p>
+                                <input type="text" id="confirmTextRest" autocomplete="off" class="form-control mb-3" placeholder="Escribe aquí..." style="padding:10px 14px; border-radius:8px; border:1px solid #dc3545; width: 100%; background: var(--bg); color: var(--text);">
+                                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top: 15px;">
+                                    <button type="button" id="cancelRestModal" class="btn btn-secondary" style="background:#6c757d; border:none; padding:8px 16px; border-radius:6px; color:#fff; cursor: pointer;">Cancelar</button>
+                                    <button type="submit" id="submitRestBtn" class="btn btn-danger" disabled style="background:#dc3545; border:none; padding:8px 16px; border-radius:6px; color:#fff; font-weight:600; opacity: 0.5; cursor: not-allowed;">Confirmar y Eliminar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- Modal -->
     <div id="modalSecciones" class="modal-nativo">
         <div class="modal-content-nativo">
@@ -631,5 +741,87 @@ if(btnCancelar){
 window.addEventListener('click', e => {
     if(e.target === modal) modal.style.display = 'none';
 });
+
+// Función auxiliar para notificaciones premium de tipo Toast
+function showToast(msg, type = '') {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'toast-msg' + (type ? ' toast-' + type : '');
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.transition = 'opacity 0.3s ease';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 2700);
+}
+
+// Lógica de Zona de Peligro (Restablecer)
+const btnOpenRestModal = document.getElementById('btnOpenRestModal');
+const modalRestConfirm = document.getElementById('modalRestConfirm');
+const closeRestModal = document.getElementById('closeRestModal');
+const cancelRestModal = document.getElementById('cancelRestModal');
+const confirmTextRest = document.getElementById('confirmTextRest');
+const submitRestBtn = document.getElementById('submitRestBtn');
+const restFechaInicio = document.getElementById('rest_fecha_inicio');
+const restFechaFin = document.getElementById('rest_fecha_fin');
+const lblFechaIni = document.getElementById('lblFechaIni');
+const lblFechaFin = document.getElementById('lblFechaFin');
+
+if (btnOpenRestModal) {
+    btnOpenRestModal.addEventListener('click', () => {
+        // Validar que se seleccionó al menos un módulo
+        const checkedCount = document.querySelectorAll('.mod-check:checked').length;
+        if (checkedCount === 0) {
+            showToast('Por favor, selecciona al menos un tipo de datos para restablecer.', 'error');
+            return;
+        }
+
+        // Validar que se ingresaron las fechas
+        if (!restFechaInicio.value || !restFechaFin.value) {
+            showToast('Por favor, ingresa el rango de fechas de inicio y fin.', 'error');
+            return;
+        }
+
+        // Cargar las fechas en las etiquetas del modal
+        lblFechaIni.textContent = restFechaInicio.value;
+        lblFechaFin.textContent = restFechaFin.value;
+
+        // Resetear input de confirmación
+        confirmTextRest.value = '';
+        submitRestBtn.disabled = true;
+        submitRestBtn.style.opacity = '0.5';
+        submitRestBtn.style.cursor = 'not-allowed';
+
+        // Mostrar modal
+        modalRestConfirm.style.display = 'flex';
+    });
+}
+
+const hideRestModal = () => {
+    if (modalRestConfirm) modalRestConfirm.style.display = 'none';
+};
+
+if (closeRestModal) closeRestModal.addEventListener('click', hideRestModal);
+if (cancelRestModal) cancelRestModal.addEventListener('click', hideRestModal);
+
+if (confirmTextRest) {
+    confirmTextRest.addEventListener('input', () => {
+        if (confirmTextRest.value === 'RESTABLECER') {
+            submitRestBtn.disabled = false;
+            submitRestBtn.style.opacity = '1';
+            submitRestBtn.style.cursor = 'pointer';
+        } else {
+            submitRestBtn.disabled = true;
+            submitRestBtn.style.opacity = '0.5';
+            submitRestBtn.style.cursor = 'not-allowed';
+        }
+    });
+}
 </script>
 <?php include(__DIR__ . "/../layout/footerAdmin.php"); ?>

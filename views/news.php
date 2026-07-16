@@ -1194,6 +1194,33 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
       const contenido = textarea.value.trim();
       if (!contenido) return;
       btnComentar.disabled = true;
+
+      // Generar e insertar elemento esqueleto temporal
+      const lista = document.getElementById('comentariosLista');
+      const vacio = document.getElementById('comentariosVacio');
+      const skeletonId = 'skeleton_' + Date.now();
+      const skeletonHtml = `
+        <div class="comentario-hilo comentario-skeleton-temp" id="${skeletonId}">
+          <div class="comentario-item">
+            <div class="comentario-avatar-col">
+              <div class="skeleton-shimmer skeleton-shimmer-avatar"></div>
+            </div>
+            <div class="comentario-body">
+              <div class="comentario-header">
+                <div class="skeleton-shimmer skeleton-shimmer-name"></div>
+              </div>
+              <div class="comentario-texto">
+                <div class="skeleton-shimmer skeleton-shimmer-line"></div>
+                <div class="skeleton-shimmer skeleton-shimmer-line shorter"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      if (vacio) vacio.style.display = 'none';
+      lista.insertAdjacentHTML('afterbegin', skeletonHtml);
+      const skeletonEl = document.getElementById(skeletonId);
+
       try {
         const res = await fetch(comBase + 'comentarios.php', {
           method: 'POST',
@@ -1202,19 +1229,25 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
         });
         const data = await res.json();
         if (data.ok && data.comentario) {
-          const lista = document.getElementById('comentariosLista');
-          const vacio = document.getElementById('comentariosVacio');
           if (vacio) vacio.remove();
           const hilo = `<div class="comentario-hilo" data-root="${data.comentario.id_comentario}">${buildComentarioHtml(data.comentario, false)}<div class="comentario-respuestas"></div></div>`;
-          lista.insertAdjacentHTML('afterbegin', hilo);
+          if (skeletonEl) {
+            skeletonEl.outerHTML = hilo;
+          } else {
+            lista.insertAdjacentHTML('afterbegin', hilo);
+          }
           textarea.value = '';
           charCount.textContent = '0';
           incrementarContadorComentarios();
         } else {
+          if (skeletonEl) skeletonEl.remove();
+          if (vacio) vacio.style.display = 'block';
           showToast(data.msg || 'Error al enviar el comentario.', 'error', data.persist);
         }
       } catch (e) {
         console.error(e);
+        if (skeletonEl) skeletonEl.remove();
+        if (vacio) vacio.style.display = 'block';
         showToast('Error de red al procesar el comentario.', 'error');
       }
       btnComentar.disabled = false;
@@ -1354,11 +1387,20 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
             const data = await res.json();
             if (data.ok) {
               const item = document.querySelector(`.comentario-item[data-id="${cid}"]`);
-              if (item) item.remove();
-              const countEl = document.querySelector('.comentarios-count');
-              if (countEl) {
-                const num = Math.max(0, parseInt(countEl.textContent.replace(/\D/g, '')) - 1);
-                countEl.textContent = `(${num})`;
+              if (item) {
+                let removedCount = 1;
+                const hilo = item.closest('.comentario-hilo');
+                if (hilo && hilo.getAttribute('data-root') == cid) {
+                  removedCount = hilo.querySelectorAll('.comentario-item').length;
+                  hilo.remove();
+                } else {
+                  item.remove();
+                }
+                const countEl = document.querySelector('.comentarios-count');
+                if (countEl) {
+                  const num = Math.max(0, parseInt(countEl.textContent.replace(/\D/g, '')) - removedCount);
+                  countEl.textContent = `(${num})`;
+                }
               }
             }
             showToast(data.msg, data.ok ? 'success' : 'error');
@@ -1452,6 +1494,35 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
       const contenido = ta.value.trim();
       if (!contenido) return;
       btn.disabled = true;
+
+      // Generar e insertar elemento esqueleto temporal de respuesta
+      const hilo = form.closest('.comentario-hilo');
+      const cont = hilo ? hilo.querySelector('.comentario-respuestas') : null;
+      if (!cont) return;
+      
+      const skeletonId = 'skeleton_' + Date.now();
+      const skeletonHtml = `
+        <div class="comentario-skeleton-temp" id="${skeletonId}">
+          <div class="comentario-item comentario-respuesta">
+            <div class="comentario-avatar-col">
+              <div class="skeleton-shimmer skeleton-shimmer-avatar"></div>
+            </div>
+            <div class="comentario-body">
+              <div class="comentario-header">
+                <div class="skeleton-shimmer skeleton-shimmer-name"></div>
+              </div>
+              <div class="comentario-texto">
+                <div class="skeleton-shimmer skeleton-shimmer-line"></div>
+                <div class="skeleton-shimmer skeleton-shimmer-line shorter"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      cont.insertAdjacentHTML('beforeend', skeletonHtml);
+      const skeletonEl = document.getElementById(skeletonId);
+      form.style.display = 'none';
+
       try {
         const res = await fetch(comBase + 'comentarios.php', {
           method: 'POST',
@@ -1460,17 +1531,23 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
         });
         const data = await res.json();
         if (data.ok && data.comentario) {
-          const hilo = form.closest('.comentario-hilo');
-          const cont = hilo ? hilo.querySelector('.comentario-respuestas') : null;
-          if (cont) cont.insertAdjacentHTML('beforeend', buildComentarioHtml(data.comentario, true));
+          if (skeletonEl) {
+            skeletonEl.outerHTML = buildComentarioHtml(data.comentario, true);
+          } else {
+            cont.insertAdjacentHTML('beforeend', buildComentarioHtml(data.comentario, true));
+          }
           form.remove();
           incrementarContadorComentarios();
         } else {
+          if (skeletonEl) skeletonEl.remove();
+          form.style.display = 'block';
           showToast(data.msg || 'Error al enviar la respuesta.', 'error', data.persist);
           btn.disabled = false;
         }
       } catch (e) {
         console.error(e);
+        if (skeletonEl) skeletonEl.remove();
+        form.style.display = 'block';
         showToast('Error de red al procesar la respuesta.', 'error');
         btn.disabled = false;
       }

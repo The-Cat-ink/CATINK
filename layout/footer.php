@@ -79,6 +79,25 @@
         const q = input.value.trim();
         clearTimeout(timeout);
         if (q.length < 2) { resultsBox.style.display = 'none'; return; }
+        // Mostrar esqueleto de carga inmediatamente
+        resultsBox.innerHTML = `
+          <div class="search-skeleton-container">
+            <div class="search-skeleton-item">
+              <div class="skeleton-shimmer skeleton-shimmer-thumb"></div>
+              <div class="skeleton-shimmer skeleton-shimmer-text"></div>
+            </div>
+            <div class="search-skeleton-item">
+              <div class="skeleton-shimmer skeleton-shimmer-thumb"></div>
+              <div class="skeleton-shimmer skeleton-shimmer-text"></div>
+            </div>
+            <div class="search-skeleton-item">
+              <div class="skeleton-shimmer skeleton-shimmer-thumb"></div>
+              <div class="skeleton-shimmer skeleton-shimmer-text"></div>
+            </div>
+          </div>
+        `;
+        resultsBox.style.display = 'block';
+
         timeout = setTimeout(() => {
           fetch(basePath + `/api/search.php?q=` + encodeURIComponent(q))
             .then(res => res.json())
