@@ -9,6 +9,30 @@ require_once(__DIR__ . "/../PHPMailer/src/SMTP.php");
 include("../data/conexion.php");
 include("../views/helpers/urlhelper.php");
 
+// ============================
+// PROTECCIÓN CONTRA DOBLE ENVÍO (servidor)
+// ============================
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$formToken = $_POST['form_token'] ?? '';
+if (empty($formToken) || !isset($_SESSION['reg_form_token']) || $formToken !== $_SESSION['reg_form_token']) {
+    // Token inválido o ya usado — probable doble envío
+    // Si el registro ya fue exitoso la primera vez, redirigir al éxito
+    if (isset($_SESSION['last_reg_email'])) {
+        $lastEmail = $_SESSION['last_reg_email'];
+        unset($_SESSION['last_reg_email']);
+        unset($_SESSION['temp_registro']);
+        header('Location: ' . basePath() . '/login?registro=verificar&email=' . urlencode($lastEmail));
+        exit;
+    }
+    header('Location: ' . basePath() . '/login?modo=registro');
+    exit;
+}
+// Invalidar el token inmediatamente para que no se pueda reusar
+unset($_SESSION['reg_form_token']);
+
 $nombre  = trim($_POST['nombre'] ?? '');
 $usuario = trim($_POST['usuario'] ?? '');
 $correo  = trim($_POST['correo'] ?? '');
@@ -20,9 +44,6 @@ $entidad = trim($_POST['entidad'] ?? '');
 $terminos_condiciones = $_POST['terminos_condiciones'] ?? '';
 
 // Guardar datos temporales para rellenar el formulario en caso de error
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 $_SESSION['temp_registro'] = [
     'nombre' => $nombre,
     'usuario' => $usuario,
@@ -106,6 +127,9 @@ if ($stmt->execute()) {
     $lector_id = $stmt->insert_id;
     $stmt->close();
 
+    // Guardar el correo por si hay un doble envío posterior
+    $_SESSION['last_reg_email'] = $correo;
+
     // Si aceptó recibir correos, registrar en suscripciones
     if (isset($_POST['recibir_correos'])) {
         $ip = 'Desconocido';
@@ -180,9 +204,6 @@ if ($stmt->execute()) {
         error_log("Error enviando correo de verificacion: " . $e->getMessage());
     }
 
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
     // Limpiar datos temporales de registro
     unset($_SESSION['temp_registro']);
 

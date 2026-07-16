@@ -12,6 +12,9 @@ $tempRegistro = $_SESSION['temp_registro'] ?? null;
 if ($tempRegistro) {
     unset($_SESSION['temp_registro']);
 }
+// Generar token anti doble envío para el formulario de registro
+$regFormToken = bin2hex(random_bytes(16));
+$_SESSION['reg_form_token'] = $regFormToken;
 ?>
 <!DOCTYPE html>
 <html lang="es" data-bs-theme="light">
@@ -114,6 +117,7 @@ if ($tempRegistro) {
           <span class="step-dot" id="dot4"></span>
         </div>
         <form action="<?= basePath() ?>/controllers/registrocontroller.php" method="POST" id="regForm">
+          <input type="hidden" name="form_token" value="<?= $regFormToken ?>">
           <div class="reg-step" id="step1">
             <h6 class="text-center" style="margin-bottom:12px; font-weight:600;">¿Cómo te llamas?</h6>
             <div class="form-group">
