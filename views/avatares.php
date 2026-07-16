@@ -1,6 +1,10 @@
-<?php
 include(__DIR__ . "/../layout/headerAdmin.php");
 include(__DIR__ . "/../data/conexion.php");
+
+if (empty($ACL['leer'])) {
+    header("Location: admin.php");
+    exit();
+}
 require_once(__DIR__ . "/helpers/urlhelper.php");
 
 // Obtener todos los avatares

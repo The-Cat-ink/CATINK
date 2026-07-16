@@ -1,6 +1,6 @@
 <?php
 include (__DIR__ . "/../layout/headerAdmin.php");
-$ACL = $_SESSION['ACL']['noticias'] ?? [
+$ACL = $_SESSION['ACL']['recomendados'] ?? [
     'crear' => false,
     'leer' => false,
     'editar' => false,

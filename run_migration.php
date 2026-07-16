@@ -4,20 +4,21 @@ require_once(__DIR__ . "/data/conexion.php");
 
 echo "<h2>CatInk - Ejecutor Temporal de Migraciones</h2>";
 
-// Consulta de migración de hoy
-$sql = "ALTER TABLE `noticias` ADD FULLTEXT INDEX `idx_busqueda_rapida` (`titulo`, `descripcion`, `contenido`)";
+$sql = file_get_contents(__DIR__ . "/migrations/011_add_new_permissions_columns.sql");
 
-echo "<p>Ejecutando: <code>$sql</code>...</p>";
+echo "<p>Ejecutando consultas de migración de permisos...</p>";
 
-if ($con->query($sql)) {
-    echo "<h3 style='color: green;'>✅ Migración ejecutada con éxito. El índice FULLTEXT se ha creado correctamente.</h3>";
+if ($con->multi_query($sql)) {
+    do {
+        // Consumir todos los resultados de multi_query
+        if ($result = $con->store_result()) {
+            $result->free();
+        }
+    } while ($con->next_result());
+    
+    echo "<h3 style='color: green;'>✅ Migración de nuevos permisos ejecutada con éxito. Se añadieron las columnas y se actualizaron los superadministradores.</h3>";
 } else {
-    // Si ya existe, es probable que retorne un error de duplicado (código de error 1061 o similar)
-    if ($con->errno == 1061) {
-        echo "<h3 style='color: orange;'>⚠️ El índice FULLTEXT ya existe en la base de datos de producción. No es necesario volver a crearlo.</h3>";
-    } else {
-        echo "<h3 style='color: red;'>❌ Error al ejecutar la migración: (" . $con->errno . ") " . $con->error . "</h3>";
-    }
+    echo "<h3 style='color: red;'>❌ Error al ejecutar la migración: (" . $con->errno . ") " . $con->error . "</h3>";
 }
 
 echo "<p style='color: red; font-weight: bold;'>⚠️ IMPORTANTE: Elimina este archivo ('run_migration.php') de producción inmediatamente después de ejecutarlo por motivos de seguridad.</p>";

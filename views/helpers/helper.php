@@ -18,7 +18,14 @@ function primerModuloLectura($acl){
         'suscripciones'  => '../views/suscripciones.php',
         'usuarios'       => '../views/usuarios.php',
         'correos'        => '../views/correos.php',
-        'videos'         => '../views/videos.php'
+        'videos'         => '../views/videos.php',
+        'lectores'       => '../views/lectores.php',
+        'recomendados'   => '../views/recomendados.php',
+        'esperamos'      => '../views/esperamos.php',
+        'paginas'        => '../views/paginas.php',
+        'actividad'      => '../views/actividad.php',
+        'papelera'       => '../views/papelera.php',
+        'avatares'       => '../views/avatares.php'
     ];
     foreach($acl as $modulo => $permisos){
         if($permisos['leer']){
@@ -70,6 +77,48 @@ function mapearPermisos($user){
             'leer'     => ($user['perm_videos'] & 2) === 2,
             'editar'   => ($user['perm_videos'] & 4) === 4,
             'eliminar' => ($user['perm_videos'] & 8) === 8
+        ],
+        'lectores' => [
+            'crear'    => ($user['perm_lectores'] & 1) === 1,
+            'leer'     => ($user['perm_lectores'] & 2) === 2,
+            'editar'   => ($user['perm_lectores'] & 4) === 4,
+            'eliminar' => ($user['perm_lectores'] & 8) === 8
+        ],
+        'recomendados' => [
+            'crear'    => ($user['perm_recomendados'] & 1) === 1,
+            'leer'     => ($user['perm_recomendados'] & 2) === 2,
+            'editar'   => ($user['perm_recomendados'] & 4) === 4,
+            'eliminar' => ($user['perm_recomendados'] & 8) === 8
+        ],
+        'esperamos' => [
+            'crear'    => ($user['perm_esperamos'] & 1) === 1,
+            'leer'     => ($user['perm_esperamos'] & 2) === 2,
+            'editar'   => ($user['perm_esperamos'] & 4) === 4,
+            'eliminar' => ($user['perm_esperamos'] & 8) === 8
+        ],
+        'paginas' => [
+            'crear'    => ($user['perm_paginas'] & 1) === 1,
+            'leer'     => ($user['perm_paginas'] & 2) === 2,
+            'editar'   => ($user['perm_paginas'] & 4) === 4,
+            'eliminar' => ($user['perm_paginas'] & 8) === 8
+        ],
+        'actividad' => [
+            'crear'    => ($user['perm_actividad'] & 1) === 1,
+            'leer'     => ($user['perm_actividad'] & 2) === 2,
+            'editar'   => ($user['perm_actividad'] & 4) === 4,
+            'eliminar' => ($user['perm_actividad'] & 8) === 8
+        ],
+        'papelera' => [
+            'crear'    => ($user['perm_papelera'] & 1) === 1,
+            'leer'     => ($user['perm_papelera'] & 2) === 2,
+            'editar'   => ($user['perm_papelera'] & 4) === 4,
+            'eliminar' => ($user['perm_papelera'] & 8) === 8
+        ],
+        'avatares' => [
+            'crear'    => ($user['perm_avatares'] & 1) === 1,
+            'leer'     => ($user['perm_avatares'] & 2) === 2,
+            'editar'   => ($user['perm_avatares'] & 4) === 4,
+            'eliminar' => ($user['perm_avatares'] & 8) === 8
         ]
     ];
 }
@@ -102,7 +151,34 @@ function getModulosACL($u){
         'videos' => [
             'permiso' => $u['perm_videos'],
             'vista'   => '../views/videos.php'
+        ],
+        'lectores' => [
+            'permiso' => $u['perm_lectores'],
+            'vista'   => '../views/lectores.php'
+        ],
+        'recomendados' => [
+            'permiso' => $u['perm_recomendados'],
+            'vista'   => '../views/recomendados.php'
+        ],
+        'esperamos' => [
+            'permiso' => $u['perm_esperamos'],
+            'vista'   => '../views/esperamos.php'
+        ],
+        'paginas' => [
+            'permiso' => $u['perm_paginas'],
+            'vista'   => '../views/paginas.php'
+        ],
+        'actividad' => [
+            'permiso' => $u['perm_actividad'],
+            'vista'   => '../views/actividad.php'
+        ],
+        'papelera' => [
+            'permiso' => $u['perm_papelera'],
+            'vista'   => '../views/papelera.php'
+        ],
+        'avatares' => [
+            'permiso' => $u['perm_avatares'],
+            'vista'   => '../views/avatares.php'
         ]
     ];
-
 }

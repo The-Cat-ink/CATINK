@@ -2,8 +2,7 @@
 include("./../layout/headerAdmin.php");
 include("./../data/conexion.php");
 
-// Solo superadmin puede ver esta sección
-if (!$superadmin) {
+if (empty($ACL['leer'])) {
     header("Location: admin.php");
     exit();
 }
