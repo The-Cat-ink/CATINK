@@ -30,7 +30,14 @@ function loadEnv($path = null) {
 loadEnv();
 
 function env($key, $default = null) {
-    return $_ENV[$key] ?? getenv($key) ?: $default;
+    $valor = $_ENV[$key] ?? getenv($key);
+    // Una clave presente pero vacía cuenta como no definida. Antes se devolvía
+    // la cadena vacía y el valor por defecto no se aplicaba nunca: un .env a
+    // medias tumbaba la conexión o el envío de correo sin decir por qué.
+    if ($valor === null || $valor === false || $valor === '') {
+        return $default;
+    }
+    return $valor;
 }
 
 $timezone = env('APP_TIMEZONE', 'America/Mexico_City');

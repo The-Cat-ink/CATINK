@@ -78,8 +78,8 @@ try {
     $mail->SMTPAuth = true;
     $mail->Username = env('SMTP_USERNAME');
     $mail->Password = env('SMTP_PASSWORD');
-    $mail->SMTPSecure = env('SMTP_SECURE');
-    $mail->Port = env('SMTP_PORT');
+    $mail->SMTPSecure = env('SMTP_SECURE', 'tls');
+    $mail->Port = (int) env('SMTP_PORT', 587);
 
     $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
     $mail->addAddress($email, $usuario['nombre']);

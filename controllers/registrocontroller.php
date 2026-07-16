@@ -116,14 +116,32 @@ if ($stmt->get_result()->num_rows > 0) {
 $passHash = password_hash($pass, PASSWORD_BCRYPT);
 $token = bin2hex(random_bytes(32));
 
-$stmt = $con->prepare("
-    INSERT INTO lectores 
-    (nombre, usuario, correo, password_hash, fecha_nacimiento, sexo, entidad, verificado, token_verificacion)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
-");
-$stmt->bind_param("ssssssss", $nombre, $usuario, $correo, $passHash, $fecha_nacimiento, $sexo, $entidad, $token);
+// mysqli lanza excepción si a la tabla lectores le faltan las columnas de
+// verificación (verificado / token_verificacion). Sin capturarla, el registro
+// muere con un 500 mudo justo al pulsar el botón.
+try {
+    $stmt = $con->prepare("
+        INSERT INTO lectores
+        (nombre, usuario, correo, password_hash, fecha_nacimiento, sexo, entidad, verificado, token_verificacion)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
+    ");
+    $stmt->bind_param("ssssssss", $nombre, $usuario, $correo, $passHash, $fecha_nacimiento, $sexo, $entidad, $token);
+} catch (\Throwable $e) {
+    error_log('Error al preparar registro de lector: ' . $e->getMessage());
+    header('Location: ' . basePath() . '/login?modo=registro&reg_error=5');
+    exit;
+}
 
-if ($stmt->execute()) {
+try {
+    $ejecutado = $stmt->execute();
+} catch (\Throwable $e) {
+    error_log('Error al registrar lector: ' . $e->getMessage());
+    $stmt->close();
+    header('Location: ' . basePath() . '/login?modo=registro&reg_error=5');
+    exit;
+}
+
+if ($ejecutado) {
     $lector_id = $stmt->insert_id;
     $stmt->close();
 
@@ -169,8 +187,8 @@ if ($stmt->execute()) {
             $mail->SMTPAuth = true;
             $mail->Username = env('SMTP_USERNAME');
             $mail->Password = env('SMTP_PASSWORD');
-            $mail->SMTPSecure = env('SMTP_SECURE');
-            $mail->Port = env('SMTP_PORT');
+            $mail->SMTPSecure = env('SMTP_SECURE', 'tls');
+            $mail->Port = (int) env('SMTP_PORT', 587);
 
             // Ignorar errores de certificado SSL (común en servidores de correo locales/cPanel)
             $mail->SMTPOptions = array(

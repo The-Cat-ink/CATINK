@@ -46,8 +46,8 @@ try {
     $mail->SMTPAuth   = true;
     $mail->Username   = env('SMTP_USERNAME');
     $mail->Password   = env('SMTP_PASSWORD');
-    $mail->SMTPSecure = env('SMTP_SECURE');
-    $mail->Port       = env('SMTP_PORT');
+    $mail->SMTPSecure = env('SMTP_SECURE', 'tls');
+    $mail->Port       = (int) env('SMTP_PORT', 587);
 
     $mail->setFrom('news@catink.com.mx', 'CatInk News');
 
