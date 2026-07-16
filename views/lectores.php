@@ -153,7 +153,7 @@ $esSuper = esSuperAdminActual();
                                 $banned = estaBaneado($l);
                                 $banText = textoBaneo($l);
                             ?>
-                            <tr>
+                            <tr data-id="<?= $l['id'] ?>">
                                 <!-- Avatar -->
                                 <td>
                                     <?php if (!empty($l['avatar_img'])): ?>
@@ -612,8 +612,26 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (data.success) {
+                // Cerrar el modal inmediatamente
+                cerrarModalDelete();
                 showToast(data.success, 'success');
-                setTimeout(() => location.reload(), 1500);
+                // Eliminar la fila del DOM sin recargar la página
+                const row = document.querySelector(`tr[data-id="${deleteLectorId}"], .lector-row[data-id="${deleteLectorId}"]`);
+                if (row) {
+                    row.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(-20px)';
+                    setTimeout(() => row.remove(), 300);
+                    // Actualizar el contador total si existe
+                    const badge = document.querySelector('.total-lectores-badge, .badge-total');
+                    if (badge) {
+                        const current = parseInt(badge.textContent) || 0;
+                        if (current > 0) badge.textContent = current - 1;
+                    }
+                } else {
+                    // Fallback: recargar si no encontramos la fila
+                    setTimeout(() => location.reload(), 500);
+                }
             } else {
                 showToast(data.error || 'Error al eliminar al lector.', 'error');
             }
