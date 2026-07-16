@@ -148,18 +148,6 @@ if ($stmt->execute()) {
 
         $pais = 'Desconocido';
         $estado = 'Desconocido';
-        try {
-            // Establecer un timeout de 2 segundos para la geolocalización externa
-            $ctx = stream_context_create(['http' => ['timeout' => 2]]);
-            $geoJson = @file_get_contents("http://ip-api.com/json/" . urlencode($ip), false, $ctx);
-            if ($geoJson !== false) {
-                $geo = json_decode($geoJson, true);
-                $pais = $geo['country'] ?? 'Desconocido';
-                $estado = $geo['regionName'] ?? 'Desconocido';
-            }
-        } catch (Exception $e) {
-            // Ignorar errores de geolocalización para que no detenga el flujo
-        }
 
         $stmtSub = $con->prepare("INSERT INTO suscripciones (nombre_completo, correo, sexo, ip, pais, estado) VALUES (?, ?, ?, ?, ?, ?)");
         $stmtSub->bind_param("ssssss", $nombre, $correo, $sexo, $ip, $pais, $estado);
