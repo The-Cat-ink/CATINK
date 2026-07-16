@@ -353,11 +353,13 @@ function nextStep(n){ goToStep(n); }
 function prevStep(n){ goToStep(n); }
 
 function initLogin() {
-  if (!document.body || document.body.dataset.loginInit === '1') return;
-  document.body.dataset.loginInit = '1';
+  const diaSel = document.getElementById('dob_dia');
+  // Si los selects ya tienen opciones pobladas, no reinicializar los dropdowns
+  const alreadyPopulated = diaSel && diaSel.options.length > 1;
 
   const regForm = document.getElementById('regForm');
-  if (regForm) {
+  if (regForm && !regForm.dataset.eventsInit) {
+    regForm.dataset.eventsInit = '1';
     regForm.addEventListener('keydown', function(e){
       if(e.key === 'Enter' && currentStep < 4){
         e.preventDefault();
@@ -381,35 +383,37 @@ function initLogin() {
   }
 
   document.querySelectorAll('.step-dot').forEach((dot, i) => {
-    dot.addEventListener('click', () => {
-      const targetStep = i + 1;
-      // Solo permitir navegar a pasos ya completados/anteriores
-      if (targetStep <= currentStep) {
-        goToStep(targetStep);
-      }
-    });
+    if (!dot.dataset.eventsInit) {
+      dot.dataset.eventsInit = '1';
+      dot.addEventListener('click', () => {
+        const targetStep = i + 1;
+        if (targetStep <= currentStep) {
+          goToStep(targetStep);
+        }
+      });
+    }
   });
 
-  // Limpiar la validación conforme el usuario escribe
   const regUsuarioInput = document.getElementById('reg_usuario');
-  if (regUsuarioInput) {
+  if (regUsuarioInput && !regUsuarioInput.dataset.eventsInit) {
+    regUsuarioInput.dataset.eventsInit = '1';
     regUsuarioInput.addEventListener('input', () => {
       regUsuarioInput.setCustomValidity("");
     });
   }
   const regCorreoInput = document.getElementById('correo');
-  if (regCorreoInput) {
+  if (regCorreoInput && !regCorreoInput.dataset.eventsInit) {
+    regCorreoInput.dataset.eventsInit = '1';
     regCorreoInput.addEventListener('input', () => {
       regCorreoInput.setCustomValidity("");
     });
   }
 
   // ---- FECHA DE NACIMIENTO DROPDOWNS ----
-  const diaSel = document.getElementById('dob_dia');
   const mesSel = document.getElementById('dob_mes');
   const anioSel = document.getElementById('dob_anio');
   const hiddenInput = document.getElementById('fecha_nacimiento');
-  if (diaSel && mesSel && anioSel && hiddenInput) {
+  if (diaSel && mesSel && anioSel && hiddenInput && !alreadyPopulated) {
     // Clear options to avoid duplicates or empty states on Turbo loads
     diaSel.innerHTML = '<option value="" disabled selected>Día</option>';
     mesSel.innerHTML = '<option value="" disabled selected>Mes</option>';
@@ -575,7 +579,13 @@ function initLogin() {
   }
 }
 
+// Soportar tanto navegación Turbo como carga directa de la página
 document.addEventListener('turbo:load', initLogin);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initLogin);
+} else {
+  initLogin();
+}
 </script>
 </body>
 </html>
