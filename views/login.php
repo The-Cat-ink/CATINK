@@ -362,10 +362,30 @@ function initLogin() {
         goToStep(currentStep + 1);
       }
     });
+
+    let isSubmitting = false;
+    regForm.addEventListener('submit', function(e) {
+      if (isSubmitting) {
+        e.preventDefault();
+        return;
+      }
+      isSubmitting = true;
+      const submitBtn = regForm.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Registrando...";
+      }
+    });
   }
 
   document.querySelectorAll('.step-dot').forEach((dot, i) => {
-    dot.addEventListener('click', ()=> goToStep(i+1));
+    dot.addEventListener('click', () => {
+      const targetStep = i + 1;
+      // Solo permitir navegar a pasos ya completados/anteriores
+      if (targetStep <= currentStep) {
+        goToStep(targetStep);
+      }
+    });
   });
 
   // Limpiar la validación conforme el usuario escribe
