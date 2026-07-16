@@ -167,10 +167,18 @@ if ($ejecutado) {
         $pais = 'Desconocido';
         $estado = 'Desconocido';
 
-        $stmtSub = $con->prepare("INSERT INTO suscripciones (nombre_completo, correo, sexo, ip, pais, estado) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmtSub->bind_param("ssssss", $nombre, $correo, $sexo, $ip, $pais, $estado);
-        $stmtSub->execute();
-        $stmtSub->close();
+        // Fail-soft: la suscripción al boletín es secundaria y nunca debe
+        // tumbar el registro. El caso típico es un correo que ya estaba
+        // suscrito desde antes (suscripciones.correo es UNIQUE): el duplicado
+        // lanzaba excepción y el lector veía un 500 con la cuenta ya creada.
+        try {
+            $stmtSub = $con->prepare("INSERT IGNORE INTO suscripciones (nombre_completo, correo, sexo, ip, pais, estado) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmtSub->bind_param("ssssss", $nombre, $correo, $sexo, $ip, $pais, $estado);
+            $stmtSub->execute();
+            $stmtSub->close();
+        } catch (\Throwable $e) {
+            error_log('Registro: no se pudo suscribir al boletín: ' . $e->getMessage());
+        }
     }
 
     // ============================
