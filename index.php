@@ -270,8 +270,21 @@ function img($fields, $placeholder = 'img/placeholder.svg') {
 // $activo = la sección de publicidad está habilitada.
 function renderBannerAd($con, $posicion, $activo) {
     if (!$activo) return;
-    $pub = obtenerPublicidad($con, $posicion, 1); // tipo 1 = banner largo
+    
+    // Obtener anuncios mostrados hasta ahora en la misma carga de página
+    $exclude = $GLOBALS['loaded_ad_ids'] ?? [];
+    
+    $pub = obtenerPublicidad($con, $posicion, 1, $exclude);
+    
+    // Si no se encuentra ninguno con el filtro de exclusión, hacer fallback sin exclusión
+    if (empty($pub) && !empty($exclude)) {
+        $pub = obtenerPublicidad($con, $posicion, 1);
+    }
+    
     if (empty($pub)) return;
+    
+    // Guardar ID para evitar duplicarlo en los siguientes banners de esta carga
+    $GLOBALS['loaded_ad_ids'][] = (int)$pub['id_pub'];
     ?>
     <div class="container mt-4">
         <div class="showcase-box ad-strip">
