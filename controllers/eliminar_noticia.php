@@ -1,9 +1,9 @@
 <?php
 session_start();
-include("./aclcontroller.php");
+include(__DIR__ . "/aclcontroller.php");
 proteger('noticias','eliminar');
-include("../data/conexion.php");
-require_once("../views/helpers/activity_log.php");
+include(__DIR__ . "/../data/conexion.php");
+require_once(__DIR__ . "/../views/helpers/activity_log.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     $id = intval($_POST['id']);
@@ -33,15 +33,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     // deja de ser visible; en el panel se vuelve a contenidos/borradores.
     $from = $_POST['from'] ?? '';
 
-    $stmt = $con->prepare("UPDATE noticias SET eliminado_en = NOW(), eliminado_por = ? WHERE id = ? AND eliminado_en IS NULL");
-    $stmt->bind_param("ii", $eliminadoPor, $id);
-    $ok = $stmt->execute();
+    $ok = false;
+    $detalle = '';
+
+    $stmt = @$con->prepare("UPDATE noticias SET eliminado_en = NOW(), eliminado_por = ? WHERE id = ? AND eliminado_en IS NULL");
+    if (!$stmt) {
+        // La consulta ni siquiera se pudo preparar (p. ej. faltan las columnas
+        // de la papelera en la base de datos de este entorno).
+        $detalle = $con->error;
+    } else {
+        $stmt->bind_param("ii", $eliminadoPor, $id);
+        if (!$stmt->execute()) {
+            $detalle = $stmt->error;
+        } elseif ($stmt->affected_rows < 1) {
+            $detalle = 'La noticia no existe o ya estaba eliminada.';
+        } else {
+            $ok = true;
+        }
+        $stmt->close();
+    }
+
     if ($ok) {
         logActivity($con, 'eliminar', 'noticias', 'Envió a la papelera noticia ID ' . $id);
     }
-    $stmt->close();
 
     if ($from === 'publica') {
+        // El sitio público no tiene banner de avisos: se usa el toast del header.
+        if ($ok) {
+            $_SESSION['flash'] = ['tipo' => 'success', 'texto' => 'Noticia eliminada correctamente.'];
+        } else {
+            $texto = 'No se pudo eliminar la noticia.';
+            // El detalle técnico solo se muestra al superadmin.
+            if (!empty($_SESSION['superadmin']) && $detalle !== '') {
+                $texto .= ' ' . $detalle;
+            }
+            $_SESSION['flash'] = ['tipo' => 'error', 'texto' => $texto];
+        }
         header("Location: ../index.php");
     } else {
         $destino = ($from === 'borradores') ? 'borradores' : 'contenidos';

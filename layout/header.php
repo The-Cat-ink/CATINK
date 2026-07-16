@@ -634,5 +634,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </nav>
 <?php endif; ?>
+<?php if (!empty($_SESSION['flash'])):
+  $flash = $_SESSION['flash'];
+  unset($_SESSION['flash']); ?>
+  <div class="toast-container">
+    <div class="toast-msg toast-<?= $flash['tipo'] === 'error' ? 'error' : 'success' ?>">
+      <?= htmlspecialchars($flash['texto']) ?>
+    </div>
+  </div>
+  <script>
+    setTimeout(() => {
+      const t = document.querySelector('.toast-container');
+      if (t) t.remove();
+    }, 4000);
+  </script>
+<?php endif; ?>
 <!-- Inicio del contenido principal de la página -->
 <main class="site-main">

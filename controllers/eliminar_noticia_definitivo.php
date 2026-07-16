@@ -1,7 +1,7 @@
 <?php
 session_start();
-include("../data/conexion.php");
-require_once("../views/helpers/activity_log.php");
+include(__DIR__ . "/../data/conexion.php");
+require_once(__DIR__ . "/../views/helpers/activity_log.php");
 
 
 // Solo el superadmin puede eliminar definitivamente
