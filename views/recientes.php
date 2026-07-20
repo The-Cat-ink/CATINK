@@ -248,7 +248,7 @@ if ($q !== '') {
           <div class="card sidebar-card">
             <?php if(!empty($secciones['publicidad']['estado']) && !empty($publicidadCuadro)) : ?>
                 <div class="showcase-box">
-                    <a href="<?php echo htmlspecialchars($publicidadCuadro['url']); ?>" class="promo-link" data-pub="<?php echo htmlspecialchars($publicidadCuadro['id_pub']); ?>" target="_blank" rel="noopener noreferrer">
+                    <a href="<?php echo htmlspecialchars($publicidadCuadro['url']); ?>" class="promo-link" data-pub="<?php echo htmlspecialchars($publicidadCuadro['id_pub']); ?>" target="_blank" rel="noopener noreferrer" data-turbo="false">
                         <img src="<?= imageUrl($publicidadCuadro['imagen']) ?>" class="promo-card-media" loading="lazy">
                     </a>
                     <span class="partner-tag">ADS</span>

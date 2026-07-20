@@ -310,7 +310,7 @@ function renderBannerAd($con, $posicion, $activo) {
                 <?php if ($side === 'left'): ?>
                     <!-- Anuncio Cuadrado Izquierda -->
                     <div class="showcase-box ad-square-box">
-                        <a href="<?= htmlspecialchars($squarePub['url']) ?>" class="promo-link" data-pub="<?= (int)$squarePub['id_pub'] ?>" target="_blank" rel="noopener noreferrer">
+                        <a href="<?= htmlspecialchars($squarePub['url']) ?>" class="promo-link" data-pub="<?= (int)$squarePub['id_pub'] ?>" target="_blank" rel="noopener noreferrer" data-turbo="false">
                             <img src="<?= imageUrl($squarePub['imagen']) ?>" alt="" class="promo-media-square" loading="lazy">
                         </a>
                         <span class="partner-tag">ADS</span>
@@ -319,7 +319,7 @@ function renderBannerAd($con, $posicion, $activo) {
 
                 <!-- Anuncio Horizontal Principal -->
                 <div class="showcase-box ad-horizontal-box">
-                    <a href="<?= htmlspecialchars($pub['url']) ?>" class="promo-link" data-pub="<?= (int)$pub['id_pub'] ?>" target="_blank" rel="noopener noreferrer">
+                    <a href="<?= htmlspecialchars($pub['url']) ?>" class="promo-link" data-pub="<?= (int)$pub['id_pub'] ?>" target="_blank" rel="noopener noreferrer" data-turbo="false">
                         <img src="<?= imageUrl($pub['imagen']) ?>" alt="" class="promo-media-horizontal" loading="lazy">
                     </a>
                     <span class="partner-tag">ADS</span>
@@ -328,7 +328,7 @@ function renderBannerAd($con, $posicion, $activo) {
                 <?php if ($side === 'right'): ?>
                     <!-- Anuncio Cuadrado Derecha -->
                     <div class="showcase-box ad-square-box">
-                        <a href="<?= htmlspecialchars($squarePub['url']) ?>" class="promo-link" data-pub="<?= (int)$squarePub['id_pub'] ?>" target="_blank" rel="noopener noreferrer">
+                        <a href="<?= htmlspecialchars($squarePub['url']) ?>" class="promo-link" data-pub="<?= (int)$squarePub['id_pub'] ?>" target="_blank" rel="noopener noreferrer" data-turbo="false">
                             <img src="<?= imageUrl($squarePub['imagen']) ?>" alt="" class="promo-media-square" loading="lazy">
                         </a>
                         <span class="partner-tag">ADS</span>
@@ -338,7 +338,7 @@ function renderBannerAd($con, $posicion, $activo) {
         <?php else: ?>
             <!-- Mostrar solo el banner horizontal tradicional si no hay cuadrados disponibles -->
             <div class="showcase-box ad-strip">
-                <a href="<?= htmlspecialchars($pub['url']) ?>" class="promo-link" data-pub="<?= (int)$pub['id_pub'] ?>" target="_blank" rel="noopener noreferrer">
+                <a href="<?= htmlspecialchars($pub['url']) ?>" class="promo-link" data-pub="<?= (int)$pub['id_pub'] ?>" target="_blank" rel="noopener noreferrer" data-turbo="false">
                     <img src="<?= imageUrl($pub['imagen']) ?>" alt="" class="promo-media" loading="lazy">
                 </a>
                 <span class="partner-tag">ADS</span>
