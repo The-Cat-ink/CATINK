@@ -28,12 +28,33 @@ $mapVistaModulo = [
     'papelera' => 'papelera',
     'avatares' => 'avatares'
 ];
+$usuario = $_SESSION['usuario'];
+include("./../data/conexion.php");
+
+// Obtener datos del usuario y refrescar sus permisos en tiempo real desde la BD
+$stmt = $con->prepare("SELECT * FROM usuarios WHERE usuario = ?");
+$stmt->bind_param("s", $usuario);
+$stmt->execute();
+$result = $stmt->get_result();
+$fila = $result->fetch_assoc();
+if (!$fila) {
+    session_destroy();
+    header("Location: ./../index.php");
+    exit();
+}
+
+$_SESSION['id_u'] = $fila['id_u'];
+$_SESSION['ACL'] = mapearPermisos($fila);
+$_SESSION['superadmin'] = esSuperAdmin($fila);
+
 $superadmin = $_SESSION['superadmin'] ?? false;
-// cargar acl globalmente
+
+// cargar acl globalmente para la vista actual
 $ACL = null;
 if(isset($mapVistaModulo[$archivoActual])){
     $ACL = cargarACL($mapVistaModulo[$archivoActual]);
 }
+
 // proteccion para admin.php
 if($archivoActual === "admin" && !$superadmin){
     // si no tiene lectura en ningun modulo → fuera
@@ -50,22 +71,6 @@ if($archivoActual === "admin" && !$superadmin){
         exit();
     }
 }
-$usuario = $_SESSION['usuario'];
-include("./../data/conexion.php");
-// Obtener usuario desde la base de datos actualizada
-$stmt = $con->prepare("SELECT id_u, nombre, usuario FROM usuarios WHERE usuario = ?");
-$stmt->bind_param("s", $usuario);
-$stmt->execute();
-$result = $stmt->get_result();
-$fila = $result->fetch_assoc();
-if (!$fila) {
-    // Si el usuario no existe en la BD, destruir sesión y redirigir
-    session_destroy();
-    header("Location: ./../index.php");
-    exit();
-}
-// Guardar id_u en la sesión para usarlo en controladores
-$_SESSION['id_u'] = $fila['id_u'];
 
 // Auto-disparador pasivo de correos programados (fallback para tareas cron)
 if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time']) > 300) {

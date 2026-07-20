@@ -3,20 +3,43 @@ if(session_status() == PHP_SESSION_NONE){
     session_start();
 }
 require_once(dirname(dirname(__FILE__)) . "/views/helpers/helper.php");
-function proteger($modulo,$accion,$json=true){
-    if(!isset($_SESSION['ACL'])){
-        header("Location: ../index.php");
+function proteger($modulo, $accion, $json = true) {
+    if (!isset($_SESSION['usuario'])) {
+        if ($json) {
+            header("Content-Type: application/json");
+            echo json_encode(["success" => false, "error" => "Acceso denegado"]);
+        } else {
+            header("Location: ../index.php");
+        }
         exit();
     }
-    if(!($_SESSION['superadmin'] ?? false)){
-        if(!tienePermiso($modulo,$accion)){
-            if($json){
+
+    // Refrescar permisos desde la base de datos en tiempo real
+    require_once(dirname(__DIR__) . "/data/conexion.php");
+    require_once(dirname(__DIR__) . "/views/helpers/helper.php");
+    global $con;
+    if (isset($con) && $con instanceof mysqli) {
+        $stmt = $con->prepare("SELECT * FROM usuarios WHERE usuario = ?");
+        if ($stmt) {
+            $stmt->bind_param("s", $_SESSION['usuario']);
+            $stmt->execute();
+            $res = $stmt->get_result();
+            if ($res && $u = $res->fetch_assoc()) {
+                $_SESSION['ACL'] = mapearPermisos($u);
+                $_SESSION['superadmin'] = esSuperAdmin($u);
+            }
+        }
+    }
+
+    if (!($_SESSION['superadmin'] ?? false)) {
+        if (!tienePermiso($modulo, $accion)) {
+            if ($json) {
                 header("Content-Type: application/json");
                 echo json_encode([
-                    "success"=>false,
-                    "error"=>"Acceso denegado"
+                    "success" => false,
+                    "error" => "No tienes permisos suficientes para realizar esta acción (" . $modulo . " - " . $accion . ")"
                 ]);
-            }else{
+            } else {
                 header("Location: admin.php");
             }
             exit();
