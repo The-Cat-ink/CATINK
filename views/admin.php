@@ -325,55 +325,57 @@ function formatNumberShort($num){
         </div>
 
     <!-- KPIs -->
-     <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">KPIs</h5>
-            <div class="row mb-4 kpi-row-mobile-fix">
-                <?php 
-                    $cards = [
-                        ['Noticias', $kpis['total_noticias'], 'bi-newspaper', 'bg-primary'],
-                        ['Publicadas', $kpis['publicadas'], 'bi-check-circle', 'bg-success'],
-                        ['Programadas', $kpis['programadas'], 'bi-clock', 'bg-warning'],
-                        ['Vistas', number_format($kpis['total_vistas']), 'bi-eye', 'bg-info'],
-                        ['Likes', number_format($kpis['total_likes']), 'bi-heart', 'bg-danger'],
-                        ['Tiempo (min)', number_format($tiempoTotal/60), 'bi-stopwatch', 'bg-secondary'],
-                    ];
-                    foreach($cards as $c):
-                ?>
-                <div class="col-md-2 col-6 mb-3 kpi-col-mobile-fix">
-                    <div class="card text-center shadow-sm h-100">
-                        <div class="card-body">
-                            <i class="bi <?= $c[2] ?> fs-3 <?= $c[3] ?>"></i>
-                            <h4 class="mb-0"><?= $c[1] ?></h4>
-                            <small class="text-muted"><?= $c[0] ?></small>
-                        </div>
-                    </div>
+    <div class="kpi-section">
+        <div class="kpi-section__header">
+            <div class="kpi-section__title">
+                <i class="bi bi-bar-chart-fill"></i>
+                <div>
+                    <h2>Panel de Métricas</h2>
+                    <p>Resumen general del rendimiento de la plataforma</p>
                 </div>
-                <?php endforeach; ?>
             </div>
-            <!-- FILTROS -->
-            <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                    <h5>Filtros de Estadísticas</h5>
-                    <div class="row g-3">
-                        <div class="col-md-3 col-12">
-                            <label>Fecha Inicio</label>
-                            <input type="date" id="filterFechaInicio" class="form-control" value="<?= date('Y-m-d', strtotime('-30 days')) ?>">
-                        </div>
-                        <div class="col-md-3 col-12">
-                            <label>Fecha Fin</label>
-                            <input type="date" id="filterFechaFin" class="form-control" value="<?= date('Y-m-d') ?>">
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button class="btn btn-accent w-100" style="margin-top:0;" onclick="loadGlobalStats(); loadLikesStats();">
-                                <i class="bi bi-funnel"></i> Aplicar
-                            </button>
-                        </div>
-                    </div>
+            <!-- Filtros en línea -->
+            <div class="kpi-filter-bar">
+                <div class="kpi-filter-field">
+                    <i class="bi bi-calendar-event"></i>
+                    <input type="date" id="filterFechaInicio" value="<?= date('Y-m-d', strtotime('-30 days')) ?>">
                 </div>
+                <span class="kpi-filter-sep">→</span>
+                <div class="kpi-filter-field">
+                    <i class="bi bi-calendar-check"></i>
+                    <input type="date" id="filterFechaFin" value="<?= date('Y-m-d') ?>">
+                </div>
+                <button class="kpi-filter-btn" onclick="loadGlobalStats(); loadLikesStats();">
+                    <i class="bi bi-funnel-fill"></i> Aplicar
+                </button>
             </div>
         </div>
-     </div>
+
+        <div class="kpi-grid">
+            <?php
+                $kpiCards = [
+                    ['label' => 'Total Noticias', 'value' => $kpis['total_noticias'], 'icon' => 'bi-newspaper', 'color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.08)', 'trend' => null],
+                    ['label' => 'Publicadas',     'value' => $kpis['publicadas'],      'icon' => 'bi-check-circle-fill', 'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.08)', 'trend' => null],
+                    ['label' => 'Programadas',    'value' => $kpis['programadas'],     'icon' => 'bi-clock-fill',        'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.08)',  'trend' => null],
+                    ['label' => 'Vistas',         'value' => number_format($kpis['total_vistas']), 'icon' => 'bi-eye-fill', 'color' => '#3b82f6', 'bg' => 'rgba(59,130,246,0.08)', 'trend' => null],
+                    ['label' => 'Likes',          'value' => number_format($kpis['total_likes']),  'icon' => 'bi-heart-fill', 'color' => '#ef4444', 'bg' => 'rgba(239,68,68,0.08)',   'trend' => null],
+                    ['label' => 'Tiempo (min)',   'value' => number_format($tiempoTotal/60),        'icon' => 'bi-stopwatch-fill', 'color' => '#8b5cf6', 'bg' => 'rgba(139,92,246,0.08)', 'trend' => null],
+                ];
+                foreach($kpiCards as $k):
+            ?>
+            <div class="kpi-card">
+                <div class="kpi-card__icon" style="background:<?= $k['bg'] ?>; color:<?= $k['color'] ?>;">
+                    <i class="bi <?= $k['icon'] ?>"></i>
+                </div>
+                <div class="kpi-card__body">
+                    <div class="kpi-card__value"><?= $k['value'] ?></div>
+                    <div class="kpi-card__label"><?= $k['label'] ?></div>
+                </div>
+                <div class="kpi-card__bar" style="background: linear-gradient(90deg, <?= $k['color'] ?>22 0%, transparent 100%);"></div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
     <!-- GRÁFICOS -->
     <div class="charts-container">
         <h5 class="mb-3">Estadísticas Globales</h5>
