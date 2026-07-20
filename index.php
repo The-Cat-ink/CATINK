@@ -1023,6 +1023,8 @@ function tiempoRelativo($fecha) {
 <script>
     document.querySelectorAll(".promo-link").forEach(banner => {
         banner.addEventListener("click", function(e) {
+            // Dejar pasar clics con modificador (Ctrl/Cmd/clic-medio) al comportamiento nativo del navegador
+            if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
             e.preventDefault();
             let url = this.href;
             let publicidadId = this.dataset.pub;
@@ -1032,7 +1034,7 @@ function tiempoRelativo($fecha) {
                 method: "POST",
                 body: data
             }).finally(()=>{
-                window.location.href = url;
+                window.open(url, "_blank", "noopener,noreferrer");
             });
         });
     });
