@@ -62,15 +62,7 @@ $esSuper = !empty($_SESSION['superadmin']);
 
     <!-- Toolbar -->
     <div class="contenidos-toolbar">
-        <div class="contenidos-tabs">
-            <span class="tab-btn active" data-panel="usuarios" style="cursor:pointer;">Todos los usuarios</span>
-            <?php if ($esSuper): ?>
-            <span class="tab-btn" data-panel="baneos" style="cursor:pointer;">
-                <i class="bi bi-shield-lock-fill"></i> Baneos
-                <span class="umod-count" <?= count($baneados) ? '' : 'style="display:none;"' ?>><?= count($baneados) ?></span>
-            </span>
-            <?php endif; ?>
-        </div>
+        <div></div>
         <div class="contenidos-actions">
             <?php if ($ACL['crear']): ?>
                 <a href="./crearu.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear nuevo</a>
