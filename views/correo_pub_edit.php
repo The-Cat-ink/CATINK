@@ -1,17 +1,17 @@
 <?php
 include('./../layout/headerAdmin.php');
 include('./../controllers/aclcontroller.php');
-$ACl = $_SESSION['ACL']['publicidad']??[
+$ACL = $_SESSION['ACL']['correos']??[
     "crear" => false,
     "leer" => false,
     "editar" => false,
     "eliminar" => false
 ];
-if(!$ACl['editar']) {
+if(!$ACL['editar']) {
     header("Location: admin.php");
     exit();
 }
-proteger('publicidad','crear');
+proteger('correos','editar', false);
 $id = $_GET['id'] ?? null;
 if($id){
     include('./../data/conexion.php');

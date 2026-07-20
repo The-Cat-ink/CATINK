@@ -1,17 +1,17 @@
 <?php
 include('./../layout/headerAdmin.php');
 include('./../controllers/aclcontroller.php');
-$ACl = $_SESSION['ACL']['publicidad']??[
+$ACL = $_SESSION['ACL']['correos']??[
     "crear" => false,
     "leer" => false,
     "editar" => false,
     "eliminar" => false
 ];
-if(!$ACl['crear']) {
+if(!$ACL['crear']) {
     header("Location: admin.php");
     exit();
 }
-proteger('publicidad','crear');
+proteger('correos','crear', false);
 ?>
 
 <style>
@@ -209,7 +209,7 @@ proteger('publicidad','crear');
             <span>Haz clic para seleccionar imagen</span>
             <span style="font-size:11px">Recomendado: 600px de ancho</span>
           </div>
-          <input type="file" id="imagenCorreo" name="imagenCorreo" accept="image/*" required style="display:none;">
+          <input type="file" id="imagenCorreo" name="imagenCorreo" accept="image/*" required style="position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none;">
           
           <!-- Contenedor para vista previa directa -->
           <div id="preview" style="display:none; text-align:center;">
@@ -250,6 +250,29 @@ document.getElementById('imagenCorreo').addEventListener('change', function(e) {
         reader.readAsDataURL(file);
     }
 });
+
+// Validación de envío
+const form = document.querySelector('form[action*="crearCorreoPub.php"]');
+if (form) {
+    form.addEventListener('submit', (e) => {
+        const fileInput = document.getElementById('imagenCorreo');
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+            e.preventDefault();
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg toast-error';
+            toast.textContent = 'Selecciona una imagen adjunta para el correo';
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+            document.getElementById('sec-media').scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+}
 </script>
 
 <?php include('./../layout/footerAdmin.php'); ?>

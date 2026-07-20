@@ -1,7 +1,7 @@
 <?php
 session_start();
 include("./aclcontroller.php");
-proteger('correos','editar');
+proteger('correos','editar', false);
 include("../data/conexion.php");
 include("../views/helpers/img.php");
 $id= $_POST['id'] ?? 0;

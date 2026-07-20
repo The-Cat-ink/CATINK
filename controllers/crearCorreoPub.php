@@ -1,7 +1,7 @@
 <?php
 session_start();
 include("./aclcontroller.php");
-proteger('correos','crear');
+proteger('correos','crear', false);
 include("../data/conexion.php");
 include("../views/helpers/img.php");
 $titulo     = $_POST['titulo'] ?? '';
