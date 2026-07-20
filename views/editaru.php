@@ -483,6 +483,11 @@ function initEditUser() {
     const form = document.getElementById('editUserForm');
     if (!form) return;
 
+    // Cancelar el listener anterior si existe (evita doble disparo)
+    if (_editUserAC) _editUserAC.abort();
+    _editUserAC = new AbortController();
+    const { signal } = _editUserAC;
+
     const roles = {
         superadmin: {
             publicidad: [1, 2, 4, 8], noticias: [1, 2, 4, 8], categorias: [1, 2, 4, 8],
@@ -581,13 +586,15 @@ function initEditUser() {
             showToast('Error de conexión al actualizar el usuario', 'error');
             btns.forEach(b => b.disabled = false);
         }
-    });
+    }, { signal });
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('promovido')) {
         showToast('¡Lector promovido a Administrador! Configura sus permisos a continuación.', 'success');
     }
 }
+
+let _editUserAC = null;
 
 document.addEventListener('turbo:load', initEditUser);
 if (document.readyState === 'loading') {
