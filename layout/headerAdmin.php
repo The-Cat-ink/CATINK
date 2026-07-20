@@ -66,6 +66,12 @@ if (!$fila) {
 }
 // Guardar id_u en la sesión para usarlo en controladores
 $_SESSION['id_u'] = $fila['id_u'];
+
+// Auto-disparador pasivo de correos programados (fallback para tareas cron)
+if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time']) > 300) {
+    $_SESSION['cron_check_time'] = time();
+    $cronTriggerScript = true;
+}
 ?>
 <!doctype html>
 <html lang="es" data-bs-theme="light">
@@ -103,6 +109,15 @@ $_SESSION['id_u'] = $fila['id_u'];
                 editar: <?= $ACL['editar'] ? 'true' : 'false' ?>,
                 eliminar: <?= $ACL['eliminar'] ? 'true' : 'false' ?>
             };
+        </script>
+    <?php endif; ?>
+    <?php if (!empty($cronTriggerScript)): ?>
+        <script>
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon('<?= basePath() ?>/views/email/cron.php');
+            } else {
+                fetch('<?= basePath() ?>/views/email/cron.php', { cache: 'no-store' });
+            }
         </script>
     <?php endif; ?>
 </head>

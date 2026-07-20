@@ -26,6 +26,12 @@ while($row = $result->fetch_assoc()) {
 if(!isset($secciones['publicidad'])) $secciones['publicidad'] = ['estado' => 0];
 if(!isset($secciones['videos'])) $secciones['videos'] = ['estado' => 0];
 
+// Auto-disparador pasivo de correos programados (fallback para tareas cron)
+if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time']) > 300) {
+    $_SESSION['cron_check_time'] = time();
+    $cronTriggerScript = true;
+}
+
 // =========================
 // Obtener datos del usuario actual
 // =========================
@@ -229,10 +235,15 @@ $menuJson = [
     from { opacity: 0; }
     to { opacity: 1; }
   }
-  @keyframes scaleUp {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
+  <?php if (!empty($cronTriggerScript)): ?>
+    <script>
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon('<?= basePath() ?>/views/email/cron.php');
+        } else {
+            fetch('<?= basePath() ?>/views/email/cron.php', { cache: 'no-store' });
+        }
+    </script>
+  <?php endif; ?>
   </style>
 
   <!-- HTML inicial si ya está baneado al cargar la página -->
