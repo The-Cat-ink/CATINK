@@ -727,4 +727,9 @@
 
 
   document.addEventListener('turbo:load', initAdmin);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAdmin);
+  } else {
+    initAdmin();
+  }
 })();
