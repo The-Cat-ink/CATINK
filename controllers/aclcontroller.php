@@ -2,8 +2,12 @@
 if(session_status() == PHP_SESSION_NONE){
     session_start();
 }
+require_once(dirname(dirname(__FILE__)) . "/data/conexion.php");
 require_once(dirname(dirname(__FILE__)) . "/views/helpers/helper.php");
+
 function proteger($modulo, $accion, $json = true) {
+    global $con;
+    
     if (!isset($_SESSION['usuario'])) {
         if ($json) {
             header("Content-Type: application/json");
@@ -15,9 +19,6 @@ function proteger($modulo, $accion, $json = true) {
     }
 
     // Refrescar permisos desde la base de datos en tiempo real
-    require_once(dirname(__DIR__) . "/data/conexion.php");
-    require_once(dirname(__DIR__) . "/views/helpers/helper.php");
-    global $con;
     if (isset($con) && $con instanceof mysqli) {
         $stmt = $con->prepare("SELECT * FROM usuarios WHERE usuario = ?");
         if ($stmt) {
