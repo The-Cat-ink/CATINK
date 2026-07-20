@@ -278,32 +278,70 @@ document.querySelectorAll('.contenidos-table tbody tr').forEach(row => {
     row.style.cursor = 'pointer';
 });
 
-function sendToSelected() {
-    const checkboxes = document.querySelectorAll('.subscriber-checkbox:checked');
-    
-    if (checkboxes.length === 0) {
-        alert('Selecciona al menos un suscriptor');
-        return;
+    function sendToSelected() {
+        const checkboxes = document.querySelectorAll('.subscriber-checkbox:checked');
+        
+        if (checkboxes.length === 0) {
+            showToast('Selecciona al menos un suscriptor', 'error');
+            return;
+        }
+        
+        const ids = Array.from(checkboxes).map(cb => cb.value);
+        
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = './../controllers/enviarCorreoMultiple.php';
+        
+        ids.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids[]';
+            input.value = id;
+            form.appendChild(input);
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
     }
-    
-    const ids = Array.from(checkboxes).map(cb => cb.value);
-    
-    // Crear un formulario oculto para enviar múltiples IDs
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = './../controllers/enviarCorreoMultiple.php';
-    
-    ids.forEach(id => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'ids[]';
-        input.value = id;
-        form.appendChild(input);
-    });
-    
-    document.body.appendChild(form);
-    form.submit();
-}
+
+    // ── NOTIFICACIONES TOAST EN TIEMPO REAL ──
+    function showToast(msg, type = '') {
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg' + (type ? ' toast-' + type : '');
+        toast.textContent = msg;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.3s ease';
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3200);
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('success')) {
+        const val = urlParams.get('success');
+        let text = 'Operación realizada con éxito';
+        if (val === 'programacion_actualizada' || val === 'programacion_guardada') text = 'Programación de correo automático guardada correctamente';
+        else if (val === 'correo_enviado') text = 'Resumen de noticias enviado exitosamente';
+        else if (val === 'correos_enviados') text = 'Correos masivos enviados exitosamente';
+        else if (val === 'suscriptor_eliminado' || val === '1') text = 'Suscriptor eliminado correctamente';
+        showToast(text, 'success');
+    }
+    if (urlParams.has('error')) {
+        const val = urlParams.get('error');
+        let text = 'Ocurrió un error al procesar la solicitud';
+        if (val === 'permisos') text = 'No tienes permisos para realizar esta acción';
+        else if (val === 'envio') text = 'Error al intentar enviar el correo SMTP';
+        else if (val === 'no_encontrado') text = 'Suscriptor no encontrado';
+        showToast(text, 'error');
+    }
+});
 </script>
 
 <?php include("./../layout/footerAdmin.php"); ?>
