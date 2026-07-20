@@ -26,8 +26,16 @@ if (empty($token)) {
         $stmtUpd->bind_param("i", $lector['id']);
         if ($stmtUpd->execute()) {
             $success = true;
-            // Redirigir al login indicando cuenta verificada
-            header('Location: ' . basePath() . '/login?registro=verificado');
+            // Iniciar sesión del lector
+            $_SESSION['usuario'] = $lector['usuario'];
+            $_SESSION['tipo'] = 'lector';
+            $_SESSION['id_lector'] = $lector['id'];
+            $_SESSION['nombre_completo'] = $lector['nombre'];
+            $_SESSION['superadmin'] = false;
+            $_SESSION['ACL'] = [];
+            
+            // Redirigir directamente a su perfil
+            header('Location: ' . basePath() . '/views/verp.php?registro=verificado');
             exit();
         } else {
             $error_msg = "Ocurrió un error al procesar la verificación. Por favor, intenta de nuevo.";

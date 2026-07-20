@@ -248,9 +248,9 @@ if ($ejecutado) {
     }
 
     // ============================
-    // 3. REDIRIGIR AL USUARIO
+    // 3. REDIRIGIR A LA PANTALLA DE ESPERA Y AUTO-VERIFICACIÓN
     // ============================
-    header('Location: ' . basePath() . '/login?registro=verificar&email=' . urlencode($correo));
+    header('Location: ' . basePath() . '/views/espera_verificacion.php?email=' . urlencode($correo));
     exit;
 } else {
     $stmt->close();
