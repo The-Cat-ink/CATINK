@@ -30,7 +30,7 @@
 
     // Estadísticas
     $totalCorreos = count($correos);
-    $enviados = count(array_filter($correos, fn($c) => $c['envio'] == 1));
+    $enviados = count(array_filter($correos, fn($c) => isset($c['enviado']) && $c['enviado'] == 1));
     $pendientes = $totalCorreos - $enviados;
 ?>
 <div class="container-fluid">
@@ -88,8 +88,8 @@
                         <tr>
                             <th>Título</th>
                             <th>Contenido Corto</th>
-                            <th>Enviado</th>
-                            <th>Fecha Creación</th>
+                            <th>Estado Envío</th>
+                            <th>Programado Para</th>
                             <?php if(!empty($ACL['editar']) || !empty($ACL['eliminar'])): ?>
                                 <th>Acciones</th>
                             <?php endif; ?>
@@ -104,13 +104,13 @@
                                     <td><strong class="table-title"><?= htmlspecialchars($correo['titulo']) ?></strong></td>
                                     <td><span style="font-size:0.85rem; color:var(--muted);"><?= mb_strimwidth(htmlspecialchars(strip_tags($correo['contenido'])), 0, 50, '...') ?></span></td>
                                     <td>
-                                        <?php if($correo['envio'] == 1): ?>
-                                            <span class="estado-badge estado-publicado"><i class="bi bi-check-circle-fill"></i> Sí</span>
+                                        <?php if(($correo['enviado'] ?? 0) == 1): ?>
+                                            <span class="estado-badge estado-publicado"><i class="bi bi-check-circle-fill"></i> Enviado</span>
                                         <?php else: ?>
                                             <span class="estado-badge estado-por_publicar"><i class="bi bi-clock-fill"></i> Pendiente</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="table-date"><?= date('d/m/Y H:i', strtotime($correo['creado'])) ?></td>
+                                    <td class="table-date"><?= !empty($correo['envio']) ? date('d/m/Y H:i', strtotime($correo['envio'])) : '-' ?></td>
                                     <?php if(!empty($ACL['editar']) || !empty($ACL['eliminar'])): ?>
                                         <td>
                                             <div class="noticias-actions" style="border-top:none; padding:0; justify-content:flex-start;">

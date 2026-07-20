@@ -41,7 +41,7 @@ if($huboNuevaImagen){
 }
 $stmt = $con->prepare("
     UPDATE correos_publicitarios 
-    SET titulo = ?, contenido = ?, imagen = ?, url_c = ?, envio = ?
+    SET titulo = ?, contenido = ?, imagen = ?, url_c = ?, envio = ?, enviado = 0
     WHERE id_correo = ?
 ");
 $stmt->bind_param(

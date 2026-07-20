@@ -52,6 +52,8 @@ CREATE TABLE IF NOT EXISTS `correos_publicitarios` (
   `url_c` varchar(255) NOT NULL,
   `creado` timestamp NOT NULL DEFAULT current_timestamp(),
   `envio` datetime DEFAULT NULL,
+  `enviado` tinyint(1) NOT NULL DEFAULT 0,
+  `fecha_enviado` datetime DEFAULT NULL,
   PRIMARY KEY (`id_correo`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
