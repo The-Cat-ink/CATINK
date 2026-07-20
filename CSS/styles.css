@@ -5383,22 +5383,11 @@ body, .nav-link, .btn, .card, .site-main {
 /* ── MOCKUP RANKING SIDEBAR STYLES ── */
 .sidebar-ranking-list-container {
   position: relative;
-  padding-right: 15px; /* Espacio para la línea fucsia a la derecha */
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
   container-type: inline-size;
-}
-.sidebar-ranking-list-container::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: 4px;
-  background-color: var(--accent-fuchsia);
-  border-radius: 2px;
 }
 
 .sidebar-ranking-list {

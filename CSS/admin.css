@@ -852,7 +852,8 @@ hr {
   list-style: none;
   padding: 8px;
   margin: 0;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
 }
 .sidebar-menu-item {
@@ -987,6 +988,7 @@ hr {
 .sidebar-footer {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   gap: 0;
   padding: 8px;
   border-top: 1px solid var(--border);
