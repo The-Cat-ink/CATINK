@@ -49,13 +49,23 @@ if (empty($token)) {
                 
                 <div class="form-group">
                     <label for="password">Nueva Contraseña</label>
-                    <input type="password" class="input" id="password" name="password" required minlength="8" placeholder="Mínimo 8 caracteres">
+                    <div style="position: relative;">
+                        <input type="password" class="input" id="password" name="password" required minlength="8" placeholder="Mínimo 8 caracteres" style="padding-right: 40px;">
+                        <button type="button" class="btn-toggle-eye" onclick="togglePassVisibility('password', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                     <small style="color:var(--muted); font-size:0.85rem;">Debe contener al menos 8 caracteres</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="password_confirm">Confirmar Contraseña</label>
-                    <input type="password" class="input" id="password_confirm" name="password_confirm" required minlength="8" placeholder="Repite tu contraseña">
+                    <div style="position: relative;">
+                        <input type="password" class="input" id="password_confirm" name="password_confirm" required minlength="8" placeholder="Repite tu contraseña" style="padding-right: 40px;">
+                        <button type="button" class="btn-toggle-eye" onclick="togglePassVisibility('password_confirm', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <div id="passwordError" style="color:#EF3363; text-align:center; margin-bottom:12px; display:none;">
@@ -69,6 +79,18 @@ if (empty($token)) {
 </div>
 
 <script>
+function togglePassVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+
 document.getElementById('formReset')?.addEventListener('submit', function(e) {
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password_confirm').value;
