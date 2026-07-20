@@ -189,20 +189,17 @@ if ($ejecutado) {
         try {
             $mail = new PHPMailer(true);
             $mail->isSMTP();
-            $mail->Timeout = 5; // Timeout muy bajo de 5 segundos para que nunca se cuelgue la UI
-            // Timeout solo cubre la conexion; las lecturas usan Timelimit (300s
-            // por defecto). Un SMTP que acepta y calla dejaba el boton en
-            // "Registrando..." hasta 5 minutos.
-            $mail->getSMTPInstance()->Timelimit = 5;
+            $mail->Timeout = 15;
+            $mail->getSMTPInstance()->Timelimit = 15;
             $mail->SMTPKeepAlive = false;
             $mail->Host = $smtpHost;
             $mail->SMTPAuth = true;
-            $mail->Username = env('SMTP_AUTH_USERNAME', env('SMTP_USERNAME'));
-            $mail->Password = env('SMTP_AUTH_PASSWORD', env('SMTP_PASSWORD'));
-            $mail->SMTPSecure = env('SMTP_SECURE', 'ssl');
-            $mail->Port = env('SMTP_PORT', 465);
+            $mail->Username = env('SMTP_USERNAME');
+            $mail->Password = env('SMTP_PASSWORD');
+            $mail->SMTPSecure = env('SMTP_SECURE', 'tls');
+            $mail->Port = (int) env('SMTP_PORT', 587);
 
-            // Ignorar errores de certificado SSL (común en servidores de correo locales/cPanel)
+            // Ignorar errores de certificado SSL
             $mail->SMTPOptions = array(
                 'ssl' => array(
                     'verify_peer' => false,
@@ -211,8 +208,8 @@ if ($ejecutado) {
                 )
             );
 
-            $fromEmail = env('SMTP_AUTH_FROM_EMAIL', env('SMTP_FROM_EMAIL', 'no-reply@catink.com.mx'));
-            $fromName = env('SMTP_AUTH_FROM_NAME', env('SMTP_FROM_NAME', 'CatInk'));
+            $fromEmail = env('SMTP_FROM_EMAIL', 'no-reply@catink.com.mx');
+            $fromName = env('SMTP_FROM_NAME', 'CatInk');
             $mail->setFrom($fromEmail, $fromName);
             $mail->addAddress($correo, $nombre);
 

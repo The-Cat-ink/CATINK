@@ -165,6 +165,45 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
             from { transform: scale(0); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
+
+        .btn-resend {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: 1px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-resend:disabled {
+            opacity: 0.55;
+            border-color: var(--border);
+            color: var(--muted);
+            cursor: not-allowed;
+        }
+
+        .btn-resend:not(:disabled):hover {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 6px 16px rgba(239, 51, 99, 0.25);
+        }
+
+        @keyframes spinIcon {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .spin {
+            animation: spinIcon 1s linear infinite;
+        }
     </style>
 </head>
 <body>
@@ -197,6 +236,12 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                 En cuanto presiones <strong>"Verificar mi cuenta"</strong> desde tu correo (en tu celular o cualquier pestaña), esta pantalla te detectará automáticamente, iniciará sesión y te llevará a tu perfil.
             </p>
 
+            <button type="button" id="btnReenviar" class="btn-resend" disabled onclick="reenviarCorreo()">
+                <i class="bi bi-send-fill" id="btnIcon"></i>
+                <span>Volver a enviar correo</span>
+                <strong id="countdownTimer" style="margin-left: 4px;">(60s)</strong>
+            </button>
+
             <div class="polling-status">
                 <span>Comprobando estado en tiempo real</span>
                 <div class="spinner-dots">
@@ -206,7 +251,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                 </div>
             </div>
 
-            <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; font-size: 0.85rem; color: var(--muted);">
+            <div style="margin-top: 25px; border-top: 1px solid var(--border); padding-top: 20px; font-size: 0.85rem; color: var(--muted);">
                 ¿No recibiste el correo? Revisa tu carpeta de <strong>Spam</strong> o 
                 <a href="<?= basePath() ?>/login?modo=registro" style="color: var(--accent); font-weight: 600; text-decoration: none;">intenta con otro correo</a>.
             </div>
@@ -219,6 +264,88 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
     const checkUrl = '<?= basePath() ?>/controllers/check_verificacion.php?email=' + encodeURIComponent(userEmail);
     let isRedirecting = false;
 
+    // ── TEMPORIZADOR DE CONTEO REGRESIVO Y REENVÍO ──
+    let countdown = 60;
+    let countdownInterval = null;
+    const btnReenviar = document.getElementById('btnReenviar');
+    const timerLabel = document.getElementById('countdownTimer');
+    const btnIcon = document.getElementById('btnIcon');
+
+    function startCountdown(seconds = 60) {
+        countdown = seconds;
+        btnReenviar.disabled = true;
+        timerLabel.style.display = 'inline';
+        timerLabel.textContent = `(${countdown}s)`;
+        
+        if (countdownInterval) clearInterval(countdownInterval);
+        countdownInterval = setInterval(() => {
+            countdown--;
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                btnReenviar.disabled = false;
+                timerLabel.style.display = 'none';
+            } else {
+                timerLabel.textContent = `(${countdown}s)`;
+            }
+        }, 1000);
+    }
+
+    startCountdown(60);
+
+    async function reenviarCorreo() {
+        if (btnReenviar.disabled) return;
+        btnReenviar.disabled = true;
+        btnIcon.className = 'bi bi-arrow-repeat spin';
+        
+        try {
+            const formData = new FormData();
+            formData.append('email', userEmail);
+            
+            const res = await fetch('<?= basePath() ?>/controllers/reenviar_verificacion.php', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                showToast(data.message || 'Correo reenviado con éxito. Revisa tu bandeja.', 'success');
+                if (data.ya_verificado) {
+                    setTimeout(() => { window.location.href = data.redirect; }, 1000);
+                    return;
+                }
+                startCountdown(60);
+            } else {
+                showToast(data.error || 'Error al reenviar correo.', 'error');
+                btnReenviar.disabled = false;
+            }
+        } catch (err) {
+            showToast('Error de conexión al reenviar correo.', 'error');
+            btnReenviar.disabled = false;
+        } finally {
+            btnIcon.className = 'bi bi-send-fill';
+        }
+    }
+
+    // ── NOTIFICACIONES TOAST ──
+    function showToast(msg, type = '') {
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg' + (type ? ' toast-' + type : '');
+        toast.textContent = msg;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.3s ease';
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // ── POLLING EN TIEMPO REAL ──
     async function checkVerificationStatus() {
         if (isRedirecting) return;
         try {
@@ -252,9 +379,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
         }
     }
 
-    // Comprobar cada 2.5 segundos
     setInterval(checkVerificationStatus, 2500);
-    // Ejecutar una primera revisión a los 500ms
     setTimeout(checkVerificationStatus, 500);
     </script>
 </body>
