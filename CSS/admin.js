@@ -725,11 +725,24 @@
     syncState();
   }
 
+  // ── ARRANQUE ──────────────────────────────────────────────────
+  // turbo:load se dispara en cada navegación (incluida recarga completa
+  // cuando turbo-visit-control=reload). DOMContentLoaded actúa de
+  // fallback solo si turbo:load no llegó primero (flag _turboFired).
+  let _turboFired = false;
 
-  document.addEventListener('turbo:load', initAdmin);
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAdmin);
-  } else {
+  document.addEventListener('turbo:load', () => {
+    _turboFired = true;
     initAdmin();
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!_turboFired) initAdmin();
+    });
+  } else {
+    // DOM ya listo: esperar brevemente por si turbo:load llega en el
+    // mismo tick (recarga completa con Turbo activo).
+    setTimeout(() => { if (!_turboFired) initAdmin(); }, 0);
   }
 })();
