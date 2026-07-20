@@ -258,12 +258,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById('categoriasBody');
     if (tbody) {
         new Sortable(tbody, {
-            animation: 150,
-            handle: 'td:first-child',
-            ghostClass: 'sortable-ghost',
-            dragClass: 'sortable-drag',
-            forceFallback: false,
-            axis: 'y',
+            animation: 150, // Animación fluida al reordenar (ms)
+            handle: 'td:first-child', // Restringir el agarre al ícono de mover
+            ghostClass: 'sortable-ghost', // Clase para el elemento fantasma
+            dragClass: 'sortable-drag', // Clase para el elemento arrastrado
+            forceFallback: true, // Desactiva el drag nativo de HTML5 para dar un control total
+            fallbackOnBody: true, // El clon sigue al mouse perfectamente
+            axis: 'y', // BLOQUEA el arrastre para que SOLO sea vertical (no se sale a los lados)
             onEnd: function () {
                 guardarOrden();
             }

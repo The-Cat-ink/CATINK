@@ -222,12 +222,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const initSortable = () => {
         if (recomendadosList.querySelector('.recomendado-item') && ACL.editar) {
             sortableInstance = new Sortable(recomendadosList, {
-                animation: 250,
-                easing: 'cubic-bezier(0.2, 0, 0, 1)',
+                animation: 150,
                 handle: '.drag-handle',
-                ghostClass: 'sortable-ghost-custom',
-                dragClass: 'sortable-drag-custom',
-                chosenClass: 'sortable-chosen-custom',
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
                 forceFallback: true,
                 fallbackOnBody: true,
                 onEnd: function () {

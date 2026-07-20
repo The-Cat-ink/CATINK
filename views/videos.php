@@ -282,12 +282,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const videosGrid = document.getElementById('videosGrid');
     if (videosGrid && ACL.editar) {
         new Sortable(videosGrid, {
-            animation: 250, 
-            easing: 'cubic-bezier(0.2, 0, 0, 1)',
+            animation: 150, 
             handle: '.drag-handle', // Agarradera
-            ghostClass: 'sortable-ghost-custom',
-            dragClass: 'sortable-drag-custom',
-            chosenClass: 'sortable-chosen-custom',
+            ghostClass: 'sortable-ghost',
+            dragClass: 'sortable-drag',
             forceFallback: true, 
             fallbackOnBody: true, 
             onEnd: function () {
