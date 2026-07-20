@@ -35,7 +35,7 @@ if (empty($token)) {
             $_SESSION['ACL'] = [];
             
             // Redirigir directamente a su perfil
-            header('Location: ' . basePath() . '/views/verp.php?registro=verificado');
+            header('Location: ' . basePath() . '/views/perfil.php?registro=verificado');
             exit();
         } else {
             $error_msg = "Ocurrió un error al procesar la verificación. Por favor, intenta de nuevo.";

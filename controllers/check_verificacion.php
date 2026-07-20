@@ -31,7 +31,7 @@ if ($result && $result->num_rows > 0) {
         
         echo json_encode([
             'verificado' => true,
-            'redirect' => basePath() . '/views/verp.php'
+            'redirect' => basePath() . '/views/perfil.php?registro=verificado'
         ]);
         exit;
     }

@@ -13,7 +13,7 @@ if (empty($email)) {
 
 // Si ya está verificado y logueado, llevarlo al perfil
 if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
-    header("Location: " . basePath() . "/views/verp.php");
+    header("Location: " . basePath() . "/views/perfil.php");
     exit();
 }
 ?>
@@ -244,7 +244,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'lector') {
                     </div>
                 `;
                 setTimeout(() => {
-                    window.location.href = data.redirect || '<?= basePath() ?>/views/verp.php';
+                    window.location.href = data.redirect || '<?= basePath() ?>/views/perfil.php?registro=verificado';
                 }, 1200);
             }
         } catch (e) {
