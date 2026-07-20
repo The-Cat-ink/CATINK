@@ -105,7 +105,10 @@ try {
     $con->commit();
     require_once(__DIR__ . '/../views/helpers/activity_log.php');
     logActivity($con, 'editar', 'lectores', 'Promovió al lector ID ' . $id . ' («' . $lector['usuario'] . '») a administrador');
-    echo json_encode(['success' => 'Lector promovido a administrador correctamente']);
+    echo json_encode([
+        'success' => 'Lector promovido a administrador correctamente',
+        'id' => $new_admin_id
+    ]);
 } catch (Exception $e) {
     $con->rollback();
     echo json_encode(['error' => 'Error al promover lector: ' . $e->getMessage()]);

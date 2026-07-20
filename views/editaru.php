@@ -578,8 +578,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (_) {
             showToast('Error de conexión al actualizar el usuario', 'error');
             btns.forEach(b => b.disabled = false);
-        }
-    });
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('promovido')) {
+        showToast('¡Lector promovido a Administrador! Configura sus permisos a continuación.', 'success');
+    }
 });
 </script>
 <?php include("./../layout/footerAdmin.php"); ?>

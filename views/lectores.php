@@ -565,7 +565,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             if (data.success) {
                 showToast(data.success, 'success');
-                setTimeout(() => location.reload(), 1500);
+                if (data.id) {
+                    setTimeout(() => {
+                        window.location.href = `./editaru.php?id=${data.id}&promovido=1`;
+                    }, 800);
+                } else {
+                    setTimeout(() => location.reload(), 1500);
+                }
             } else {
                 showToast(data.error || 'No se pudo promover al lector.', 'error');
             }
