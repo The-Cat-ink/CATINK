@@ -13,10 +13,19 @@
     }
     proteger('usuarios', 'editar');
     include("./../data/conexion.php");
-    $id = $_GET['id'];
+    $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    if (!$id) {
+        header("Location: usuarios.php");
+        exit();
+    }
     $stmt = $con->prepare("SELECT * FROM usuarios WHERE id_u=?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
+    $user = $stmt->get_result()->fetch_assoc();
+    if (!$user) {
+        header("Location: usuarios.php");
+        exit();
+    }
     if (!function_exists('check')) {
         function check($mask, $bit) {
             return ((int)$mask & (int)$bit) === (int)$bit ? 'checked' : '';
