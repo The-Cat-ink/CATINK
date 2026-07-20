@@ -172,6 +172,39 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // ── NOTIFICACIONES TOAST EN TIEMPO REAL ──
+    function showToast(msg, type = '') {
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg' + (type ? ' toast-' + type : '');
+        toast.textContent = msg;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.3s ease';
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3200);
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('success')) {
+        const val = urlParams.get('success');
+        let text = 'Operación realizada con éxito';
+        if (val === '1' || val === 'creado') text = 'Correo publicitario programado correctamente';
+        else if (val.length > 2) text = val;
+        showToast(text, 'success');
+    }
+    if (urlParams.has('error')) {
+        const val = urlParams.get('error');
+        let text = 'Ocurrió un error al procesar el correo';
+        if (val.length > 2 && val !== '1') text = val;
+        showToast(text, 'error');
+    }
 });
 </script>
 <?php include("./../layout/footerAdmin.php") ?>
