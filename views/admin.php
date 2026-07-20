@@ -580,88 +580,178 @@ function formatNumberShort($num){
             .catch(err => console.error('Error fetching likes stats:', err));
     }
     // ================================
-    // CHART AREA
+    // PALETA CURADA
     // ================================
-    function getChartOptions(title){
+    const CHART_PALETTE = [
+        { stroke: '#6366f1', fill: 'rgba(99,102,241,0.12)' },
+        { stroke: '#f43f5e', fill: 'rgba(244,63,94,0.12)' },
+        { stroke: '#10b981', fill: 'rgba(16,185,129,0.12)' },
+        { stroke: '#f59e0b', fill: 'rgba(245,158,11,0.12)' },
+        { stroke: '#3b82f6', fill: 'rgba(59,130,246,0.12)' },
+        { stroke: '#8b5cf6', fill: 'rgba(139,92,246,0.12)' },
+        { stroke: '#06b6d4', fill: 'rgba(6,182,212,0.12)' },
+        { stroke: '#ec4899', fill: 'rgba(236,72,153,0.12)' },
+        { stroke: '#84cc16', fill: 'rgba(132,204,22,0.12)' },
+        { stroke: '#f97316', fill: 'rgba(249,115,22,0.12)' },
+    ];
+
+    function isDark() {
+        return document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    }
+
+    // ================================
+    // OPCIONES BASE PREMIUM
+    // ================================
+    function getChartOptions(title, type = 'line') {
+        const dark = isDark();
+        const gridColor  = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+        const textColor  = dark ? '#94a3b8' : '#64748b';
+        const titleColor = dark ? '#f1f5f9' : '#1e293b';
         const mobile = window.matchMedia('(max-width: 768px)').matches;
+
         return {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
+            animation: { duration: 600, easing: 'easeInOutQuart' },
             plugins: {
-                title: { display: true, text: title },
-                legend: { position: mobile ? 'bottom' : 'top' }
+                title: {
+                    display: true,
+                    text: title,
+                    color: titleColor,
+                    font: { size: 14, weight: '600', family: "'Inter', sans-serif" },
+                    padding: { bottom: 16 }
+                },
+                legend: {
+                    position: mobile ? 'bottom' : 'top',
+                    labels: {
+                        color: textColor,
+                        usePointStyle: true,
+                        pointStyleWidth: 10,
+                        boxHeight: 6,
+                        padding: 16,
+                        font: { size: 12, family: "'Inter', sans-serif" }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: dark ? '#1e293b' : '#fff',
+                    borderColor: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                    borderWidth: 1,
+                    titleColor: titleColor,
+                    bodyColor: textColor,
+                    padding: 12,
+                    cornerRadius: 10,
+                    boxPadding: 4,
+                    titleFont: { weight: '700', family: "'Inter', sans-serif" },
+                    bodyFont: { family: "'Inter', sans-serif" }
+                }
             },
-            scales: {
-                x: { ticks: { maxRotation: 45, minRotation: 45 } },
-                y: { beginAtZero: true }
+            scales: type === 'bar' ? {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: textColor, font: { size: 11 }, maxRotation: 30 },
+                    border: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: gridColor, drawBorder: false },
+                    ticks: { color: textColor, font: { size: 11 }, padding: 8 },
+                    border: { display: false, dash: [4, 4] }
+                }
+            } : {
+                x: {
+                    grid: { color: gridColor, drawBorder: false },
+                    ticks: {
+                        color: textColor,
+                        font: { size: 10 },
+                        maxRotation: 30,
+                        autoSkip: true,
+                        maxTicksLimit: mobile ? 6 : 12
+                    },
+                    border: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: gridColor, drawBorder: false },
+                    ticks: { color: textColor, font: { size: 11 }, padding: 8 },
+                    border: { display: false, dash: [4, 4] }
+                }
             }
         };
     }
-    function renderAreaChart(id,data,metric,title){
-        if(!data || !data.labels || data.labels.length === 0) {
-            console.warn(`No data available for ${id}`);
-            return;
-        }
-        
-        const ctx=document.getElementById(id);
-        if(!ctx) return;
-        
-        if(charts[id]) charts[id].destroy();
 
-        const colors=['rgba(75,192,192,0.35)','rgba(255,99,132,0.35)','rgba(54,162,235,0.35)','rgba(255,159,64,0.35)','rgba(153,102,255,0.35)'];
+    // ================================
+    // CHART ÁREA (líneas + relleno suave)
+    // ================================
+    function renderAreaChart(id, data, metric, title) {
+        if (!data || !data.labels || data.labels.length === 0) return;
+        const ctx = document.getElementById(id);
+        if (!ctx) return;
+        if (charts[id]) charts[id].destroy();
 
-        const datasets = data.categorias && Object.keys(data.categorias).length > 0 
-            ? Object.entries(data.categorias).map(([cat,val],i)=>({
-                label:cat,
-                data:val[metric] || [],
-                fill:true,
-                tension:.4,
-                borderWidth:2,
-                backgroundColor:colors[i%colors.length],
-                borderColor:colors[i%colors.length].replace('0.35','1')
-            }))
-            : [{label: 'Sin datos', data: Array(data.labels.length).fill(0)}];
+        const entries = data.categorias && Object.keys(data.categorias).length > 0
+            ? Object.entries(data.categorias)
+            : null;
 
-        charts[id]=new Chart(ctx,{
-            type:'line',
-            data:{labels:data.labels,datasets},
-            options:getChartOptions(title)
+        const datasets = entries
+            ? entries.map(([cat, val], i) => {
+                const c = CHART_PALETTE[i % CHART_PALETTE.length];
+                return {
+                    label: cat,
+                    data: val[metric] || [],
+                    fill: true,
+                    tension: 0.45,
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    pointHoverBorderWidth: 2,
+                    pointHoverBackgroundColor: '#fff',
+                    backgroundColor: c.fill,
+                    borderColor: c.stroke
+                };
+            })
+            : [{ label: 'Sin datos', data: Array(data.labels.length).fill(0), borderColor: '#94a3b8', backgroundColor: 'rgba(148,163,184,0.08)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }];
+
+        charts[id] = new Chart(ctx, {
+            type: 'line',
+            data: { labels: data.labels, datasets },
+            options: getChartOptions(title, 'line')
         });
     }
+
     // ================================
-    // CHART BAR GEO
+    // CHART BAR GEO (barras horizontales)
     // ================================
-    function renderBarChart(id,geo,title){
-        if(!geo || !geo.labels || geo.labels.length === 0) {
-            console.warn(`No geo data available for ${id}`);
-            return;
-        }
-        const ctx=document.getElementById(id);
-        if(!ctx) return;
-        if(charts[id]) charts[id].destroy();
-        
-        // Limitar a 10 estados pero mostrar todos los datos disponibles
-        const limitedLabels = geo.labels.slice(0,10);
-        const limitedValues = geo.values.slice(0,10);
-        
-        const dataset = {
-            label:title,
-            data:limitedValues,
-            backgroundColor:'rgba(75,192,192,0.8)',
-            borderColor:'rgba(75,192,192,1)',
-            borderWidth:1
-        };
-        
-        charts[id]=new Chart(ctx,{
-            type:'bar',
-            data:{
-                labels:limitedLabels,
-                datasets:[dataset]
+    function renderBarChart(id, geo, title) {
+        if (!geo || !geo.labels || geo.labels.length === 0) return;
+        const ctx = document.getElementById(id);
+        if (!ctx) return;
+        if (charts[id]) charts[id].destroy();
+
+        const limitedLabels = geo.labels.slice(0, 12);
+        const limitedValues = geo.values.slice(0, 12);
+
+        const barColors = limitedLabels.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length].stroke);
+        const barFills  = limitedLabels.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length].fill.replace('0.12', '0.8'));
+
+        charts[id] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: limitedLabels,
+                datasets: [{
+                    label: title,
+                    data: limitedValues,
+                    backgroundColor: barFills,
+                    borderColor: barColors,
+                    borderWidth: 1.5,
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
             },
-            options:getChartOptions(title)
+            options: getChartOptions(title, 'bar')
         });
     }
+
     window.addEventListener('resize', () => {
         loadGlobalStats();
         loadLikesStats();
