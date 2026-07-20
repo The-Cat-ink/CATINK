@@ -5847,24 +5847,13 @@ body, .nav-link, .btn, .card, .site-main {
 /* 1. Elemento seleccionado en arrastre (Drag): desvanecimiento suave y sombra de elevación */
 .sortable-drag-custom,
 .sortable-drag {
-  opacity: 0.88 !important;
+  opacity: 0.85 !important;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28), 0 0 0 2px #F24E79, 0 0 20px rgba(242, 78, 121, 0.3) !important;
   transform: scale(1.02) !important;
   cursor: grabbing !important;
   z-index: 99999 !important;
   border-radius: 10px !important;
   background-color: var(--card-bg) !important;
-}
-
-/* Ajustes especiales para filas de tabla (tr) para evitar colapso de columnas */
-tr.sortable-drag-custom,
-tr.sortable-drag {
-  display: table !important;
-  table-layout: fixed !important;
-  transform: none !important;
-  background-color: var(--card-bg) !important;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25), 0 0 0 2px #F24E79 !important;
-  border-radius: 8px !important;
 }
 
 /* Elemento escogido inicial */

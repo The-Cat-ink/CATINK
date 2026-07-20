@@ -1,6 +1,6 @@
 <?php
 require_once(__DIR__ . '/aclcontroller.php');
-proteger('usuarios', 'editar', true);
+proteger('lectores', 'editar', true);
 require_once(__DIR__ . '/../data/conexion.php');
 
 header('Content-Type: application/json');

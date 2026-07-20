@@ -267,24 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
             forceFallback: true, // Desactiva el drag nativo de HTML5 para dar un control total
             fallbackOnBody: true, // El clon sigue al mouse perfectamente
             axis: 'y', // BLOQUEA el arrastre para que SOLO sea vertical
-            onStart: function (evt) {
-                // Fijar anchos de las celdas td para mantener la estructura perfecta de la tabla al arrastrar
-                const table = evt.item.closest('table');
-                const tableWidth = table ? table.offsetWidth : 0;
-                const origTds = evt.item.children;
-                const widths = Array.from(origTds).map(td => td.offsetWidth);
-                
-                setTimeout(() => {
-                    const dragEl = document.querySelector('.sortable-drag-custom, .sortable-drag');
-                    if (dragEl) {
-                        if (tableWidth) dragEl.style.width = tableWidth + 'px';
-                        const dragTds = dragEl.children;
-                        Array.from(dragTds).forEach((td, i) => {
-                            if (widths[i]) td.style.width = widths[i] + 'px';
-                        });
-                    }
-                }, 10);
-            },
             onEnd: function () {
                 guardarOrden();
             }
