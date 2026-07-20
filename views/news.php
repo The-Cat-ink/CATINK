@@ -191,7 +191,7 @@ if (!function_exists('adBannerHtml')) {
     function adBannerHtml($pub, $clase = 'ad-strip') {
         if (empty($pub)) return '';
         return '<div class="showcase-box '.$clase.'">'
-             . '<a href="'.htmlspecialchars($pub['url']).'" class="promo-link" data-pub="'.(int)$pub['id_pub'].'">'
+             . '<a href="'.htmlspecialchars($pub['url']).'" class="promo-link" data-pub="'.(int)$pub['id_pub'].'" target="_blank" rel="noopener noreferrer">'
              . '<img src="'.htmlspecialchars(imageUrl($pub['imagen'])).'" alt="" class="promo-media" loading="lazy">'
              . '</a><span class="partner-tag">ADS</span></div>';
     }
@@ -880,7 +880,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
             <div class="card sidebar-card">
               <?php if($pubActiva && !empty($pubLateralTop)): ?>
                 <div class="showcase-box">
-                  <a href="<?= htmlspecialchars($pubLateralTop['url']) ?>" class="promo-link" data-pub="<?= (int)$pubLateralTop['id_pub'] ?>">
+                  <a href="<?= htmlspecialchars($pubLateralTop['url']) ?>" class="promo-link" data-pub="<?= (int)$pubLateralTop['id_pub'] ?>" target="_blank" rel="noopener noreferrer">
                     <img src="<?= htmlspecialchars(imageUrl($pubLateralTop['imagen'])) ?>" class="promo-card-media" loading="lazy">
                   </a>
                   <span class="partner-tag">ADS</span>
@@ -932,7 +932,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
                 <!-- BANNER PUBLICITARIO (lateral inferior) -->
                 <?php if($pubActiva && !empty($pubLateralBottom)): ?>
                   <div class="showcase-box mt-3">
-                    <a href="<?= htmlspecialchars($pubLateralBottom['url']) ?>" class="promo-link" data-pub="<?= (int)$pubLateralBottom['id_pub'] ?>">
+                    <a href="<?= htmlspecialchars($pubLateralBottom['url']) ?>" class="promo-link" data-pub="<?= (int)$pubLateralBottom['id_pub'] ?>" target="_blank" rel="noopener noreferrer">
                       <img src="<?= htmlspecialchars(imageUrl($pubLateralBottom['imagen'])) ?>" class="promo-card-media" loading="lazy">
                     </a>
                     <span class="partner-tag">ADS</span>

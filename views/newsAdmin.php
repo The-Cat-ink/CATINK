@@ -66,7 +66,7 @@ $cats = array_map('trim', $cats);
                 <?= $noticia['contenido'] ?>
             </div>
             <div class="showcase-box">
-                <a href="<?= $publicidad['url'] ?>" class="promo-link" data-pub="<?= $publicidad['id_pub'] ?>">
+                <a href="<?= $publicidad['url'] ?>" class="promo-link" data-pub="<?= $publicidad['id_pub'] ?>" target="_blank" rel="noopener noreferrer">
                     <img src="<?= imageUrl($publicidad['imagen']) ?>" alt="" class="promo-media" loading="lazy">
                 </a>
                 <span class="partner-tag">ADS</span>
