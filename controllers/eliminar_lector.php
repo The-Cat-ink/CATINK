@@ -1,6 +1,6 @@
 <?php
 require_once(__DIR__ . '/aclcontroller.php');
-proteger('usuarios', 'eliminar', true);
+proteger('lectores', 'eliminar', true);
 require_once(__DIR__ . '/../data/conexion.php');
 
 header('Content-Type: application/json');
@@ -25,28 +25,40 @@ if (!$lector) {
 $con->begin_transaction();
 try {
     // 1. Desvincular comentarios (establecer lector_id en NULL)
-    $updComm = $con->prepare("UPDATE comentarios SET lector_id = NULL WHERE lector_id = ?");
-    $updComm->bind_param("i", $id);
-    $updComm->execute();
+    try {
+        $updComm = $con->prepare("UPDATE comentarios SET lector_id = NULL WHERE lector_id = ?");
+        $updComm->bind_param("i", $id);
+        $updComm->execute();
+    } catch (\Throwable $e) {
+        error_log("No se pudieron desvincular comentarios del lector: " . $e->getMessage());
+    }
 
     // 2. Eliminar likes y reportes
-    $delLikes = $con->prepare("DELETE FROM likes_comentarios WHERE lector_id = ?");
-    $delLikes->bind_param("i", $id);
-    $delLikes->execute();
+    try {
+        $delLikes = $con->prepare("DELETE FROM likes_comentarios WHERE lector_id = ?");
+        $delLikes->bind_param("i", $id);
+        $delLikes->execute();
+    } catch (\Throwable $e) {}
 
-    $delRep = $con->prepare("DELETE FROM reportes_comentarios WHERE lector_id = ?");
-    $delRep->bind_param("i", $id);
-    $delRep->execute();
+    try {
+        $delRep = $con->prepare("DELETE FROM reportes_comentarios WHERE lector_id = ?");
+        $delRep->bind_param("i", $id);
+        $delRep->execute();
+    } catch (\Throwable $e) {}
 
     // 3. Eliminar notificaciones
-    $delNotif = $con->prepare("DELETE FROM notificaciones WHERE tipo_usuario = 'lector' AND user_id = ?");
-    $delNotif->bind_param("i", $id);
-    $delNotif->execute();
+    try {
+        $delNotif = $con->prepare("DELETE FROM notificaciones WHERE tipo_usuario = 'lector' AND user_id = ?");
+        $delNotif->bind_param("i", $id);
+        $delNotif->execute();
+    } catch (\Throwable $e) {}
 
     // 4. Eliminar reset tokens
-    $delTokens = $con->prepare("DELETE FROM password_reset_tokens WHERE tipo_usuario = 'lector' AND email = ?");
-    $delTokens->bind_param("s", $lector['correo']);
-    $delTokens->execute();
+    try {
+        $delTokens = $con->prepare("DELETE FROM password_reset_tokens WHERE tipo_usuario = 'lector' AND email = ?");
+        $delTokens->bind_param("s", $lector['correo']);
+        $delTokens->execute();
+    } catch (\Throwable $e) {}
 
     // 5. Eliminar lector
     $delLec = $con->prepare("DELETE FROM lectores WHERE id = ?");
@@ -57,7 +69,7 @@ try {
     require_once(__DIR__ . '/../views/helpers/activity_log.php');
     logActivity($con, 'eliminar', 'lectores', 'Eliminó al lector ID ' . $id . ' («' . $lector['correo'] . '»)');
     echo json_encode(['success' => 'Lector eliminado correctamente']);
-} catch (Exception $e) {
-    $con->rollback();
+} catch (\Throwable $e) {
+    @$con->rollback();
     echo json_encode(['error' => 'Error al eliminar lector: ' . $e->getMessage()]);
 }

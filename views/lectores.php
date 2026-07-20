@@ -610,8 +610,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `id=${deleteLectorId}`
             });
-            const data = await res.json();
-            if (data.success) {
+            let data = null;
+            try {
+                data = await res.json();
+            } catch (_) {}
+
+            if (data && data.success) {
                 // Cerrar el modal inmediatamente
                 cerrarModalDelete();
                 showToast(data.success, 'success');
@@ -622,21 +626,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.style.opacity = '0';
                     row.style.transform = 'translateX(-20px)';
                     setTimeout(() => row.remove(), 300);
-                    // Actualizar el contador total si existe
-                    const badge = document.querySelector('.total-lectores-badge, .badge-total');
-                    if (badge) {
-                        const current = parseInt(badge.textContent) || 0;
-                        if (current > 0) badge.textContent = current - 1;
-                    }
                 } else {
-                    // Fallback: recargar si no encontramos la fila
                     setTimeout(() => location.reload(), 500);
                 }
             } else {
-                showToast(data.error || 'Error al eliminar al lector.', 'error');
+                showToast((data && data.error) ? data.error : 'Error al eliminar al lector (' + res.status + ')', 'error');
             }
         } catch (err) {
-            showToast('Error de red.', 'error');
+            showToast('Error de conexión al servidor.', 'error');
         } finally {
             btnConfirmDelete.disabled = false;
         }
