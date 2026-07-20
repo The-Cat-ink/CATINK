@@ -116,7 +116,10 @@ $otros = $totalSuscripciones - $hombres - $mujeres;
                 <i class="bi bi-x-circle"></i> Desmarcar
             </button>
         </div>
-        <div class="contenidos-actions">
+        <div class="contenidos-actions" style="display:flex; gap:8px;">
+            <button type="button" class="btn btn-outline-accent" onclick="sendToAll()" title="Enviar resumen de noticias ahora a todos los suscriptores">
+                <i class="bi bi-send-fill"></i> Enviar Resumen a Todos
+            </button>
             <button type="button" class="btn btn-accent" onclick="sendToSelected()" id="sendSelectedBtn" style="display:none;">
                 <i class="bi bi-envelope"></i> Enviar a seleccionados
             </button>
@@ -277,6 +280,20 @@ document.querySelectorAll('.contenidos-table tbody tr').forEach(row => {
     });
     row.style.cursor = 'pointer';
 });
+
+    function sendToAll() {
+        if (!confirm("¿Deseas enviar el resumen diario de noticias inmediatamente a TODOS los suscriptores?")) return;
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = './../controllers/enviarCorreoMultiple.php';
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'ids[]';
+        input.value = 'all';
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
 
     function sendToSelected() {
         const checkboxes = document.querySelectorAll('.subscriber-checkbox:checked');
