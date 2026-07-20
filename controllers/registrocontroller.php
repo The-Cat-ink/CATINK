@@ -197,10 +197,10 @@ if ($ejecutado) {
             $mail->SMTPKeepAlive = false;
             $mail->Host = $smtpHost;
             $mail->SMTPAuth = true;
-            $mail->Username = env('SMTP_USERNAME');
-            $mail->Password = env('SMTP_PASSWORD');
-            $mail->SMTPSecure = env('SMTP_SECURE', 'tls');
-            $mail->Port = (int) env('SMTP_PORT', 587);
+            $mail->Username = env('SMTP_AUTH_USERNAME', env('SMTP_USERNAME'));
+            $mail->Password = env('SMTP_AUTH_PASSWORD', env('SMTP_PASSWORD'));
+            $mail->SMTPSecure = env('SMTP_SECURE', 'ssl');
+            $mail->Port = env('SMTP_PORT', 465);
 
             // Ignorar errores de certificado SSL (común en servidores de correo locales/cPanel)
             $mail->SMTPOptions = array(
@@ -211,7 +211,9 @@ if ($ejecutado) {
                 )
             );
 
-            $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
+            $fromEmail = env('SMTP_AUTH_FROM_EMAIL', env('SMTP_FROM_EMAIL', 'no-reply@catink.com.mx'));
+            $fromName = env('SMTP_AUTH_FROM_NAME', env('SMTP_FROM_NAME', 'CatInk'));
+            $mail->setFrom($fromEmail, $fromName);
             $mail->addAddress($correo, $nombre);
 
             $proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';

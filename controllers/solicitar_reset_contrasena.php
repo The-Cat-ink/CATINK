@@ -79,12 +79,14 @@ try {
 
     $mail->Host = env('SMTP_HOST');
     $mail->SMTPAuth = true;
-    $mail->Username = env('SMTP_USERNAME');
-    $mail->Password = env('SMTP_PASSWORD');
-    $mail->SMTPSecure = env('SMTP_SECURE', 'tls');
-    $mail->Port = (int) env('SMTP_PORT', 587);
+    $mail->Username = env('SMTP_AUTH_USERNAME', env('SMTP_USERNAME'));
+    $mail->Password = env('SMTP_AUTH_PASSWORD', env('SMTP_PASSWORD'));
+    $mail->SMTPSecure = env('SMTP_SECURE', 'ssl');
+    $mail->Port = env('SMTP_PORT', 465);
 
-    $mail->setFrom(env('SMTP_FROM_EMAIL'), env('SMTP_FROM_NAME'));
+    $fromEmail = env('SMTP_AUTH_FROM_EMAIL', env('SMTP_FROM_EMAIL', 'no-reply@catink.com.mx'));
+    $fromName = env('SMTP_AUTH_FROM_NAME', env('SMTP_FROM_NAME', 'CatInk'));
+    $mail->setFrom($fromEmail, $fromName);
     $mail->addAddress($email, $usuario['nombre']);
 
     $resetUrl = siteUrl() . "/reset_contrasena?token=" . urlencode($token);

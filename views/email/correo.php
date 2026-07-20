@@ -5,35 +5,48 @@ echo "Cron ejecutado: " . date("Y-m-d H:i:s") . "\n";
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require(__DIR__."/../../PHPMailer/src/PHPMailer.php");
-require(__DIR__."/../../PHPMailer/src/Exception.php");
-require(__DIR__."/../../PHPMailer/src/SMTP.php");
+require_once(__DIR__."/../../PHPMailer/src/PHPMailer.php");
+require_once(__DIR__."/../../PHPMailer/src/Exception.php");
+require_once(__DIR__."/../../PHPMailer/src/SMTP.php");
 include(__DIR__."/../../data/env.php");
 include(__DIR__."/../../data/conexion.php");
 
-// Obtenemos la hora programada, el estado y el ID de programación
-$sqlProg = "SELECT id_programacion, hora, estado FROM programacion_correos LIMIT 1";
+// Obtenemos la hora programada, el estado, última ejecución y el ID de programación
+$sqlProg = "SELECT id_programacion, hora, estado, ultima_ejecucion FROM programacion_correos LIMIT 1";
 $stmtProg = $con->prepare($sqlProg);
 $stmtProg->execute();
 $resultProg = $stmtProg->get_result();
 $rowProg = $resultProg->fetch_assoc();
 
 if (!$rowProg) {
-    die("No se encontró la configuración de programación de correos.\n");
+    echo "No se encontró la configuración de programación de correos.\n";
+    return;
 }
 
 $horaProgramada = $rowProg['hora'];
 $estado = $rowProg['estado'] ?? 'inactivo';
+$ultimaEjecucion = $rowProg['ultima_ejecucion'];
 
 // Solo ejecutar si el estado es activo
 if ($estado !== 'activo') {
-    die("La programación de correos está inactiva.\n");
+    echo "La programación de correos está inactiva.\n";
+    return;
 }
 
-// Solo ejecutar si estamos dentro del rango de +-60s de la hora programada
-if (abs(strtotime(date("H:i:s")) - strtotime($horaProgramada)) <= 60) {
+// Validar que no se haya ejecutado ya el día de hoy
+if (!empty($ultimaEjecucion) && date('Y-m-d', strtotime($ultimaEjecucion)) === date('Y-m-d')) {
+    echo "El resumen diario ya fue enviado el día de hoy (" . date('Y-m-d', strtotime($ultimaEjecucion)) . ").\n";
+    return;
+}
 
-    $hoy = date("Y-m-d H:i:s");
+// Validar que la hora actual ya sea mayor o igual a la hora programada
+$horaActual = date("H:i:s");
+if ($horaActual < $horaProgramada) {
+    echo "Aún no es la hora programada ($horaProgramada). Hora actual: $horaActual.\n";
+    return;
+}
+
+$hoy = date("Y-m-d H:i:s");
     $ayerMismoHorario = date("Y-m-d H:i:s", strtotime("-24 hours"));
 
     // Seleccionamos solo noticias del último día
@@ -49,7 +62,8 @@ if (abs(strtotime(date("H:i:s")) - strtotime($horaProgramada)) <= 60) {
     }
 
     if (empty($noticias)) {
-        die("No se encontraron noticias para el día $hoy\n");
+        echo "No se encontraron noticias publicadas en las últimas 24 horas ($hoy).\n";
+        return;
     } else {
         echo "Noticias encontradas: " . count($noticias) . "\n";
     }
@@ -172,4 +186,3 @@ if (abs(strtotime(date("H:i:s")) - strtotime($horaProgramada)) <= 60) {
     } catch (Exception $e) {
         echo "Error al enviar: {$mail->ErrorInfo}\n";
     }
-}

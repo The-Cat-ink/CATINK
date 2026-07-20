@@ -2,42 +2,42 @@
 /**
  * Carga variables del archivo .env en $_ENV y getenv()
  */
-function loadEnv($path = null) {
-    if ($path === null) {
-        // 1. Raíz del proyecto (local dev)
-        $path = __DIR__ . '/../.env';
-        // 2. Un nivel arriba de public_html (producción Hostinger)
+if (!function_exists('loadEnv')) {
+    function loadEnv($path = null) {
+        if ($path === null) {
+            // 1. Raíz del proyecto (local dev)
+            $path = __DIR__ . '/../.env';
+            // 2. Un nivel arriba de public_html (producción Hostinger)
+            if (!file_exists($path)) {
+                $path = $_SERVER['DOCUMENT_ROOT'] . '/../.env';
+            }
+        }
         if (!file_exists($path)) {
-            $path = $_SERVER['DOCUMENT_ROOT'] . '/../.env';
+            return;
+        }
+        $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '' || $line[0] === '#') continue;
+            if (strpos($line, '=') === false) continue;
+            list($key, $value) = explode('=', $line, 2);
+            $key = trim($key);
+            $value = trim($value);
+            $_ENV[$key] = $value;
+            putenv("$key=$value");
         }
     }
-    if (!file_exists($path)) {
-        return;
-    }
-    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        $line = trim($line);
-        if ($line === '' || $line[0] === '#') continue;
-        if (strpos($line, '=') === false) continue;
-        list($key, $value) = explode('=', $line, 2);
-        $key = trim($key);
-        $value = trim($value);
-        $_ENV[$key] = $value;
-        putenv("$key=$value");
-    }
+    loadEnv();
 }
 
-loadEnv();
-
-function env($key, $default = null) {
-    $valor = $_ENV[$key] ?? getenv($key);
-    // Una clave presente pero vacía cuenta como no definida. Antes se devolvía
-    // la cadena vacía y el valor por defecto no se aplicaba nunca: un .env a
-    // medias tumbaba la conexión o el envío de correo sin decir por qué.
-    if ($valor === null || $valor === false || $valor === '') {
-        return $default;
+if (!function_exists('env')) {
+    function env($key, $default = null) {
+        $valor = $_ENV[$key] ?? getenv($key);
+        if ($valor === null || $valor === false || $valor === '') {
+            return $default;
+        }
+        return $valor;
     }
-    return $valor;
 }
 
 $timezone = env('APP_TIMEZONE', 'America/Mexico_City');
