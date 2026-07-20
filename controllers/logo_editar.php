@@ -12,11 +12,17 @@ if (!$id) {
     exit;
 }
 
+// Vacío = sin vencimiento. Si viene con contenido pero no es una fecha válida
+// se responde con error: guardar NULL en silencio haría creer que se aplicó
+// un vencimiento que en realidad se descartó.
 $fechaRaw = trim($_POST['fecha_expiracion'] ?? '');
 $fechaExp = null;
-if ($fechaRaw !== '' && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $fechaRaw)) {
-    $ts = strtotime($fechaRaw);
-    if ($ts) $fechaExp = $fechaRaw;
+if ($fechaRaw !== '') {
+    if (!preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $fechaRaw) || !strtotime($fechaRaw)) {
+        echo json_encode(['ok' => false, 'error' => 'Fecha de vencimiento inválida.']);
+        exit;
+    }
+    $fechaExp = $fechaRaw;
 }
 
 $nuevaImagen = null;

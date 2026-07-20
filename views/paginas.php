@@ -246,7 +246,8 @@
       <div class="logo-exp-fields">
         <div class="cn-date-input">
           <i class="bi bi-calendar3"></i>
-          <input type="date" id="editLogoFecha">
+          <!-- min = hoy: evita elegir una fecha ya pasada, que dejaría el logo vencido -->
+          <input type="date" id="editLogoFecha" min="<?= date('Y-m-d') ?>">
         </div>
         <div class="cn-date-input">
           <i class="bi bi-clock"></i>
@@ -496,18 +497,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function buildLogoCard(id, imagen, nombre, fechaExp, imagenPath) {
         const imgSrc     = BASE_PATH + '/serve-image.php?file=' + encodeURIComponent(imagen);
         const nombreHtml = nombre ? `<div class="logo-nombre">${escapeHtml(nombre)}</div>` : '';
-        let expBadge = '';
-        if (fechaExp) {
-            const ms   = new Date(fechaExp) - new Date();
-            const dias  = Math.floor(ms / 86400000);
-            const horas = Math.floor((ms % 86400000) / 3600000);
-            const label = dias > 0 ? `${dias}d ${horas}h restantes` : `${horas}h restantes`;
-            expBadge = ms > 0
-                ? `<div class="logo-exp-badge logo-exp-activo"><i class="bi bi-calendar-check"></i> ${label}</div>`
-                : `<div class="logo-exp-badge logo-exp-vencido"><i class="bi bi-clock-history"></i> Vencido</div>`;
-        }
+        const badge    = badgeExpiracion(fechaExp);
+        const expBadge = badge ? `<div class="${badge.cls}">${badge.html}</div>` : '';
         const num = logosGrid.querySelectorAll('.logo-card').length + 1;
-        return `<div class="logo-card" id="logo-${id}" draggable="true" data-id="${id}">
+        return `<div class="logo-card${badge && badge.vencido ? ' logo-card-vencida' : ''}" id="logo-${id}" draggable="true" data-id="${id}">
             <div class="logo-num">${num}</div>
             <div class="logo-img-wrap"><img src="${imgSrc}" alt="${escapeHtml(nombre)}" loading="lazy"></div>
             ${nombreHtml}
@@ -521,6 +514,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function escapeHtml(str) {
         return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // MySQL devuelve "YYYY-MM-DD HH:MM:SS"; ese formato con espacio no es
+    // estándar en JS (algunos navegadores dan Invalid Date). Se normaliza a
+    // ISO local para que el cálculo de "restantes/vencido" nunca dé NaN.
+    function parseFechaLocal(str) {
+        if (!str) return null;
+        const d = new Date(String(str).trim().replace(' ', 'T'));
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    // HTML del badge de expiración a partir de la fecha guardada.
+    // Devuelve { html, cls, vencido } o null si el logo no expira.
+    function badgeExpiracion(fechaExp) {
+        const d = parseFechaLocal(fechaExp);
+        if (!d) return null;
+        const ms = d - new Date();
+        if (ms <= 0) {
+            return { html: '<i class="bi bi-clock-history"></i> Vencido',
+                     cls: 'logo-exp-badge logo-exp-vencido', vencido: true };
+        }
+        const dias  = Math.floor(ms / 86400000);
+        const horas = Math.floor((ms % 86400000) / 3600000);
+        const label = dias > 0 ? `${dias}d ${horas}h restantes` : `${horas}h restantes`;
+        return { html: `<i class="bi bi-calendar-check"></i> ${label}`,
+                 cls: 'logo-exp-badge logo-exp-activo', vencido: false };
     }
 
     function attachDeleteBtn(btn) {
@@ -576,13 +595,23 @@ document.addEventListener('DOMContentLoaded', () => {
         editLogoImgActual.src = imagen
             ? BASE_PATH + '/serve-image.php?file=' + encodeURIComponent(imagen)
             : '';
-        if (fechaExp) {
+        const d = parseFechaLocal(fechaExp);
+        if (d && d > new Date()) {
+            // Vigente: se precarga para poder ajustarla.
             const parts       = fechaExp.split(' ');
             editLogoFecha.value = parts[0] || '';
             editLogoHora.value  = (parts[1] || '23:59:00').slice(0, 5);
         } else {
+            // Sin fecha, o ya vencida: no se precarga la fecha pasada, porque el
+            // calendario abriría en el mes vencido e invitaría a elegir otro día
+            // igual de pasado (el logo seguiría sin publicarse).
             editLogoFecha.value = '';
             editLogoHora.value  = '23:59';
+            if (d) {
+                editLogoMsg.style.color = 'var(--muted)';
+                editLogoMsg.textContent = 'Venció el ' + d.toLocaleDateString('es-MX',
+                    { day: '2-digit', month: 'short', year: 'numeric' }) + '. Elige una fecha futura.';
+            }
         }
         modalEditLogo.style.display = 'flex';
     }
@@ -621,8 +650,14 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(r => r.json())
             .then(data => {
                 if (data.ok) {
-                    editLogoMsg.style.color = '#10b981';
-                    editLogoMsg.textContent = 'Guardado correctamente.';
+                    // Guardar una fecha ya pasada es válido, pero deja el logo
+                    // fuera del sitio: hay que decirlo en vez de un "Guardado" seco.
+                    const guardado = badgeExpiracion(data.fecha_expiracion);
+                    const sigueVencido = guardado && guardado.vencido;
+                    editLogoMsg.style.color = sigueVencido ? '#e0a800' : '#10b981';
+                    editLogoMsg.textContent = sigueVencido
+                        ? 'Guardado, pero esa fecha ya pasó: el logo sigue vencido y no aparece en el sitio.'
+                        : 'Guardado correctamente.';
 
                     // Actualizar DOM de la tarjeta
                     const card     = document.getElementById('logo-' + editingLogoId);
@@ -642,19 +677,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         // Badge expiración + estado vencido de la tarjeta
                         let badgeEl = card.querySelector('.logo-exp-badge');
-                        if (data.fecha_expiracion) {
-                            const ms   = new Date(data.fecha_expiracion) - new Date();
-                            const dias2  = Math.floor(ms / 86400000);
-                            const horas2 = Math.floor((ms % 86400000) / 3600000);
-                            const label2 = dias2 > 0 ? `${dias2}d ${horas2}h restantes` : `${horas2}h restantes`;
-                            const html = ms > 0
-                                ? `<i class="bi bi-calendar-check"></i> ${label2}`
-                                : `<i class="bi bi-clock-history"></i> Vencido`;
-                            const cls  = ms > 0 ? 'logo-exp-badge logo-exp-activo' : 'logo-exp-badge logo-exp-vencido';
+                        const badge = badgeExpiracion(data.fecha_expiracion);
+                        if (badge) {
                             if (!badgeEl) { badgeEl = document.createElement('div'); card.querySelector('.logo-actions').before(badgeEl); }
-                            badgeEl.className   = cls;
-                            badgeEl.innerHTML   = html;
-                            card.classList.toggle('logo-card-vencida', ms <= 0);
+                            badgeEl.className   = badge.cls;
+                            badgeEl.innerHTML   = badge.html;
+                            card.classList.toggle('logo-card-vencida', badge.vencido);
                         } else {
                             if (badgeEl) badgeEl.remove();
                             card.classList.remove('logo-card-vencida');
@@ -667,7 +695,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (data.imagen) editBtn.dataset.imagen = data.imagen;
                         }
                     }
-                    setTimeout(() => { modalEditLogo.style.display = 'none'; }, 800);
+                    // Si quedó vencido se deja el modal abierto para que se vea el aviso.
+                    if (!sigueVencido) setTimeout(() => { modalEditLogo.style.display = 'none'; }, 800);
                 } else {
                     editLogoMsg.style.color = '#e74c3c';
                     editLogoMsg.textContent = data.error || 'Error al guardar.';
