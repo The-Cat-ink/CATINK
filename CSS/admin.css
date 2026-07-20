@@ -3235,16 +3235,254 @@ input, select, textarea,
   font-size: 12.5px; line-height: 1.4;
 }
 
-/* ── BOTONES SECUNDARIOS ── */
-.cn-btn-secondary {
-  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
-  cursor: pointer; border: 1px solid var(--border); background: var(--bg);
-  color: var(--text); font-family: inherit; transition: border-color .2s;
+.cn-btn-secondary {\n  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;\n  cursor: pointer; border: 1px solid var(--border); background: var(--bg);\n  color: var(--text); font-family: inherit; transition: border-color .2s;\n}\n.cn-btn-secondary:hover { border-color: var(--accent); }\n.cn-btn-accent {\n  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;\n  cursor: pointer; border: none; background: var(--accent);\n  color: #fff; font-family: inherit;\n}\n.cn-btn-accent:hover { background: #d42a55; }
+
+/* ═══════════════════════════════════════════════
+   PANEL DE BANEOS / MODERACIÓN  (.umod-*)
+   ═══════════════════════════════════════════════ */
+
+/* Cabecera del panel */
+.umod-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--border);
 }
-.cn-btn-secondary:hover { border-color: var(--accent); }
-.cn-btn-accent {
-  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
-  cursor: pointer; border: none; background: var(--accent);
-  color: #fff; font-family: inherit;
+.umod-header > i {
+  font-size: 2rem;
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 2px;
 }
-.cn-btn-accent:hover { background: #d42a55; }
+.umod-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--text);
+}
+.umod-header p {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Toggle Suspendidos / Activos */
+.umod-toggle {
+  display: flex;
+  gap: 8px;
+  padding: 16px 24px 0;
+}
+.umod-tgl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .18s;
+  font-family: inherit;
+}
+.umod-tgl:hover { border-color: var(--accent); color: var(--accent); }
+.umod-tgl.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.umod-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.25);
+  color: inherit;
+}
+.umod-tgl:not(.active) .umod-count {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Vista (Suspendidos / Activos) */
+.umod-view { padding: 16px 24px 24px; }
+
+/* Búsqueda dentro de Activos */
+.umod-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  margin-bottom: 16px;
+}
+.umod-search i { color: var(--muted); font-size: 1rem; }
+.umod-search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: var(--text);
+  outline: none;
+  font-family: inherit;
+}
+
+/* Lista de filas */
+.umod-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* Fila individual */
+.umod-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card-bg);
+  transition: box-shadow .15s;
+}
+.umod-row:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+
+/* Avatar */
+.umod-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+img.umod-avatar { display: block; }
+
+/* Info del usuario */
+.umod-info { flex: 1; min-width: 0; }
+.umod-nombre {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+  flex-wrap: wrap;
+}
+.umod-user {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.umod-estado {
+  font-size: 0.82rem;
+  color: #ef4343;
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.umod-motivo {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 2px;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Badge de tipo (editor / lector) */
+.umod-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.umod-badge--admin  { background: rgba(99,102,241,0.12); color: #6366f1; }
+.umod-badge--lector { background: rgba(16,185,129,0.12); color: #10b981; }
+
+/* Acciones */
+.umod-acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.umod-ver {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  background: transparent;
+  text-decoration: none;
+  transition: all .15s;
+}
+.umod-ver:hover { background: var(--accent); color: #fff; }
+.umod-unban, .umod-suspend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: all .15s;
+}
+.umod-unban {
+  background: rgba(16,185,129,0.1);
+  color: #10b981;
+}
+.umod-unban:hover { background: #10b981; color: #fff; }
+.umod-suspend {
+  background: rgba(239,67,67,0.1);
+  color: #ef4343;
+}
+.umod-suspend:hover { background: #ef4343; color: #fff; }
+
+/* Estado vacío */
+.umod-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 20px;
+  color: var(--muted);
+  text-align: center;
+}
+.umod-empty i { font-size: 2.5rem; opacity: .45; }
+.umod-empty p { font-size: 0.9rem; margin: 0; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .umod-row { flex-wrap: wrap; }
+  .umod-acciones { width: 100%; justify-content: flex-end; }
+  .umod-header { padding: 16px; }
+  .umod-view { padding: 12px 16px 20px; }
+  .umod-toggle { padding: 12px 16px 0; }
+}

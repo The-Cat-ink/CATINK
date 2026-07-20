@@ -494,6 +494,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const show = orderMenu.style.display === 'block';
             orderMenu.style.display = show ? 'none' : 'block';
         });
+        document.addEventListener('click', () => {
+            orderMenu.style.display = 'none';
+        });
+    }
+
     // ── PESTAÑAS: TODOS LOS LECTORES ⇄ BANEOS ──
     const panelLectores = document.getElementById('panelLectores');
     const cardBaneos = document.getElementById('panelBaneos');
@@ -616,6 +621,29 @@ document.addEventListener('DOMContentLoaded', () => {
             clearTimeout(buscarTimer);
             buscarTimer = setTimeout(() => cargarActivos(inputBuscar.value.trim()), 300);
         });
+
+        // ── Botón Suspender en lista de Activos → abre el modal de ban ──
+        if (actList) {
+            actList.addEventListener('click', (e) => {
+                const btn = e.target.closest('.umod-suspend');
+                if (!btn) return;
+                const row = btn.closest('.umod-row');
+                const nombre = row?.dataset.nombre || '';
+                const userId = row?.dataset.userid || '';
+                const tipo = row?.dataset.tipo || 'lector';
+
+                // Usar el modal de ban ya existente reutilizando banLectorId y tipo
+                const modalBanEl = document.getElementById('modalBan');
+                const banNombreEl = document.getElementById('banNombre');
+                if (modalBanEl && banNombreEl) {
+                    banNombreEl.textContent = nombre;
+                    modalBanEl._pendingUserId = userId;
+                    modalBanEl._pendingTipo = tipo;
+                    modalBanEl._fromActivos = true;
+                    modalBanEl.style.display = 'flex';
+                }
+            });
+        }
     }
 
     // Modales y variables de estado
@@ -741,27 +769,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2700);
     }
 
-    // 1. Confirmar Ban
+    // 1. Confirmar Ban (lector normal o usuario activo del panel de Baneos)
     btnConfirmBan.addEventListener('click', async () => {
-        if (!banLectorId) return;
+        const banModal = document.getElementById('modalBan');
+        const fromActivos = banModal?._fromActivos;
+        const userId = fromActivos ? banModal._pendingUserId : banLectorId;
+        const tipo = fromActivos ? (banModal._pendingTipo || 'lector') : 'lector';
+        if (!userId) return;
         btnConfirmBan.disabled = true;
         try {
             const res = await fetch('./../controllers/moderar_usuario.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `action=ban&tipo=lector&user_id=${banLectorId}&duracion=${encodeURIComponent(banDuracion.value)}&motivo=${encodeURIComponent(banMotivo.value)}`
+                body: `action=ban&tipo=${tipo}&user_id=${userId}&duracion=${encodeURIComponent(banDuracion.value)}&motivo=${encodeURIComponent(banMotivo.value)}`
             });
             const data = await res.json();
             if (data.ok) {
-                showToast(data.msg || 'Lector suspendido correctamente.', 'success');
+                showToast(data.msg || 'Usuario suspendido correctamente.', 'success');
                 setTimeout(() => location.reload(), 1500);
             } else {
-                showToast(data.msg || 'No se pudo suspender al lector.', 'error');
+                showToast(data.msg || 'No se pudo suspender al usuario.', 'error');
             }
         } catch (err) {
             showToast('Error de red.', 'error');
         } finally {
             btnConfirmBan.disabled = false;
+            if (banModal) { banModal._fromActivos = false; banModal._pendingUserId = null; }
         }
     });
 
