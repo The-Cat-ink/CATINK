@@ -12,10 +12,11 @@ if (empty($usuario) || empty($pass)) {
     exit();
 }
 // ============================
+// ============================
 // 1. BUSCAR EN TABLA USUARIOS (administradores)
 // ============================
-$stmt = $con->prepare("SELECT * FROM usuarios WHERE usuario = ?");
-$stmt->bind_param("s", $usuario);
+$stmt = $con->prepare("SELECT * FROM usuarios WHERE usuario = ? OR correo = ?");
+$stmt->bind_param("ss", $usuario, $usuario);
 $stmt->execute();
 $result = $stmt->get_result();
 if ($result && $result->num_rows > 0) {
@@ -56,8 +57,8 @@ if ($result && $result->num_rows > 0) {
 // ============================
 // 2. BUSCAR EN TABLA LECTORES (usuarios públicos)
 // ============================
-$stmt = $con->prepare("SELECT * FROM lectores WHERE usuario = ?");
-$stmt->bind_param("s", $usuario);
+$stmt = $con->prepare("SELECT * FROM lectores WHERE usuario = ? OR correo = ?");
+$stmt->bind_param("ss", $usuario, $usuario);
 $stmt->execute();
 $result = $stmt->get_result();
 if ($result && $result->num_rows > 0) {

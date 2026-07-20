@@ -74,12 +74,17 @@ $_SESSION['reg_form_token'] = $regFormToken;
         <?php endif; ?>
         <form action="<?= basePath() ?>/controllers/logincontroller.php" method="POST">
             <div class="form-group">
-                <label for="login_usuario">Usuario</label>
-                <input type="text" id="login_usuario" name="usuario" class="input" placeholder="Tu usuario..." required>
+                <label for="login_usuario">Usuario o correo electrónico</label>
+                <input type="text" id="login_usuario" name="usuario" class="input" placeholder="Tu usuario o correo..." required>
             </div>
             <div class="form-group">
                 <label for="login_pass">Contraseña</label>
-                <input type="password" id="login_pass" name="pass" class="input" placeholder="Tu contraseña..." required>
+                <div style="position: relative;">
+                    <input type="password" id="login_pass" name="pass" class="input" placeholder="Tu contraseña..." required style="padding-right: 40px;">
+                    <button type="button" class="btn-toggle-eye" onclick="togglePassVisibility('login_pass', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
             </div>
             <button type="submit" class="btn-perfil-save" style="margin-top:12px;">Iniciar Sesión</button>
         </form>
@@ -582,6 +587,19 @@ function initLogin() {
     });
   }
 }
+
+window.togglePassVisibility = function(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+};
 
 // Soportar tanto navegación Turbo como carga directa de la página
 document.addEventListener('turbo:load', initLogin);

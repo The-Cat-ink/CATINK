@@ -457,16 +457,31 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+window.toggleColumnAction = function(actionBit) {
+    const inputs = document.querySelectorAll(`.form-switch-input[data-action="${actionBit}"]`);
+    const allChecked = Array.from(inputs).every(i => i.checked);
+    inputs.forEach(i => i.checked = !allChecked);
+    if (typeof window.updateRoleSelector === 'function') window.updateRoleSelector();
+};
+
+window.checkModule = function(slug, checked) {
+    document.querySelectorAll(`.mod-chk-${slug}`).forEach(i => i.checked = checked);
+    if (typeof window.updateRoleSelector === 'function') window.updateRoleSelector();
+};
+
+window.bulkCheckAll = function(checked) {
+    document.querySelectorAll('.form-switch-input').forEach(i => i.checked = checked);
+    if (typeof window.updateRoleSelector === 'function') window.updateRoleSelector();
+};
+
+window.bulkCheckAction = function(actionVal) {
+    document.querySelectorAll(`.form-switch-input[data-action="${actionVal}"]`).forEach(i => i.checked = true);
+    if (typeof window.updateRoleSelector === 'function') window.updateRoleSelector();
+};
+
+function initEditUser() {
     const form = document.getElementById('editUserForm');
     if (!form) return;
-
-    window.toggleColumnAction = function(actionBit) {
-        const inputs = document.querySelectorAll(`.form-switch-input[data-action="${actionBit}"]`);
-        const allChecked = Array.from(inputs).every(i => i.checked);
-        inputs.forEach(i => i.checked = !allChecked);
-        updateRoleSelector();
-    };
 
     const roles = {
         superadmin: {
@@ -499,7 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const updateRoleSelector = () => {
+    window.updateRoleSelector = () => {
         const roleSelector = document.getElementById('roleSelector');
         if (!roleSelector) return;
         let matchedRole = 'custom';
@@ -530,27 +545,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    window.checkModule = (slug, checked) => {
-        document.querySelectorAll(`.mod-chk-${slug}`).forEach(i => i.checked = checked);
-        updateRoleSelector();
-    };
-    window.bulkCheckAll = (checked) => {
-        document.querySelectorAll('.form-switch-input').forEach(i => i.checked = checked);
-        updateRoleSelector();
-    };
-    window.bulkCheckAction = (actionVal) => {
-        document.querySelectorAll(`.form-switch-input[data-action="${actionVal}"]`).forEach(i => i.checked = true);
-        updateRoleSelector();
-    };
-
     const roleSelector = document.getElementById('roleSelector');
     if (roleSelector) {
         roleSelector.addEventListener('change', () => applyRole(roleSelector.value));
     }
     document.querySelectorAll('.form-switch-input').forEach(input => {
-        input.addEventListener('change', updateRoleSelector);
+        input.addEventListener('change', window.updateRoleSelector);
     });
-    updateRoleSelector();
+    window.updateRoleSelector();
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -580,6 +582,18 @@ document.addEventListener('DOMContentLoaded', () => {
             btns.forEach(b => b.disabled = false);
         }
     });
-});
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('promovido')) {
+        showToast('¡Lector promovido a Administrador! Configura sus permisos a continuación.', 'success');
+    }
+}
+
+document.addEventListener('turbo:load', initEditUser);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEditUser);
+} else {
+    initEditUser();
+}
 </script>
 <?php include("./../layout/footerAdmin.php"); ?>
