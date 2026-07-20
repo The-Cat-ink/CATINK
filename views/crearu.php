@@ -441,9 +441,28 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+window.toggleColumnAction = function(actionBit) {
+    const inputs = document.querySelectorAll(`.form-switch-input[data-action="${actionBit}"]`);
+    const allChecked = Array.from(inputs).every(i => i.checked);
+    inputs.forEach(i => i.checked = !allChecked);
+};
 
+window.bulkCheckAll = function(checked) {
+    document.querySelectorAll('.form-switch-input').forEach(chk => chk.checked = checked);
+};
+
+window.bulkCheckAction = function(actionBit) {
+    document.querySelectorAll(`.form-switch-input[data-action="${actionBit}"]`).forEach(chk => chk.checked = true);
+};
+
+window.checkModule = function(slug, checked) {
+    document.querySelectorAll(`.mod-chk-${slug}`).forEach(chk => chk.checked = checked);
+};
+
+function initCreateUser() {
     const form = document.getElementById('formUsuario');
+    if (!form) return;
+
     const inputUsuario = document.getElementById('usuario');
     const estado = document.getElementById('usuarioEstado');
 
@@ -452,25 +471,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorPassword = document.getElementById('errorPassword');
 
     let usuarioValido = false;
-
-    // Helper global para alternar columnas completas en la matriz
-    window.toggleColumnAction = function(actionBit) {
-        const inputs = document.querySelectorAll(`.form-switch-input[data-action="${actionBit}"]`);
-        const allChecked = Array.from(inputs).every(i => i.checked);
-        inputs.forEach(i => i.checked = !allChecked);
-    };
-
-    window.bulkCheckAll = function(checked) {
-        document.querySelectorAll('.form-switch-input').forEach(chk => chk.checked = checked);
-    };
-
-    window.bulkCheckAction = function(actionBit) {
-        document.querySelectorAll(`.form-switch-input[data-action="${actionBit}"]`).forEach(chk => chk.checked = true);
-    };
-
-    window.checkModule = function(slug, checked) {
-        document.querySelectorAll(`.mod-chk-${slug}`).forEach(chk => chk.checked = checked);
-    };
 
     // Roles y sus permisos correspondientes
     const roles = {
@@ -541,53 +541,57 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const roleSelector = document.getElementById('roleSelector');
-    roleSelector.addEventListener('change', (e) => {
-        const selectedRole = e.target.value;
-        if (selectedRole === 'custom') return;
+    if (roleSelector) {
+        roleSelector.addEventListener('change', (e) => {
+            const selectedRole = e.target.value;
+            if (selectedRole === 'custom') return;
 
-        bulkCheckAll(false);
-        const rolePerms = roles[selectedRole];
-        if (rolePerms) {
-            Object.keys(rolePerms).forEach(modulo => {
-                const acciones = rolePerms[modulo];
-                acciones.forEach(accion => {
-                    const chk = document.querySelector(`.mod-chk-${modulo}[data-action="${accion}"]`);
-                    if (chk) chk.checked = true;
+            window.bulkCheckAll(false);
+            const rolePerms = roles[selectedRole];
+            if (rolePerms) {
+                Object.keys(rolePerms).forEach(modulo => {
+                    const acciones = rolePerms[modulo];
+                    acciones.forEach(accion => {
+                        const chk = document.querySelector(`.mod-chk-${modulo}[data-action="${accion}"]`);
+                        if (chk) chk.checked = true;
+                    });
                 });
-            });
-        }
-    });
+            }
+        });
+    }
 
     // Validación usuario en tiempo real
-    inputUsuario.addEventListener('keyup', () => {
-        const usuario = inputUsuario.value.trim();
+    if (inputUsuario) {
+        inputUsuario.addEventListener('keyup', () => {
+            const usuario = inputUsuario.value.trim();
 
-        if (usuario.length < 3) {
-            estado.textContent = 'El usuario debe tener al menos 3 caracteres';
-            estado.style.color = '#ffc107';
-            usuarioValido = false;
-            return;
-        }
+            if (usuario.length < 3) {
+                estado.textContent = 'El usuario debe tener al menos 3 caracteres';
+                estado.style.color = '#ffc107';
+                usuarioValido = false;
+                return;
+            }
 
-        fetch(`./../controllers/validar_usuario.php?usuario=${usuario}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.existe) {
-                    estado.textContent = '❌ Usuario no disponible';
+            fetch(`./../controllers/validar_usuario.php?usuario=${usuario}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.existe) {
+                        estado.textContent = '❌ Usuario no disponible';
+                        estado.style.color = '#dc3545';
+                        usuarioValido = false;
+                    } else {
+                        estado.textContent = '✅ Usuario disponible';
+                        estado.style.color = '#198754';
+                        usuarioValido = true;
+                    }
+                })
+                .catch(() => {
+                    estado.textContent = 'Error al validar usuario';
                     estado.style.color = '#dc3545';
                     usuarioValido = false;
-                } else {
-                    estado.textContent = '✅ Usuario disponible';
-                    estado.style.color = '#198754';
-                    usuarioValido = true;
-                }
-            })
-            .catch(() => {
-                estado.textContent = 'Error al validar usuario';
-                estado.style.color = '#dc3545';
-                usuarioValido = false;
-            });
-    });
+                });
+        });
+    }
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -633,7 +637,13 @@ document.addEventListener('DOMContentLoaded', () => {
             btns.forEach(b => b.disabled = false);
         }
     });
+}
 
-});
+document.addEventListener('turbo:load', initCreateUser);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCreateUser);
+} else {
+    initCreateUser();
+}
 </script>
 <?php include("./../layout/footerAdmin.php"); ?>
