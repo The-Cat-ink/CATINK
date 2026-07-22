@@ -640,49 +640,57 @@ function initVacantesView() {
   });
 }
 
-// Delegación global de Clics
-if (!window._vacantesDelegated) {
-  window._vacantesDelegated = true;
+// Handlers de botones del modal — se registran directamente en cada carga
+function bindVacanteModalButtons() {
+  // Botón Crear
+  const btnCrear = document.getElementById('btnCrearVacante');
+  if (btnCrear) btnCrear.onclick = () => openVacanteModal();
 
-  document.addEventListener('click', function(e) {
-    const btnEditar = e.target.closest('.btn-editar-vac');
-    if (btnEditar) {
-      e.preventDefault();
+  // Botones cerrar
+  const btnCloseTop = document.getElementById('closeVacanteModal');
+  const btnCancelBtn = document.getElementById('closeVacanteBtn');
+  if (btnCloseTop) btnCloseTop.onclick = () => {
+    const modal = document.getElementById('vacanteModal');
+    if (modal) modal.style.display = 'none';
+  };
+  if (btnCancelBtn) btnCancelBtn.onclick = () => {
+    const modal = document.getElementById('vacanteModal');
+    if (modal) modal.style.display = 'none';
+  };
+
+  // Botones Editar
+  document.querySelectorAll('.btn-editar-vac').forEach(btn => {
+    btn.onclick = function() {
       openVacanteModal({
-        id: btnEditar.dataset.id,
-        orden: btnEditar.dataset.orden,
-        tag: btnEditar.dataset.tag,
-        titulo: btnEditar.dataset.titulo,
-        subtitulo_italic: btnEditar.dataset.subtitulo,
-        modalidad: btnEditar.dataset.modalidad,
-        descripcion: btnEditar.dataset.descripcion,
-        imagen: btnEditar.dataset.imagen
+        id: this.dataset.id,
+        orden: this.dataset.orden,
+        tag: this.dataset.tag,
+        titulo: this.dataset.titulo,
+        subtitulo_italic: this.dataset.subtitulo,
+        modalidad: this.dataset.modalidad,
+        descripcion: this.dataset.descripcion,
+        imagen: this.dataset.imagen
       });
-      return;
-    }
-
-    const btnCrear = e.target.closest('#btnCrearVacante');
-    if (btnCrear) {
-      e.preventDefault();
-      openVacanteModal();
-      return;
-    }
-
-    const btnClose = e.target.closest('#closeVacanteModal, #closeVacanteBtn');
-    if (btnClose) {
-      e.preventDefault();
-      const modal = document.getElementById('vacanteModal');
-      if (modal) modal.style.display = 'none';
-      return;
-    }
+    };
   });
 
-  document.addEventListener('submit', function(e) {
-    if (e.target && e.target.id === 'formVacanteModal') {
+  // Form Submit
+  const form = document.getElementById('formVacanteModal');
+  if (form) {
+    form.onsubmit = function(e) {
       e.preventDefault();
-      const form = e.target;
+      const tag = document.getElementById('vacanteTag')?.value?.trim();
+      const titulo = document.getElementById('vacanteTitulo')?.value?.trim();
+      const desc = document.getElementById('vacanteDescripcion')?.value?.trim();
+
+      if (!tag) { document.getElementById('vacanteTag')?.focus(); showToast('El tag/etiqueta es obligatorio', 'error'); return; }
+      if (!titulo) { document.getElementById('vacanteTitulo')?.focus(); showToast('El título del puesto es obligatorio', 'error'); return; }
+      if (!desc) { document.getElementById('vacanteDescripcion')?.focus(); showToast('La descripción es obligatoria', 'error'); return; }
+
       const formData = new FormData(form);
       const modal = document.getElementById('vacanteModal');
+      const btnGuardar = form.querySelector('[type="submit"]');
+      if (btnGuardar) { btnGuardar.disabled = true; btnGuardar.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...'; }
 
       fetch(BASE_PATH + '/controllers/vacantes_guardar.php', {
         method: 'POST',
@@ -696,19 +704,29 @@ if (!window._vacantesDelegated) {
           setTimeout(() => window.location.reload(), 500);
         } else {
           showToast(res.error || 'Error al guardar vacante', 'error');
+          if (btnGuardar) { btnGuardar.disabled = false; btnGuardar.innerHTML = '<i class="bi bi-check-lg"></i> Guardar Vacante'; }
         }
+      })
+      .catch(() => {
+        showToast('Error de conexión al guardar', 'error');
+        if (btnGuardar) { btnGuardar.disabled = false; btnGuardar.innerHTML = '<i class="bi bi-check-lg"></i> Guardar Vacante'; }
       });
-    }
-  });
+    };
+  }
+}
+
+function runVacantesInit() {
+  initVacantesView();
+  bindVacanteModalButtons();
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initVacantesView);
+  document.addEventListener('DOMContentLoaded', runVacantesInit);
 } else {
-  initVacantesView();
+  runVacantesInit();
 }
-document.addEventListener('turbo:load', initVacantesView);
-document.addEventListener('turbo:render', initVacantesView);
+document.addEventListener('turbo:load', runVacantesInit);
+document.addEventListener('turbo:render', runVacantesInit);
 </script>
 
 <?php include("./../layout/footerAdmin.php"); ?>
