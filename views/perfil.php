@@ -394,41 +394,70 @@ if ($notifUserId > 0) {
   </div>
 </div>
 
-<!-- MODAL: Selector de avatar -->
+<!-- MODAL: Selector de avatar Premium -->
 <div id="avatarModal" class="perfil-modal-overlay" style="display:none;">
-  <div class="perfil-modal">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h3 style="margin:0; font-size:1.1rem;">Elige tu avatar</h3>
-      <button id="closeAvatarModal" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text);">&times;</button>
+  <div class="perfil-modal avatar-modal-box">
+    
+    <!-- Encabezado del Modal -->
+    <div class="avatar-modal-header">
+      <div>
+        <h3 class="avatar-modal-title">Elige tu Avatar</h3>
+        <span class="avatar-modal-subtitle">Personaliza tu foto de perfil en CatInk</span>
+      </div>
+      <button type="button" id="closeAvatarModal" class="avatar-modal-close-btn">&times;</button>
     </div>
+
     <?php if($tipoUsuario === 'admin'): ?>
-    <div style="margin-bottom:16px; padding:12px; background:rgba(239,51,99,0.08); border-radius:10px; border:1px solid var(--accent);">
-      <label class="avatar-upload-btn" style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--accent); font-weight:600;">
-        <i class="bi bi-cloud-arrow-up"></i> Subir foto personal
+    <!-- Zona de Carga de Foto Personalizada -->
+    <div class="avatar-upload-card">
+      <label class="avatar-upload-dropzone" id="dropzoneAvatar">
+        <div class="upload-icon-circle">
+          <i class="bi bi-cloud-arrow-up-fill"></i>
+        </div>
+        <div class="upload-text-content">
+          <span class="upload-title">Subir foto personalizada</span>
+          <span class="upload-hint">Formatos JPG, PNG o WEBP (se recortará en círculo)</span>
+        </div>
         <input type="file" id="modalFotoInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
       </label>
-      <div id="modalFotoPreview" style="display:none; margin-top:12px;">
-        <div style="max-height:280px; overflow:hidden; border-radius:8px;">
+
+      <!-- Previsualizador y Cropper -->
+      <div id="modalFotoPreview" style="display:none; margin-top:16px;">
+        <div class="cropper-container-wrapper">
           <img id="modalFotoImg" style="max-width:100%; display:block;">
         </div>
-        <div style="margin-top:10px; display:flex; gap:8px;">
-          <button type="button" id="confirmCropBtn" class="perfil-btn-save" style="flex:1; font-size:0.88rem; padding:9px;">Confirmar recorte</button>
-          <button type="button" id="cancelCropBtn" style="flex:1; padding:9px 16px; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:8px; cursor:pointer;">Cancelar</button>
+        <div class="cropper-actions-bar">
+          <button type="button" id="confirmCropBtn" class="btn-confirm-crop">
+            <i class="bi bi-check-lg"></i> Confirmar Recorte
+          </button>
+          <button type="button" id="cancelCropBtn" class="btn-cancel-crop">Cancelar</button>
         </div>
       </div>
     </div>
     <?php endif; ?>
-    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+
+    <!-- Separador sutil -->
+    <div class="avatar-section-divider">
+      <span>O elige un avatar oficial</span>
+    </div>
+
+    <!-- Galería de Avatares Circulares -->
+    <div class="avatar-gallery-grid">
       <?php if(empty($avatares)): ?>
-        <p style="grid-column:1/-1; color:var(--muted); text-align:center;">No hay avatares disponibles aún.</p>
+        <p style="grid-column:1/-1; color:var(--muted); text-align:center; padding:20px 0;">No hay avatares disponibles aún.</p>
       <?php endif; ?>
-      <?php foreach($avatares as $av): ?>
-        <div class="avatar-option <?= ($user['avatar_id'] ?? 0) == $av['id_avatar'] ? 'avatar-selected' : '' ?>" data-id="<?= $av['id_avatar'] ?>"
-          style="cursor:pointer; border-radius:10px; overflow:hidden; border:3px solid transparent; transition:border-color 0.2s;">
-          <img src="<?= imageUrl($av['imagen']) ?>" style="width:100%; height:90px; object-fit:cover; display:block;">
+      <?php foreach($avatares as $av): 
+        $isSelected = ($user['avatar_id'] ?? 0) == $av['id_avatar'];
+      ?>
+        <div class="avatar-option <?= $isSelected ? 'avatar-selected' : '' ?>" data-id="<?= $av['id_avatar'] ?>" title="Seleccionar avatar">
+          <img src="<?= imageUrl($av['imagen']) ?>" alt="Avatar" class="avatar-img-circle">
+          <?php if($isSelected): ?>
+            <div class="avatar-check-badge"><i class="bi bi-check-lg"></i></div>
+          <?php endif; ?>
         </div>
       <?php endforeach; ?>
     </div>
+
   </div>
 </div>
 
@@ -693,9 +722,250 @@ if ($notifUserId > 0) {
   display: flex; align-items: center; justify-content: center; gap: 7px;
 }
 
-/* AVATAR PICKER */
-.avatar-option:hover { border-color: var(--accent) !important; }
-.avatar-option.avatar-selected { border-color: var(--accent) !important; }
+/* AVATAR PICKER MODAL REDESIGN */
+.avatar-modal-box {
+  max-width: 520px !important;
+  width: 92% !important;
+  border-radius: 24px !important;
+  padding: 28px !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.avatar-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.avatar-modal-title {
+  margin: 0 0 2px !important;
+  font-size: 1.3rem !important;
+  font-weight: 800 !important;
+  color: var(--text) !important;
+  text-align: left !important;
+}
+
+.avatar-modal-subtitle {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.avatar-modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: var(--muted);
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+.avatar-modal-close-btn:hover {
+  color: var(--accent);
+}
+
+/* Upload Card & Dropzone */
+.avatar-upload-card {
+  margin-bottom: 20px;
+}
+
+.avatar-upload-dropzone {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: rgba(239, 51, 99, 0.04);
+  border: 2px dashed rgba(239, 51, 99, 0.3);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.avatar-upload-dropzone:hover {
+  background: rgba(239, 51, 99, 0.08);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.upload-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(239, 51, 99, 0.3);
+}
+
+.upload-text-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.upload-hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Cropper Container */
+.cropper-container-wrapper {
+  max-height: 300px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #0f172a;
+  border: 1px solid var(--border);
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+}
+
+/* Make cropper mask circle */
+.cropper-view-box,
+.cropper-face {
+  border-radius: 50% !important;
+}
+
+.cropper-line, .cropper-point {
+  background-color: var(--accent) !important;
+}
+
+.cropper-actions-bar {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn-confirm-crop {
+  flex: 1;
+  background: linear-gradient(135deg, #EF3363 0%, #d62250 100%);
+  color: #ffffff;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(239, 51, 99, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-confirm-crop:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(239, 51, 99, 0.45);
+}
+
+.btn-cancel-crop {
+  padding: 12px 20px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+.btn-cancel-crop:hover {
+  border-color: var(--muted);
+}
+
+/* Section Divider */
+.avatar-section-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 18px 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.avatar-section-divider::before,
+.avatar-section-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border);
+}
+
+.avatar-section-divider span {
+  padding: 0 12px;
+}
+
+/* Gallery Grid */
+.avatar-gallery-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 8px 4px;
+}
+
+.avatar-option {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 50% !important;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  border: 3px solid transparent !important;
+  padding: 2px;
+}
+
+.avatar-img-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50% !important;
+  object-fit: cover;
+  display: block;
+}
+
+.avatar-option:hover {
+  transform: scale(1.1);
+  border-color: rgba(239, 51, 99, 0.5) !important;
+}
+
+.avatar-option.avatar-selected {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 4px rgba(239, 51, 99, 0.25) !important;
+  transform: scale(1.06);
+}
+
+.avatar-check-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: var(--accent);
+  color: #ffffff;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  border: 2px solid var(--card-bg);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
 
 /* Responsive */
 @media (max-width: 600px) {
