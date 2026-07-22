@@ -5379,6 +5379,19 @@ body, .nav-link, .btn, .card, .site-main {
   color: var(--accent-fuchsia);
   padding: 0 4px;
 }
+/* En movil la fila completa de paginas no cabe (7 numeros + flechas + extremos):
+   sin wrap estira el documento y desplaza toda la pagina en horizontal. */
+@media (max-width: 576px) {
+  .pagination-pink {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pagination-pink li a {
+    width: 38px;
+    height: 38px;
+    font-size: 0.85rem;
+  }
+}
 
 /* ── MOCKUP RANKING SIDEBAR STYLES ── */
 .sidebar-ranking-list-container {
