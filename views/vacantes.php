@@ -67,6 +67,30 @@ $totalSolicitudes = count($solicitudes);
         </div>
     </div>
 
+<style>
+.contenidos-tabs .tab-btn {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  background: rgba(0,0,0,0.04);
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--muted, #64748b);
+  transition: all 0.2s ease;
+}
+[data-bs-theme="dark"] .contenidos-tabs .tab-btn {
+  background: rgba(255,255,255,0.06);
+  color: var(--muted, #94a3b8);
+}
+.contenidos-tabs .tab-btn.active {
+  background: var(--accent, #EF3363) !important;
+  color: #ffffff !important;
+}
+</style>
+
     <!-- Toolbar oficial de CatInk -->
     <div class="contenidos-toolbar">
         <div class="contenidos-tabs">
