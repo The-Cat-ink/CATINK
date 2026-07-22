@@ -163,6 +163,7 @@ $totalSolicitudes = count($solicitudes);
                             <tr>
                                 <th style="width: 40px; text-align:center;"><i class="bi bi-arrows-move"></i></th>
                                 <th style="width: 50px;">Orden</th>
+                                <th style="width: 70px;">Imagen</th>
                                 <th>Etiqueta / Tag</th>
                                 <th>Puesto / Título</th>
                                 <th>Subtítulo en Cursiva</th>
@@ -173,12 +174,19 @@ $totalSolicitudes = count($solicitudes);
                         </thead>
                         <tbody id="vacantesTbody">
                             <?php if (empty($vacantes)): ?>
-                                <tr><td colspan="8" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron vacantes. Haz clic en "Crear vacante".</td></tr>
+                                <tr><td colspan="9" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron vacantes. Haz clic en "Crear vacante".</td></tr>
                             <?php else: ?>
                                 <?php foreach ($vacantes as $row): ?>
                                     <tr data-id="<?= $row['id'] ?>" class="vacante-row">
                                         <td style="cursor: grab; text-align: center; color:var(--muted);"><i class="bi bi-grip-vertical"></i></td>
                                         <td><strong style="color:var(--text);" class="vac-orden-num"><?= $row['orden'] ?></strong></td>
+                                        <td>
+                                            <?php if (!empty($row['imagen'])): ?>
+                                                <img src="<?= basePath() . '/' . htmlspecialchars($row['imagen']) ?>" alt="<?= htmlspecialchars($row['titulo']) ?>" style="width: 52px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border);">
+                                            <?php else: ?>
+                                                <span style="display:inline-flex; width:52px; height:36px; background:var(--bg-subtle, #f1f5f9); border-radius:6px; align-items:center; justify-content:center; color:var(--muted); font-size:1.1rem; border:1px dashed var(--border);"><i class="bi bi-image"></i></span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td><span class="estado-badge" style="background:rgba(239,51,99,0.1); color:#EF3363; font-weight:800;"><?= htmlspecialchars($row['tag']) ?></span></td>
                                         <td><strong class="table-title"><?= htmlspecialchars($row['titulo']) ?></strong></td>
                                         <td><span style="font-style:italic; color:var(--muted);"><?= htmlspecialchars($row['subtitulo_italic'] ?? '') ?></span></td>
@@ -200,6 +208,7 @@ $totalSolicitudes = count($solicitudes);
                                                     data-subtitulo="<?= htmlspecialchars($row['subtitulo_italic'] ?? '', ENT_QUOTES) ?>"
                                                     data-modalidad="<?= htmlspecialchars($row['modalidad'], ENT_QUOTES) ?>"
                                                     data-descripcion="<?= htmlspecialchars($row['descripcion'], ENT_QUOTES) ?>"
+                                                    data-imagen="<?= htmlspecialchars($row['imagen'] ?? '', ENT_QUOTES) ?>"
                                                     title="Editar Vacante y Contenido">
                                                     <i class="bi bi-pencil-square"></i>
                                                 </button>
@@ -325,9 +334,33 @@ $totalSolicitudes = count($solicitudes);
                 <input type="text" id="vacanteModalidad" name="modalidad" value="100% Remoto · Tiempo completo" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
             </div>
 
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Imagen Ilustrativa / Banner del Puesto</label>
+                <input type="file" id="vacanteImagenInput" name="imagen" accept="image/*" style="display: none;">
+                
+                <div id="vacanteImgUploadZone" style="border: 2px dashed var(--border); border-radius: 12px; padding: 14px 16px; text-align: center; background: var(--bg-subtle, #f8fafc); cursor: pointer; transition: all 0.2s ease;">
+                    <div id="vacanteImgEmptyState">
+                        <i class="bi bi-cloud-arrow-up-fill" style="font-size: 1.6rem; color: var(--accent);"></i>
+                        <div style="font-size: 0.85rem; font-weight: 700; margin-top: 2px; color: var(--text);">Haz clic o arrastra una imagen aquí</div>
+                        <small style="color: var(--muted); font-size: 0.76rem;">JPG, PNG, WEBP o GIF (Recomendado 800x500px)</small>
+                    </div>
+                    <div id="vacanteImgPreviewState" style="display: none; align-items: center; justify-content: space-between; gap: 12px;">
+                        <img id="vacanteImgPreview" src="" style="max-height: 60px; max-width: 100px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border);">
+                        <div style="text-align: left; flex: 1; min-width: 0;">
+                            <div id="vacanteImgName" style="font-weight: 700; font-size: 0.85rem; color: var(--text); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"></div>
+                            <small style="color: var(--muted);" id="vacanteImgStatus">Imagen de la vacante</small>
+                        </div>
+                        <button type="button" id="btnQuitarVacanteImg" class="btn btn-sm btn-outline-danger" style="border-radius: 8px; font-size: 0.8rem; padding: 4px 10px;">
+                            <i class="bi bi-trash"></i> Quitar
+                        </button>
+                    </div>
+                </div>
+                <input type="hidden" id="vacanteEliminarImagen" name="eliminar_imagen" value="0">
+            </div>
+
             <div style="margin-bottom: 20px;">
                 <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Modificar Contenido y Descripción Completa del Puesto *</label>
-                <textarea id="vacanteDescripcion" name="descripcion" rows="5" required style="width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text); resize: vertical; line-height: 1.5;" placeholder="Detalla los requisitos, tareas y beneficios del puesto..."></textarea>
+                <textarea id="vacanteDescripcion" name="descripcion" rows="4" required style="width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text); resize: vertical; line-height: 1.5;" placeholder="Detalla los requisitos, tareas y beneficios del puesto..."></textarea>
             </div>
 
             <div class="crop-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
@@ -394,6 +427,61 @@ function initVacantesView() {
   const form = document.getElementById('formVacanteModal');
   const tbody = document.getElementById('vacantesTbody');
 
+  const fileInput = document.getElementById('vacanteImagenInput');
+  const uploadZone = document.getElementById('vacanteImgUploadZone');
+  const emptyState = document.getElementById('vacanteImgEmptyState');
+  const previewState = document.getElementById('vacanteImgPreviewState');
+  const previewImg = document.getElementById('vacanteImgPreview');
+  const fileNameEl = document.getElementById('vacanteImgName');
+  const btnQuitarImg = document.getElementById('btnQuitarVacanteImg');
+  const inputEliminarImg = document.getElementById('vacanteEliminarImagen');
+
+  if (uploadZone && fileInput) {
+    uploadZone.onclick = (e) => {
+      if (e.target.closest('#btnQuitarVacanteImg')) return;
+      fileInput.click();
+    };
+    uploadZone.ondragover = (e) => { e.preventDefault(); uploadZone.style.borderColor = 'var(--accent)'; };
+    uploadZone.ondragleave = () => { uploadZone.style.borderColor = 'var(--border)'; };
+    uploadZone.ondrop = (e) => {
+      e.preventDefault();
+      uploadZone.style.borderColor = 'var(--border)';
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        fileInput.files = e.dataTransfer.files;
+        handleFileSelected(e.dataTransfer.files[0]);
+      }
+    };
+
+    fileInput.onchange = () => {
+      if (fileInput.files && fileInput.files[0]) {
+        handleFileSelected(fileInput.files[0]);
+      }
+    };
+  }
+
+  function handleFileSelected(file) {
+    if (inputEliminarImg) inputEliminarImg.value = '0';
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (previewImg) previewImg.src = e.target.result;
+        if (fileNameEl) fileNameEl.textContent = file.name;
+        if (emptyState) emptyState.style.display = 'none';
+        if (previewState) previewState.style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  btnQuitarImg?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (fileInput) fileInput.value = '';
+    if (inputEliminarImg) inputEliminarImg.value = '1';
+    if (previewImg) previewImg.src = '';
+    if (emptyState) emptyState.style.display = 'block';
+    if (previewState) previewState.style.display = 'none';
+  });
+
   if (tbody && typeof Sortable !== 'undefined') {
     if (tbody._sortable) {
       try { tbody._sortable.destroy(); } catch(e){}
@@ -443,6 +531,9 @@ function initVacantesView() {
   if (!modal || !form) return;
 
   function openModal(data = null) {
+    if (fileInput) fileInput.value = '';
+    if (inputEliminarImg) inputEliminarImg.value = '0';
+
     if (data) {
       document.getElementById('modalVacanteTitle').textContent = 'Editar Vacante: ' + data.titulo;
       document.getElementById('vacanteId').value = data.id;
@@ -452,10 +543,22 @@ function initVacantesView() {
       document.getElementById('vacanteSubtitulo').value = data.subtitulo_italic || '';
       document.getElementById('vacanteModalidad').value = data.modalidad || '100% Remoto · Tiempo completo';
       document.getElementById('vacanteDescripcion').value = data.descripcion || '';
+
+      if (data.imagen) {
+        if (previewImg) previewImg.src = BASE_PATH + '/' + data.imagen;
+        if (fileNameEl) fileNameEl.textContent = data.imagen.split('/').pop();
+        if (emptyState) emptyState.style.display = 'none';
+        if (previewState) previewState.style.display = 'flex';
+      } else {
+        if (emptyState) emptyState.style.display = 'block';
+        if (previewState) previewState.style.display = 'none';
+      }
     } else {
       document.getElementById('modalVacanteTitle').textContent = 'Crear Nueva Vacante de Empleo';
       form.reset();
       document.getElementById('vacanteId').value = 0;
+      if (emptyState) emptyState.style.display = 'block';
+      if (previewState) previewState.style.display = 'none';
     }
     modal.style.display = 'flex';
   }
@@ -474,7 +577,8 @@ function initVacantesView() {
         titulo: this.dataset.titulo,
         subtitulo_italic: this.dataset.subtitulo,
         modalidad: this.dataset.modalidad,
-        descripcion: this.dataset.descripcion
+        descripcion: this.dataset.descripcion,
+        imagen: this.dataset.imagen
       };
       openModal(data);
     };
@@ -525,23 +629,14 @@ function initVacantesView() {
     };
   });
 
-  // Form Submit
+  // Form Submit con FormData
   form.onsubmit = function(e) {
     e.preventDefault();
-    const payload = {
-      id: parseInt(document.getElementById('vacanteId').value),
-      orden: parseInt(document.getElementById('vacanteOrden').value),
-      tag: document.getElementById('vacanteTag').value,
-      titulo: document.getElementById('vacanteTitulo').value,
-      subtitulo_italic: document.getElementById('vacanteSubtitulo').value,
-      modalidad: document.getElementById('vacanteModalidad').value,
-      descripcion: document.getElementById('vacanteDescripcion').value
-    };
+    const formData = new FormData(form);
 
     fetch(BASE_PATH + '/controllers/vacantes_guardar.php', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: formData
     })
     .then(r => r.json())
     .then(res => {

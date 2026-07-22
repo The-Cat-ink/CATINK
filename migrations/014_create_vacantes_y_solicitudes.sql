@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS `vacantes_equipo` (
   `subtitulo_italic` VARCHAR(255) NULL,
   `descripcion` TEXT NOT NULL,
   `modalidad` VARCHAR(100) DEFAULT '100% Remoto · Tiempo Completo',
+  `imagen` VARCHAR(255) NULL,
   `estado` TINYINT DEFAULT 1,
   `creado_en` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `actualizado_en` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -15,18 +15,48 @@ $subtitulo_italic = trim($data['subtitulo_italic'] ?? '');
 $descripcion = trim($data['descripcion'] ?? '');
 $modalidad = trim($data['modalidad'] ?? '100% Remoto · Tiempo completo');
 $estado = isset($data['estado']) ? intval($data['estado']) : 1;
+$eliminar_imagen = !empty($data['eliminar_imagen']);
 
 if (empty($tag) || empty($titulo) || empty($descripcion)) {
     echo json_encode(['error' => 'Por favor completa la etiqueta (tag), título y descripción de la vacante.']);
     exit;
 }
 
+$imagen_ruta = null;
+if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+    $fileTmp = $_FILES['imagen']['tmp_name'];
+    $fileName = $_FILES['imagen']['name'];
+    $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+    $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'];
+    
+    if (in_array($ext, $allowed)) {
+        $uploadDir = dirname(__DIR__) . '/uploads/vacantes/';
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        $newFileName = 'vacante_' . time() . '_' . uniqid() . '.' . $ext;
+        $destPath = $uploadDir . $newFileName;
+        if (move_uploaded_file($fileTmp, $destPath)) {
+            $imagen_ruta = 'uploads/vacantes/' . $newFileName;
+        }
+    }
+}
+
 if ($id > 0) {
-    // Actualizar vacante existente (mantener su orden actual)
-    $stmt = $con->prepare("UPDATE vacantes_equipo SET tag = ?, titulo = ?, subtitulo_italic = ?, descripcion = ?, modalidad = ?, estado = ? WHERE id = ?");
-    $stmt->bind_param("sssssii", $tag, $titulo, $subtitulo_italic, $descripcion, $modalidad, $estado, $id);
+    // Actualizar vacante existente
+    if ($imagen_ruta !== null) {
+        $stmt = $con->prepare("UPDATE vacantes_equipo SET tag = ?, titulo = ?, subtitulo_italic = ?, descripcion = ?, modalidad = ?, estado = ?, imagen = ? WHERE id = ?");
+        $stmt->bind_param("sssssisi", $tag, $titulo, $subtitulo_italic, $descripcion, $modalidad, $estado, $imagen_ruta, $id);
+    } elseif ($eliminar_imagen) {
+        $stmt = $con->prepare("UPDATE vacantes_equipo SET tag = ?, titulo = ?, subtitulo_italic = ?, descripcion = ?, modalidad = ?, estado = ?, imagen = NULL WHERE id = ?");
+        $stmt->bind_param("sssssii", $tag, $titulo, $subtitulo_italic, $descripcion, $modalidad, $estado, $id);
+    } else {
+        $stmt = $con->prepare("UPDATE vacantes_equipo SET tag = ?, titulo = ?, subtitulo_italic = ?, descripcion = ?, modalidad = ?, estado = ? WHERE id = ?");
+        $stmt->bind_param("sssssii", $tag, $titulo, $subtitulo_italic, $descripcion, $modalidad, $estado, $id);
+    }
+    
     if ($stmt->execute()) {
-        echo json_encode(['success' => true, 'message' => 'Vacante actualizada con éxito']);
+        echo json_encode(['success' => true, 'message' => 'Vacante actualizada con éxito', 'imagen' => $imagen_ruta]);
     } else {
         echo json_encode(['error' => 'Error en BD: ' . $con->error]);
     }
@@ -38,8 +68,8 @@ if ($id > 0) {
         $nextOrden = intval($rowMax['next_orden']);
     }
 
-    $stmt = $con->prepare("INSERT INTO vacantes_equipo (orden, tag, titulo, subtitulo_italic, descripcion, modalidad, estado, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
-    $stmt->bind_param("isssssi", $nextOrden, $tag, $titulo, $subtitulo_italic, $descripcion, $modalidad, $estado);
+    $stmt = $con->prepare("INSERT INTO vacantes_equipo (orden, tag, titulo, subtitulo_italic, descripcion, modalidad, estado, imagen, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+    $stmt->bind_param("isssssis", $nextOrden, $tag, $titulo, $subtitulo_italic, $descripcion, $modalidad, $estado, $imagen_ruta);
     
     if ($stmt->execute()) {
         $newId = $con->insert_id;
@@ -56,7 +86,7 @@ if ($id > 0) {
             }
         }
 
-        echo json_encode(['success' => true, 'message' => 'Vacante creada con éxito', 'id' => $newId]);
+        echo json_encode(['success' => true, 'message' => 'Vacante creada con éxito', 'id' => $newId, 'imagen' => $imagen_ruta]);
     } else {
         echo json_encode(['error' => 'Error en BD: ' . $con->error]);
     }

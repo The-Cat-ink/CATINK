@@ -498,11 +498,14 @@ $vacantesFilas = array_chunk($vacantes, 5);
             <div class="unete-col-expanded">
               <div>
                 <span class="unete-badge-tag">● <?= htmlspecialchars($vac['tag']) ?></span>
+                <?php if (!empty($vac['imagen'])): ?>
+                  <img src="<?= basePath() ?>/<?= htmlspecialchars($vac['imagen']) ?>" alt="<?= htmlspecialchars($vac['titulo']) ?>" style="width: 100%; max-height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border);">
+                <?php endif; ?>
                 <h1 class="unete-role-title"><?= htmlspecialchars($vac['titulo']) ?></h1>
                 <?php if (!empty($vac['subtitulo_italic'])): ?>
                   <span class="unete-role-italic"><?= htmlspecialchars($vac['subtitulo_italic']) ?></span>
                 <?php endif; ?>
-                <div style="width: 40px; height: 3px; background: var(--accent); margin-bottom: 20px; border-radius: 2px;"></div>
+                <div style="width: 40px; height: 3px; background: var(--accent); margin-bottom: 16px; border-radius: 2px;"></div>
                 <p class="unete-role-desc"><?= htmlspecialchars($vac['descripcion']) ?></p>
               </div>
 
@@ -533,6 +536,9 @@ $vacantesFilas = array_chunk($vacantes, 5);
 
         <div class="mobile-vacante-body">
           <span class="unete-badge-tag" style="margin-bottom: 10px;">● <?= htmlspecialchars($vac['tag']) ?></span>
+          <?php if (!empty($vac['imagen'])): ?>
+            <img src="<?= basePath() ?>/<?= htmlspecialchars($vac['imagen']) ?>" alt="<?= htmlspecialchars($vac['titulo']) ?>" style="width: 100%; height: 160px; object-fit: cover; border-radius: 10px; margin-bottom: 14px; border: 1px solid var(--border);">
+          <?php endif; ?>
           <?php if (!empty($vac['subtitulo_italic'])): ?>
             <div style="font-style: italic; color: var(--accent); font-size: 0.95rem; margin-bottom: 8px; font-weight: 600;"><?= htmlspecialchars($vac['subtitulo_italic']) ?></div>
           <?php endif; ?>
