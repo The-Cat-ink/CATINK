@@ -1054,7 +1054,7 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
           <h2 class="mod-aviso-titulo" id="modAvisoTitulo"></h2>
           <div class="mod-aviso-sep"></div>
           <p class="mod-aviso-texto" id="modAvisoTexto"></p>
-          <p class="mod-aviso-nota">El respeto y la buena convivencia son la base de nuestra comunidad. Buscamos que CATINK sea un espacio sano donde todas y todos puedan compartir y opinar con libertad. Te invitamos a reflexionar sobre tu mensaje y a seguir siendo parte de esta comunidad de forma positiva. ¡Gracias por ayudarnos a cuidarla!</p>
+          <p class="mod-aviso-nota">El respeto y la buena convivencia son la base de nuestra comunidad. Buscamos que CATINK sea un espacio sano donde todas y todos puedan compartir y opinar con libertad. ¡Gracias por ayudarnos a cuidarla!</p>
           <button type="button" class="mod-aviso-btn">Entiendo</button>
         </div>`;
       document.body.appendChild(overlay);
