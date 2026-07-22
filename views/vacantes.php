@@ -316,8 +316,34 @@ $totalSolicitudes = count($solicitudes);
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
 const BASE_PATH = '<?= basePath() ?>';
+
+function showToast(msg, type = 'success') {
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = 'toast-msg' + (type ? ' toast-' + type : '');
+  
+  let icon = 'bi-check-circle-fill';
+  if (type === 'error' || type === 'danger') icon = 'bi-exclamation-circle-fill';
+  if (type === 'warning') icon = 'bi-exclamation-triangle-fill';
+
+  toast.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><i class="bi ${icon}" style="font-size:1.1rem; color:${type === 'error' ? '#ef4444' : '#10b981'};"></i> <span>${msg}</span></div>`;
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.transition = 'all 0.3s ease';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-10px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
 
 function switchVacanteTab(tabName) {
   const btnVac = document.getElementById('tabBtnVacantes');
@@ -384,7 +410,11 @@ function initVacantesView() {
     })
     .then(r => r.json())
     .then(res => {
-      if (!res.success) alert(res.error || 'Error al reordenar vacantes');
+      if (res.success) {
+        showToast('Orden de vacantes actualizado', 'success');
+      } else {
+        showToast(res.error || 'Error al reordenar vacantes', 'error');
+      }
     });
   }
 
@@ -439,8 +469,12 @@ function initVacantesView() {
       })
       .then(r => r.json())
       .then(res => {
-        if (res.success) window.location.reload();
-        else alert(res.error || 'Error al cambiar estado');
+        if (res.success) {
+          showToast('Estado de vacante actualizado', 'success');
+          setTimeout(() => window.location.reload(), 400);
+        } else {
+          showToast(res.error || 'Error al cambiar estado', 'error');
+        }
       });
     };
   });
@@ -459,8 +493,12 @@ function initVacantesView() {
       })
       .then(r => r.json())
       .then(res => {
-        if (res.success) window.location.reload();
-        else alert(res.error || 'Error al eliminar vacante');
+        if (res.success) {
+          showToast('Vacante eliminada correctamente', 'success');
+          setTimeout(() => window.location.reload(), 400);
+        } else {
+          showToast(res.error || 'Error al eliminar vacante', 'error');
+        }
       });
     };
   });
@@ -486,10 +524,11 @@ function initVacantesView() {
     .then(r => r.json())
     .then(res => {
       if (res.success) {
-        alert(res.message);
-        window.location.reload();
+        showToast(res.message, 'success');
+        modal.style.display = 'none';
+        setTimeout(() => window.location.reload(), 500);
       } else {
-        alert(res.error || 'Error al guardar vacante');
+        showToast(res.error || 'Error al guardar vacante', 'error');
       }
     });
   };
@@ -506,7 +545,11 @@ function initVacantesView() {
       })
       .then(r => r.json())
       .then(res => {
-        if (!res.success) alert(res.error || 'Error al actualizar estado');
+        if (res.success) {
+          showToast('Estado de postulación actualizado', 'success');
+        } else {
+          showToast(res.error || 'Error al actualizar estado', 'error');
+        }
       });
     };
   });

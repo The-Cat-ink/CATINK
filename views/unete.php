@@ -628,6 +628,31 @@ $vacantesFilas = array_chunk($vacantes, 5);
 window.BASE_PATH = window.BASE_PATH || '<?= basePath() ?>';
 var BASE_PATH = window.BASE_PATH;
 
+function showToast(msg, type = 'success') {
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = 'toast-msg' + (type ? ' toast-' + type : '');
+  
+  let icon = 'bi-check-circle-fill';
+  if (type === 'error' || type === 'danger') icon = 'bi-exclamation-circle-fill';
+  if (type === 'warning') icon = 'bi-exclamation-triangle-fill';
+
+  toast.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><i class="bi ${icon}" style="font-size:1.1rem; color:${type === 'error' ? '#ef4444' : '#10b981'};"></i> <span>${msg}</span></div>`;
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.transition = 'all 0.3s ease';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-10px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3200);
+}
+
 function initUnetePublic() {
   const modal = document.getElementById('modalPostulacion');
   const form = document.getElementById('formPostularVacante');
@@ -744,18 +769,20 @@ function initUnetePublic() {
         btnSubmit.querySelector('i').className = 'bi bi-send-fill';
 
         if (res.success) {
-          alert(res.message);
+          showToast(res.message, 'success');
           modal.style.display = 'none';
           form.reset();
+          if (cvEmpty) cvEmpty.style.display = 'flex';
+          if (cvFilled) cvFilled.style.display = 'none';
         } else {
-          alert(res.error || 'Ocurrió un error al enviar la solicitud.');
+          showToast(res.error || 'Ocurrió un error al enviar la solicitud.', 'error');
         }
       })
       .catch(err => {
         btnSubmit.disabled = false;
         btnSubmitText.textContent = 'Enviar Solicitud';
         btnSubmit.querySelector('i').className = 'bi bi-send-fill';
-        alert('Error de conexión al enviar la solicitud.');
+        showToast('Error de conexión al enviar la solicitud.', 'error');
       });
     };
   }
