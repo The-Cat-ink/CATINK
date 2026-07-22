@@ -172,6 +172,7 @@ function formatNumberShort($num){
                 }
             ?>
         </div>
+    <?php endif; ?>
       <!-- BOTONES QUICKS DE ADMINISTRADOR -->
     <style>
     .admin-quick-toolbar {
@@ -302,7 +303,6 @@ function formatNumberShort($num){
                 </form>
             </div>
         </div>
-    <?php endif; ?>div>
     <?php endif; ?>
 
     <!-- ÚLTIMAS NOTICIAS -->
@@ -435,7 +435,6 @@ function formatNumberShort($num){
         </div>
     </div>
 
-    <?php if(isset($_SESSION['usuario'])): ?>
     <?php if(isset($_SESSION['usuario'])): ?>
         <!-- ZONA DE PELIGRO: RESTABLECIMIENTO GRANULAR -->
         <style>
