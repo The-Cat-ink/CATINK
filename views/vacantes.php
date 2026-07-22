@@ -373,9 +373,10 @@ $totalSolicitudes = count($solicitudes);
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
-const BASE_PATH = '<?= basePath() ?>';
+window.BASE_PATH = window.BASE_PATH || '<?= basePath() ?>';
+var BASE_PATH = window.BASE_PATH;
 
-function showToast(msg, type = 'success') {
+window.showToast = window.showToast || function(msg, type = 'success') {
   let container = document.querySelector('.toast-container');
   if (!container) {
     container = document.createElement('div');
@@ -398,35 +399,73 @@ function showToast(msg, type = 'success') {
     toast.style.transform = 'translateY(-10px)';
     setTimeout(() => toast.remove(), 300);
   }, 3000);
-}
+};
 
-function switchVacanteTab(tabName) {
+window.switchVacanteTab = window.switchVacanteTab || function(tabName) {
   const btnVac = document.getElementById('tabBtnVacantes');
   const btnSol = document.getElementById('tabBtnSolicitudes');
   const secVac = document.getElementById('sectionVacantesList');
   const secSol = document.getElementById('sectionSolicitudesList');
 
   if (tabName === 'vacantesList') {
-    btnVac.classList.add('active');
-    btnSol.classList.remove('active');
-    secVac.style.display = 'block';
-    secSol.style.display = 'none';
+    if (btnVac) btnVac.classList.add('active');
+    if (btnSol) btnSol.classList.remove('active');
+    if (secVac) secVac.style.display = 'block';
+    if (secSol) secSol.style.display = 'none';
   } else {
-    btnSol.classList.add('active');
-    btnVac.classList.remove('active');
-    secSol.style.display = 'block';
-    secVac.style.display = 'none';
+    if (btnSol) btnSol.classList.add('active');
+    if (btnVac) btnVac.classList.remove('active');
+    if (secSol) secSol.style.display = 'block';
+    if (secVac) secVac.style.display = 'none';
   }
+};
+
+function openVacanteModal(data = null) {
+  const modal = document.getElementById('vacanteModal');
+  const form = document.getElementById('formVacanteModal');
+  const fileInput = document.getElementById('vacanteImagenInput');
+  const previewImg = document.getElementById('vacanteImgPreview');
+  const fileNameEl = document.getElementById('vacanteImgName');
+  const emptyState = document.getElementById('vacanteImgEmptyState');
+  const previewState = document.getElementById('vacanteImgPreviewState');
+  const inputEliminarImg = document.getElementById('vacanteEliminarImagen');
+
+  if (!modal || !form) return;
+
+  if (fileInput) fileInput.value = '';
+  if (inputEliminarImg) inputEliminarImg.value = '0';
+
+  if (data) {
+    document.getElementById('modalVacanteTitle').textContent = 'Editar Vacante: ' + (data.titulo || '');
+    document.getElementById('vacanteId').value = data.id || 0;
+    document.getElementById('vacanteOrden').value = data.orden || 1;
+    document.getElementById('vacanteTag').value = data.tag || '';
+    document.getElementById('vacanteTitulo').value = data.titulo || '';
+    document.getElementById('vacanteSubtitulo').value = data.subtitulo_italic || '';
+    document.getElementById('vacanteModalidad').value = data.modalidad || '100% Remoto · Tiempo completo';
+    document.getElementById('vacanteDescripcion').value = data.descripcion || '';
+
+    if (data.imagen) {
+      if (previewImg) previewImg.src = BASE_PATH + '/' + data.imagen;
+      if (fileNameEl) fileNameEl.textContent = data.imagen.split('/').pop();
+      if (emptyState) emptyState.style.display = 'none';
+      if (previewState) previewState.style.display = 'flex';
+    } else {
+      if (emptyState) emptyState.style.display = 'block';
+      if (previewState) previewState.style.display = 'none';
+    }
+  } else {
+    document.getElementById('modalVacanteTitle').textContent = 'Crear Nueva Vacante de Empleo';
+    form.reset();
+    document.getElementById('vacanteId').value = 0;
+    if (emptyState) emptyState.style.display = 'block';
+    if (previewState) previewState.style.display = 'none';
+  }
+  modal.style.display = 'flex';
 }
 
 function initVacantesView() {
-  const modal = document.getElementById('vacanteModal');
-  const btnCrear = document.getElementById('btnCrearVacante');
-  const btnClose = document.getElementById('closeVacanteModal');
-  const btnCloseBtn = document.getElementById('closeVacanteBtn');
-  const form = document.getElementById('formVacanteModal');
   const tbody = document.getElementById('vacantesTbody');
-
   const fileInput = document.getElementById('vacanteImagenInput');
   const uploadZone = document.getElementById('vacanteImgUploadZone');
   const emptyState = document.getElementById('vacanteImgEmptyState');
@@ -528,62 +567,6 @@ function initVacantesView() {
     });
   }
 
-  if (!modal || !form) return;
-
-  function openModal(data = null) {
-    if (fileInput) fileInput.value = '';
-    if (inputEliminarImg) inputEliminarImg.value = '0';
-
-    if (data) {
-      document.getElementById('modalVacanteTitle').textContent = 'Editar Vacante: ' + data.titulo;
-      document.getElementById('vacanteId').value = data.id;
-      document.getElementById('vacanteOrden').value = data.orden || 1;
-      document.getElementById('vacanteTag').value = data.tag || '';
-      document.getElementById('vacanteTitulo').value = data.titulo || '';
-      document.getElementById('vacanteSubtitulo').value = data.subtitulo_italic || '';
-      document.getElementById('vacanteModalidad').value = data.modalidad || '100% Remoto · Tiempo completo';
-      document.getElementById('vacanteDescripcion').value = data.descripcion || '';
-
-      if (data.imagen) {
-        if (previewImg) previewImg.src = BASE_PATH + '/' + data.imagen;
-        if (fileNameEl) fileNameEl.textContent = data.imagen.split('/').pop();
-        if (emptyState) emptyState.style.display = 'none';
-        if (previewState) previewState.style.display = 'flex';
-      } else {
-        if (emptyState) emptyState.style.display = 'block';
-        if (previewState) previewState.style.display = 'none';
-      }
-    } else {
-      document.getElementById('modalVacanteTitle').textContent = 'Crear Nueva Vacante de Empleo';
-      form.reset();
-      document.getElementById('vacanteId').value = 0;
-      if (emptyState) emptyState.style.display = 'block';
-      if (previewState) previewState.style.display = 'none';
-    }
-    modal.style.display = 'flex';
-  }
-
-  btnCrear?.addEventListener('click', () => openModal());
-  btnClose?.addEventListener('click', () => modal.style.display = 'none');
-  btnCloseBtn?.addEventListener('click', () => modal.style.display = 'none');
-
-  // Delegación de eventos para botones Editar
-  document.querySelectorAll('.btn-editar-vac').forEach(btn => {
-    btn.onclick = function() {
-      const data = {
-        id: this.dataset.id,
-        orden: this.dataset.orden,
-        tag: this.dataset.tag,
-        titulo: this.dataset.titulo,
-        subtitulo_italic: this.dataset.subtitulo,
-        modalidad: this.dataset.modalidad,
-        descripcion: this.dataset.descripcion,
-        imagen: this.dataset.imagen
-      };
-      openModal(data);
-    };
-  });
-
   // Toggle estado
   document.querySelectorAll('.btn-toggle-vac').forEach(btn => {
     btn.onclick = function() {
@@ -629,27 +612,6 @@ function initVacantesView() {
     };
   });
 
-  // Form Submit con FormData
-  form.onsubmit = function(e) {
-    e.preventDefault();
-    const formData = new FormData(form);
-
-    fetch(BASE_PATH + '/controllers/vacantes_guardar.php', {
-      method: 'POST',
-      body: formData
-    })
-    .then(r => r.json())
-    .then(res => {
-      if (res.success) {
-        showToast(res.message, 'success');
-        modal.style.display = 'none';
-        setTimeout(() => window.location.reload(), 500);
-      } else {
-        showToast(res.error || 'Error al guardar vacante', 'error');
-      }
-    });
-  };
-
   // Cambio de estado de solicitudes
   document.querySelectorAll('.select-sol-estado').forEach(sel => {
     sel.onchange = function() {
@@ -672,7 +634,73 @@ function initVacantesView() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', initVacantesView);
+// Delegación global de Clics
+if (!window._vacantesDelegated) {
+  window._vacantesDelegated = true;
+
+  document.addEventListener('click', function(e) {
+    const btnEditar = e.target.closest('.btn-editar-vac');
+    if (btnEditar) {
+      e.preventDefault();
+      openVacanteModal({
+        id: btnEditar.dataset.id,
+        orden: btnEditar.dataset.orden,
+        tag: btnEditar.dataset.tag,
+        titulo: btnEditar.dataset.titulo,
+        subtitulo_italic: btnEditar.dataset.subtitulo,
+        modalidad: btnEditar.dataset.modalidad,
+        descripcion: btnEditar.dataset.descripcion,
+        imagen: btnEditar.dataset.imagen
+      });
+      return;
+    }
+
+    const btnCrear = e.target.closest('#btnCrearVacante');
+    if (btnCrear) {
+      e.preventDefault();
+      openVacanteModal();
+      return;
+    }
+
+    const btnClose = e.target.closest('#closeVacanteModal, #closeVacanteBtn');
+    if (btnClose) {
+      e.preventDefault();
+      const modal = document.getElementById('vacanteModal');
+      if (modal) modal.style.display = 'none';
+      return;
+    }
+  });
+
+  document.addEventListener('submit', function(e) {
+    if (e.target && e.target.id === 'formVacanteModal') {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const modal = document.getElementById('vacanteModal');
+
+      fetch(BASE_PATH + '/controllers/vacantes_guardar.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          showToast(res.message, 'success');
+          if (modal) modal.style.display = 'none';
+          setTimeout(() => window.location.reload(), 500);
+        } else {
+          showToast(res.error || 'Error al guardar vacante', 'error');
+        }
+      });
+    }
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initVacantesView);
+} else {
+  initVacantesView();
+}
 document.addEventListener('turbo:load', initVacantesView);
 document.addEventListener('turbo:render', initVacantesView);
 </script>
