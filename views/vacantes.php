@@ -18,6 +18,28 @@ $sqlVac .= " ORDER BY orden ASC, id ASC";
 $resVac = $con->query($sqlVac);
 $vacantes = $resVac ? $resVac->fetch_all(MYSQLI_ASSOC) : [];
 
+// Si existen duplicados en el orden, corregir y normalizar la secuencia automáticamente (1, 2, 3...)
+if (!empty($vacantes) && $q === '') {
+    $hasDuplicates = false;
+    $seenOrders = [];
+    foreach ($vacantes as $v) {
+        if (in_array($v['orden'], $seenOrders)) {
+            $hasDuplicates = true;
+            break;
+        }
+        $seenOrders[] = $v['orden'];
+    }
+    if ($hasDuplicates) {
+        $upd = $con->prepare("UPDATE vacantes_equipo SET orden = ? WHERE id = ?");
+        foreach ($vacantes as $idx => $v) {
+            $seqOrder = $idx + 1;
+            $upd->bind_param("ii", $seqOrder, $v['id']);
+            $upd->execute();
+            $vacantes[$idx]['orden'] = $seqOrder;
+        }
+    }
+}
+
 // Obtener todas las solicitudes recibidas
 $resSol = $con->query("
     SELECT s.*, v.titulo AS vacante_titulo, v.tag AS vacante_tag
