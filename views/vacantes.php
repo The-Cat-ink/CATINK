@@ -254,7 +254,15 @@ $totalSolicitudes = count($solicitudes);
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+function initVacantesAdmin() {
+  const modal = document.getElementById('vacanteModal');
+  const btnNueva = document.getElementById('btnNuevaVacante');
+  const btnClose = document.getElementById('closeVacanteModal');
+  const btnCancel = document.getElementById('btnCancelVacante');
+  const form = document.getElementById('formVacante');
+
+  if (!btnNueva || !form) return;
+
   // Pestañas
   document.querySelectorAll('.vacante-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -264,13 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
     });
   });
-
-  // Modal
-  const modal = document.getElementById('vacanteModal');
-  const btnNueva = document.getElementById('btnNuevaVacante');
-  const btnClose = document.getElementById('closeVacanteModal');
-  const btnCancel = document.getElementById('btnCancelVacante');
-  const form = document.getElementById('formVacante');
 
   function openModal(data = null) {
     if (data) {
@@ -380,7 +381,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   });
-});
+}
+
+document.addEventListener('DOMContentLoaded', initVacantesAdmin);
+document.addEventListener('turbo:load', initVacantesAdmin);
 </script>
 
 <?php include("./../layout/footerAdmin.php"); ?>

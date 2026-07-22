@@ -102,7 +102,7 @@ if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time
       'admin', 'crear', 'continuar_borrador', 'crearp', 'crearu', 'editar', 'editarp', 'editaru',
       'cats', 'contenidos', 'borradores', 'recomendados', 'esperamos', 'publicidad',
       'correos', 'suscripciones', 'usuarios', 'lectores', 'videos', 'avatares',
-      'paginas', 'see', 'verp'
+      'paginas', 'see', 'verp', 'vacantes'
   ];
   if (in_array($archivoActual, $turboReloadPages, true)): ?>
   <meta name="turbo-visit-control" content="reload">
