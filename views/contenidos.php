@@ -852,7 +852,9 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         requestAnimationFrame(() => tooltip.classList.add('visible'));
 
         tooltip.addEventListener('mouseenter', cancelHide);
-        tooltip.addEventListener('mouseleave', () => {
+        tooltip.addEventListener('mouseleave', (e) => {
+            const related = e.relatedTarget;
+            if (related && (related.closest('.news-tooltip') || related.closest('.authors-tooltip') || related.closest('.day-header'))) return;
             hideTimeoutId = hideTooltip(tooltip, 400, () => { dayColumn._tooltip = null; });
         });
 
@@ -866,6 +868,7 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
             let newsHideId = null;
 
             authorEl.addEventListener('mouseenter', () => {
+                cancelHide();
                 if (newsHideId) { clearTimeout(newsHideId); newsHideId = null; }
                 if (authorEl._newsTooltip) return;
 
@@ -899,9 +902,16 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
                 requestAnimationFrame(() => newsTooltip.classList.add('visible'));
 
                 newsTooltip.addEventListener('mouseenter', () => {
+                    cancelHide();
                     if (newsHideId) { clearTimeout(newsHideId); newsHideId = null; }
                 });
-                newsTooltip.addEventListener('mouseleave', () => {
+                newsTooltip.addEventListener('mouseleave', (e) => {
+                    const related = e.relatedTarget;
+                    if (related && related.closest('.authors-tooltip')) {
+                        cancelHide();
+                    } else if (!related || (!related.closest('.news-tooltip') && !related.closest('.authors-tooltip'))) {
+                        hideTimeoutId = hideTooltip(tooltip, 400, () => { dayColumn._tooltip = null; });
+                    }
                     newsHideId = hideTooltip(newsTooltip, 400, () => { authorEl._newsTooltip = null; });
                 });
             });
@@ -910,7 +920,7 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
                 const newsTooltip = authorEl._newsTooltip;
                 if (!newsTooltip) return;
                 const related = e.relatedTarget;
-                if (related && (related === newsTooltip || newsTooltip.contains(related))) return;
+                if (related && (related === newsTooltip || newsTooltip.contains(related) || related.closest('.news-tooltip'))) return;
                 newsHideId = hideTooltip(newsTooltip, 400, () => { authorEl._newsTooltip = null; });
             });
         });
@@ -920,7 +930,7 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
         const tooltip = dayColumn._tooltip;
         if (!tooltip) return;
         const related = e.relatedTarget;
-        if (related && (related === tooltip || tooltip.contains(related))) return;
+        if (related && (related === tooltip || tooltip.contains(related) || related.closest('.authors-tooltip') || related.closest('.news-tooltip'))) return;
         hideTimeoutId = hideTooltip(tooltip, 400, () => { dayColumn._tooltip = null; });
     });
 });

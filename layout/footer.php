@@ -16,9 +16,19 @@
 </main>
 <!-- Script local: reemplaza comportamientos de Bootstrap (colapso, tema, carrusel) -->
 <script src="<?= basePath() ?>/CSS/scripts.js?v=<?= filemtime(__DIR__ . '/../CSS/scripts.js') ?>"></script>
+<script src="<?= basePath() ?>/CSS/offline-manager.js?v=<?= filemtime(__DIR__ . '/../CSS/offline-manager.js') ?>"></script>
 <script async src="https://platform.twitter.com/widgets.js"></script>
 <script>
   var basePath = '<?= basePath() ?>';
+
+  // Registrar Service Worker para PWA y soporte offline
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register(basePath + '/sw.js')
+        .then(reg => console.log('[ServiceWorker] Registrado con éxito:', reg.scope))
+        .catch(err => console.warn('[ServiceWorker] Error al registrar:', err));
+    });
+  }
 
   function initSearch(inputId, clearBtnId, searchBtnId, resultsBoxId) {
     const input = document.getElementById(inputId);

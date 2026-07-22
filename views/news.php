@@ -273,6 +273,12 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
     $resAutor = $stmtAutor->get_result()->fetch_assoc();
     $esAutor = ($resAutor && $resAutor['id_u'] == $noticia['autor']);
 }
+
+// Consultar si la noticia tiene historial de modificaciones
+$stmtLastEdit = $con->prepare("SELECT fecha_edicion FROM historial_ediciones_noticias WHERE noticia_id = ? ORDER BY fecha_edicion DESC LIMIT 1");
+$stmtLastEdit->bind_param("i", $id);
+$stmtLastEdit->execute();
+$lastEdit = $stmtLastEdit->get_result()->fetch_assoc();
 ?>
 <style>
   @media (max-width: 768px) {
@@ -384,11 +390,19 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
               <span class="meta-autor-info">
                 Por <a href="<?= authorUrl($noticia['autor_id'] ?? 0) ?>" class="meta-autor-link"><?= htmlspecialchars($autorNombre) ?></a>
                 <span class="meta-autor-fecha"><?= date("d/m/Y · H:i", strtotime($noticia['fecha_publicacion'])) ?></span>
+                <?php if (!empty($lastEdit)): ?>
+                  <span class="meta-autor-fecha" style="margin-left: 6px; opacity: 0.85;" title="Noticia actualizada el <?= date("d/m/Y H:i", strtotime($lastEdit['fecha_edicion'])) ?>">
+                    &bull; <i class="bi bi-pencil-fill" style="font-size: 0.75rem;"></i> Actualizado: <?= date("d/m/Y · H:i", strtotime($lastEdit['fecha_edicion'])) ?>
+                  </span>
+                <?php endif; ?>
               </span>
             </div>
-            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
               <button id="likeBtn" class="like-btn" data-id="<?= $id ?>">
                 <i class="bi bi-heart-fill" style="color: red;"></i> Like <span id="likeCount"><?= $noticia['likes'] ?></span>
+              </button>
+              <button id="btnOfflineSave" class="like-btn btn-offline-save" data-id="<?= $id ?>" data-title="<?= htmlspecialchars($noticia['titulo']) ?>" data-slug="<?= htmlspecialchars($noticia['slug'] ?? '') ?>" data-img="<?= htmlspecialchars($img) ?>" data-author="<?= htmlspecialchars($autorNombre) ?>" data-date="<?= date("d/m/Y · H:i", strtotime($noticia['fecha_publicacion'])) ?>" style="background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;">
+                <i class="bi bi-bookmark-plus"></i> <span id="offlineSaveText">Guardar sin conexión</span>
               </button>
               <?php if ($esAutor || $esAdmin): ?>
                 <a href="<?= basePath() ?>/views/editar.php?id=<?= $id ?>" class="like-btn" style="background: var(--accent); color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
@@ -1110,6 +1124,73 @@ if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin' && isset($_SESSION
       this.disabled = true;
     }
   });
+
+  // Botón Guardar sin Conexión (Offline Support)
+  const btnOffline = document.getElementById('btnOfflineSave');
+  const offlineText = document.getElementById('offlineSaveText');
+
+  if (btnOffline && window.CatInkOffline) {
+    const articleId = btnOffline.dataset.id;
+
+    // Verificar si ya está guardado offline
+    CatInkOffline.isArticleSaved(articleId).then(isSaved => {
+      if (isSaved) {
+        btnOffline.classList.add('active');
+        btnOffline.style.background = 'var(--accent, #EF3363)';
+        btnOffline.style.color = '#ffffff';
+        btnOffline.style.borderColor = 'var(--accent, #EF3363)';
+        btnOffline.querySelector('i').className = 'bi bi-bookmark-check-fill';
+        if (offlineText) offlineText.textContent = 'Guardado offline';
+      }
+    });
+
+    btnOffline.addEventListener('click', async function() {
+      const isSaved = await CatInkOffline.isArticleSaved(articleId);
+
+      if (isSaved) {
+        // Eliminar de lecturas offline
+        await CatInkOffline.removeArticle(articleId);
+        btnOffline.classList.remove('active');
+        btnOffline.style.background = 'rgba(255,255,255,0.06)';
+        btnOffline.style.color = 'var(--text)';
+        btnOffline.style.borderColor = 'var(--border)';
+        btnOffline.querySelector('i').className = 'bi bi-bookmark-plus';
+        if (offlineText) offlineText.textContent = 'Guardar sin conexión';
+        CatInkOffline.showStatusToast('Noticia eliminada de tus lecturas offline', false);
+      } else {
+        // Extraer contenido para offline
+        const container = document.querySelector('.container-noticia');
+        const contentEl = container ? (container.querySelector('.descripcion') ? container : null) : null;
+        let htmlBody = '';
+        if (container) {
+          const clone = container.cloneNode(true);
+          // Remover botones de accion en el clon guardado
+          clone.querySelectorAll('#likeBtn, #btnOfflineSave, .back-to-top-container, form').forEach(el => el.remove());
+          htmlBody = clone.innerHTML;
+        }
+
+        await CatInkOffline.saveArticle({
+          id: articleId,
+          slug: this.dataset.slug,
+          titulo: this.dataset.title,
+          descripcion: document.querySelector('.descripcion')?.textContent || '',
+          contenido: htmlBody,
+          cover_image: this.dataset.img,
+          autor_nombre: this.dataset.author,
+          categorias: [<?= json_encode($cats[0] ?? 'Noticia') ?>],
+          fecha_publicacion: this.dataset.date
+        });
+
+        btnOffline.classList.add('active');
+        btnOffline.style.background = 'var(--accent, #EF3363)';
+        btnOffline.style.color = '#ffffff';
+        btnOffline.style.borderColor = 'var(--accent, #EF3363)';
+        btnOffline.querySelector('i').className = 'bi bi-bookmark-check-fill';
+        if (offlineText) offlineText.textContent = 'Guardado offline';
+        CatInkOffline.showStatusToast('¡Noticia guardada para leer sin conexión!', false);
+      }
+    });
+  }
 </script>
 <script>
   // ============================

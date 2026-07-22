@@ -117,6 +117,9 @@ $menuJson = [
   <meta name="google-adsense-account" content="ca-pub-8588111729852920">
   <!-- Canonical -->
   <link rel="canonical" href="<?= $canonical ?? 'https://www.catink.com.mx/' ?>">
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="<?= basePath() ?>/manifest.json">
+  <meta name="theme-color" content="#121216">
   <!-- Favicon -->
   <link rel="icon" href="<?= basePath() ?>/catink-icon.ico?v=2" type="image/x-icon">
   <link rel="icon" href="<?= basePath() ?>/img/catink-icon.png?v=2" type="image/png">
@@ -555,6 +558,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <?php endif; ?>
     </div>
     <div class="nav-actions">
+      <!-- LECTURAS OFFLINE LINK -->
+      <a href="<?= basePath() ?>/guardados" class="btn btn-outline-secondary" title="Lecturas Sin Conexión" aria-label="Lecturas Sin Conexión" style="position: relative; display: inline-flex; align-items: center; justify-content: center;">
+        <i class="bi bi-bookmark-check-fill"></i>
+        <span class="offline-badge-count" style="display: none; position: absolute; top: -5px; right: -5px; background: var(--accent, #EF3363); color: #fff; border-radius: 50%; font-size: 0.65rem; font-weight: 800; width: 18px; height: 18px; align-items: center; justify-content: center; line-height: 1;">0</span>
+      </a>
+
       <!-- SWITCH DE TEMA PILL-SHAPED -->
       <div class="theme-switch-pill" title="Cambiar tema" tabindex="0" role="button" aria-label="Alternar modo oscuro o claro">
         <span class="theme-icon active" id="themeIconSun">
