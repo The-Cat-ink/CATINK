@@ -466,9 +466,14 @@ $totalVacantes = count($vacantes);
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  // Acordeón Desktop
+function initUnetePublic() {
+  const modal = document.getElementById('modalPostulacion');
+  const form = document.getElementById('formPostularVacante');
   const cols = document.querySelectorAll('.unete-col');
+
+  if (!cols.length && !form) return;
+
+  // Acordeón Desktop
   cols.forEach(col => {
     col.addEventListener('mouseenter', () => {
       cols.forEach(c => c.classList.remove('active'));
@@ -482,67 +487,71 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Modal de Postulación
-  const modal = document.getElementById('modalPostulacion');
-  const closeModal = document.getElementById('closeModalPostulacion');
-  const cancelModal = document.getElementById('btnCancelPostulacion');
-  const form = document.getElementById('formPostularVacante');
-  const modalTitle = document.getElementById('modalPuestoTitle');
-  const inputVacanteId = document.getElementById('postularVacanteId');
-  const btnSubmit = document.getElementById('btnSubmitPostulacion');
-  const btnSubmitText = document.getElementById('btnSubmitText');
+  if (modal && form) {
+    const closeModal = document.getElementById('closeModalPostulacion');
+    const cancelModal = document.getElementById('btnCancelPostulacion');
+    const modalTitle = document.getElementById('modalPuestoTitle');
+    const inputVacanteId = document.getElementById('postularVacanteId');
+    const btnSubmit = document.getElementById('btnSubmitPostulacion');
+    const btnSubmitText = document.getElementById('btnSubmitText');
 
-  document.querySelectorAll('.btn-open-modal-postulacion').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const vacId = btn.dataset.vacanteId;
-      const vacTitle = btn.dataset.vacanteTitulo;
-      inputVacanteId.value = vacId;
-      modalTitle.textContent = 'Puesto: ' + vacTitle;
-      modal.style.display = 'flex';
+    document.querySelectorAll('.btn-open-modal-postulacion').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const vacId = btn.dataset.vacanteId;
+        const vacTitle = btn.dataset.vacanteTitulo;
+        if (inputVacanteId) inputVacanteId.value = vacId;
+        if (modalTitle) modalTitle.textContent = 'Puesto: ' + vacTitle;
+        modal.style.display = 'flex';
+      });
     });
-  });
 
-  closeModal?.addEventListener('click', () => modal.style.display = 'none');
-  cancelModal?.addEventListener('click', () => modal.style.display = 'none');
-  window.addEventListener('click', (e) => {
-    if (e.target === modal) modal.style.display = 'none';
-  });
-
-  // Envío AJAX
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    btnSubmit.disabled = true;
-    btnSubmitText.textContent = 'Enviando...';
-    btnSubmit.querySelector('i').className = 'bi bi-arrow-repeat spin';
-
-    const formData = new FormData(form);
-
-    fetch(BASE_PATH + '/controllers/postular_vacante.php', {
-      method: 'POST',
-      body: formData
-    })
-    .then(r => r.json())
-    .then(res => {
-      btnSubmit.disabled = false;
-      btnSubmitText.textContent = 'Enviar Solicitud';
-      btnSubmit.querySelector('i').className = 'bi bi-send-fill';
-
-      if (res.success) {
-        alert(res.message);
-        modal.style.display = 'none';
-        form.reset();
-      } else {
-        alert(res.error || 'Ocurrió un error al enviar la solicitud.');
-      }
-    })
-    .catch(err => {
-      btnSubmit.disabled = false;
-      btnSubmitText.textContent = 'Enviar Solicitud';
-      btnSubmit.querySelector('i').className = 'bi bi-send-fill';
-      alert('Error de conexión al enviar la solicitud.');
+    closeModal?.addEventListener('click', () => modal.style.display = 'none');
+    cancelModal?.addEventListener('click', () => modal.style.display = 'none');
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) modal.style.display = 'none';
     });
-  });
-});
+
+    // Envío AJAX
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      btnSubmit.disabled = true;
+      btnSubmitText.textContent = 'Enviando...';
+      btnSubmit.querySelector('i').className = 'bi bi-arrow-repeat spin';
+
+      const formData = new FormData(form);
+
+      fetch(BASE_PATH + '/controllers/postular_vacante.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(r => r.json())
+      .then(res => {
+        btnSubmit.disabled = false;
+        btnSubmitText.textContent = 'Enviar Solicitud';
+        btnSubmit.querySelector('i').className = 'bi bi-send-fill';
+
+        if (res.success) {
+          alert(res.message);
+          modal.style.display = 'none';
+          form.reset();
+        } else {
+          alert(res.error || 'Ocurrió un error al enviar la solicitud.');
+        }
+      })
+      .catch(err => {
+        btnSubmit.disabled = false;
+        btnSubmitText.textContent = 'Enviar Solicitud';
+        btnSubmit.querySelector('i').className = 'bi bi-send-fill';
+        alert('Error de conexión al enviar la solicitud.');
+      });
+    };
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initUnetePublic);
+document.addEventListener('turbo:load', initUnetePublic);
+document.addEventListener('turbo:render', initUnetePublic);
 
 function toggleMobileCard(header) {
   const card = header.parentElement;
