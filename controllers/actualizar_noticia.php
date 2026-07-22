@@ -156,10 +156,27 @@ $stmtPrev->execute();
 $prevData = $stmtPrev->get_result()->fetch_assoc();
 
 if ($prevData) {
-    if ($prevData['titulo'] !== $titulo || $prevData['descripcion'] !== $descripcion || $prevData['contenido'] !== $contenido) {
-        $motivoCambio = !empty($_POST['motivo_cambio']) ? trim($_POST['motivo_cambio']) : 'Edición de contenido';
+    $cambios = [];
+    if (trim($prevData['titulo']) !== trim($titulo)) {
+        $cambios[] = 'Título';
+    }
+    if (trim($prevData['descripcion']) !== trim($descripcion)) {
+        $cambios[] = 'Descripción';
+    }
+    if (trim($prevData['contenido']) !== trim($contenido)) {
+        $cambios[] = 'Contenido';
+    }
+    if (!empty($_POST['crop1']) || !empty($_POST['crop2']) || !empty($_POST['crop3']) || !empty($_POST['crop4'])) {
+        $cambios[] = 'Imágenes';
+    }
+
+    if (!empty($cambios)) {
+        $motivoDetallado = 'Cambios en: ' . implode(', ', $cambios);
+        if (!empty($_POST['motivo_cambio'])) {
+            $motivoDetallado .= ' — ' . trim($_POST['motivo_cambio']);
+        }
         $stmtHist = $con->prepare("INSERT INTO historial_ediciones_noticias (noticia_id, usuario_id, titulo, descripcion, contenido, motivo_cambio, fecha_edicion) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-        $stmtHist->bind_param("iissss", $id, $usuario_id, $prevData['titulo'], $prevData['descripcion'], $prevData['contenido'], $motivoCambio);
+        $stmtHist->bind_param("iissss", $id, $usuario_id, $prevData['titulo'], $prevData['descripcion'], $prevData['contenido'], $motivoDetallado);
         $stmtHist->execute();
     }
 }

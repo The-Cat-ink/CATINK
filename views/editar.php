@@ -1758,13 +1758,32 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
+        const actual = data.actual || {};
         let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
+
         data.historial.forEach((ver, index) => {
+          // Comparar con la versión siguiente (más reciente) o el estado actual
+          const nextVer = index > 0 ? data.historial[index - 1] : actual;
+          
+          const titleChanged = trim(ver.titulo) !== trim(nextVer.titulo || '');
+          const descChanged = trim(ver.descripcion) !== trim(nextVer.descripcion || '');
+          const contentChanged = trim(ver.contenido) !== trim(nextVer.contenido || '');
+
+          let diffBadges = '';
+          if (titleChanged) diffBadges += '<span style="background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Título</span> ';
+          if (descChanged) diffBadges += '<span style="background: rgba(52, 152, 219, 0.15); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.3); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Descripción</span> ';
+          if (contentChanged) diffBadges += '<span style="background: rgba(241, 196, 15, 0.15); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.3); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Cuerpo Noticia</span> ';
+          if (ver.motivo_cambio && ver.motivo_cambio.includes('Imágenes')) {
+            diffBadges += '<span style="background: rgba(155, 89, 182, 0.15); color: #9b59b6; border: 1px solid rgba(155, 89, 182, 0.3); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Imágenes</span> ';
+          }
+
+          if (!diffBadges) diffBadges = '<span style="background: rgba(255,255,255,0.08); color: var(--muted); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Sin cambios mayores</span>';
+
           html += `
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border, rgba(255,255,255,0.08)); border-radius: 10px; padding: 16px; transition: background 0.2s;">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px;">
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border, rgba(255,255,255,0.08)); border-radius: 12px; padding: 18px; transition: background 0.2s;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px;">
                 <div>
-                  <span style="background: rgba(239, 51, 99, 0.15); color: var(--accent, #EF3363); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 700; margin-right: 8px;">Revisión #${data.historial.length - index}</span>
+                  <span style="background: rgba(239, 51, 99, 0.15); color: var(--accent, #EF3363); padding: 3px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 800; margin-right: 8px;">Revisión #${data.historial.length - index}</span>
                   <span style="font-size: 0.85rem; color: var(--muted, #888);"><i class="bi bi-clock"></i> ${ver.fecha_edicion}</span>
                 </div>
                 <button type="button" class="btn-restaurar-ver" data-version-id="${ver.id}" style="background: var(--accent, #EF3363); color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
@@ -1772,18 +1791,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 </button>
               </div>
               
-              <div style="font-size: 0.9rem; margin-bottom: 6px;">
-                <strong>Modificado por:</strong> ${escapeHtml(ver.usuario_nombre)} &bull; 
-                <span style="font-style: italic; color: var(--muted);">${escapeHtml(ver.motivo_cambio)}</span>
+              <div style="font-size: 0.9rem; margin-bottom: 8px;">
+                <strong>Editor:</strong> ${escapeHtml(ver.usuario_nombre)} &bull; 
+                <span style="color: var(--muted);">${escapeHtml(ver.motivo_cambio)}</span>
+              </div>
+
+              <div style="margin-bottom: 10px;">
+                <strong style="font-size: 0.8rem; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 4px;">Campos modificados:</strong>
+                <div>${diffBadges}</div>
               </div>
               
-              <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-top: 8px; margin-bottom: 4px;">
+              <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 6px;">
                 Título guardado: «${escapeHtml(ver.titulo)}»
               </div>
-              
-              <div style="font-size: 0.85rem; color: var(--muted); background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; max-height: 80px; overflow-y: auto; white-space: pre-wrap; font-family: monospace;">
-                ${escapeHtml(ver.descripcion)}
-              </div>
+
+              <!-- Acordeón de Comparación Detallada (Diff) -->
+              <details style="margin-top: 10px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 14px;">
+                <summary style="font-size: 0.85rem; font-weight: 700; color: var(--accent, #EF3363); cursor: pointer;">
+                  <i class="bi bi-file-diff"></i> Ver diferencias detalladas con la versión posterior
+                </summary>
+
+                <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem;">
+                  ${titleChanged ? `
+                    <div style="background: rgba(239, 51, 99, 0.08); padding: 8px 12px; border-radius: 6px; border-left: 3px solid #EF3363;">
+                      <strong style="color: #EF3363;">Título en esta versión:</strong><br>${escapeHtml(ver.titulo)}<br>
+                      <strong style="color: #2ecc71; margin-top: 4px; display: block;">Título posterior:</strong> ${escapeHtml(nextVer.titulo || '')}
+                    </div>` : ''}
+                  
+                  ${descChanged ? `
+                    <div style="background: rgba(52, 152, 219, 0.08); padding: 8px 12px; border-radius: 6px; border-left: 3px solid #3498db;">
+                      <strong style="color: #3498db;">Descripción en esta versión:</strong><br>${escapeHtml(ver.descripcion)}<br>
+                      <strong style="color: #2ecc71; margin-top: 4px; display: block;">Descripción posterior:</strong> ${escapeHtml(nextVer.descripcion || '')}
+                    </div>` : ''}
+
+                  <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px;">
+                    <strong style="color: var(--muted); font-size: 0.8rem;">Vista previa de contenido guardado:</strong>
+                    <div style="max-height: 120px; overflow-y: auto; color: #ddd; white-space: pre-wrap; font-family: monospace; font-size: 0.8rem; margin-top: 4px;">
+                      ${escapeHtml(ver.contenido)}
+                    </div>
+                  </div>
+                </div>
+              </details>
             </div>
           `;
         });
@@ -1817,6 +1865,8 @@ document.addEventListener('DOMContentLoaded', () => {
         historialList.innerHTML = '<div style="color: #EF3363; text-align: center; padding: 20px;">Error al cargar el historial.</div>';
       });
   }
+
+  function trim(str) { return str ? str.trim() : ''; }
 
   function escapeHtml(text) {
     if (!text) return '';

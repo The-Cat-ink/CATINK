@@ -16,6 +16,12 @@ if ($noticia_id <= 0) {
     exit;
 }
 
+// Obtener estado actual de la noticia para comparar
+$stmtCurrent = $con->prepare("SELECT titulo, descripcion, contenido FROM noticias WHERE id = ?");
+$stmtCurrent->bind_param("i", $noticia_id);
+$stmtCurrent->execute();
+$actual = $stmtCurrent->get_result()->fetch_assoc();
+
 $stmt = $con->prepare("
     SELECT h.*, u.nombre AS usuario_nombre, u.usuario AS usuario_username
     FROM historial_ediciones_noticias h
@@ -41,4 +47,8 @@ while ($row = $result->fetch_assoc()) {
     ];
 }
 
-echo json_encode(['success' => true, 'historial' => $historial]);
+echo json_encode([
+    'success' => true,
+    'actual' => $actual,
+    'historial' => $historial
+]);
