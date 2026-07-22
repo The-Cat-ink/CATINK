@@ -4565,6 +4565,14 @@ body, .nav-link, .btn, .card, .site-main {
 .top-card.card-width-2-3 {
   aspect-ratio: 32/10;
 }
+/* Debe ir DESPUES de la regla de arriba: misma especificidad, gana la ultima.
+   Apiladas ocupan el ancho completo, y la proporcion 32/10 pensada para la
+   columna de 2/3 las dejaria como una franja baja frente al resto. */
+@media (max-width: 768px) {
+  .top-card.card-width-2-3 {
+    aspect-ratio: 16/10;
+  }
+}
 .top-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 24px rgba(0,0,0,0.12);
@@ -5244,6 +5252,13 @@ body, .nav-link, .btn, .card, .site-main {
   overflow: hidden;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+/* Mismo caso que .top-card.card-width-2-3: apilada a ancho completo, 32/10 la
+   dejaria a la mitad de alto que las .debatido-card-small de al lado. */
+@media (max-width: 768px) {
+  .debatido-card-large {
+    aspect-ratio: 16/10;
+  }
 }
 .debatido-card-large img {
   width: 100%;
