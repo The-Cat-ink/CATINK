@@ -110,6 +110,7 @@ $totalSolicitudes = count($solicitudes);
                     <table class="contenidos-table">
                         <thead>
                             <tr>
+                                <th style="width: 40px; text-align:center;"><i class="bi bi-arrows-move"></i></th>
                                 <th style="width: 50px;">Orden</th>
                                 <th>Etiqueta / Tag</th>
                                 <th>Puesto / Título</th>
@@ -119,13 +120,14 @@ $totalSolicitudes = count($solicitudes);
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="vacantesTbody">
                             <?php if (empty($vacantes)): ?>
-                                <tr><td colspan="7" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron vacantes. Haz clic en "Crear vacante".</td></tr>
+                                <tr><td colspan="8" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron vacantes. Haz clic en "Crear vacante".</td></tr>
                             <?php else: ?>
                                 <?php foreach ($vacantes as $row): ?>
-                                    <tr>
-                                        <td><strong style="color:var(--text);"><?= $row['orden'] ?></strong></td>
+                                    <tr data-id="<?= $row['id'] ?>" class="vacante-row">
+                                        <td style="cursor: grab; text-align: center; color:var(--muted);"><i class="bi bi-grip-vertical"></i></td>
+                                        <td><strong style="color:var(--text);" class="vac-orden-num"><?= $row['orden'] ?></strong></td>
                                         <td><span class="estado-badge" style="background:rgba(239,51,99,0.1); color:#EF3363; font-weight:800;"><?= htmlspecialchars($row['tag']) ?></span></td>
                                         <td><strong class="table-title"><?= htmlspecialchars($row['titulo']) ?></strong></td>
                                         <td><span style="font-style:italic; color:var(--muted);"><?= htmlspecialchars($row['subtitulo_italic'] ?? '') ?></span></td>
@@ -292,6 +294,7 @@ $totalSolicitudes = count($solicitudes);
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
 const BASE_PATH = '<?= basePath() ?>';
 
@@ -320,6 +323,45 @@ function initVacantesView() {
   const btnClose = document.getElementById('closeVacanteModal');
   const btnCloseBtn = document.getElementById('closeVacanteBtn');
   const form = document.getElementById('formVacanteModal');
+  const tbody = document.getElementById('vacantesTbody');
+
+  if (tbody && typeof Sortable !== 'undefined') {
+    new Sortable(tbody, {
+      animation: 150,
+      handle: 'td:first-child',
+      ghostClass: 'sortable-ghost',
+      dragClass: 'sortable-drag',
+      forceFallback: true,
+      axis: 'y',
+      onEnd: function () {
+        guardarOrdenVacantes();
+      }
+    });
+  }
+
+  function guardarOrdenVacantes() {
+    const rows = document.querySelectorAll('.vacante-row');
+    const orden = [];
+    rows.forEach((row, index) => {
+      const newOrden = index + 1;
+      const numEl = row.querySelector('.vac-orden-num');
+      if (numEl) numEl.textContent = newOrden;
+      orden.push({
+        id: parseInt(row.dataset.id),
+        orden: newOrden
+      });
+    });
+
+    fetch(BASE_PATH + '/controllers/vacantes_reordenar.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vacantes: orden })
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (!res.success) alert(res.error || 'Error al reordenar vacantes');
+    });
+  }
 
   if (!modal || !form) return;
 

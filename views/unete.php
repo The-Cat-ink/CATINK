@@ -6,6 +6,9 @@ include("./../data/conexion.php");
 $resVac = $con->query("SELECT * FROM vacantes_equipo WHERE estado = 1 ORDER BY orden ASC, id ASC");
 $vacantes = $resVac ? $resVac->fetch_all(MYSQLI_ASSOC) : [];
 $totalVacantes = count($vacantes);
+
+// Agrupar vacantes en filas de máximo 5 posiciones por fila
+$vacantesFilas = array_chunk($vacantes, 5);
 ?>
 
 <style>
@@ -49,16 +52,17 @@ $totalVacantes = count($vacantes);
   font-weight: 500;
 }
 
-/* Acordeón Desktop */
+/* Acordeón Desktop (Máximo 5 por fila) */
 .unete-accordion-desktop {
   display: flex;
   width: 100%;
-  min-height: 520px;
+  min-height: 500px;
   border: 1px solid var(--border, #e2e8f0);
   border-radius: 20px;
   overflow: hidden;
   background: var(--card-bg, #ffffff);
   box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  margin-bottom: 28px;
 }
 
 .unete-col {
@@ -152,7 +156,7 @@ $totalVacantes = count($vacantes);
 }
 
 .unete-role-title {
-  font-size: 3.2rem;
+  font-size: 3rem;
   font-weight: 900;
   line-height: 1;
   margin: 0 0 8px;
@@ -161,10 +165,10 @@ $totalVacantes = count($vacantes);
 }
 
 .unete-role-italic {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-style: italic;
   color: var(--accent, #EF3363);
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   display: block;
   font-weight: 600;
 }
@@ -174,7 +178,7 @@ $totalVacantes = count($vacantes);
   line-height: 1.6;
   color: var(--muted, #475569);
   max-width: 480px;
-  margin-bottom: 30px;
+  margin-bottom: 28px;
 }
 
 .btn-postularme-action {
@@ -242,7 +246,7 @@ $totalVacantes = count($vacantes);
   padding-top: 16px;
 }
 
-/* Modal de Postulación de Alta Calidad */
+/* Modal de Postulación */
 .modal-postulacion-overlay {
   position: fixed;
   inset: 0;
@@ -339,51 +343,61 @@ $totalVacantes = count($vacantes);
   <!-- Encabezado Limpio de la Sección -->
   <div class="unete-section-header">
     <span class="unete-badge-header">Únete al Equipo</span>
-    <h1 class="unete-main-title"><?= $totalVacantes ?> Posiciones Abiertas</h1>
+    <h1 class="unete-main-title"><?= $totalVacantes ?> Vacantes Abiertas</h1>
     <p class="unete-sub-desc">Selecciona un rol para conocer los detalles e iniciar tu postulación</p>
   </div>
 
-  <!-- Vista Desktop: Acordeón Horizontal Expandible -->
-  <div class="unete-accordion-desktop" id="desktopAccordion">
-    <?php if (empty($vacantes)): ?>
-      <div style="padding: 60px; text-align: center; width: 100%; color: var(--muted);">
+  <!-- Vista Desktop: Acordeón Horizontal (Dividido en filas de máximo 5 vacantes) -->
+  <?php if (empty($vacantes)): ?>
+    <div class="unete-accordion-desktop" style="min-height: auto; padding: 60px; text-align: center;">
+      <div style="width: 100%; color: var(--muted);">
         <i class="bi bi-info-circle" style="font-size: 2rem; display: block; margin-bottom: 12px; color: var(--accent);"></i>
         Actualmente no hay vacantes abiertas. ¡Vuelve a consultar pronto!
       </div>
-    <?php else: ?>
-      <?php foreach ($vacantes as $index => $vac): ?>
-        <div class="unete-col <?= $index === 0 ? 'active' : '' ?>" data-index="<?= $index ?>">
-          
-          <!-- Estado Colapsado (Texto Vertical) -->
-          <div class="unete-col-collapsed">
-            <span class="unete-num-small">0<?= $index + 1 ?></span>
-            <span class="unete-vertical-text"><?= htmlspecialchars($vac['titulo']) ?></span>
-            <span style="height: 14px; width: 2px; background: var(--accent); opacity: 0.5;"></span>
-          </div>
-
-          <!-- Estado Expandido (Detalle Completo) -->
-          <div class="unete-col-expanded">
-            <div>
-              <span class="unete-badge-tag">● <?= htmlspecialchars($vac['tag']) ?></span>
-              <h1 class="unete-role-title"><?= htmlspecialchars($vac['titulo']) ?></h1>
-              <?php if (!empty($vac['subtitulo_italic'])): ?>
-                <span class="unete-role-italic"><?= htmlspecialchars($vac['subtitulo_italic']) ?></span>
-              <?php endif; ?>
-              <div style="width: 40px; height: 3px; background: var(--accent); margin-bottom: 20px; border-radius: 2px;"></div>
-              <p class="unete-role-desc"><?= htmlspecialchars($vac['descripcion']) ?></p>
+    </div>
+  <?php else: ?>
+    <?php 
+    $globalIndex = 0;
+    foreach ($vacantesFilas as $fIndex => $filaVacantes): 
+    ?>
+      <div class="unete-accordion-desktop row-accordion-desktop" id="desktopAccordionRow<?= $fIndex ?>">
+        <?php foreach ($filaVacantes as $colIndex => $vac): 
+          $isFirstInRow = ($colIndex === 0);
+          $globalIndex++;
+        ?>
+          <div class="unete-col <?= $isFirstInRow ? 'active' : '' ?>" data-index="<?= $globalIndex ?>">
+            
+            <!-- Estado Colapsado (Texto Vertical) -->
+            <div class="unete-col-collapsed">
+              <span class="unete-num-small">0<?= $globalIndex ?></span>
+              <span class="unete-vertical-text"><?= htmlspecialchars($vac['titulo']) ?></span>
+              <span style="height: 14px; width: 2px; background: var(--accent); opacity: 0.5;"></span>
             </div>
 
-            <div>
-              <button type="button" class="btn-postularme-action btn-open-modal-postulacion" data-vacante-id="<?= $vac['id'] ?>" data-vacante-titulo="<?= htmlspecialchars($vac['titulo']) ?> (<?= htmlspecialchars($vac['tag']) ?>)">
-                <span>POSTULARME</span> <i class="bi bi-arrow-right"></i>
-              </button>
-            </div>
-          </div>
+            <!-- Estado Expandido (Detalle Completo) -->
+            <div class="unete-col-expanded">
+              <div>
+                <span class="unete-badge-tag">● <?= htmlspecialchars($vac['tag']) ?></span>
+                <h1 class="unete-role-title"><?= htmlspecialchars($vac['titulo']) ?></h1>
+                <?php if (!empty($vac['subtitulo_italic'])): ?>
+                  <span class="unete-role-italic"><?= htmlspecialchars($vac['subtitulo_italic']) ?></span>
+                <?php endif; ?>
+                <div style="width: 40px; height: 3px; background: var(--accent); margin-bottom: 20px; border-radius: 2px;"></div>
+                <p class="unete-role-desc"><?= htmlspecialchars($vac['descripcion']) ?></p>
+              </div>
 
-        </div>
-      <?php endforeach; ?>
-    <?php endif; ?>
-  </div>
+              <div>
+                <button type="button" class="btn-postularme-action btn-open-modal-postulacion" data-vacante-id="<?= $vac['id'] ?>" data-vacante-titulo="<?= htmlspecialchars($vac['titulo']) ?> (<?= htmlspecialchars($vac['tag']) ?>)">
+                  <span>POSTULARME</span> <i class="bi bi-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php endforeach; ?>
+  <?php endif; ?>
 
   <!-- Vista Móvil: Acordeón Desplegable Vertical -->
   <div class="unete-accordion-mobile">
@@ -414,7 +428,7 @@ $totalVacantes = count($vacantes);
 
 </div>
 
-<!-- MODAL FORMULARIO DE POSTULACIÓN DE ALTA CALIDAD -->
+<!-- MODAL FORMULARIO DE POSTULACIÓN -->
 <div id="modalPostulacion" class="modal-postulacion-overlay">
   <div class="modal-postulacion-box">
     
@@ -471,20 +485,20 @@ const BASE_PATH = '<?= basePath() ?>';
 function initUnetePublic() {
   const modal = document.getElementById('modalPostulacion');
   const form = document.getElementById('formPostularVacante');
-  const cols = document.querySelectorAll('.unete-col');
 
-  if (!cols.length && !form) return;
-
-  // Acordeón Desktop
-  cols.forEach(col => {
-    col.addEventListener('mouseenter', () => {
-      cols.forEach(c => c.classList.remove('active'));
-      col.classList.add('active');
-    });
-    col.addEventListener('click', (e) => {
-      if (e.target.closest('.btn-open-modal-postulacion')) return;
-      cols.forEach(c => c.classList.remove('active'));
-      col.classList.add('active');
+  // Lógica de Acordeón por cada fila (máximo 5 por fila)
+  document.querySelectorAll('.row-accordion-desktop').forEach(row => {
+    const cols = row.querySelectorAll('.unete-col');
+    cols.forEach(col => {
+      col.addEventListener('mouseenter', () => {
+        cols.forEach(c => c.classList.remove('active'));
+        col.classList.add('active');
+      });
+      col.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-open-modal-postulacion')) return;
+        cols.forEach(c => c.classList.remove('active'));
+        col.classList.add('active');
+      });
     });
   });
 
@@ -498,14 +512,14 @@ function initUnetePublic() {
     const btnSubmitText = document.getElementById('btnSubmitText');
 
     document.querySelectorAll('.btn-open-modal-postulacion').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.onclick = function(e) {
         e.stopPropagation();
-        const vacId = btn.dataset.vacanteId;
-        const vacTitle = btn.dataset.vacanteTitulo;
+        const vacId = this.dataset.vacanteId;
+        const vacTitle = this.dataset.vacanteTitulo;
         if (inputVacanteId) inputVacanteId.value = vacId;
         if (modalTitle) modalTitle.textContent = 'Puesto: ' + vacTitle;
         modal.style.display = 'flex';
-      });
+      };
     });
 
     closeModal?.addEventListener('click', () => modal.style.display = 'none');
