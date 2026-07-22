@@ -172,64 +172,81 @@ function formatNumberShort($num){
                 }
             ?>
         </div>
-    <?php endif; ?>
-    <!-- BOTONES -->
-    <div class="mb-4">
+      <!-- BOTONES QUICKS DE ADMINISTRADOR -->
+    <style>
+    .admin-quick-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .admin-quick-toolbar .btn-accent {
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(239, 51, 99, 0.22);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .admin-quick-toolbar .btn-accent:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(239, 51, 99, 0.32);
+    }
+    .btn-panic-deactivate {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #ffffff !important;
+      border: none;
+      padding: 10px 20px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-panic-deactivate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(239, 68, 68, 0.45);
+      color: #ffffff !important;
+    }
+    .btn-panic-activate {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff !important;
+      border: none;
+      padding: 10px 20px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-panic-activate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+      color: #ffffff !important;
+    }
+    </style>
+    <div class="admin-quick-toolbar mb-4">
         <?php if($ACLNoticias['crear']): ?>
             <a href="crear.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Nueva Noticia</a>
         <?php endif; ?> 
-         <?php if($superadmin): ?>
-            <style>
-            .btn-panic-deactivate {
-                background: #dc3545;
-                color: #fff;
-                border: none;
-                padding: 6px 14px;
-                font-size: 0.88rem;
-                font-weight: 600;
-                border-radius: 6px;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                text-decoration: none;
-                vertical-align: middle;
-            }
-            .btn-panic-deactivate:hover {
-                background: #bd2130;
-                transform: translateY(-1px);
-                box-shadow: 0 6px 16px rgba(220, 53, 69, 0.35);
-                color: #fff;
-            }
-            .btn-panic-activate {
-                background: #28a745;
-                color: #fff;
-                border: none;
-                padding: 6px 14px;
-                font-size: 0.88rem;
-                font-weight: 600;
-                border-radius: 6px;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                text-decoration: none;
-                vertical-align: middle;
-            }
-            .btn-panic-activate:hover {
-                background: #218838;
-                transform: translateY(-1px);
-                box-shadow: 0 6px 16px rgba(40, 167, 69, 0.35);
-                color: #fff;
-            }
-            </style>
+        <?php if($superadmin): ?>
             <a href="paginas.php" class="btn btn-accent"><i class="bi bi-card-text"></i> Editar Páginas Informativas</a>
-            <button id="btnAbrirModal" class="btn btn-accent" style="font-weight: 525;">
-                <i class="bi bi-gear"></i> Gestionar Estado de Secciones
+            <button id="btnAbrirModal" class="btn btn-accent">
+                <i class="bi bi-gear-fill"></i> Gestionar Estado de Secciones
             </button>
             <?php
             // Obtener estado actual de comentarios
@@ -237,7 +254,7 @@ function formatNumberShort($num){
             $comentariosSec = $comentariosSecRes->fetch_assoc();
             $comentariosActivos = $comentariosSec ? ($comentariosSec['estado'] == 1) : true;
             ?>
-            <form action="" method="POST" style="display: inline-block; margin-left: 8px; vertical-align: middle;">
+            <form action="" method="POST" style="display: inline-block; margin: 0;">
                 <?php if ($comentariosActivos): ?>
                     <input type="hidden" name="estado_panico" value="0">
                     <button type="submit" name="toggle_panico" class="btn-panic-deactivate">
@@ -255,12 +272,15 @@ function formatNumberShort($num){
 
     <!-- SECCIÓN DE LISTA DE REPRODUCCIÓN (YOUTUBE) -->
     <?php if($superadmin): ?>
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-light"><h5>Lista de Reproducción (YouTube)</h5></div>
-            <div class="card-body">
+        <div class="card shadow-sm mb-4" style="border-radius: 16px; overflow: hidden; border: 1px solid var(--border);">
+            <div class="card-header bg-light d-flex align-items-center gap-2" style="padding: 16px 22px;">
+                <i class="bi bi-youtube text-danger fs-5"></i>
+                <h5 class="mb-0" style="font-weight: 800; font-size: 1.05rem;">Lista de Reproducción (YouTube)</h5>
+            </div>
+            <div class="card-body" style="padding: 22px;">
                 <form action="" method="POST">
-                    <div class="mb-3">
-                        <label for="youtube_playlist_id" style="font-weight: 600; display: block; margin-bottom: 8px;">ID o URL de la lista de reproducción de YouTube:</label>
+                    <div class="mb-0">
+                        <label for="youtube_playlist_id" style="font-weight: 700; display: block; margin-bottom: 8px; color: var(--text);">ID o URL de la lista de reproducción de YouTube:</label>
                         <?php 
                             $playlistVal = '';
                             foreach($config as $sec) {
@@ -270,13 +290,19 @@ function formatNumberShort($num){
                             }
                         ?>
                         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                            <input type="text" id="youtube_playlist_id" name="youtube_playlist" value="<?= htmlspecialchars($playlistVal) ?>" placeholder="Ej: PLMC9KNkIncKvYin_USF1QeqG50KB1K1uD" style="flex: 1; min-width: 250px; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
-                            <button type="submit" class="btn btn-accent" name="actualizarPlaylist" style="margin-top:0; padding: 10px 20px;">Actualizar Playlist</button>
+                            <div style="position: relative; flex: 1; min-width: 280px;">
+                                <i class="bi bi-link-45deg" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1.2rem;"></i>
+                                <input type="text" id="youtube_playlist_id" name="youtube_playlist" value="<?= htmlspecialchars($playlistVal) ?>" placeholder="Ej: PLMC9KNincKvYin_USF1QeqG50KB1K1uD" style="width: 100%; padding: 12px 14px 12px 42px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg-subtle, #f8fafc); color: var(--text); font-weight: 600; outline: none; transition: border-color 0.2s;">
+                            </div>
+                            <button type="submit" class="btn btn-accent" name="actualizarPlaylist" style="padding: 12px 24px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                                <i class="bi bi-arrow-repeat"></i> Actualizar Playlist
+                            </button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
+    <?php endif; ?>div>
     <?php endif; ?>
 
     <!-- ÚLTIMAS NOTICIAS -->
@@ -410,69 +436,160 @@ function formatNumberShort($num){
     </div>
 
     <?php if(isset($_SESSION['usuario'])): ?>
+    <?php if(isset($_SESSION['usuario'])): ?>
         <!-- ZONA DE PELIGRO: RESTABLECIMIENTO GRANULAR -->
-        <div class="card shadow-sm mb-4 border-danger" style="border: 1px solid #dc3545 !important; border-radius: 12px; background: rgba(220, 53, 69, 0.02); margin-top: 24px;">
-            <div class="card-header bg-danger text-white d-flex align-items-center gap-2" style="border-top-left-radius: 11px; border-top-right-radius: 11px; padding: 12px 20px; background-color: #dc3545 !important;">
+        <style>
+        .danger-zone-card {
+          background: var(--card-bg, #ffffff);
+          border: 1.5px solid rgba(239, 68, 68, 0.4) !important;
+          border-radius: 18px !important;
+          overflow: hidden;
+          box-shadow: 0 8px 30px rgba(239, 68, 68, 0.08);
+          margin-top: 28px;
+        }
+        .danger-zone-header {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+          color: #ffffff;
+          padding: 16px 24px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .danger-zone-header h5 {
+          margin: 0;
+          font-weight: 800;
+          font-size: 1.08rem;
+          color: #ffffff;
+        }
+        .danger-check-card {
+          background: var(--bg-subtle, #f8fafc);
+          border: 1.5px solid var(--border, #cbd5e1);
+          border-radius: 12px;
+          padding: 14px 16px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          user-select: none;
+          height: 100%;
+        }
+        [data-bs-theme="dark"] .danger-check-card {
+          background: rgba(255, 255, 255, 0.03);
+          border-color: rgba(255, 255, 255, 0.12);
+        }
+        .danger-check-card:hover {
+          border-color: #ef4444;
+          background: rgba(239, 68, 68, 0.05);
+          transform: translateY(-1px);
+        }
+        .danger-check-card input[type="checkbox"] {
+          width: 18px;
+          height: 18px;
+          accent-color: #ef4444;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+        .danger-check-label {
+          font-weight: 700;
+          font-size: 0.9rem;
+          cursor: pointer;
+          color: var(--text);
+          margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .btn-danger-submit {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+          color: #ffffff !important;
+          border: none;
+          padding: 14px 28px;
+          font-weight: 800;
+          font-size: 1rem;
+          border-radius: 14px;
+          cursor: pointer;
+          width: 100%;
+          transition: all 0.2s ease;
+          box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+        }
+        .btn-danger-submit:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 22px rgba(239, 68, 68, 0.45);
+        }
+        </style>
+        <div class="card shadow-sm mb-4 danger-zone-card">
+            <div class="card-header danger-zone-header">
                 <i class="bi bi-exclamation-octagon-fill fs-5"></i>
-                <h5 class="mb-0" style="font-weight: 600; color: #fff;">Zona de Peligro: Restablecer Información del Sistema</h5>
+                <h5 class="mb-0">Zona de Peligro: Restablecer Información del Sistema</h5>
             </div>
             <div class="card-body" style="padding: 24px;">
-                <p class="text-muted small mb-4">Esta sección permite eliminar de forma masiva y permanente los contenidos seleccionados en un rango de fechas. Las cuentas de administradores, editores y suscriptores no se verán afectadas bajo ninguna circunstancia. Puedes decidir si deseas o no borrar cuentas de lectores.</p>
+                <p class="text-muted small mb-4" style="line-height: 1.6; font-size: 0.92rem;">
+                  Esta sección permite eliminar de forma masiva y permanente los contenidos seleccionados en un rango de fechas especificado. Las cuentas de administradores, editores y suscriptores no se verán afectadas bajo ninguna circunstancia. Puedes decidir qué módulos específicos deseas limpiar.
+                </p>
                 <form action="<?= basePath() ?>/controllers/restablecer_granular.php" method="POST" id="formRestablecer">
                     <div class="row g-3 mb-4">
                         <div class="col-md-6 col-12">
-                            <label for="rest_fecha_inicio" style="font-weight: 600; display: block; margin-bottom: 8px;">Fecha de Inicio:</label>
-                            <input type="date" id="rest_fecha_inicio" name="fecha_inicio" required class="form-control" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                            <label for="rest_fecha_inicio" style="font-weight: 700; display: block; margin-bottom: 8px; color: var(--text);">Fecha de Inicio:</label>
+                            <div style="position: relative;">
+                              <input type="date" id="rest_fecha_inicio" name="fecha_inicio" required class="form-control" style="padding: 11px 14px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg-subtle, #f8fafc); color: var(--text); font-weight: 600; outline: none;">
+                            </div>
                         </div>
                         <div class="col-md-6 col-12">
-                            <label for="rest_fecha_fin" style="font-weight: 600; display: block; margin-bottom: 8px;">Fecha de Fin:</label>
-                            <input type="date" id="rest_fecha_fin" name="fecha_fin" required class="form-control" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                            <label for="rest_fecha_fin" style="font-weight: 700; display: block; margin-bottom: 8px; color: var(--text);">Fecha de Fin:</label>
+                            <div style="position: relative;">
+                              <input type="date" id="rest_fecha_fin" name="fecha_fin" required class="form-control" style="padding: 11px 14px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg-subtle, #f8fafc); color: var(--text); font-weight: 600; outline: none;">
+                            </div>
                         </div>
                     </div>
                     
                     <div class="mb-4">
-                        <label style="font-weight: 600; display: block; margin-bottom: 12px;">Selecciona qué información deseas borrar en el rango especificado:</label>
-                        <div class="row row-cols-1 row-cols-md-3 g-3" style="margin-left: 2px;">
+                        <label style="font-weight: 700; display: block; margin-bottom: 14px; color: var(--text);">Selecciona qué información deseas borrar en el rango especificado:</label>
+                        <div class="row row-cols-1 row-cols-md-3 g-3">
                             <div class="col">
-                                <div class="form-check">
-                                    <input class="form-check-input mod-check" type="checkbox" name="modulos[]" value="noticias" id="chkNoticias" checked>
-                                    <label class="form-check-label" for="chkNoticias" style="font-weight: 500; cursor: pointer; color: var(--text);">Noticias y Estadísticas</label>
-                                </div>
+                                <label class="danger-check-card" for="chkNoticias">
+                                    <input class="mod-check" type="checkbox" name="modulos[]" value="noticias" id="chkNoticias" checked>
+                                    <span class="danger-check-label"><i class="bi bi-newspaper text-danger"></i> Noticias y Estadísticas</span>
+                                </label>
                             </div>
                             <div class="col">
-                                <div class="form-check">
-                                    <input class="form-check-input mod-check" type="checkbox" name="modulos[]" value="comentarios" id="chkComentarios" checked>
-                                    <label class="form-check-label" for="chkComentarios" style="font-weight: 500; cursor: pointer; color: var(--text);">Comentarios y Reacciones</label>
-                                </div>
+                                <label class="danger-check-card" for="chkComentarios">
+                                    <input class="mod-check" type="checkbox" name="modulos[]" value="comentarios" id="chkComentarios" checked>
+                                    <span class="danger-check-label"><i class="bi bi-chat-square-text text-danger"></i> Comentarios y Reacciones</span>
+                                </label>
                             </div>
                             <div class="col">
-                                <div class="form-check">
-                                    <input class="form-check-input mod-check" type="checkbox" name="modulos[]" value="suscripciones" id="chkSuscripciones">
-                                    <label class="form-check-label" for="chkSuscripciones" style="font-weight: 500; cursor: pointer; color: var(--text);">Suscripciones</label>
-                                </div>
+                                <label class="danger-check-card" for="chkSuscripciones">
+                                    <input class="mod-check" type="checkbox" name="modulos[]" value="suscripciones" id="chkSuscripciones">
+                                    <span class="danger-check-label"><i class="bi bi-bell text-danger"></i> Suscripciones</span>
+                                </label>
                             </div>
                             <div class="col">
-                                <div class="form-check">
-                                    <input class="form-check-input mod-check" type="checkbox" name="modulos[]" value="lectores" id="chkLectores">
-                                    <label class="form-check-label" for="chkLectores" style="font-weight: 500; cursor: pointer; color: var(--text);">Cuentas de Lectores</label>
-                                </div>
+                                <label class="danger-check-card" for="chkLectores">
+                                    <input class="mod-check" type="checkbox" name="modulos[]" value="lectores" id="chkLectores">
+                                    <span class="danger-check-label"><i class="bi bi-people text-danger"></i> Cuentas de Lectores</span>
+                                </label>
                             </div>
                             <div class="col">
-                                <div class="form-check">
-                                    <input class="form-check-input mod-check" type="checkbox" name="modulos[]" value="notificaciones" id="chkNotificaciones" checked>
-                                    <label class="form-check-label" for="chkNotificaciones" style="font-weight: 500; cursor: pointer; color: var(--text);">Notificaciones de Sistema</label>
-                                </div>
+                                <label class="danger-check-card" for="chkNotificaciones">
+                                    <input class="mod-check" type="checkbox" name="modulos[]" value="notificaciones" id="chkNotificaciones" checked>
+                                    <span class="danger-check-label"><i class="bi bi-broadcast text-danger"></i> Notificaciones de Sistema</span>
+                                </label>
                             </div>
                             <div class="col">
-                                <div class="form-check">
-                                    <input class="form-check-input mod-check" type="checkbox" name="modulos[]" value="actividades" id="chkActividades">
-                                    <label class="form-check-label" for="chkActividades" style="font-weight: 500; cursor: pointer; color: var(--text);">Bitácora de Actividad</label>
-                                </div>
+                                <label class="danger-check-card" for="chkActividades">
+                                    <input class="mod-check" type="checkbox" name="modulos[]" value="actividades" id="chkActividades">
+                                    <span class="danger-check-label"><i class="bi bi-journal-text text-danger"></i> Bitácora de Actividad</span>
+                                </label>
                             </div>
                         </div>
                     </div>
 
-                    <button type="button" id="btnOpenRestModal" class="btn btn-danger" style="background:#dc3545; color:#fff; border:none; padding:12px 24px; font-weight:600; border-radius:8px; cursor:pointer; width:100%; transition: all 0.2s; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);">
+                    <button type="button" id="btnOpenRestModal" class="btn-danger-submit">
                         <i class="bi bi-trash3-fill"></i> Iniciar Restablecimiento
                     </button>
 
