@@ -9,46 +9,62 @@ $totalVacantes = count($vacantes);
 ?>
 
 <style>
-/* Estilos del Acordeón Horizontal "Únete al Equipo" */
+/* Estilos Principales de Únete al Equipo */
 .unete-container {
   max-width: 1280px;
   margin: 0 auto;
   padding: 30px 20px 60px;
 }
 
-.unete-header-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border, rgba(0,0,0,0.08));
+.unete-section-header {
+  text-align: center;
+  margin-bottom: 32px;
 }
 
-.unete-tag-subtitle {
-  font-size: 0.85rem;
-  font-weight: 800;
+.unete-badge-header {
+  display: inline-block;
+  background: rgba(239, 51, 99, 0.12);
   color: var(--accent, #EF3363);
+  padding: 5px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 800;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
+.unete-main-title {
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: var(--text, #111827);
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+}
+
+.unete-sub-desc {
+  color: var(--muted, #64748b);
+  font-size: 1.05rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Acordeón Desktop */
 .unete-accordion-desktop {
   display: flex;
   width: 100%;
   min-height: 520px;
-  border: 1px solid var(--border, rgba(0,0,0,0.08));
-  border-radius: 16px;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 20px;
   overflow: hidden;
   background: var(--card-bg, #ffffff);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
 }
 
 .unete-col {
   flex: 1;
-  border-right: 1px solid var(--border, rgba(0,0,0,0.08));
-  padding: 30px 24px;
+  border-right: 1px solid var(--border, #e2e8f0);
+  padding: 32px 28px;
   transition: flex 0.45s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
   cursor: pointer;
   position: relative;
@@ -64,12 +80,12 @@ $totalVacantes = count($vacantes);
 
 .unete-col.active {
   flex: 3.5;
-  background: rgba(239, 51, 99, 0.04);
+  background: rgba(239, 51, 99, 0.03);
   cursor: default;
 }
 
 [data-bs-theme="dark"] .unete-col.active {
-  background: rgba(239, 51, 99, 0.1);
+  background: rgba(239, 51, 99, 0.12);
 }
 
 /* Estado Colapsado (Texto Vertical) */
@@ -88,23 +104,23 @@ $totalVacantes = count($vacantes);
 }
 
 .unete-num-small {
-  font-size: 0.85rem;
-  font-weight: 800;
+  font-size: 0.9rem;
+  font-weight: 900;
   color: var(--accent, #EF3363);
 }
 
 .unete-vertical-text {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  font-size: 1.15rem;
-  font-weight: 800;
+  font-size: 1.2rem;
+  font-weight: 900;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: var(--text-muted, #64748b);
+  color: var(--muted, #64748b);
   white-space: nowrap;
 }
 
-/* Estado Expandido (Detalle) */
+/* Estado Expandido (Detalle Completo) */
 .unete-col-expanded {
   display: none;
   flex-direction: column;
@@ -156,7 +172,7 @@ $totalVacantes = count($vacantes);
 .unete-role-desc {
   font-size: 1.02rem;
   line-height: 1.6;
-  color: var(--text-muted, #475569);
+  color: var(--muted, #475569);
   max-width: 480px;
   margin-bottom: 30px;
 }
@@ -164,7 +180,7 @@ $totalVacantes = count($vacantes);
 .btn-postularme-action {
   background: var(--card-bg, #ffffff);
   color: var(--text, #111827);
-  border: 1px solid var(--border, #cbd5e1);
+  border: 2px solid var(--border, #cbd5e1);
   padding: 14px 28px;
   border-radius: 30px;
   font-weight: 800;
@@ -188,46 +204,29 @@ $totalVacantes = count($vacantes);
   box-shadow: 0 6px 20px rgba(239, 51, 99, 0.3);
 }
 
-/* Pie de Barra de Estado */
-.unete-footer-status {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 20px;
-  font-size: 0.88rem;
-  color: var(--muted, #64748b);
-  font-weight: 600;
-}
-
-/* Versión Móvil (Acordeón Apilado) */
+/* Versión Móvil */
 .unete-accordion-mobile {
   display: none;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 @media (max-width: 991px) {
-  .unete-accordion-desktop {
-    display: none;
-  }
-  .unete-accordion-mobile {
-    display: flex;
-  }
-  .unete-role-title {
-    font-size: 2.2rem;
-  }
+  .unete-accordion-desktop { display: none; }
+  .unete-accordion-mobile { display: flex; }
+  .unete-role-title { font-size: 2.2rem; }
 }
 
 .mobile-vacante-card {
   background: var(--card-bg, #ffffff);
   border: 1px solid var(--border, #e2e8f0);
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
 .mobile-vacante-header {
-  padding: 16px 20px;
+  padding: 18px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -242,22 +241,107 @@ $totalVacantes = count($vacantes);
   margin-top: 8px;
   padding-top: 16px;
 }
+
+/* Modal de Postulación de Alta Calidad */
+.modal-postulacion-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal-postulacion-box {
+  background: var(--card-bg, #ffffff);
+  color: var(--text, #111827);
+  border-radius: 20px;
+  border: 1px solid var(--border, #e2e8f0);
+  max-width: 580px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  padding: 30px;
+  position: relative;
+  margin: auto;
+}
+
+[data-bs-theme="dark"] .modal-postulacion-box {
+  background: #181820;
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.modal-form-label {
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted, #64748b);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.modal-form-input {
+  background: var(--bg-subtle, #f8fafc);
+  border: 1.5px solid var(--border, #cbd5e1);
+  color: var(--text, #0f172a);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+[data-bs-theme="dark"] .modal-form-input {
+  background: #20202a;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+}
+
+.modal-form-input:focus {
+  border-color: #EF3363;
+  box-shadow: 0 0 0 3px rgba(239, 51, 99, 0.15);
+}
+
+.btn-submit-postulacion {
+  background: linear-gradient(135deg, #EF3363 0%, #d62250 100%);
+  color: #ffffff;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 16px rgba(239, 51, 99, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.btn-submit-postulacion:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(239, 51, 99, 0.45);
+}
 </style>
 
 <div class="unete-container">
 
-  <!-- Barra Superior de Encabezado -->
-  <div class="unete-header-bar">
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <img src="<?= basePath() ?>/img/catink-icon.png" alt="CatInk" style="height: 32px; width: auto;">
-      <span style="font-size: 1.3rem; font-weight: 900; color: var(--text);">CatInk</span>
-    </div>
-    <div style="font-size: 0.85rem; font-weight: 800; color: var(--muted); letter-spacing: 1px;">
-      <?= $totalVacantes ?> POSICIONES ABIERTAS
-    </div>
+  <!-- Encabezado Limpio de la Sección -->
+  <div class="unete-section-header">
+    <span class="unete-badge-header">Únete al Equipo</span>
+    <h1 class="unete-main-title"><?= $totalVacantes ?> Posiciones Abiertas</h1>
+    <p class="unete-sub-desc">Selecciona un rol para conocer los detalles e iniciar tu postulación</p>
   </div>
-
-  <div class="unete-tag-subtitle">— ÚNETE AL EQUIPO</div>
 
   <!-- Vista Desktop: Acordeón Horizontal Expandible -->
   <div class="unete-accordion-desktop" id="desktopAccordion">
@@ -274,7 +358,7 @@ $totalVacantes = count($vacantes);
           <div class="unete-col-collapsed">
             <span class="unete-num-small">0<?= $index + 1 ?></span>
             <span class="unete-vertical-text"><?= htmlspecialchars($vac['titulo']) ?></span>
-            <span style="height: 12px; width: 2px; background: var(--accent); opacity: 0.5;"></span>
+            <span style="height: 14px; width: 2px; background: var(--accent); opacity: 0.5;"></span>
           </div>
 
           <!-- Estado Expandido (Detalle Completo) -->
@@ -318,7 +402,7 @@ $totalVacantes = count($vacantes);
           <?php if (!empty($vac['subtitulo_italic'])): ?>
             <div style="font-style: italic; color: var(--accent); font-size: 0.95rem; margin-bottom: 8px; font-weight: 600;"><?= htmlspecialchars($vac['subtitulo_italic']) ?></div>
           <?php endif; ?>
-          <p style="font-size: 0.92rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;"><?= htmlspecialchars($vac['descripcion']) ?></p>
+          <p style="font-size: 0.92rem; color: var(--muted); line-height: 1.5; margin-bottom: 16px;"><?= htmlspecialchars($vac['descripcion']) ?></p>
           
           <button type="button" class="btn-postularme-action btn-open-modal-postulacion" data-vacante-id="<?= $vac['id'] ?>" data-vacante-titulo="<?= htmlspecialchars($vac['titulo']) ?>" style="width: 100%; justify-content: center;">
             <span>POSTULARME</span> <i class="bi bi-arrow-right"></i>
@@ -330,50 +414,50 @@ $totalVacantes = count($vacantes);
 
 </div>
 
-<!-- MODAL FORMULARIO DE POSTULACIÓN -->
-<div id="modalPostulacion" class="crop-modal" style="display: none; align-items: center; justify-content: center; z-index: 10000; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
-  <div class="crop-modal-content" style="max-width: 620px; width: 92%; background: var(--card-bg, #ffffff); color: var(--text, #111827); border-radius: 16px; border: 1px solid var(--border, #e2e8f0); padding: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+<!-- MODAL FORMULARIO DE POSTULACIÓN DE ALTA CALIDAD -->
+<div id="modalPostulacion" class="modal-postulacion-overlay">
+  <div class="modal-postulacion-box">
     
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border, #e2e8f0); padding-bottom: 14px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 1px solid var(--border, #e2e8f0); padding-bottom: 16px;">
       <div>
-        <h3 style="margin: 0; font-size: 1.3rem; font-weight: 900; color: var(--text);">Postulación a CatInk</h3>
-        <span id="modalPuestoTitle" style="font-size: 0.88rem; color: var(--accent, #EF3363); font-weight: 700;"></span>
+        <h3 style="margin: 0 0 4px; font-size: 1.4rem; font-weight: 900; color: var(--text);">Enviar Postulación</h3>
+        <span id="modalPuestoTitle" style="font-size: 0.9rem; color: #EF3363; font-weight: 800;"></span>
       </div>
-      <button type="button" id="closeModalPostulacion" style="background: none; border: none; color: var(--muted, #64748b); font-size: 1.6rem; cursor: pointer;">&times;</button>
+      <button type="button" id="closeModalPostulacion" style="background: none; border: none; color: var(--muted, #64748b); font-size: 1.8rem; cursor: pointer; line-height: 1;">&times;</button>
     </div>
 
     <form id="formPostularVacante" enctype="multipart/form-data">
       <input type="hidden" id="postularVacanteId" name="vacante_id" value="0">
 
-      <div style="margin-bottom: 14px;">
-        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text); display: block; margin-bottom: 4px;">Nombre Completo *</label>
-        <input type="text" name="nombre" class="form-control" placeholder="Ej. Carlos Martínez" required style="background: var(--bg-subtle, #f8fafc); border: 1px solid var(--border, #cbd5e1); color: var(--text); border-radius: 8px; padding: 10px 14px;">
+      <div style="margin-bottom: 16px;">
+        <label class="modal-form-label">Nombre Completo *</label>
+        <input type="text" name="nombre" class="modal-form-input" placeholder="Ej. Carlos Martínez" required>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
         <div>
-          <label style="font-size: 0.85rem; font-weight: 700; color: var(--text); display: block; margin-bottom: 4px;">Correo Electrónico *</label>
-          <input type="email" name="email" class="form-control" placeholder="tu@correo.com" required style="background: var(--bg-subtle, #f8fafc); border: 1px solid var(--border, #cbd5e1); color: var(--text); border-radius: 8px; padding: 10px 14px;">
+          <label class="modal-form-label">Correo Electrónico *</label>
+          <input type="email" name="email" class="modal-form-input" placeholder="tu@correo.com" required>
         </div>
         <div>
-          <label style="font-size: 0.85rem; font-weight: 700; color: var(--text); display: block; margin-bottom: 4px;">Teléfono (Opcional)</label>
-          <input type="tel" name="telefono" class="form-control" placeholder="+52 55 1234 5678" style="background: var(--bg-subtle, #f8fafc); border: 1px solid var(--border, #cbd5e1); color: var(--text); border-radius: 8px; padding: 10px 14px;">
+          <label class="modal-form-label">Teléfono (Opcional)</label>
+          <input type="tel" name="telefono" class="modal-form-input" placeholder="+52 55 1234 5678">
         </div>
       </div>
 
-      <div style="margin-bottom: 14px;">
-        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text); display: block; margin-bottom: 4px;">¿Por qué te gustaría unirte a CatInk? *</label>
-        <textarea name="razon" rows="3" class="form-control" placeholder="Cuéntanos sobre tu experiencia, proyectos o por qué te apasiona este rol..." required style="background: var(--bg-subtle, #f8fafc); border: 1px solid var(--border, #cbd5e1); color: var(--text); border-radius: 8px; padding: 10px 14px;"></textarea>
+      <div style="margin-bottom: 16px;">
+        <label class="modal-form-label">¿Por qué deseas unirte a CatInk? *</label>
+        <textarea name="razon" rows="3" class="modal-form-input" placeholder="Cuéntanos sobre tu experiencia o motivación para este rol..." required style="resize: vertical;"></textarea>
       </div>
 
       <div style="margin-bottom: 24px;">
-        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text); display: block; margin-bottom: 4px;">Adjunta tu CV (PDF o Word) *</label>
-        <input type="file" name="cv" accept=".pdf,.doc,.docx" class="form-control" required style="background: var(--bg-subtle, #f8fafc); border: 1px solid var(--border, #cbd5e1); color: var(--text); border-radius: 8px; padding: 8px 12px;">
+        <label class="modal-form-label">Adjunta tu CV (PDF o Word) *</label>
+        <input type="file" name="cv" accept=".pdf,.doc,.docx" class="modal-form-input" required>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; gap: 12px;">
-        <button type="button" id="btnCancelPostulacion" class="btn btn-secondary" style="font-weight: 700; border-radius: 8px;">Cancelar</button>
-        <button type="submit" id="btnSubmitPostulacion" class="btn btn-accent" style="background: var(--accent, #EF3363); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button type="button" id="btnCancelPostulacion" style="background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer;">Cancelar</button>
+        <button type="submit" id="btnSubmitPostulacion" class="btn-submit-postulacion">
           <span id="btnSubmitText">Enviar Solicitud</span> <i class="bi bi-send-fill"></i>
         </button>
       </div>
@@ -383,7 +467,7 @@ $totalVacantes = count($vacantes);
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // Lógica del Acordeón Desktop
+  // Acordeón Desktop
   const cols = document.querySelectorAll('.unete-col');
   cols.forEach(col => {
     col.addEventListener('mouseenter', () => {
@@ -424,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === modal) modal.style.display = 'none';
   });
 
-  // Envío del Formulario vía AJAX
+  // Envío AJAX
   form.addEventListener('submit', function(e) {
     e.preventDefault();
     btnSubmit.disabled = true;
