@@ -494,12 +494,66 @@ h2 {
    el gap 8 del contenedor, el margin-top 15 de .nav-item y el margin-bottom 10
    de la regla global de <li>. Se anulan los margenes y el gap queda como unica
    fuente. Va DESPUES de .nav-item para ganar por orden. */
+/* Enlaces de interés / Síguenos dentro de la hamburguesa: fuera de ese rango
+   el contenedor es la barra horizontal, donde no deben aparecer. */
+.nav-mobile-extra {
+  display: none;
+}
 @media (max-width: 1024px) {
   .navbar-nav {
     gap: 14px;
   }
   .navbar-nav .nav-item {
     margin: 0;
+  }
+  /* Con las secciones nuevas el menu puede superar la altura de pantalla:
+     se limita y hace scroll interno para que la barra nunca sea mas alta
+     que el viewport (si no, vuelve el hueco vacio al ocultarla). */
+  .navbar-collapse.show {
+    max-height: calc(100vh - 72px);
+    overflow-y: auto;
+  }
+  .nav-mobile-extra {
+    display: block;
+    width: 100%;
+    border-top: 1px solid var(--border);
+    margin-top: 14px;
+    padding-top: 6px;
+  }
+  .nav-mobile-label {
+    padding: 10px 12px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+  .nav-mobile-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.95rem;
+    border-radius: 8px;
+  }
+  .nav-mobile-link:hover {
+    background: rgba(0,0,0,0.05);
+    color: var(--accent);
+  }
+  .nav-mobile-social {
+    display: flex;
+    gap: 18px;
+    padding: 6px 12px 10px;
+  }
+  .nav-mobile-social a {
+    font-size: 1.3rem;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .nav-mobile-social a:hover {
+    color: var(--accent);
   }
 }
 /* Search Bar */

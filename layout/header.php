@@ -543,6 +543,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </li>
         <?php endforeach; ?>
       </ul>
+      <!-- Enlaces de interés y redes: replican las secciones del desplegable de
+           escritorio. Solo se muestran mientras la hamburguesa esta activa. -->
+      <div class="nav-mobile-extra">
+        <div class="nav-mobile-label">Enlaces de interés</div>
+        <a class="nav-mobile-link" href="<?= basePath() ?>/nosotros">
+          <i class="bi bi-building-fill"></i> Nosotros
+        </a>
+        <a class="nav-mobile-link" href="<?= basePath() ?>/terminos">
+          <i class="bi bi-file-earmark-text-fill"></i> Términos y Condiciones
+        </a>
+        <a class="nav-mobile-link" href="<?= basePath() ?>/privacidad">
+          <i class="bi bi-file-lock-fill"></i> Aviso de privacidad
+        </a>
+        <a class="nav-mobile-link" href="<?= basePath() ?>/solicitud">
+          <i class="bi bi-briefcase-fill"></i> Únete a nuestro equipo
+        </a>
+        <a class="nav-mobile-link" href="<?= basePath() ?>/suscripcion">
+          <i class="bi bi-bookmark-star-fill"></i> Suscríbete
+        </a>
+        <a class="nav-mobile-link" href="<?= basePath() ?>/contactanos">
+          <i class="bi bi-envelope-fill"></i> Contáctanos
+        </a>
+        <div class="nav-mobile-label">Síguenos</div>
+        <div class="nav-mobile-social">
+          <a href="https://www.facebook.com/TheCatink?locale=es_LA" aria-label="Facebook" target="_blank" rel="noopener"><i class="bi bi-facebook"></i></a>
+          <a href="https://x.com/The_Catink/" aria-label="Twitter / X" target="_blank" rel="noopener"><i class="bi bi-twitter-x"></i></a>
+          <a href="https://www.instagram.com/the.catink/" aria-label="Instagram" target="_blank" rel="noopener"><i class="bi bi-instagram"></i></a>
+          <a href="https://www.youtube.com/@thecatink" aria-label="YouTube" target="_blank" rel="noopener"><i class="bi bi-youtube"></i></a>
+          <a href="https://www.tiktok.com/@thecatink" aria-label="TikTok" target="_blank" rel="noopener"><i class="bi bi-tiktok"></i></a>
+        </div>
+      </div>
       <?php if(isset($_SESSION['usuario'])): ?>
         <div class="nav-logout-mobile">
           <a class="nav-link nav-logout-link" href="<?= basePath() ?>/controllers/logoutcontroller.php" data-turbo="false">
