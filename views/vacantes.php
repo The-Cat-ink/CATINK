@@ -293,6 +293,8 @@ $totalSolicitudes = count($solicitudes);
 </div>
 
 <script>
+const BASE_PATH = '<?= basePath() ?>';
+
 function switchVacanteTab(tabName) {
   const btnVac = document.getElementById('tabBtnVacantes');
   const btnSol = document.getElementById('tabBtnSolicitudes');

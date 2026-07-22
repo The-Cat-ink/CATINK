@@ -466,6 +466,8 @@ $totalVacantes = count($vacantes);
 </div>
 
 <script>
+const BASE_PATH = '<?= basePath() ?>';
+
 function initUnetePublic() {
   const modal = document.getElementById('modalPostulacion');
   const form = document.getElementById('formPostularVacante');
