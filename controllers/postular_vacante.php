@@ -77,16 +77,19 @@ $emailErrorMsg = "";
 try {
     $mail = new PHPMailer(true);
     $mail->isSMTP();
-    $mail->Host       = 'smtp.gmail.com';
+    $mail->Host       = env('SMTP_HOST', 'smtp.hostinger.com');
     $mail->SMTPAuth   = true;
-    $mail->Username   = env('GMAIL_USERNAME');
-    $mail->Password   = env('GMAIL_APP_PASSWORD');
-    $mail->SMTPSecure = 'tls';
-    $mail->Port       = 587;
+    $mail->Username   = env('SMTP_USERNAME', env('SMTP_FROM_EMAIL'));
+    $mail->Password   = env('SMTP_PASSWORD', '');
+    $mail->SMTPSecure = env('SMTP_SECURE', 'ssl');
+    $mail->Port       = intval(env('SMTP_PORT', 465));
     $mail->CharSet    = 'UTF-8';
 
-    $mail->setFrom('catink.oficial@gmail.com', 'CatInk Careers');
-    $mail->addAddress('catink.oficial@gmail.com', 'CatInk Equipo');
+    $fromEmail = env('SMTP_FROM_EMAIL', 'no-reply@catink.com.mx');
+    $fromName  = env('SMTP_FROM_NAME',  'CatInk');
+
+    $mail->setFrom($fromEmail, $fromName . ' Careers');
+    $mail->addAddress('contacto@catink.com.mx', 'CatInk Equipo');
     $mail->addReplyTo($email, $nombre);
 
     $mail->isHTML(true);
