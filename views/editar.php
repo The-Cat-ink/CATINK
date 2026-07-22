@@ -1704,41 +1704,68 @@ document.getElementById('pvTabs')?.addEventListener('click', e => {
 </script>
 
 <style>
-.historial-modal-card {
-  background: var(--card-bg, #1a1a20);
-  border: 1px solid var(--border, rgba(255,255,255,0.1));
-  border-radius: 12px;
-  padding: 18px;
-  margin-bottom: 14px;
-  color: var(--text, #ffffff);
+/* Estilos de lujo para el Modal de Historial de Cambios */
+.historial-modal-container {
+  background: var(--card-bg, #ffffff);
+  color: var(--text, #1e293b);
+  border-radius: 16px;
+  border: 1px solid var(--border, #e2e8f0);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  padding: 24px;
+  max-width: 800px;
+  width: 92%;
 }
+
+.historial-modal-card {
+  background: var(--bg-card, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+[data-bs-theme="dark"] .historial-modal-container {
+  background: #181820;
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-bs-theme="dark"] .historial-modal-card {
+  background: #20202a;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
 .historial-badge-rev {
-  background: rgba(239, 51, 99, 0.15);
-  color: var(--accent, #EF3363);
-  padding: 3px 10px;
-  border-radius: 6px;
+  background: linear-gradient(135deg, #EF3363 0%, #d62250 100%);
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 800;
+  box-shadow: 0 2px 8px rgba(239, 51, 99, 0.3);
 }
+
 .historial-badge-field {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text, #ffffff);
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.15));
-  padding: 3px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
   margin-right: 6px;
   margin-top: 4px;
 }
+
 .diff-toggle-btn {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text, #ffffff);
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 0.85rem;
+  background: var(--card-bg, #ffffff);
+  color: var(--text, #0f172a);
+  border: 1px solid var(--border, #cbd5e1);
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
   width: 100%;
@@ -1746,56 +1773,157 @@ document.getElementById('pvTabs')?.addEventListener('click', e => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 12px;
+  margin-top: 14px;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
+
+[data-bs-theme="dark"] .diff-toggle-btn {
+  background: #181820;
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
 .diff-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  border-color: #EF3363;
+  color: #EF3363;
+  transform: translateY(-1px);
 }
+
 .diff-box-container {
   display: none;
-  margin-top: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
-  border-radius: 10px;
-  padding: 14px;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
+
 .diff-card-saved {
-  background: rgba(239, 51, 99, 0.1);
-  border-left: 4px solid #EF3363;
-  padding: 10px 14px;
-  border-radius: 6px;
-  margin-bottom: 10px;
-  color: var(--text, #ffffff);
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-left: 5px solid #f43f5e;
+  padding: 14px 16px;
+  border-radius: 10px;
 }
+
+[data-bs-theme="dark"] .diff-card-saved {
+  background: rgba(244, 63, 94, 0.12);
+  border-color: rgba(244, 63, 94, 0.25);
+  border-left-color: #f43f5e;
+}
+
 .diff-card-live {
-  background: rgba(46, 204, 113, 0.1);
-  border-left: 4px solid #2ecc71;
-  padding: 10px 14px;
-  border-radius: 6px;
-  margin-bottom: 10px;
-  color: var(--text, #ffffff);
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 5px solid #22c55e;
+  padding: 14px 16px;
+  border-radius: 10px;
 }
-.diff-card-label {
-  font-size: 0.8rem;
+
+[data-bs-theme="dark"] .diff-card-live {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.25);
+  border-left-color: #22c55e;
+}
+
+.diff-card-label-saved {
+  font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
+  color: #e11d48;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+[data-bs-theme="dark"] .diff-card-label-saved {
+  color: #fda4af;
+}
+
+.diff-card-label-live {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #16a34a;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+[data-bs-theme="dark"] .diff-card-label-live {
+  color: #86efac;
+}
+
+.diff-card-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
   margin-bottom: 4px;
+}
+
+[data-bs-theme="dark"] .diff-card-title {
+  color: #f8fafc;
+}
+
+.diff-card-desc {
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+[data-bs-theme="dark"] .diff-card-desc {
+  color: #cbd5e1;
+}
+
+.diff-code-box {
+  background: #0f172a;
+  color: #f8fafc;
+  border-radius: 10px;
+  padding: 14px;
+  border: 1px solid #1e293b;
+}
+
+.diff-code-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.diff-code-pre {
+  max-height: 140px;
+  overflow-y: auto;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  background: #020617;
+  padding: 12px;
+  border-radius: 6px;
 }
 </style>
 
 <!-- MODAL DE HISTORIAL DE CAMBIOS -->
-<div id="historialModal" class="crop-modal" style="display: none; align-items: center; justify-content: center; z-index: 10000;">
-  <div class="crop-modal-content" style="max-width: 750px; width: 90%; background: var(--card-bg, #1a1a20); color: var(--text, #fff); border-radius: 14px; border: 1px solid var(--border, rgba(255,255,255,0.12)); padding: 24px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border, rgba(255,255,255,0.1)); padding-bottom: 12px;">
-      <h3 style="margin: 0; display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 800;">
-        <i class="bi bi-clock-history" style="color: var(--accent, #EF3363);"></i> Historial de Modificaciones
+<div id="historialModal" class="crop-modal" style="display: none; align-items: center; justify-content: center; z-index: 10000; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
+  <div class="historial-modal-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border, #e2e8f0); padding-bottom: 14px;">
+      <h3 style="margin: 0; display: flex; align-items: center; gap: 10px; font-size: 1.3rem; font-weight: 800;">
+        <i class="bi bi-clock-history" style="color: #EF3363;"></i> Historial de Modificaciones
       </h3>
-      <button type="button" id="closeHistorialModal" style="background: none; border: none; color: var(--muted, #888); font-size: 1.4rem; cursor: pointer;">&times;</button>
+      <button type="button" id="closeHistorialModal" style="background: none; border: none; color: var(--muted, #64748b); font-size: 1.6rem; cursor: pointer; line-height: 1;">&times;</button>
     </div>
     
-    <div id="historialList" style="max-height: 480px; overflow-y: auto; padding-right: 6px;">
-      <div style="text-align: center; color: var(--muted, #888); padding: 30px 0;">Cargando historial de cambios...</div>
+    <div id="historialList" style="max-height: 520px; overflow-y: auto; padding-right: 6px;">
+      <div style="text-align: center; color: var(--muted, #64748b); padding: 40px 0; font-weight: 600;">
+        <i class="bi bi-arrow-repeat spin" style="font-size: 1.5rem; display: block; margin-bottom: 8px;"></i> Cargando revisiones...
+      </div>
     </div>
   </div>
 </div>
@@ -1824,17 +1952,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function cargarHistorial() {
-    historialList.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 30px;"><i class="bi bi-arrow-repeat spin"></i> Cargando revisiones...</div>';
+    historialList.innerHTML = `
+      <div style="text-align: center; color: var(--muted, #64748b); padding: 40px 0; font-weight: 600;">
+        <i class="bi bi-arrow-repeat spin" style="font-size: 1.5rem; display: block; margin-bottom: 8px;"></i> Cargando revisiones...
+      </div>`;
     
     fetch(BASE_PATH + `/controllers/obtener_historial_noticia.php?id=${noticiaId}`)
       .then(r => r.json())
       .then(data => {
         if (!data.success || !data.historial || data.historial.length === 0) {
           historialList.innerHTML = `
-            <div style="text-align: center; padding: 40px 20px; color: var(--muted);">
-              <i class="bi bi-info-circle" style="font-size: 2.5rem; opacity: 0.5; display: block; margin-bottom: 12px;"></i>
-              <p style="margin: 0; font-size: 1rem;">No se registran revisiones anteriores de esta noticia todavía.</p>
-              <span style="font-size: 0.85rem; opacity: 0.7;">Cada vez que edites y guardes cambios, la versión previa quedará archivada aquí automáticamente.</span>
+            <div style="text-align: center; padding: 40px 20px; color: var(--muted, #64748b);">
+              <i class="bi bi-info-circle" style="font-size: 2.5rem; color: #EF3363; opacity: 0.6; display: block; margin-bottom: 12px;"></i>
+              <p style="margin: 0; font-size: 1.05rem; font-weight: 700;">No se registran revisiones anteriores de esta noticia todavía.</p>
+              <span style="font-size: 0.85rem; opacity: 0.8; margin-top: 4px; display: block;">Cada vez que edites y guardes cambios, la versión previa quedará archivada aquí automáticamente.</span>
             </div>`;
           return;
         }
@@ -1843,7 +1974,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
 
         data.historial.forEach((ver, index) => {
-          // La versión que reemplazó a esta revisión (versión posterior)
+          // Determinar versión posterior
           const newerVer = index > 0 ? data.historial[index - 1] : actual;
           const labelPosterior = index === 0 ? 'Publicación actual' : `Revisión #${data.historial.length - index + 1}`;
 
@@ -1852,65 +1983,63 @@ document.addEventListener('DOMContentLoaded', () => {
           const contentChanged = trim(ver.contenido) !== trim(newerVer.contenido || '');
 
           let diffBadges = '';
-          if (titleChanged) diffBadges += '<span class="historial-badge-field" style="color: #2ecc71; border-color: rgba(46,204,113,0.3); background: rgba(46,204,113,0.15);">Título</span>';
-          if (descChanged) diffBadges += '<span class="historial-badge-field" style="color: #3498db; border-color: rgba(52,152,219,0.3); background: rgba(52,152,219,0.15);">Descripción</span>';
-          if (contentChanged) diffBadges += '<span class="historial-badge-field" style="color: #f1c40f; border-color: rgba(241,196,15,0.3); background: rgba(241,196,15,0.15);">Contenido</span>';
+          if (titleChanged) diffBadges += '<span class="historial-badge-field" style="color: #16a34a; border: 1px solid #bbf7d0; background: #f0fdf4;"><i class="bi bi-pencil-square"></i> Título</span>';
+          if (descChanged) diffBadges += '<span class="historial-badge-field" style="color: #2563eb; border: 1px solid #bfdbfe; background: #eff6ff;"><i class="bi bi-card-text"></i> Descripción</span>';
+          if (contentChanged) diffBadges += '<span class="historial-badge-field" style="color: #d97706; border: 1px solid #fde68a; background: #fffbeb;"><i class="bi bi-file-text"></i> Contenido</span>';
           if (ver.motivo_cambio && ver.motivo_cambio.includes('Imágenes')) {
-            diffBadges += '<span class="historial-badge-field" style="color: #9b59b6; border-color: rgba(155,89,182,0.3); background: rgba(155,89,182,0.15);">Imágenes</span>';
+            diffBadges += '<span class="historial-badge-field" style="color: #9333ea; border: 1px solid #e9d5ff; background: #faf5ff;"><i class="bi bi-image"></i> Imágenes</span>';
           }
-          if (!diffBadges) diffBadges = '<span class="historial-badge-field">Sin cambios de texto</span>';
+          if (!diffBadges) diffBadges = '<span class="historial-badge-field" style="color: #64748b; background: #f1f5f9; border: 1px solid #e2e8f0;"><i class="bi bi-check-all"></i> Sin diferencias de texto</span>';
 
           html += `
             <div class="historial-modal-card">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px;">
-                <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
                   <span class="historial-badge-rev">Revisión #${data.historial.length - index}</span>
-                  <span style="font-size: 0.85rem; color: var(--muted, #888); margin-left: 8px;"><i class="bi bi-clock"></i> ${ver.fecha_edicion}</span>
+                  <span style="font-size: 0.85rem; color: var(--muted, #64748b); font-weight: 600;"><i class="bi bi-clock"></i> ${ver.fecha_edicion}</span>
                 </div>
-                <button type="button" class="btn-restaurar-ver" data-version-id="${ver.id}" style="background: var(--accent, #EF3363); color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <button type="button" class="btn-restaurar-ver" data-version-id="${ver.id}" style="background: #EF3363; color: #ffffff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239, 51, 99, 0.25); transition: transform 0.2s;">
                   <i class="bi bi-arrow-counterclockwise"></i> Restaurar esta versión
                 </button>
               </div>
               
-              <div style="font-size: 0.9rem; margin-bottom: 8px;">
-                <strong>Modificado por:</strong> ${escapeHtml(ver.usuario_nombre)} &bull; 
-                <span style="color: var(--muted);">${escapeHtml(ver.motivo_cambio)}</span>
+              <div style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text, #1e293b);">
+                <strong>Modificado por:</strong> <span style="font-weight: 700;">${escapeHtml(ver.usuario_nombre)}</span> &bull; 
+                <span style="color: var(--muted, #64748b); font-style: italic;">${escapeHtml(ver.motivo_cambio)}</span>
               </div>
 
-              <div style="margin-bottom: 10px;">
-                <strong style="font-size: 0.8rem; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 4px;">Campos alterados:</strong>
+              <div style="margin-bottom: 12px;">
+                <strong style="font-size: 0.75rem; text-transform: uppercase; color: var(--muted, #64748b); letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Campos alterados:</strong>
                 <div>${diffBadges}</div>
               </div>
-              
-              <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 6px;">
-                Título archivado: «${escapeHtml(ver.titulo)}»
-              </div>
 
-              <!-- Botón Personalizado de Desplegable Diff -->
+              <!-- Botón Desplegable Diff -->
               <button type="button" class="diff-toggle-btn" onclick="toggleDiffBox(this)">
-                <span><i class="bi bi-file-diff" style="color: var(--accent, #EF3363); margin-right: 6px;"></i> Ver comparación detallada (${labelPosterior})</span>
+                <span><i class="bi bi-file-diff-fill" style="color: #EF3363; margin-right: 8px;"></i> Ver comparación detallada (${labelPosterior})</span>
                 <i class="bi bi-chevron-down diff-chevron" style="transition: transform 0.3s ease;"></i>
               </button>
 
-              <!-- Caja Desplegable de Comparación -->
-              <div class="diff-box-container">
+              <!-- Caja Desplegable Diff -->
+              <div class="diff-box-container" style="display: none;">
                 <div class="diff-card-saved">
-                  <div class="diff-card-label" style="color: #EF3363;">Versión Archivada (#${data.historial.length - index})</div>
-                  <div style="font-weight: 700; margin-bottom: 4px;">${escapeHtml(ver.titulo)}</div>
-                  <div style="font-size: 0.85rem; opacity: 0.9;">${escapeHtml(ver.descripcion)}</div>
+                  <div class="diff-card-label-saved">
+                    <i class="bi bi-dash-circle-fill"></i> Versión Archivada (#${data.historial.length - index})
+                  </div>
+                  <div class="diff-card-title">${escapeHtml(ver.titulo)}</div>
+                  <div class="diff-card-desc">${escapeHtml(ver.descripcion)}</div>
                 </div>
 
                 <div class="diff-card-live">
-                  <div class="diff-card-label" style="color: #2ecc71;">Reemplazado por (${labelPosterior})</div>
-                  <div style="font-weight: 700; margin-bottom: 4px;">${escapeHtml(newerVer.titulo || '(Sin título registrado)')}</div>
-                  <div style="font-size: 0.85rem; opacity: 0.9;">${escapeHtml(newerVer.descripcion || '(Sin descripción registrada)')}</div>
+                  <div class="diff-card-label-live">
+                    <i class="bi bi-plus-circle-fill"></i> Reemplazado por (${labelPosterior})
+                  </div>
+                  <div class="diff-card-title">${escapeHtml(newerVer.titulo || ver.titulo)}</div>
+                  <div class="diff-card-desc">${escapeHtml(newerVer.descripcion || ver.descripcion)}</div>
                 </div>
 
-                <div style="background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, rgba(255,255,255,0.08));">
-                  <strong style="color: var(--muted); font-size: 0.8rem; text-transform: uppercase;">Vista previa del texto guardado:</strong>
-                  <div style="max-height: 120px; overflow-y: auto; color: #ddd; white-space: pre-wrap; font-family: monospace; font-size: 0.8rem; margin-top: 6px;">
-                    ${escapeHtml(ver.contenido)}
-                  </div>
+                <div class="diff-code-box">
+                  <div class="diff-code-title"><i class="bi bi-code-slash"></i> Contenido formateado guardado:</div>
+                  <div class="diff-code-pre">${escapeHtml(ver.contenido)}</div>
                 </div>
               </div>
             </div>
@@ -1943,7 +2072,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       })
       .catch(err => {
-        historialList.innerHTML = '<div style="color: #EF3363; text-align: center; padding: 20px;">Error al cargar el historial.</div>';
+        historialList.innerHTML = '<div style="color: #EF3363; text-align: center; padding: 20px; font-weight: 700;">Error al cargar el historial.</div>';
       });
   }
 
@@ -1960,11 +2089,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function toggleDiffBox(btn) {
   const container = btn.nextElementSibling;
   const chevron = btn.querySelector('.diff-chevron');
-  if (container.style.display === 'block') {
+  if (container.style.display === 'flex' || container.style.display === 'block') {
     container.style.display = 'none';
     if (chevron) chevron.style.transform = 'rotate(0deg)';
   } else {
-    container.style.display = 'block';
+    container.style.display = 'flex';
     if (chevron) chevron.style.transform = 'rotate(180deg)';
   }
 }
