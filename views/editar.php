@@ -645,9 +645,12 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
       </div><!-- /sec-schedule -->
       <?php endif; ?>
       <?php if (!empty($ACL['editar'])): ?>
-      <div style="margin-top:12px;">
+      <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
         <button type="submit" class="cn-publish-btn" id="btnGuardar" name="guardarEdicion">
           <i class="bi bi-floppy"></i> Guardar cambios
+        </button>
+        <button type="button" id="btnVerHistorial" style="background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 0.9rem; transition: all 0.2s;">
+          <i class="bi bi-clock-history"></i> Historial de Cambios
         </button>
       </div>
       <?php endif; ?>
@@ -1697,6 +1700,130 @@ document.getElementById('pvTabs')?.addEventListener('click', e => {
   btn.classList.add('active');
   const panel = document.getElementById('pv-' + btn.dataset.tab);
   if (panel) panel.classList.add('active');
+});
+</script>
+
+<!-- MODAL DE HISTORIAL DE CAMBIOS -->
+<div id="historialModal" class="crop-modal" style="display: none; align-items: center; justify-content: center; z-index: 10000;">
+  <div class="crop-modal-content" style="max-width: 750px; width: 90%; background: var(--card-bg, #1a1a20); color: var(--text, #fff); border-radius: 12px; border: 1px solid var(--border, rgba(255,255,255,0.1)); padding: 24px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border, rgba(255,255,255,0.1)); padding-bottom: 12px;">
+      <h3 style="margin: 0; display: flex; align-items: center; gap: 10px; font-size: 1.25rem;">
+        <i class="bi bi-clock-history" style="color: var(--accent, #EF3363);"></i> Historial de Modificaciones
+      </h3>
+      <button type="button" id="closeHistorialModal" style="background: none; border: none; color: var(--muted, #888); font-size: 1.4rem; cursor: pointer;">&times;</button>
+    </div>
+    
+    <div id="historialList" style="max-height: 450px; overflow-y: auto; padding-right: 6px;">
+      <div style="text-align: center; color: var(--muted, #888); padding: 30px 0;">Cargando historial de cambios...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const btnVerHistorial = document.getElementById('btnVerHistorial');
+  const modal = document.getElementById('historialModal');
+  const closeModal = document.getElementById('closeHistorialModal');
+  const historialList = document.getElementById('historialList');
+  const noticiaId = <?= intval($id) ?>;
+
+  if (btnVerHistorial && modal) {
+    btnVerHistorial.addEventListener('click', () => {
+      modal.style.display = 'flex';
+      cargarHistorial();
+    });
+
+    closeModal?.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) modal.style.display = 'none';
+    });
+  }
+
+  function cargarHistorial() {
+    historialList.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 30px;"><i class="bi bi-arrow-repeat spin"></i> Cargando revisiones...</div>';
+    
+    fetch(BASE_PATH + `/controllers/obtener_historial_noticia.php?id=${noticiaId}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success || !data.historial || data.historial.length === 0) {
+          historialList.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: var(--muted);">
+              <i class="bi bi-info-circle" style="font-size: 2.5rem; opacity: 0.5; display: block; margin-bottom: 12px;"></i>
+              <p style="margin: 0; font-size: 1rem;">No se registran revisiones anteriores de esta noticia todavía.</p>
+              <span style="font-size: 0.85rem; opacity: 0.7;">Cada vez que edites y guardes cambios, la versión previa quedará archivada aquí automáticamente.</span>
+            </div>`;
+          return;
+        }
+
+        let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
+        data.historial.forEach((ver, index) => {
+          html += `
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border, rgba(255,255,255,0.08)); border-radius: 10px; padding: 16px; transition: background 0.2s;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px;">
+                <div>
+                  <span style="background: rgba(239, 51, 99, 0.15); color: var(--accent, #EF3363); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 700; margin-right: 8px;">Revisión #${data.historial.length - index}</span>
+                  <span style="font-size: 0.85rem; color: var(--muted, #888);"><i class="bi bi-clock"></i> ${ver.fecha_edicion}</span>
+                </div>
+                <button type="button" class="btn-restaurar-ver" data-version-id="${ver.id}" style="background: var(--accent, #EF3363); color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <i class="bi bi-arrow-counterclockwise"></i> Restaurar esta versión
+                </button>
+              </div>
+              
+              <div style="font-size: 0.9rem; margin-bottom: 6px;">
+                <strong>Modificado por:</strong> ${escapeHtml(ver.usuario_nombre)} &bull; 
+                <span style="font-style: italic; color: var(--muted);">${escapeHtml(ver.motivo_cambio)}</span>
+              </div>
+              
+              <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-top: 8px; margin-bottom: 4px;">
+                Título guardado: «${escapeHtml(ver.titulo)}»
+              </div>
+              
+              <div style="font-size: 0.85rem; color: var(--muted); background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; max-height: 80px; overflow-y: auto; white-space: pre-wrap; font-family: monospace;">
+                ${escapeHtml(ver.descripcion)}
+              </div>
+            </div>
+          `;
+        });
+        html += '</div>';
+        historialList.innerHTML = html;
+
+        // Listener para restaurar
+        historialList.querySelectorAll('.btn-restaurar-ver').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const verId = this.dataset.versionId;
+            if (!confirm('¿Estás seguro de que deseas restaurar la noticia a esta versión previa? El estado actual será guardado como una revisión en el historial.')) return;
+
+            fetch(BASE_PATH + '/controllers/restaurar_version_noticia.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ version_id: verId })
+            })
+            .then(r => r.json())
+            .then(res => {
+              if (res.success) {
+                alert('¡Versión restaurada con éxito!');
+                window.location.reload();
+              } else {
+                alert(res.error || 'Error al restaurar versión');
+              }
+            });
+          });
+        });
+      })
+      .catch(err => {
+        historialList.innerHTML = '<div style="color: #EF3363; text-align: center; padding: 20px;">Error al cargar el historial.</div>';
+      });
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    return text.replace(/[&<>"']/g, function(m) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+    });
+  }
 });
 </script>
 

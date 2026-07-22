@@ -147,6 +147,23 @@ $checkCreado->execute();
 $resCreado = $checkCreado->get_result()->fetch_assoc();
 $creado_por = $resCreado['creado_por'] ?? $usuario_id;
 
+// ============================
+// GUARDAR HISTORIAL DE EDICION DE NOTICIA
+// ============================
+$stmtPrev = $con->prepare("SELECT titulo, descripcion, contenido FROM noticias WHERE id = ?");
+$stmtPrev->bind_param("i", $id);
+$stmtPrev->execute();
+$prevData = $stmtPrev->get_result()->fetch_assoc();
+
+if ($prevData) {
+    if ($prevData['titulo'] !== $titulo || $prevData['descripcion'] !== $descripcion || $prevData['contenido'] !== $contenido) {
+        $motivoCambio = !empty($_POST['motivo_cambio']) ? trim($_POST['motivo_cambio']) : 'Edición de contenido';
+        $stmtHist = $con->prepare("INSERT INTO historial_ediciones_noticias (noticia_id, usuario_id, titulo, descripcion, contenido, motivo_cambio, fecha_edicion) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+        $stmtHist->bind_param("iissss", $id, $usuario_id, $prevData['titulo'], $prevData['descripcion'], $prevData['contenido'], $motivoCambio);
+        $stmtHist->execute();
+    }
+}
+
 // Al guardar desde el editor, la noticia deja de ser borrador: se publica con
 // la fecha indicada (borrador = 0). La validación de arriba ya garantiza que
 // tiene título, descripción y contenido. `fecha_programada` era solo el apunte
