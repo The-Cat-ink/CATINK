@@ -271,7 +271,7 @@ function formatNumberShort($num){
         <?php endif; ?>
     </div>
 
-    <!-- SECCIÓN RECONSTRUIDA DE YOUTUBE PLAYLIST (CORTA Y MEJOR ESTRUCTURADA) -->
+    <!-- SECCIÓN RECONSTRUIDA DE YOUTUBE PLAYLIST (ALINEACIÓN PERFECTA DE ANCHO COMPLETO) -->
     <?php if($superadmin): ?>
         <?php 
             $playlistVal = '';
@@ -281,32 +281,27 @@ function formatNumberShort($num){
                 }
             }
         ?>
-        <div class="card shadow-sm mb-4" style="border-radius: 14px; border: 1px solid var(--border); overflow: hidden;">
-            <div class="card-body" style="padding: 14px 20px;">
+        <div class="card shadow-sm mb-4" style="border-radius: 16px; border: 1px solid var(--border); overflow: hidden;">
+            <div class="card-body" style="padding: 18px 24px;">
                 <form action="" method="POST" style="margin: 0;">
-                    <div class="row align-items-center g-3">
-                        <div class="col-lg-4 col-md-12">
-                            <div class="d-flex align-items-center gap-2">
-                                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255, 0, 0, 0.1); color: #ff0000; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
-                                    <i class="bi bi-youtube"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0" style="font-weight: 800; font-size: 0.95rem; color: var(--text);">Lista de Reproducción (YouTube)</h6>
-                                    <small class="text-muted" style="font-size: 0.78rem;">ID o URL de la lista oficial</small>
-                                </div>
-                            </div>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div style="width: 34px; height: 34px; border-radius: 10px; background: rgba(255, 0, 0, 0.1); color: #ff0000; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0;">
+                            <i class="bi bi-youtube"></i>
                         </div>
-                        <div class="col-lg-8 col-md-12">
-                            <div class="d-flex gap-2 align-items-center">
-                                <div style="position: relative; flex: 1;">
-                                    <i class="bi bi-link-45deg" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1.1rem;"></i>
-                                    <input type="text" id="youtube_playlist_id" name="youtube_playlist" value="<?= htmlspecialchars($playlistVal) ?>" placeholder="Ej: PLMC9KNincKvYin_USF1QeqG50KB1K1uD" style="width: 100%; padding: 10px 14px 10px 38px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--bg-subtle, #f8fafc); color: var(--text); font-weight: 600; font-size: 0.9rem; outline: none;">
-                                </div>
-                                <button type="submit" class="btn btn-accent" name="actualizarPlaylist" style="padding: 10px 20px; border-radius: 10px; font-weight: 700; white-space: nowrap; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px;">
-                                    <i class="bi bi-arrow-repeat"></i> Actualizar Playlist
-                                </button>
-                            </div>
+                        <div>
+                            <h6 class="mb-0" style="font-weight: 800; font-size: 0.98rem; color: var(--text);">Lista de Reproducción (YouTube)</h6>
+                            <small class="text-muted" style="font-size: 0.78rem;">ID o enlace URL de la lista oficial de videos en la Home</small>
                         </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: center; width: 100%;">
+                        <div style="position: relative; flex: 1;">
+                            <i class="bi bi-link-45deg" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1.2rem;"></i>
+                            <input type="text" id="youtube_playlist_id" name="youtube_playlist" value="<?= htmlspecialchars($playlistVal) ?>" placeholder="Ej: PLMC9KNincKvYin_USF1QeqG50KB1K1uD" style="width: 100%; padding: 11px 16px 11px 40px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg-subtle, #f8fafc); color: var(--text); font-weight: 600; font-size: 0.92rem; outline: none; transition: border-color 0.2s;">
+                        </div>
+                        <button type="submit" class="btn btn-accent" name="actualizarPlaylist" style="padding: 11px 24px; border-radius: 12px; font-weight: 700; white-space: nowrap; font-size: 0.92rem; display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                            <i class="bi bi-arrow-repeat"></i> Actualizar Playlist
+                        </button>
                     </div>
                 </form>
             </div>
