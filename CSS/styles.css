@@ -94,11 +94,7 @@ h2 {
 @media (min-width: 1401px) { :root { --cw: 1400px; } }
 @media (min-width: 1601px) { :root { --cw: 1560px; } }
 @media (min-width: 1921px) { :root { --cw: 1800px; } }
-/* el carrusel ocupa todo el ancho naturalmente sin compensaciones */
-.site-main .carousel {
-  margin: 0;
-  width: 100%;
-}
+/* (.site-main .carousel vive en la seccion CARRUSEL PRINCIPAL) */
 /* Basic container utilities */
 .container { width: 100%; max-width: var(--cw); margin: 0 auto; padding-left: 16px; padding-right: 16px; }
 .container-fluid { width: 100%; padding-left: 16px; padding-right: 16px; }
@@ -657,6 +653,9 @@ h2 {
 */
 .row { display:flex; flex-wrap:wrap; }
 .col { flex:1; }
+/* .col-12 se usa en el feed de portada; sin esta regla es un flex item que se
+   dimensiona por su contenido y min-width:auto le impide encoger, estirando la pagina. */
+.col-12 { flex: 0 0 100%; max-width: 100%; min-width: 0; }
 .col-md-3 { flex: calc(30%); max-width: calc(30%);}
 .col-md-9 { flex: calc(70%); max-width: calc(70%);}
 /* Botones
@@ -774,6 +773,23 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .social-links a { font-size:1.5rem; color:var(--text); opacity:0.9; transition: transform .2s ease, opacity .2s ease; text-decoration:none; }
 .social-links a:hover { opacity:1; transform: translateY(-3px); }
 .footer-bottom { background: var(--footer-bottom-bg); padding: 15px 0; }
+/* ══════════════════════════════════════════════════════════════════════
+   CARRUSEL PRINCIPAL DE PORTADA (hero + indicadores)
+   ----------------------------------------------------------------------
+   Toda la responsive de este componente vive en esta seccion: base,
+   escritorio, tablet y movil.
+
+   OJO: el orden de los @media es significativo y NO sigue el orden de
+   los breakpoints. Varios se solapan (a 360px aplican a la vez <=1400,
+   <=1200, <=980, <=768 y <=578) y entre reglas de igual especificidad
+   gana la ultima. Ejemplo real: el bloque <=768 define el padding
+   completo del caption, pero <=1200 y <=980 lo pisan despues solo en
+   padding-right. Reordenar los bloques cambia el resultado.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Base ─────────────────────────────────────────────────────────── */
+/* el carrusel ocupa todo el ancho naturalmente sin compensaciones */
+.site-main .carousel { margin: 0; width: 100%; }
 /* Animación de paneo sutil: oscila levemente izquierda ↔ derecha */
 @keyframes panFullCycle {
   0%   { object-position: 46% center; }
@@ -821,6 +837,214 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 /* caption show on md+ */
 .caption-md { display: none; }
 @media (min-width: 768px) { .caption-md { display:block; } }
+
+/* ── Movil y tablet (<=768px) ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  .carousel-caption {
+    padding: 32px 16px 80px 24px;
+    max-width: 100%;
+   }
+  /* Slider en móvil: ratio 16/9 para coincidir con crop3 y evitar zoom/upscale */
+  .carousel {
+    height: auto;
+    min-height: unset;
+    aspect-ratio: 16 / 9;
+  }
+  .carousel-inner, .carousel-item {
+    height: 100%;
+    min-height: unset;
+  }
+  .carousel-item {
+    position: absolute;
+    overflow: hidden;
+  }
+  .carousel-item.active {
+    z-index: 2;
+  }
+  /* Imagen con paneo horizontal para mostrar los lados */
+  .carousel-item img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 42% center;
+    transform: none;
+    animation: none;
+  }
+  /* Slide activo: panea izquierda→derecha→izquierda en los 10s que dura */
+  .carousel-item.active img {
+    animation: panFullCycle 7s ease-in-out forwards;
+  }
+  /* Caption adjustments for mobile */
+  .carousel-caption {
+    display: flex !important;
+    padding: 16px 16px 110px 16px;
+    margin-top: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0) 58%);
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+  .carousel-tag:not(:first-of-type){
+    display: none !important;
+  }
+  .carousel-item::before{
+    display: none;
+  }
+  /* Ajuste específico para que el tag no se expanda al 100% en flex column */
+  .carousel-tag {
+    align-self: flex-start; /* Importante: evita que se estire */
+    display: inline-block;
+    width: auto;
+    margin-bottom: 8px;
+  }
+  .carousel-caption h5 {
+    font-size: 1.45rem;
+    margin-bottom: 6px;
+  }
+  .carousel-caption p {
+    font-size: 0.9rem;
+  }
+  /* En móvil: indicadores fuera de la imagen, entre carousel y Top Semanal */
+  .custom-indicators {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 0 4px;
+    width: 100%;
+    background: var(--bg);
+  }
+  .indicator-avatar {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* ── Escalado del titulo por ancho de pantalla ────────────────────── */
+/* Estos bloques van DESPUES del <=768px a proposito: ver nota de arriba. */
+@media (min-width: 1401px) {
+  .carousel-caption h5 {
+    font-size: 3.2rem;
+  }
+}
+@media (max-width: 1400px) {
+  .carousel-caption h5 {
+    font-size: 2.8rem;
+  }
+}
+@media (max-width: 1200px) {
+  .carousel-caption {
+    padding-right: 40%;
+  }
+  .carousel-caption h5 {
+    font-size: 2.4rem;
+  }
+}
+@media (max-width: 980px) {
+  .carousel-caption {
+    padding-right: 28%;
+  }
+  .carousel-caption h5 {
+    font-size: 2rem;
+  }
+}
+
+/* ── Telefono (<=578px) ───────────────────────────────────────────── */
+@media (max-width: 578px) {
+  .carousel,
+  .carousel-inner,
+  .carousel-item {
+    min-height: 300px;
+  }
+  /* El texto se ancla abajo con padding minimo: en movil los indicadores ya no
+     van dentro de la imagen, asi que no hay que reservarles hueco. Titulo y
+     descripcion van recortados para que un texto largo no invada la foto. */
+  .carousel-caption {
+    padding: 14px 12px 16px;
+    justify-content: flex-end;
+  }
+  .carousel-caption h5 {
+    font-size: 1.35rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+  .carousel-caption p {
+    font-size: 0.85rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+  .custom-indicators {
+    gap: 6px;
+  }
+  .indicator-avatar {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/* ── Tablet horizontal: evita areas vacias entre 769px y 1024px ───── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .carousel,
+  .carousel-inner,
+  .carousel-item {
+    height: 60vh;
+    min-height: 440px;
+  }
+  .carousel-item::before {
+    background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.48) 55%, rgba(0,0,0,0.12) 100%);
+  }
+  .carousel-caption {
+    padding: 26px 18px 125px;
+    padding-right: 18px;
+    max-width: 100%;
+    justify-content: flex-end;
+    align-items: flex-start;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 52%, rgba(0,0,0,0) 100%);
+  }
+  .carousel-caption h5 {
+    font-size: 1.9rem;
+  }
+  .carousel-caption p {
+    font-size: 1rem;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .custom-indicators {
+    bottom: 28px;
+    top: auto;
+    transform: none;
+    flex-direction: row;
+    left: calc(max(0px, (100% - var(--cw)) / 2) + 16px);
+    width: auto;
+    justify-content: flex-start;
+    padding-left: 0;
+    gap: 8px;
+  }
+}
+
+/* Sobrescribir transiciones del carrusel (debe ir al final de la seccion) */
+.carousel-item {
+    transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.6s !important;
+}
+/* ══════════════════ FIN CARRUSEL PRINCIPAL ══════════════════════════ */
+
 /* row without gap */
 .row-no-gap { gap: 0; }
 /* left image for card */
@@ -875,10 +1099,6 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 /* responsive tweaks */
 @media (max-width: 768px) {
   .container, .container-fluid { padding-left: 12px; padding-right:12px; }
-  .carousel-caption {
-    padding: 32px 16px 80px 24px;
-    max-width: 100%;
-   }
   /* Forzar columnas a 100% en pantallas pequeñas (apilar) */
   .col { flex-basis: 100%; max-width: 100%; }
   /* Ensure col-md-* also stack on mobile */
@@ -1183,87 +1403,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
     display: block;
     width: 100%;
   }
-  /* Slider en móvil: ratio 16/9 para coincidir con crop3 y evitar zoom/upscale */
-  .carousel {
-    height: auto;
-    min-height: unset;
-    aspect-ratio: 16 / 9;
-  }
-  .carousel-inner, .carousel-item {
-    height: 100%;
-    min-height: unset;
-  }
-  .carousel-item {
-    position: absolute;
-    overflow: hidden;
-  }
-  .carousel-item.active {
-    z-index: 2;
-  }
-  /* Imagen con paneo horizontal para mostrar los lados */
-  .carousel-item img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 42% center;
-    transform: none;
-    animation: none;
-  }
-  /* Slide activo: panea izquierda→derecha→izquierda en los 10s que dura */
-  .carousel-item.active img {
-    animation: panFullCycle 7s ease-in-out forwards;
-  }
-  /* Caption adjustments for mobile */
-  .carousel-caption {
-    display: flex !important;
-    padding: 16px 16px 110px 16px;
-    margin-top: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0) 75%);
-    align-items: flex-start;
-    justify-content: flex-end;
-  }
-  .carousel-tag:not(:first-of-type){
-    display: none !important;
-  }
-  .carousel-item::before{
-    display: none;
-  }
-  /* Ajuste específico para que el tag no se expanda al 100% en flex column */
-  .carousel-tag {
-    align-self: flex-start; /* Importante: evita que se estire */
-    display: inline-block;
-    width: auto;
-    margin-bottom: 8px;
-  }
-  .carousel-caption h5 {
-    font-size: 1.45rem;
-    margin-bottom: 6px;
-  }
-  .carousel-caption p {
-    font-size: 0.9rem;
-  }
-  /* Custom indicators mobile: vuelven a abajo horizontal */
-  /* En móvil: indicadores fuera de la imagen, entre carousel y Top Semanal */
-  .custom-indicators {
-    position: relative;
-    top: auto;
-    bottom: auto;
-    left: auto;
-    transform: none;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 8px;
-    padding: 6px 0 4px;
-    width: 100%;
-    background: var(--bg);
-  }
-  .indicator-avatar {
-    width: 44px;
-    height: 44px;
-  }
+  /* (reglas del carrusel movidas a la seccion CARRUSEL PRINCIPAL) */
   /* Reducir margen superior del contenedor principal en móvil */
   .mt-5 { margin-top: 1.2rem; }
   .section-separator-pill::before {
@@ -2164,26 +2304,11 @@ hr{
   .container-noticia {
     max-width: 960px;
   }
-  .carousel-caption h5 {
-    font-size: 3.2rem;
-  }
-}
-/* monitor (<=1400px) */
-@media (max-width: 1400px) {
-  .carousel-caption h5 {
-    font-size: 2.8rem;
-  }
 }
 /* laptop (<=1200px) */
 @media (max-width: 1200px) {
   .nav-search {
     min-width: 220px;
-  }
-  .carousel-caption {
-    padding-right: 40%;
-  }
-  .carousel-caption h5 {
-    font-size: 2.4rem;
   }
 }
 /* tableta (<=980px) */
@@ -2194,16 +2319,6 @@ hr{
     padding-left: 14px;
     padding-right: 14px;
   }
-  .site-main .carousel {
-    margin: 0;
-    width: 100%;
-  }
-  .carousel-caption {
-    padding-right: 28%;
-  }
-  .carousel-caption h5 {
-    font-size: 2rem;
-  }
 }
 /* telefono grande (<=768px) */
 @media (max-width: 768px) {
@@ -2213,10 +2328,6 @@ hr{
     padding-left: 12px;
     padding-right: 12px;
   }
-  .site-main .carousel {
-    margin: 0;
-    width: 100%;
-  }
 }
 /* telefono (<=578px) */
 @media (max-width: 578px) {
@@ -2225,78 +2336,6 @@ hr{
   .container-noticia {
     padding-left: 10px;
     padding-right: 10px;
-  }
-  .site-main .carousel {
-    margin: 0;
-    width: 100%;
-  }
-  .carousel,
-  .carousel-inner,
-  .carousel-item {
-    min-height: 300px;
-  }
-  .carousel-caption {
-    padding: 14px 12px 105px;
-    justify-content: flex-end;
-  }
-  .carousel-caption h5 {
-    font-size: 1.35rem;
-  }
-  .carousel-caption p {
-    font-size: 0.85rem;
-    -webkit-line-clamp: unset;
-    line-clamp: unset;
-    display: block;
-    overflow: visible;
-  }
-  .custom-indicators {
-    gap: 6px;
-  }
-  .indicator-avatar {
-    width: 42px;
-    height: 42px;
-  }
-}
-/* Ajuste tablet horizontal/intermedia para evitar áreas vacías entre 768px y 1024px */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .carousel,
-  .carousel-inner,
-  .carousel-item {
-    height: 60vh;
-    min-height: 440px;
-  }
-  .carousel-item::before {
-    background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.48) 55%, rgba(0,0,0,0.12) 100%);
-  }
-  .carousel-caption {
-    padding: 26px 18px 125px;
-    padding-right: 18px;
-    max-width: 100%;
-    justify-content: flex-end;
-    align-items: flex-start;
-    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 52%, rgba(0,0,0,0) 100%);
-  }
-  .carousel-caption h5 {
-    font-size: 1.9rem;
-  }
-  .carousel-caption p {
-    font-size: 1rem;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .custom-indicators {
-    bottom: 28px;
-    top: auto;
-    transform: none;
-    flex-direction: row;
-    left: calc(max(0px, (100% - var(--cw)) / 2) + 16px);
-    width: auto;
-    justify-content: flex-start;
-    padding-left: 0;
-    gap: 8px;
   }
 }
 .pagination-wrapper{
@@ -2971,10 +3010,6 @@ body, .nav-link, .btn, .card, .site-main {
     transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out !important;
 }
 
-/* Sobrescribir transiciones del carrusel */
-.carousel-item {
-    transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.6s !important;
-}
 .navbar {
     transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.3s ease !important;
 }
@@ -4666,6 +4701,7 @@ body, .nav-link, .btn, .card, .site-main {
 }
 .h-card-tags {
   display: flex;
+  flex-wrap: wrap; /* sin wrap el ancho minimo de la fila de pildoras estira la tarjeta */
   gap: 6px;
   margin-bottom: 8px;
 }
@@ -4692,6 +4728,7 @@ body, .nav-link, .btn, .card, .site-main {
   font-weight: 750;
   line-height: 1.3;
   margin-bottom: 8px;
+  overflow-wrap: anywhere;
 }
 .h-card-title a {
   color: var(--text);
@@ -4705,6 +4742,7 @@ body, .nav-link, .btn, .card, .site-main {
   color: var(--muted);
   line-height: 1.45;
   margin-bottom: 12px;
+  overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
