@@ -591,23 +591,23 @@ $vacantesFilas = array_chunk($vacantes, 5);
       </div>
 
       <div style="margin-bottom: 24px;">
-        <label class="modal-form-label">Adjunta tu CV (PDF o Word) *</label>
+        <label class="modal-form-label">Adjunta tu CV, Portafolio o Archivo (PDF, Word o Imagen) *</label>
         <label class="custom-cv-upload-zone" id="cvUploadZone">
-          <input type="file" name="cv" id="cvFileInput" accept=".pdf,.doc,.docx" required style="display:none;">
+          <input type="file" name="cv" id="cvFileInput" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.gif" required style="display:none;">
           
           <div class="cv-upload-empty" id="cvUploadEmpty">
             <div class="cv-upload-icon-circle">
-              <i class="bi bi-file-earmark-arrow-up-fill"></i>
+              <i class="bi bi-cloud-arrow-up-fill"></i>
             </div>
             <div class="cv-upload-text">
-              <span class="cv-upload-title">Seleccionar o arrastrar archivo CV</span>
-              <span class="cv-upload-subtitle">Documentos PDF, DOC o DOCX (Máx. 10 MB)</span>
+              <span class="cv-upload-title">Seleccionar o arrastrar archivo</span>
+              <span class="cv-upload-subtitle">PDF, Word o Imágenes (JPG, PNG, WEBP, GIF - Máx 10 MB)</span>
             </div>
           </div>
 
           <div class="cv-upload-filled" id="cvUploadFilled" style="display:none;">
             <div class="cv-file-info">
-              <i class="bi bi-file-earmark-pdf-fill cv-file-icon"></i>
+              <i class="bi bi-file-earmark-pdf-fill cv-file-icon" id="cvFileIcon"></i>
               <div class="cv-file-details">
                 <span class="cv-file-name" id="cvFileName">mi_curriculum.pdf</span>
                 <span class="cv-file-size" id="cvFileSize">1.2 MB</span>
@@ -697,6 +697,19 @@ function initUnetePublic() {
     cvInput.addEventListener('change', () => {
       if (cvInput.files && cvInput.files[0]) {
         const file = cvInput.files[0];
+        const ext = file.name.split('.').pop().toLowerCase();
+        const fileIcon = document.getElementById('cvFileIcon');
+
+        if (fileIcon) {
+          if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) {
+            fileIcon.className = 'bi bi-file-earmark-image-fill cv-file-icon';
+          } else if (['doc', 'docx'].includes(ext)) {
+            fileIcon.className = 'bi bi-file-earmark-word-fill cv-file-icon';
+          } else {
+            fileIcon.className = 'bi bi-file-earmark-pdf-fill cv-file-icon';
+          }
+        }
+
         if (cvName) cvName.textContent = file.name;
         if (cvSize) cvSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
         if (cvEmpty) cvEmpty.style.display = 'none';

@@ -32,8 +32,8 @@ $fileName = $_FILES['cv']['name'];
 $fileTmp = $_FILES['cv']['tmp_name'];
 $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-if (!in_array($ext, ['pdf', 'doc', 'docx'])) {
-    echo json_encode(['error' => 'Formato de CV no permitido. Por favor sube un archivo .pdf, .doc o .docx']);
+if (!in_array($ext, ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'webp', 'gif'])) {
+    echo json_encode(['error' => 'Formato no permitido. Por favor sube tu CV o Portafolio en formato PDF, Word o Imagen (JPG, PNG, WEBP).']);
     exit;
 }
 

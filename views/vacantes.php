@@ -286,8 +286,14 @@ $totalSolicitudes = count($solicitudes);
                                             </select>
                                         </td>
                                         <td>
+                                            <?php 
+                                                $solExt = strtolower(pathinfo($sol['cv_archivo'], PATHINFO_EXTENSION));
+                                                $isImg = in_array($solExt, ['jpg', 'jpeg', 'png', 'webp', 'gif']);
+                                                $iconClass = $isImg ? 'bi-file-earmark-image-fill' : ($solExt === 'pdf' ? 'bi-file-earmark-pdf-fill' : 'bi-file-earmark-word-fill');
+                                                $btnLabel = $isImg ? 'Ver Imagen' : 'Ver Adjunto';
+                                            ?>
                                             <a href="<?= basePath() ?>/<?= htmlspecialchars($sol['cv_archivo']) ?>" target="_blank" class="btn btn-sm btn-accent" style="padding: 4px 10px; font-size: 0.8rem; border-radius: 6px;">
-                                                <i class="bi bi-file-earmark-pdf-fill"></i> Descargar CV
+                                                <i class="bi <?= $iconClass ?>"></i> <?= $btnLabel ?>
                                             </a>
                                         </td>
                                     </tr>
