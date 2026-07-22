@@ -336,6 +336,127 @@ $vacantesFilas = array_chunk($vacantes, 5);
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(239, 51, 99, 0.45);
 }
+
+/* Custom CV Upload Zone */
+.custom-cv-upload-zone {
+  display: block;
+  background: var(--bg-subtle, #f8fafc);
+  border: 2px dashed var(--border, #cbd5e1);
+  border-radius: 14px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+[data-bs-theme="dark"] .custom-cv-upload-zone {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.custom-cv-upload-zone:hover,
+.custom-cv-upload-zone.dragover {
+  background: rgba(239, 51, 99, 0.05);
+  border-color: #EF3363;
+  transform: translateY(-1px);
+}
+
+.cv-upload-empty {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cv-upload-icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(239, 51, 99, 0.12);
+  color: #EF3363;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.cv-upload-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cv-upload-title {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text, #111827);
+}
+
+.cv-upload-subtitle {
+  font-size: 0.8rem;
+  color: var(--muted, #64748b);
+  margin-top: 2px;
+}
+
+.cv-upload-filled {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.cv-file-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.cv-file-icon {
+  font-size: 1.8rem;
+  color: #EF3363;
+  flex-shrink: 0;
+}
+
+.cv-file-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cv-file-name {
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cv-file-size {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.btn-remove-cv {
+  background: rgba(239, 51, 99, 0.1);
+  color: #EF3363;
+  border: 1px solid rgba(239, 51, 99, 0.2);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-remove-cv:hover {
+  background: #EF3363;
+  color: #ffffff;
+}
 </style>
 
 <div class="unete-container">
@@ -465,7 +586,32 @@ $vacantesFilas = array_chunk($vacantes, 5);
 
       <div style="margin-bottom: 24px;">
         <label class="modal-form-label">Adjunta tu CV (PDF o Word) *</label>
-        <input type="file" name="cv" accept=".pdf,.doc,.docx" class="modal-form-input" required>
+        <label class="custom-cv-upload-zone" id="cvUploadZone">
+          <input type="file" name="cv" id="cvFileInput" accept=".pdf,.doc,.docx" required style="display:none;">
+          
+          <div class="cv-upload-empty" id="cvUploadEmpty">
+            <div class="cv-upload-icon-circle">
+              <i class="bi bi-file-earmark-arrow-up-fill"></i>
+            </div>
+            <div class="cv-upload-text">
+              <span class="cv-upload-title">Seleccionar o arrastrar archivo CV</span>
+              <span class="cv-upload-subtitle">Documentos PDF, DOC o DOCX (Máx. 10 MB)</span>
+            </div>
+          </div>
+
+          <div class="cv-upload-filled" id="cvUploadFilled" style="display:none;">
+            <div class="cv-file-info">
+              <i class="bi bi-file-earmark-pdf-fill cv-file-icon"></i>
+              <div class="cv-file-details">
+                <span class="cv-file-name" id="cvFileName">mi_curriculum.pdf</span>
+                <span class="cv-file-size" id="cvFileSize">1.2 MB</span>
+              </div>
+            </div>
+            <button type="button" class="btn-remove-cv" id="btnRemoveCv" title="Cambiar archivo">
+              <i class="bi bi-arrow-repeat"></i> Cambiar
+            </button>
+          </div>
+        </label>
       </div>
 
       <div style="display: flex; gap: 12px; justify-content: flex-end;">
@@ -506,6 +652,64 @@ function initUnetePublic() {
       cols.forEach(c => c.classList.remove('active'));
     });
   });
+
+  // Lógica del campo personalizado de subida de CV
+  const cvInput = document.getElementById('cvFileInput');
+  const cvEmpty = document.getElementById('cvUploadEmpty');
+  const cvFilled = document.getElementById('cvUploadFilled');
+  const cvName = document.getElementById('cvFileName');
+  const cvSize = document.getElementById('cvFileSize');
+  const cvRemove = document.getElementById('btnRemoveCv');
+  const cvZone = document.getElementById('cvUploadZone');
+
+  if (cvInput) {
+    cvInput.addEventListener('change', () => {
+      if (cvInput.files && cvInput.files[0]) {
+        const file = cvInput.files[0];
+        if (cvName) cvName.textContent = file.name;
+        if (cvSize) cvSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+        if (cvEmpty) cvEmpty.style.display = 'none';
+        if (cvFilled) cvFilled.style.display = 'flex';
+      }
+    });
+
+    if (cvRemove) {
+      cvRemove.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        cvInput.value = '';
+        if (cvEmpty) cvEmpty.style.display = 'flex';
+        if (cvFilled) cvFilled.style.display = 'none';
+      });
+    }
+
+    if (cvZone) {
+      ['dragenter', 'dragover'].forEach(eventName => {
+        cvZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          cvZone.classList.add('dragover');
+        }, false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        cvZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          cvZone.classList.remove('dragover');
+        }, false);
+      });
+
+      cvZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files.length > 0) {
+          cvInput.files = files;
+          cvInput.dispatchEvent(new Event('change'));
+        }
+      });
+    }
+  }
 
   // Modal de Postulación: Cierre y Envío AJAX
   if (modal && form) {
