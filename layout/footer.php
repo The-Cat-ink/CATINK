@@ -263,7 +263,7 @@
   <div class="container">
     <div class="row g-4 align-items-start">
       <!-- Columna 1: Marca y Redes -->
-      <div class="col-lg-4 col-md-5 mb-3 mb-lg-0">
+      <div class="col-lg-4 col-md-4 col-12 mb-4 mb-md-0">
         <img id="logo" src="" alt="CatInk Logo" class="footer-logo mb-3">
         <p class="footer-text mb-3">
           Noticias, anime, videojuegos y cultura digital. Todo lo que te apasiona en un solo lugar.
@@ -277,10 +277,10 @@
         </div>
       </div>
 
-      <!-- Columna 2: Enlaces de Interés en 2 subcolumnas -->
-      <div class="col-lg-4 col-md-7 mb-4 mb-lg-0">
+      <!-- Columna 2: Enlaces de Interés -->
+      <div class="col-lg-4 col-md-4 col-12 mb-4 mb-md-0">
         <h4 class="footer-title">Enlaces de Interés</h4>
-        <ul class="footer-links-grid">
+        <ul class="footer-links">
           <li><a href="<?= basePath() . '/sobre-nosotros' ?>"><i class="bi bi-info-circle-fill"></i> <span>Nosotros</span></a></li>
           <li><a href="<?= basePath() . '/terminos-condiciones' ?>"><i class="bi bi-file-earmark-text-fill"></i> <span>Términos y Condiciones</span></a></li>
           <li><a href="<?= basePath() . '/privacidad' ?>"><i class="bi bi-shield-lock-fill"></i> <span>Aviso de Privacidad</span></a></li>
@@ -291,7 +291,7 @@
       </div>
 
       <!-- Columna 3: Suscripción Rápida -->
-      <div class="col-lg-4 col-md-12">
+      <div class="col-lg-4 col-md-4 col-12">
         <h4 class="footer-title">Entérate Primero</h4>
         <p class="footer-text mb-3">
           Recibe las noticias más importantes de anime, videojuegos y cultura pop directo en tu correo.
@@ -309,7 +309,7 @@
   </div>
 
   <!-- Derechos -->
-  <div class="footer-bottom">
+  <div class="footer-bottom mt-4">
     <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
       <small>© <?= date('Y') ?> <strong>CatInk</strong>. Todos los derechos reservados.</small>
       <small class="text-muted">Cultura Pop &amp; Entretenimiento Digital</small>
