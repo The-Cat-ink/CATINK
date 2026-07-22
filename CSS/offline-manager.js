@@ -1,7 +1,7 @@
 /**
  * CatInk - Engine de Lectura Sin Conexión (IndexedDB & Network Status)
  */
-const CatInkOffline = (function() {
+window.CatInkOffline = (function() {
   const DB_NAME = 'CatInkOfflineDB';
   const DB_VERSION = 1;
   const STORE_NAME = 'articles';

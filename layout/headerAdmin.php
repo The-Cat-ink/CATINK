@@ -93,6 +93,7 @@ if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time
   <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
   <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/decoupled-document/ckeditor.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <script>window.ADMIN_BASE = '<?= basePath() ?>';</script>
   <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js" defer></script>
   <?php
@@ -102,7 +103,7 @@ if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time
       'admin', 'crear', 'continuar_borrador', 'crearp', 'crearu', 'editar', 'editarp', 'editaru',
       'cats', 'contenidos', 'borradores', 'recomendados', 'esperamos', 'publicidad',
       'correos', 'suscripciones', 'usuarios', 'lectores', 'videos', 'avatares',
-      'paginas', 'see', 'verp'
+      'paginas', 'see', 'verp', 'vacantes'
   ];
   if (in_array($archivoActual, $turboReloadPages, true)): ?>
   <meta name="turbo-visit-control" content="reload">
@@ -237,6 +238,13 @@ if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time
             <li class="sidebar-menu-item">
                 <a href="./papelera.php" class="sidebar-menu-link" data-tooltip="Papelera">
                     <i class="bi bi-trash3"></i> <span class="sb-label">Papelera</span>
+                </a>
+            </li>
+        <?php endif; ?>
+        <?php if (($_SESSION['ACL']['noticias']['leer']?? false)): ?>
+            <li class="sidebar-menu-item">
+                <a href="./vacantes.php" class="sidebar-menu-link" data-tooltip="Vacantes y Empleos">
+                    <i class="bi bi-briefcase"></i> <span class="sb-label">Vacantes y Empleos</span>
                 </a>
             </li>
         <?php endif; ?>

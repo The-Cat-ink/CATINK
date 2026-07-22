@@ -261,46 +261,58 @@
 <!-- Pie de página: columnas, enlaces y barra inferior -->
 <footer class="site-footer mt-5">
   <div class="container">
-    <div class="row">
-      <!-- Logo / descripción -->
-      <div class="col">
-        <img id="logo" src="" alt="CatInk Logo">
-        <p class="footer-text">
-          Noticias, anime, videojuegos y cultura digital.
+    <div class="row g-4 align-items-start">
+      <!-- Columna 1: Marca y Redes -->
+      <div class="col-lg-4 col-md-4 col-12 mb-4 mb-md-0">
+        <img id="logo" src="" alt="CatInk Logo" class="footer-logo mb-3">
+        <p class="footer-text mb-3">
+          Noticias, anime, videojuegos y cultura digital. Todo lo que te apasiona en un solo lugar.
         </p>
+        <div class="social-links">
+          <a href="https://www.facebook.com/TheCatink?locale=es_LA" aria-label="Facebook" target="_blank" rel="noopener" class="social-btn facebook" title="Facebook"><i class="bi bi-facebook"></i></a>
+          <a href="https://x.com/The_Catink/" aria-label="Twitter / X" target="_blank" rel="noopener" class="social-btn twitter" title="X (Twitter)"><i class="bi bi-twitter-x"></i></a>
+          <a href="https://www.instagram.com/the.catink/" aria-label="Instagram" target="_blank" rel="noopener" class="social-btn instagram" title="Instagram"><i class="bi bi-instagram"></i></a>
+          <a href="https://www.youtube.com/@thecatink" aria-label="YouTube" target="_blank" rel="noopener" class="social-btn youtube" title="YouTube"><i class="bi bi-youtube"></i></a>
+          <a href="https://www.tiktok.com/@thecatink" aria-label="TikTok" target="_blank" rel="noopener" class="social-btn tiktok" title="TikTok"><i class="bi bi-tiktok"></i></a>
+        </div>
       </div>
-      <!-- Páginas hermanas -->
-      <div class="col">
-        <h4 class="footer-title">Enlaces de interes</h4>
+
+      <!-- Columna 2: Enlaces de Interés -->
+      <div class="col-lg-4 col-md-4 col-12 mb-4 mb-md-0">
+        <h4 class="footer-title">Enlaces de Interés</h4>
         <ul class="footer-links">
-          <li><a href="<?= basePath() . '/sobre-nosotros' ?>"><i class="bi bi-building-fill"></i> Nosotros</a></li>
-          <li><a href="<?= basePath() . '/terminos-condiciones' ?>"><i class="bi bi-file-earmark-text-fill"></i> Terminos y Condiciones</a></li>
-          <li><a href="<?= basePath() . '/privacidad' ?>"><i class="bi bi-file-lock-fill"></i> Aviso de privacidad</a></li>
-          <li><a href="<?= basePath() . '/solicitud' ?>"><i class="bi bi-briefcase-fill"></i> Unete a nuestro equipo</a></li>
-          <li><a href="<?= basePath() . '/suscripcion' ?>" aria-label="Suscribete"><i class="bi bi-bookmark-star-fill"></i> Suscribete</a></li>
-          <li><a href="<?= basePath() . '/contactanos' ?>"><i class="bi bi-envelope-fill"></i> Contactanos</a></li>
+          <li><a href="<?= basePath() . '/sobre-nosotros' ?>"><i class="bi bi-info-circle-fill"></i> <span>Nosotros</span></a></li>
+          <li><a href="<?= basePath() . '/terminos-condiciones' ?>"><i class="bi bi-file-earmark-text-fill"></i> <span>Términos y Condiciones</span></a></li>
+          <li><a href="<?= basePath() . '/privacidad' ?>"><i class="bi bi-shield-lock-fill"></i> <span>Aviso de Privacidad</span></a></li>
+          <li><a href="<?= basePath() . '/solicitud' ?>"><i class="bi bi-briefcase-fill"></i> <span>Únete al Equipo</span></a></li>
+          <li><a href="<?= basePath() . '/suscripcion' ?>"><i class="bi bi-bell-fill"></i> <span>Suscríbete</span></a></li>
+          <li><a href="<?= basePath() . '/contactanos' ?>"><i class="bi bi-envelope-fill"></i> <span>Contáctanos</span></a></li>
         </ul>
       </div>
-      <!-- Redes sociales -->
-      <div class="col">
-        <h4 class="footer-title">Síguenos</h4>
-        <div class="social-links">
-          <a href="https://www.facebook.com/TheCatink?locale=es_LA" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-          <a href="https://x.com/The_Catink/" aria-label="Twitter / X"><i class="bi bi-twitter-x"></i></a>
-          <a href="https://www.instagram.com/the.catink/" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-          <a href="https://www.youtube.com/@thecatink" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
-          <a href="https://www.tiktok.com/@thecatink" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
-          <!--<a href="#" aria-label="Twitch"><i class="bi bi-twitch"></i></a>-->
-        </div>
+
+      <!-- Columna 3: Suscripción Rápida -->
+      <div class="col-lg-4 col-md-4 col-12">
+        <h4 class="footer-title">Entérate Primero</h4>
+        <p class="footer-text mb-3">
+          Recibe las noticias más importantes de anime, videojuegos y cultura pop directo en tu correo.
+        </p>
+        <form action="<?= basePath() . '/suscripcion' ?>" method="GET" class="footer-newsletter-form">
+          <div class="footer-input-group">
+            <input type="email" name="email" placeholder="Tu correo electrónico..." required class="footer-email-input">
+            <button type="submit" class="btn-footer-subscribe" title="Suscribirme">
+              <i class="bi bi-send-fill"></i>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
+
   <!-- Derechos -->
-  <div class="footer-bottom">
-    <div class="container text-center">
-      <small>
-        © 2026 CatInk. Todos los derechos reservados.
-      </small>
+  <div class="footer-bottom mt-4">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+      <small>© <?= date('Y') ?> <strong>CatInk</strong>. Todos los derechos reservados.</small>
+      <small class="text-muted">Cultura Pop &amp; Entretenimiento Digital</small>
     </div>
   </div>
 </footer>
