@@ -242,50 +242,48 @@ $totalSolicitudes = count($solicitudes);
 
 </div>
 
-<!-- MODAL CROP/NATIVO ESTILO CATINK (CREAR / EDITAR VACANTE) -->
+<!-- MODAL ESTILO CATINK (CREAR / EDITAR VACANTE) -->
 <div id="vacanteModal" class="crop-modal" style="display: none; align-items: center; justify-content: center; z-index: 10000; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
-    <div class="card" style="max-width: 650px; width: 92%; border-radius: 16px; background: var(--card-bg, #ffffff); color: var(--text, #111827); border: 1px solid var(--border, #e2e8f0); box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
-        <div class="crop-modal-content" style="padding: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
-                <h3 id="modalVacanteTitle" style="margin: 0; font-size: 1.3rem; font-weight: 800;">Crear Vacante de Empleo</h3>
-                <button type="button" id="closeVacanteModal" style="background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+    <div class="crop-modal-content" style="max-width: 650px; width: 92%; padding: 28px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+            <h3 id="modalVacanteTitle" style="margin: 0; font-size: 1.3rem; font-weight: 800;">Crear Vacante de Empleo</h3>
+            <button type="button" id="closeVacanteModal" style="background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+
+        <form id="formVacanteModal">
+            <input type="hidden" id="vacanteId" name="id" value="0">
+            <input type="hidden" id="vacanteOrden" name="orden" value="1">
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Tag / Etiqueta (ej: 01 · ANIME & MANGA) *</label>
+                <input type="text" id="vacanteTag" name="tag" placeholder="01 · CULTURA POP" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
             </div>
 
-            <form id="formVacanteModal">
-                <input type="hidden" id="vacanteId" name="id" value="0">
-                <input type="hidden" id="vacanteOrden" name="orden" value="1">
-                
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Tag / Etiqueta (ej: 01 · ANIME & MANGA) *</label>
-                    <input type="text" id="vacanteTag" name="tag" placeholder="01 · CULTURA POP" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
-                </div>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Título del Puesto (ej: EDITOR) *</label>
+                <input type="text" id="vacanteTitulo" name="titulo" placeholder="EDITOR" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
+            </div>
 
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Título del Puesto (ej: EDITOR) *</label>
-                    <input type="text" id="vacanteTitulo" name="titulo" placeholder="EDITOR" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
-                </div>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Subtítulo en Cursiva (ej: Da forma al relato.)</label>
+                <input type="text" id="vacanteSubtitulo" name="subtitulo_italic" placeholder="Crea contenido único." style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
+            </div>
 
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Subtítulo en Cursiva (ej: Da forma al relato.)</label>
-                    <input type="text" id="vacanteSubtitulo" name="subtitulo_italic" placeholder="Crea contenido único." style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
-                </div>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Modalidad de Trabajo</label>
+                <input type="text" id="vacanteModalidad" name="modalidad" value="100% Remoto · Tiempo completo" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
+            </div>
 
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Modalidad de Trabajo</label>
-                    <input type="text" id="vacanteModalidad" name="modalidad" value="100% Remoto · Tiempo completo" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
-                </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Modificar Contenido y Descripción Completa del Puesto *</label>
+                <textarea id="vacanteDescripcion" name="descripcion" rows="5" required style="width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text); resize: vertical; line-height: 1.5;" placeholder="Detalla los requisitos, tareas y beneficios del puesto..."></textarea>
+            </div>
 
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Modificar Contenido y Descripción Completa del Puesto *</label>
-                    <textarea id="vacanteDescripcion" name="descripcion" rows="5" required style="width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text); resize: vertical; line-height: 1.5;" placeholder="Detalla los requisitos, tareas y beneficios del puesto..."></textarea>
-                </div>
-
-                <div class="crop-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
-                    <button type="button" id="closeVacanteBtn" class="btn btn-secondary">Cancelar</button>
-                    <button type="submit" class="btn btn-accent"><i class="bi bi-check-lg"></i> Guardar Vacante</button>
-                </div>
-            </form>
-        </div>
+            <div class="crop-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" id="closeVacanteBtn" class="btn btn-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-accent"><i class="bi bi-check-lg"></i> Guardar Vacante</button>
+            </div>
+        </form>
     </div>
 </div>
 
