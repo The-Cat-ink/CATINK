@@ -11,4 +11,13 @@
         die("la coneccion fallo: ".$con->connect_error);
     }
     mysqli_set_charset($con, "utf8mb4");
+    // Alinea la zona horaria de MySQL con la de PHP: NOW() debe coincidir con las
+    // fechas que guardamos (fecha_publicacion) o las notas programadas se publican antes.
+    $offset = (new DateTime('now', new DateTimeZone(date_default_timezone_get())))->format('P');
+    $stmtTz = $con->prepare("SET time_zone = ?");
+    if ($stmtTz) {
+        $stmtTz->bind_param("s", $offset);
+        $stmtTz->execute();
+        $stmtTz->close();
+    }
 ?>
