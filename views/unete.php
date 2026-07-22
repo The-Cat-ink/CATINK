@@ -328,13 +328,6 @@ $totalVacantes = count($vacantes);
     <?php endforeach; ?>
   </div>
 
-  <!-- Pie de Estado -->
-  <div class="unete-footer-status" style="justify-content: flex-end;">
-    <div style="opacity: 0.7;">
-      catink.io/careers
-    </div>
-  </div>
-
 </div>
 
 <!-- MODAL FORMULARIO DE POSTULACIÓN -->
