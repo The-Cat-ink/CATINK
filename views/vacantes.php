@@ -89,6 +89,16 @@ $totalSolicitudes = count($solicitudes);
   background: var(--accent, #EF3363) !important;
   color: #ffffff !important;
 }
+.sortable-ghost {
+  opacity: 0.4;
+  background-color: var(--bg-subtle, #f1f5f9) !important;
+  border: 2px dashed var(--accent, #EF3363) !important;
+}
+.sortable-drag {
+  opacity: 0.95;
+  background: var(--card-bg, #ffffff) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
 </style>
 
     <!-- Toolbar oficial de CatInk -->
@@ -318,7 +328,10 @@ function initVacantesView() {
   const tbody = document.getElementById('vacantesTbody');
 
   if (tbody && typeof Sortable !== 'undefined') {
-    new Sortable(tbody, {
+    if (tbody._sortable) {
+      try { tbody._sortable.destroy(); } catch(e){}
+    }
+    tbody._sortable = new Sortable(tbody, {
       animation: 150,
       handle: 'td:first-child',
       ghostClass: 'sortable-ghost',
