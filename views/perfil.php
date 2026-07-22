@@ -1146,29 +1146,71 @@ if (toast) setTimeout(() => { toast.style.opacity = '0'; toast.style.transition 
     if (!modalInput.files[0]) return;
     const reader = new FileReader();
     reader.onload = e => {
-      modalImg.src = e.target.result;
       modalPreview.style.display = 'block';
-      if (cropper) cropper.destroy();
-      cropper = new Cropper(modalImg, { aspectRatio:1, viewMode:1, dragMode:'none', movable:false, zoomable:false, autoCropArea:0.8 });
+      modalImg.onload = () => {
+        if (cropper) {
+          cropper.destroy();
+          cropper = null;
+        }
+        cropper = new Cropper(modalImg, {
+          aspectRatio: 1,
+          viewMode: 1,
+          autoCropArea: 0.9,
+          responsive: true,
+          background: false
+        });
+      };
+      modalImg.src = e.target.result;
     };
     reader.readAsDataURL(modalInput.files[0]);
   });
 
   confirmBtn && confirmBtn.addEventListener('click', async () => {
-    if (!cropper) return;
-    const canvas = cropper.getCroppedCanvas({ width:500, height:500 });
+    if (!cropper) {
+      alert('Debes seleccionar una imagen primero.');
+      return;
+    }
+    const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
+    if (!canvas) {
+      alert('Error al generar la previsualización del recorte.');
+      return;
+    }
+
+    const origBtnHtml = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Guardando...';
+
     canvas.toBlob(async blob => {
+      if (!blob) {
+        alert('Error al convertir la imagen recortada.');
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = origBtnHtml;
+        return;
+      }
       const fd = new FormData();
-      fd.append('foto_personal', new File([blob], 'photo.webp', {type:'image/webp'}));
-      const res  = await fetch('<?= basePath() ?>/controllers/subir_foto_personal.php', { method:'POST', body:fd });
-      const data = await res.json();
-      if (data.ok) {
-        const pa = document.getElementById('perfilAvatar');
-        if (pa) pa.innerHTML = `<img src="<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(data.imagen)}" alt="">`;
-        modalAv.style.display = 'none';
-        cropper.destroy(); cropper = null;
-        modalPreview.style.display = 'none';
-      } else { alert('Error: ' + (data.error || 'desconocido')); }
+      fd.append('foto_personal', blob, 'photo.webp');
+      
+      try {
+        const res = await fetch('<?= basePath() ?>/controllers/subir_foto_personal.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.ok) {
+          const pa = document.getElementById('perfilAvatar');
+          if (pa) pa.innerHTML = `<img src="<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(data.imagen)}" alt="">`;
+          modalAv.style.display = 'none';
+          cropper.destroy();
+          cropper = null;
+          modalPreview.style.display = 'none';
+          location.reload();
+        } else {
+          alert('Error: ' + (data.error || 'No se pudo guardar la foto de perfil.'));
+          confirmBtn.disabled = false;
+          confirmBtn.innerHTML = origBtnHtml;
+        }
+      } catch (err) {
+        alert('Error de conexión al enviar la imagen.');
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = origBtnHtml;
+      }
     }, 'image/webp', 0.92);
   });
 
