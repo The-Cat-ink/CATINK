@@ -5,13 +5,10 @@ include("./../data/conexion.php");
 $row  = $con->query("SELECT contenido_pag FROM paginas WHERE nombre_pag='nosotros'")->fetch_assoc();
 $logos = $con->query("SELECT * FROM logos_marcas WHERE activo=1 AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW()) ORDER BY orden ASC, creado ASC")->fetch_all(MYSQLI_ASSOC);
 
-// Dividir en grupos de 7 — sin límite de filas: crecen/decrecen automáticamente
 $card_w   = 200;
 $card_gap = 12;
 $px_per_s = 60;
-
 $filas = array_chunk($logos, 7);
-
 $rows_cfg = [];
 foreach ($filas as $i => $fila_logos) {
     $set_w    = count($fila_logos) * ($card_w + $card_gap);
@@ -27,34 +24,335 @@ foreach ($filas as $i => $fila_logos) {
 }
 ?>
 
+<style>
+/* ─── Tokens y Reset ──────────────────────────────────────────── */
+.nos-page { --cw: 1080px; }
+
+/* ─── Hero ─────────────────────────────────────────────────────── */
+.nos-hero {
+    position: relative;
+    padding: 90px 32px 80px;
+    overflow: hidden;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+}
+.nos-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 80% at 80% 50%, rgba(239,51,99,0.12), transparent 70%),
+                radial-gradient(ellipse 50% 60% at 10% 80%, rgba(239,51,99,0.07), transparent 60%);
+    pointer-events: none;
+}
+.nos-hero-inner {
+    max-width: var(--cw);
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+.nos-hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(239,51,99,0.1);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 30px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(239,51,99,0.2);
+}
+.nos-hero-title {
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 900;
+    line-height: 1.08;
+    color: var(--text);
+    margin: 0 0 20px;
+    max-width: 640px;
+}
+.nos-hero-title span { color: var(--accent); }
+.nos-hero-sub {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 540px;
+    line-height: 1.65;
+    margin: 0 0 36px;
+}
+.nos-hero-stats {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+.nos-stat-item { display: flex; flex-direction: column; gap: 2px; }
+.nos-stat-num {
+    font-size: 1.9rem;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+}
+.nos-stat-label { font-size: 0.8rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+
+/* ─── Tarjetas Misión/Visión/Valores ───────────────────────────── */
+.nos-cards-section {
+    padding: 72px 32px;
+    background: var(--bg);
+}
+.nos-cards-inner {
+    max-width: var(--cw);
+    margin: 0 auto;
+}
+.nos-section-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .2em;
+    color: var(--accent);
+    margin-bottom: 8px;
+}
+.nos-section-title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 900;
+    color: var(--text);
+    margin: 0 0 48px;
+}
+.nos-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+.nos-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 28px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.nos-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+.nos-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(239,51,99,0.12); }
+.nos-card:hover::before { transform: scaleX(1); }
+.nos-card-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(239,51,99,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--accent);
+}
+.nos-card-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0 0 10px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.nos-card-desc {
+    font-size: 0.92rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* ─── Contenido Editor ──────────────────────────────────────────── */
+.nos-content-section {
+    padding: 60px 32px 72px;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+.nos-content-inner {
+    max-width: var(--cw);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 64px;
+    align-items: start;
+}
+.nos-content-sidebar {
+    position: sticky;
+    top: 90px;
+}
+.nos-sidebar-tag {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .2em;
+    color: var(--accent);
+    margin-bottom: 12px;
+}
+.nos-sidebar-title {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1.2;
+    margin: 0 0 20px;
+}
+.nos-sidebar-line {
+    width: 36px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+}
+.nos-content-body .ql-editor {
+    padding: 0;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--text);
+}
+
+/* ─── Marcas ────────────────────────────────────────────────────── */
+.nos-brands {
+    padding: 60px 32px 72px;
+    overflow: hidden;
+    background: var(--bg);
+}
+.nos-brands-header {
+    max-width: var(--cw);
+    margin: 0 auto 40px;
+    text-align: center;
+}
+.nos-brands-header .nos-section-label { justify-content: center; display: block; }
+.nos-brands-title {
+    font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+    font-weight: 900;
+    color: var(--text);
+    margin: 6px 0 0;
+}
+.nos-sep-wrap { max-width: var(--cw); margin: 0 auto 24px; }
+.nos-brands-empty { text-align:center; color:var(--muted); font-size:0.95rem; padding:0 24px 52px; margin:0; }
+.nos-brands-outer { max-width: var(--cw); margin: 0 auto; overflow: hidden; }
+.nos-brands-rows { display:flex; flex-direction:column; gap:24px; overflow:hidden; }
+.nos-row-wrap { overflow:hidden; }
+.nos-row-track { display:flex; flex-direction:row; flex-wrap:nowrap; gap:12px; width:fit-content; will-change:transform; }
+.nos-row-track.row-left  { animation:nos-left  linear infinite; }
+.nos-row-track.row-right { animation:nos-right linear infinite; }
+@keyframes nos-left  { from{transform:translateX(0)}    to{transform:translateX(-50%)} }
+@keyframes nos-right { from{transform:translateX(-50%)} to{transform:translateX(0)} }
+.nos-row-wrap:hover .nos-row-track { animation-play-state:paused; }
+.nos-logo-card {
+    background:var(--card-bg); border:1px solid var(--border); border-radius:10px;
+    width:200px; height:100px; display:flex; align-items:center; justify-content:center;
+    padding:12px 16px; flex-shrink:0; transition:border-color .4s, transform .4s;
+}
+.nos-logo-card:hover { border-color:var(--accent); transform:scale(1.04); }
+.nos-logo-card img { max-height:70px; max-width:118px; object-fit:contain; display:block; filter:grayscale(15%); transition:filter .2s; }
+.nos-logo-card:hover img { filter:none; }
+
+/* ─── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .nos-cards-grid { grid-template-columns: 1fr; gap: 16px; }
+    .nos-content-inner { grid-template-columns: 1fr; gap: 32px; }
+    .nos-content-sidebar { position: static; }
+    .nos-brands-rows .nos-row-wrap:nth-child(3),
+    .nos-brands-rows .nos-row-wrap:nth-child(4) { display:none; }
+    .nos-logo-card { width:130px; height:68px; }
+}
+@media (max-width: 600px) {
+    .nos-hero { padding: 56px 20px 48px; }
+    .nos-cards-section, .nos-content-section, .nos-brands { padding-left: 20px; padding-right: 20px; }
+    .nos-logo-card { width:110px; height:62px; }
+}
+</style>
+
+<div class="nos-page">
+
 <!-- ═══ HERO ═══════════════════════════════════════════════════════ -->
 <section class="nos-hero">
     <div class="nos-hero-inner">
-        <h1 class="nos-hero-title">Sobre Nosotros</h1>
-        <div class="nos-hero-line"></div>
-    </div>
-</section>
-
-<!-- ═══ CONTENIDO ══════════════════════════════════════════════════ -->
-<section class="nos-body">
-    <div class="nos-body-inner">
-        <div class="post-content">
-            <div class="ql-editor">
-                <?php echo $row['contenido_pag'] ?? ''; ?>
+        <div class="nos-hero-eyebrow">
+            <i class="bi bi-stars"></i> Quiénes Somos
+        </div>
+        <h1 class="nos-hero-title">
+            El medio geek que<br><span>México necesitaba</span>
+        </h1>
+        <p class="nos-hero-sub">
+            Somos CatInk, un medio de comunicación digital y agencia creativa enfocada en el entretenimiento geek: Anime, Manga, Cine, Videojuegos y Cultura Pop.
+        </p>
+        <div class="nos-hero-stats">
+            <div class="nos-stat-item">
+                <span class="nos-stat-num">+100K</span>
+                <span class="nos-stat-label">Seguidores</span>
+            </div>
+            <div class="nos-stat-item">
+                <span class="nos-stat-num">+3</span>
+                <span class="nos-stat-label">Años activos</span>
+            </div>
+            <div class="nos-stat-item">
+                <span class="nos-stat-num">+500</span>
+                <span class="nos-stat-label">Publicaciones</span>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ═══ MARCAS ═════════════════════════════════════════════════════ -->
-<section class="nos-brands">
-    <div class="nos-sep-wrap">
-        <div class="section-separator" id="marcas">
-            <a href="#marcas" class="section-separator-label">
-                Marcas con las que colaboramos
-            </a>
-            <div class="section-separator-line"></div>
+<!-- ═══ MISIÓN / VISIÓN / VALORES ═══════════════════════════════════ -->
+<section class="nos-cards-section">
+    <div class="nos-cards-inner">
+        <p class="nos-section-label">Nuestra Identidad</p>
+        <h2 class="nos-section-title">Lo que nos mueve cada día</h2>
+        <div class="nos-cards-grid">
+            <div class="nos-card">
+                <div class="nos-card-icon"><i class="bi bi-crosshair2"></i></div>
+                <h3 class="nos-card-title">Misión</h3>
+                <p class="nos-card-desc">Crear contenido de calidad sobre cultura geek que informe, entretenga e inspire a la comunidad hispanohablante de manera auténtica y apasionada.</p>
+            </div>
+            <div class="nos-card">
+                <div class="nos-card-icon"><i class="bi bi-eye"></i></div>
+                <h3 class="nos-card-title">Visión</h3>
+                <p class="nos-card-desc">Convertirnos en el referente digital líder de cultura pop y entretenimiento geek en México y Latinoamérica, conectando marcas con comunidades.</p>
+            </div>
+            <div class="nos-card">
+                <div class="nos-card-icon"><i class="bi bi-heart-fill"></i></div>
+                <h3 class="nos-card-title">Valores</h3>
+                <p class="nos-card-desc">Autenticidad, pasión por el contenido, comunidad antes que clics, calidad editorial y respeto total a nuestra audiencia y colaboradores.</p>
+            </div>
         </div>
+    </div>
+</section>
+
+<!-- ═══ CONTENIDO ════════════════════════════════════════════════════ -->
+<?php if (!empty($row['contenido_pag'])): ?>
+<section class="nos-content-section">
+    <div class="nos-content-inner">
+        <div class="nos-content-sidebar">
+            <p class="nos-sidebar-tag">Nuestra historia</p>
+            <h2 class="nos-sidebar-title">Más sobre nosotros</h2>
+            <div class="nos-sidebar-line"></div>
+        </div>
+        <div class="nos-content-body">
+            <div class="post-content">
+                <div class="ql-editor">
+                    <?php echo $row['contenido_pag']; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<!-- ═══ MARCAS ═══════════════════════════════════════════════════════ -->
+<section class="nos-brands">
+    <div class="nos-brands-header">
+        <p class="nos-section-label">Alianzas</p>
+        <h2 class="nos-brands-title">Marcas con las que colaboramos</h2>
     </div>
 
     <?php if (empty($logos)): ?>
@@ -77,166 +375,10 @@ foreach ($filas as $i => $fila_logos) {
         </div>
         <?php endforeach; ?>
     </div>
-    </div><!-- /.nos-brands-outer -->
+    </div>
     <?php endif; ?>
 </section>
 
-<style>
-/* ─── Hero ─────────────────────────────────────────────────────── */
-.nos-hero {
-    padding: 40px 32px 24px;
-    border-bottom: 1px solid var(--border);
-}
-.nos-hero-inner {
-    max-width: var(--cw, 1040px);
-    margin: 0 auto;
-}
-.nos-hero-tag {
-    display: inline-block;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 10px;
-}
-.nos-hero-title {
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 800;
-    line-height: 1.1;
-    color: var(--text);
-    margin: 0 0 18px;
-}
-.nos-hero-line {
-    width: 52px;
-    height: 4px;
-    background: var(--accent);
-    border-radius: 2px;
-}
-
-/* ─── Cuerpo de texto ──────────────────────────────────────────── */
-.nos-body {
-    padding: 20px 32px 28px;
-}
-.nos-body-inner {
-    max-width: var(--cw, 1040px);
-    margin: 0 auto;
-}
-.nos-body .ql-editor {
-    padding-left: 0;
-    padding-right: 0;
-}
-/* ─── Sección de marcas ────────────────────────────────────────── */
-.nos-brands {
-    border-top: 1px solid var(--border);
-    padding: 32px 32px 44px;
-    overflow: hidden;
-}
-.nos-sep-wrap {
-    max-width: var(--cw, 1040px);
-    margin: 0 auto 24px;
-}
-.nos-brands-empty {
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.95rem;
-    padding: 0 24px 52px;
-    margin: 0;
-}
-
-/* ─── Wrapper centrado igual que el texto ──────────────────────── */
-.nos-brands-outer {
-    max-width: var(--cw, 1040px);
-    margin: 0 auto;
-    overflow: hidden;
-}
-
-/* ─── Filas horizontales ───────────────────────────────────────── */
-.nos-brands-rows {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-    overflow: hidden;
-}
-
-/* ─── Fila individual ──────────────────────────────────────────── */
-.nos-row-wrap {
-    overflow: hidden;
-}
-.nos-row-track {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 12px;
-    width: fit-content;
-    will-change: transform;
-}
-.nos-row-track.row-left {
-    animation: nos-left linear infinite;
-}
-.nos-row-track.row-right {
-    animation: nos-right linear infinite;
-}
-@keyframes nos-left {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-}
-@keyframes nos-right {
-    from { transform: translateX(-50%); }
-    to   { transform: translateX(0); }
-}
-
-/* Pausar al pasar el cursor sobre una fila */
-.nos-row-wrap:hover .nos-row-track {
-    animation-play-state: paused;
-}
-
-/* ─── Tarjeta de logo ──────────────────────────────────────────── */
-.nos-logo-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    width: 200px;
-    height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 12px 16px;
-    flex-shrink: 0;
-    transition: border-color .4s, transform .4s;
-}
-.nos-logo-card:hover {
-    border-color: var(--accent);
-    transform: scale(1.04);
-}
-.nos-logo-card img {
-    max-height: 70px;
-    max-width: 118px;
-    object-fit: contain;
-    display: block;
-    filter: grayscale(15%);
-    transition: filter .2s;
-}
-.nos-logo-card:hover img {
-    filter: none;
-}
-
-/* ─── Responsive ───────────────────────────────────────────────── */
-@media (max-width: 900px) {
-    /* En móvil mostrar solo 2 filas */
-    .nos-brands-rows .nos-row-wrap:nth-child(3),
-    .nos-brands-rows .nos-row-wrap:nth-child(4) {
-        display: none;
-    }
-    .nos-logo-card { width: 130px; height: 68px; }
-}
-@media (max-width: 600px) {
-    .nos-hero   { padding: 36px 20px 28px; }
-    .nos-body   { padding: 28px 20px 40px; }
-    .nos-brands { padding-left: 20px; padding-right: 20px; }
-    .nos-sep-wrap { padding: 0; }
-    .nos-logo-card { width: 110px; height: 62px; }
-}
-</style>
+</div>
 
 <?php include("./../layout/footer.php"); ?>
