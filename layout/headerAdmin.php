@@ -240,6 +240,13 @@ if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time
                 </a>
             </li>
         <?php endif; ?>
+        <?php if (($_SESSION['ACL']['noticias']['leer']?? false)): ?>
+            <li class="sidebar-menu-item">
+                <a href="./vacantes.php" class="sidebar-menu-link" data-tooltip="Vacantes y Empleos">
+                    <i class="bi bi-briefcase"></i> <span class="sb-label">Vacantes y Empleos</span>
+                </a>
+            </li>
+        <?php endif; ?>
         <?php if (($_SESSION['ACL']['actividad']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
                 <a href="./actividad.php" class="sidebar-menu-link" data-tooltip="Registro de Actividad">
