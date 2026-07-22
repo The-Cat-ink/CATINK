@@ -362,10 +362,9 @@ $vacantesFilas = array_chunk($vacantes, 5);
     ?>
       <div class="unete-accordion-desktop row-accordion-desktop" id="desktopAccordionRow<?= $fIndex ?>">
         <?php foreach ($filaVacantes as $colIndex => $vac): 
-          $isFirstInRow = ($colIndex === 0);
           $globalIndex++;
         ?>
-          <div class="unete-col <?= $isFirstInRow ? 'active' : '' ?>" data-index="<?= $globalIndex ?>">
+          <div class="unete-col" data-index="<?= $globalIndex ?>">
             
             <!-- Estado Colapsado (Texto Vertical) -->
             <div class="unete-col-collapsed">
@@ -497,8 +496,13 @@ function initUnetePublic() {
       col.addEventListener('click', (e) => {
         if (e.target.closest('.btn-open-modal-postulacion')) return;
         cols.forEach(c => c.classList.remove('active'));
-        col.classList.add('active');
+        col.classList.toggle('active');
       });
+    });
+
+    // Cerrar/colapsar automáticamente al retirar el cursor del contenedor
+    row.addEventListener('mouseleave', () => {
+      cols.forEach(c => c.classList.remove('active'));
     });
   });
 
