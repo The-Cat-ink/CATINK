@@ -49,6 +49,11 @@
     const curr = window.scrollY;
 
     if (curr > lastScroll && curr > 80) {
+      // Con el menu movil abierto la barra mide ~700px y sigue ocupando ese
+      // espacio en el flujo. Si solo la desplazamos con translateY queda un
+      // hueco vacio de su misma altura antes del contenido: cerrarla primero.
+      const abierto = navbar.querySelector('.navbar-collapse.show');
+      if (abierto) abierto.classList.remove('show');
       navbar.classList.add('nav-hidden');
     } else {
       navbar.classList.remove('nav-hidden');

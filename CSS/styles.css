@@ -489,6 +489,19 @@ h2 {
 .nav-item{
   margin-top: 15px;
 }
+/* Menu hamburguesa: activo de 0 a 1024px (el nav horizontal entra en 1025px).
+   La separacion entre categorias sumaba 33px porque se acumulaban tres fuentes:
+   el gap 8 del contenedor, el margin-top 15 de .nav-item y el margin-bottom 10
+   de la regla global de <li>. Se anulan los margenes y el gap queda como unica
+   fuente. Va DESPUES de .nav-item para ganar por orden. */
+@media (max-width: 1024px) {
+  .navbar-nav {
+    gap: 14px;
+  }
+  .navbar-nav .nav-item {
+    margin: 0;
+  }
+}
 /* Search Bar */
 .nav-search {
   position: relative;
