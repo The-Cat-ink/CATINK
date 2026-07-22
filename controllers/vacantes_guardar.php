@@ -15,7 +15,8 @@ $subtitulo_italic = trim($data['subtitulo_italic'] ?? '');
 $descripcion = trim($data['descripcion'] ?? '');
 $modalidad = trim($data['modalidad'] ?? '100% Remoto · Tiempo completo');
 $estado = isset($data['estado']) ? intval($data['estado']) : 1;
-$eliminar_imagen = !empty($data['eliminar_imagen']);
+// "0" como string debe ser falso — solo eliminar si el valor es exactamente "1" o 1
+$eliminar_imagen = (($data['eliminar_imagen'] ?? '0') === '1' || ($data['eliminar_imagen'] ?? 0) === 1);
 
 if (empty($tag) || empty($titulo) || empty($descripcion)) {
     echo json_encode(['error' => 'Por favor completa la etiqueta (tag), título y descripción de la vacante.']);
