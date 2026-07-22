@@ -479,7 +479,8 @@ $vacantesFilas = array_chunk($vacantes, 5);
 </div>
 
 <script>
-const BASE_PATH = '<?= basePath() ?>';
+window.BASE_PATH = window.BASE_PATH || '<?= basePath() ?>';
+var BASE_PATH = window.BASE_PATH;
 
 function initUnetePublic() {
   const modal = document.getElementById('modalPostulacion');
@@ -506,25 +507,12 @@ function initUnetePublic() {
     });
   });
 
-  // Modal de Postulación
+  // Modal de Postulación: Cierre y Envío AJAX
   if (modal && form) {
     const closeModal = document.getElementById('closeModalPostulacion');
     const cancelModal = document.getElementById('btnCancelPostulacion');
-    const modalTitle = document.getElementById('modalPuestoTitle');
-    const inputVacanteId = document.getElementById('postularVacanteId');
     const btnSubmit = document.getElementById('btnSubmitPostulacion');
     const btnSubmitText = document.getElementById('btnSubmitText');
-
-    document.querySelectorAll('.btn-open-modal-postulacion').forEach(btn => {
-      btn.onclick = function(e) {
-        e.stopPropagation();
-        const vacId = this.dataset.vacanteId;
-        const vacTitle = this.dataset.vacanteTitulo;
-        if (inputVacanteId) inputVacanteId.value = vacId;
-        if (modalTitle) modalTitle.textContent = 'Puesto: ' + vacTitle;
-        modal.style.display = 'flex';
-      };
-    });
 
     closeModal?.addEventListener('click', () => modal.style.display = 'none');
     cancelModal?.addEventListener('click', () => modal.style.display = 'none');
@@ -568,6 +556,23 @@ function initUnetePublic() {
     };
   }
 }
+
+// Delegación de eventos global para los botones de apertura de modal (resistente a Turbo)
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.btn-open-modal-postulacion');
+  if (btn) {
+    e.stopPropagation();
+    e.preventDefault();
+    const modal = document.getElementById('modalPostulacion');
+    const inputVacanteId = document.getElementById('postularVacanteId');
+    const modalTitle = document.getElementById('modalPuestoTitle');
+    const vacId = btn.dataset.vacanteId;
+    const vacTitle = btn.dataset.vacanteTitulo;
+    if (inputVacanteId) inputVacanteId.value = vacId;
+    if (modalTitle) modalTitle.textContent = 'Puesto: ' + vacTitle;
+    if (modal) modal.style.display = 'flex';
+  }
+});
 
 document.addEventListener('DOMContentLoaded', initUnetePublic);
 document.addEventListener('turbo:load', initUnetePublic);
