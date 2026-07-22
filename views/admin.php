@@ -151,151 +151,9 @@ function formatNumberShort($num){
 }
 ?>
 <div class="container-fluid">
-    <!-- CABECERA SUPERIOR COMPACTA (ALTA EFICIENCIA) -->
-    <style>
-    .admin-header-compact {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 6px;
-      margin-bottom: 16px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--border, rgba(0,0,0,0.08));
-    }
-    .admin-welcome-title {
-      font-weight: 800;
-      font-size: 1.35rem;
-      margin: 0;
-      color: var(--text, #0f172a);
-    }
-    .admin-quick-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-    }
-    .admin-quick-toolbar .btn-accent {
-      border-radius: 10px;
-      padding: 7px 14px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 2px 8px rgba(239, 51, 99, 0.2);
-    }
-    .btn-panic-deactivate {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      color: #ffffff !important;
-      border: none;
-      padding: 7px 14px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      border-radius: 10px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      text-decoration: none;
-    }
-    .btn-panic-activate {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: #ffffff !important;
-      border: none;
-      padding: 7px 14px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      border-radius: 10px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      text-decoration: none;
-    }
-
-    /* YouTube Compact Bar */
-    .yt-compact-card {
-      background: var(--card-bg, #ffffff);
-      border: 1px solid var(--border, rgba(0,0,0,0.08));
-      border-radius: 12px;
-      padding: 10px 16px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-    }
-    .yt-compact-form {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .yt-compact-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 800;
-      font-size: 0.88rem;
-      color: var(--text);
-      white-space: nowrap;
-    }
-    .yt-compact-input-wrapper {
-      flex: 1;
-      min-width: 240px;
-      position: relative;
-    }
-    .yt-compact-input {
-      width: 100%;
-      padding: 6px 12px 6px 36px;
-      border-radius: 8px;
-      border: 1.5px solid var(--border);
-      background: var(--bg-subtle, #f8fafc);
-      color: var(--text);
-      font-size: 0.85rem;
-      font-weight: 600;
-      outline: none;
-    }
-    .yt-compact-btn {
-      padding: 6px 16px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      border-radius: 8px;
-    }
-    </style>
-
-    <div class="admin-header-compact">
-        <h2 class="admin-welcome-title">Bienvenido, <?= htmlspecialchars($fila['usuario']) ?></h2>
-
-        <!-- BOTONES QUICKS DE ADMINISTRADOR -->
-        <div class="admin-quick-toolbar">
-            <?php if($ACLNoticias['crear']): ?>
-                <a href="crear.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Nueva Noticia</a>
-            <?php endif; ?> 
-            <?php if($superadmin): ?>
-                <a href="paginas.php" class="btn btn-accent"><i class="bi bi-card-text"></i> Páginas Informativas</a>
-                <button id="btnAbrirModal" class="btn btn-accent">
-                    <i class="bi bi-gear-fill"></i> Estado de Secciones
-                </button>
-                <?php
-                $comentariosSecRes = $con->query("SELECT estado FROM secciones WHERE nombre = 'comentarios' LIMIT 1");
-                $comentariosSec = $comentariosSecRes->fetch_assoc();
-                $comentariosActivos = $comentariosSec ? ($comentariosSec['estado'] == 1) : true;
-                ?>
-                <form action="" method="POST" style="display: inline-block; margin: 0;">
-                    <?php if ($comentariosActivos): ?>
-                        <input type="hidden" name="estado_panico" value="0">
-                        <button type="submit" name="toggle_panico" class="btn-panic-deactivate">
-                            <i class="bi bi-exclamation-triangle-fill"></i> Desactivar Comentarios (PÁNICO)
-                        </button>
-                    <?php else: ?>
-                        <input type="hidden" name="estado_panico" value="1">
-                        <button type="submit" name="toggle_panico" class="btn-panic-activate">
-                            <i class="bi bi-check-circle-fill"></i> Activar Comentarios
-                        </button>
-                    <?php endif; ?>
-                </form>
-            <?php endif; ?>
-        </div>
+    <!-- SALUDO -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 style="font-weight: 800; font-size: 1.8rem; margin: 0; color: var(--text);">Bienvenido, <?= htmlspecialchars($fila['usuario']) ?></h1>
     </div>
 
     <!-- Alertas de Restablecimiento de Sistema -->
@@ -316,7 +174,104 @@ function formatNumberShort($num){
         </div>
     <?php endif; ?>
 
-    <!-- WIDGET COMPACTO DE YOUTUBE PLAYLIST -->
+    <!-- BOTONES QUICKS DE ADMINISTRADOR -->
+    <style>
+    .admin-quick-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .admin-quick-toolbar .btn-accent {
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-weight: 700;
+      font-size: 0.93rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(239, 51, 99, 0.22);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .admin-quick-toolbar .btn-accent:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(239, 51, 99, 0.32);
+    }
+    .btn-panic-deactivate {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #ffffff !important;
+      border: none;
+      padding: 10px 20px;
+      font-size: 0.93rem;
+      font-weight: 700;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-panic-deactivate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(239, 68, 68, 0.45);
+      color: #ffffff !important;
+    }
+    .btn-panic-activate {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff !important;
+      border: none;
+      padding: 10px 20px;
+      font-size: 0.93rem;
+      font-weight: 700;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-panic-activate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+      color: #ffffff !important;
+    }
+    </style>
+    <div class="admin-quick-toolbar">
+        <?php if($ACLNoticias['crear']): ?>
+            <a href="crear.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Nueva Noticia</a>
+        <?php endif; ?> 
+        <?php if($superadmin): ?>
+            <a href="paginas.php" class="btn btn-accent"><i class="bi bi-card-text"></i> Editar Páginas Informativas</a>
+            <button id="btnAbrirModal" class="btn btn-accent">
+                <i class="bi bi-gear-fill"></i> Gestionar Estado de Secciones
+            </button>
+            <?php
+            $comentariosSecRes = $con->query("SELECT estado FROM secciones WHERE nombre = 'comentarios' LIMIT 1");
+            $comentariosSec = $comentariosSecRes->fetch_assoc();
+            $comentariosActivos = $comentariosSec ? ($comentariosSec['estado'] == 1) : true;
+            ?>
+            <form action="" method="POST" style="display: inline-block; margin: 0;">
+                <?php if ($comentariosActivos): ?>
+                    <input type="hidden" name="estado_panico" value="0">
+                    <button type="submit" name="toggle_panico" class="btn-panic-deactivate">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Desactivar Comentarios (PÁNICO)
+                    </button>
+                <?php else: ?>
+                    <input type="hidden" name="estado_panico" value="1">
+                    <button type="submit" name="toggle_panico" class="btn-panic-activate">
+                        <i class="bi bi-check-circle-fill"></i> Activar Comentarios
+                    </button>
+                <?php endif; ?>
+            </form>
+        <?php endif; ?>
+    </div>
+
+    <!-- SECCIÓN RECONSTRUIDA DE YOUTUBE PLAYLIST (CORTA Y MEJOR ESTRUCTURADA) -->
     <?php if($superadmin): ?>
         <?php 
             $playlistVal = '';
@@ -326,20 +281,35 @@ function formatNumberShort($num){
                 }
             }
         ?>
-        <div class="yt-compact-card">
-            <form action="" method="POST" class="yt-compact-form">
-                <div class="yt-compact-label">
-                    <i class="bi bi-youtube text-danger fs-5"></i>
-                    <span>Playlist YouTube:</span>
-                </div>
-                <div class="yt-compact-input-wrapper">
-                    <i class="bi bi-link-45deg" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted);"></i>
-                    <input type="text" id="youtube_playlist_id" name="youtube_playlist" value="<?= htmlspecialchars($playlistVal) ?>" placeholder="ID o URL de la lista de reproducción..." class="yt-compact-input">
-                </div>
-                <button type="submit" class="btn btn-accent yt-compact-btn" name="actualizarPlaylist">
-                    <i class="bi bi-arrow-repeat"></i> Actualizar
-                </button>
-            </form>
+        <div class="card shadow-sm mb-4" style="border-radius: 14px; border: 1px solid var(--border); overflow: hidden;">
+            <div class="card-body" style="padding: 14px 20px;">
+                <form action="" method="POST" style="margin: 0;">
+                    <div class="row align-items-center g-3">
+                        <div class="col-lg-4 col-md-12">
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255, 0, 0, 0.1); color: #ff0000; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
+                                    <i class="bi bi-youtube"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0" style="font-weight: 800; font-size: 0.95rem; color: var(--text);">Lista de Reproducción (YouTube)</h6>
+                                    <small class="text-muted" style="font-size: 0.78rem;">ID o URL de la lista oficial</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8 col-md-12">
+                            <div class="d-flex gap-2 align-items-center">
+                                <div style="position: relative; flex: 1;">
+                                    <i class="bi bi-link-45deg" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1.1rem;"></i>
+                                    <input type="text" id="youtube_playlist_id" name="youtube_playlist" value="<?= htmlspecialchars($playlistVal) ?>" placeholder="Ej: PLMC9KNincKvYin_USF1QeqG50KB1K1uD" style="width: 100%; padding: 10px 14px 10px 38px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--bg-subtle, #f8fafc); color: var(--text); font-weight: 600; font-size: 0.9rem; outline: none;">
+                                </div>
+                                <button type="submit" class="btn btn-accent" name="actualizarPlaylist" style="padding: 10px 20px; border-radius: 10px; font-weight: 700; white-space: nowrap; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px;">
+                                    <i class="bi bi-arrow-repeat"></i> Actualizar Playlist
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     <?php endif; ?>
 
