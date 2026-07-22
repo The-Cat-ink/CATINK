@@ -253,16 +253,11 @@ $totalSolicitudes = count($solicitudes);
 
             <form id="formVacanteModal">
                 <input type="hidden" id="vacanteId" name="id" value="0">
+                <input type="hidden" id="vacanteOrden" name="orden" value="1">
                 
-                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 16px;">
-                    <div>
-                        <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Orden *</label>
-                        <input type="number" id="vacanteOrden" name="orden" value="1" min="1" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Tag / Etiqueta (ej: 01 · ANIME & MANGA) *</label>
-                        <input type="text" id="vacanteTag" name="tag" placeholder="01 · CULTURA POP" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
-                    </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Tag / Etiqueta (ej: 01 · ANIME & MANGA) *</label>
+                    <input type="text" id="vacanteTag" name="tag" placeholder="01 · CULTURA POP" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
                 </div>
 
                 <div style="margin-bottom: 16px;">
