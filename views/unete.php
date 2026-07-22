@@ -329,10 +329,7 @@ $totalVacantes = count($vacantes);
   </div>
 
   <!-- Pie de Estado -->
-  <div class="unete-footer-status">
-    <div>
-      <span style="color: #22c55e;">🟢</span> Contratación activa &middot; 100% remoto &middot; Tiempo completo
-    </div>
+  <div class="unete-footer-status" style="justify-content: flex-end;">
     <div style="opacity: 0.7;">
       catink.io/careers
     </div>
