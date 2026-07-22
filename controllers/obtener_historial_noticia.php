@@ -20,7 +20,11 @@ if ($noticia_id <= 0) {
 $stmtCurrent = $con->prepare("SELECT titulo, descripcion, contenido FROM noticias WHERE id = ?");
 $stmtCurrent->bind_param("i", $noticia_id);
 $stmtCurrent->execute();
-$actual = $stmtCurrent->get_result()->fetch_assoc();
+$actual = $stmtCurrent->get_result()->fetch_assoc() ?: [
+    'titulo' => '(Publicación actual)',
+    'descripcion' => '(Publicación actual)',
+    'contenido' => '(Publicación actual)'
+];
 
 $stmt = $con->prepare("
     SELECT h.*, u.nombre AS usuario_nombre, u.usuario AS usuario_username
