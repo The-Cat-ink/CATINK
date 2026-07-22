@@ -208,6 +208,123 @@ $vacantesFilas = array_chunk($vacantes, 5);
   box-shadow: 0 6px 20px rgba(239, 51, 99, 0.3);
 }
 
+.btn-mas-info-vac {
+  background: transparent;
+  color: var(--accent, #EF3363);
+  border: 2px solid var(--accent, #EF3363);
+  padding: 14px 24px;
+  border-radius: 30px;
+  font-weight: 800;
+  font-size: 0.88rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+  width: fit-content;
+}
+
+.btn-mas-info-vac:hover {
+  background: var(--accent, #EF3363);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 51, 99, 0.25);
+}
+
+/* Lightbox de imagen de vacante */
+.vacante-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.vacante-lightbox-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.vacante-lightbox-box {
+  position: relative;
+  max-width: 820px;
+  width: 100%;
+  background: var(--card-bg, #1a1a20);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+  overflow: hidden;
+  transform: scale(0.92) translateY(20px);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  opacity: 0;
+}
+
+.vacante-lightbox-overlay.open .vacante-lightbox-box {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.vacante-lightbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
+}
+
+.vacante-lightbox-title {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.vacante-lightbox-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.vacante-lightbox-close:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.vacante-lightbox-img {
+  width: 100%;
+  max-height: 520px;
+  object-fit: contain;
+  display: block;
+  background: #0a0a0e;
+}
+
+.vacante-lightbox-footer {
+  padding: 14px 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+
 /* Versión Móvil */
 .unete-accordion-mobile {
   display: none;
@@ -509,7 +626,12 @@ $vacantesFilas = array_chunk($vacantes, 5);
                 <p class="unete-role-desc"><?= htmlspecialchars($vac['descripcion']) ?></p>
               </div>
 
-              <div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <?php if (!empty($vac['imagen'])): ?>
+                <button type="button" class="btn-mas-info-vac" data-imagen="<?= basePath() ?>/<?= htmlspecialchars($vac['imagen']) ?>" data-titulo="<?= htmlspecialchars($vac['titulo']) ?>" onclick="abrirImagenVacante(this)">
+                  <i class="bi bi-image"></i> <span>Más Información</span>
+                </button>
+                <?php endif; ?>
                 <button type="button" class="btn-postularme-action btn-open-modal-postulacion" data-vacante-id="<?= $vac['id'] ?>" data-vacante-titulo="<?= htmlspecialchars($vac['titulo']) ?> (<?= htmlspecialchars($vac['tag']) ?>)">
                   <span>POSTULARME</span> <i class="bi bi-arrow-right"></i>
                 </button>
@@ -544,6 +666,11 @@ $vacantesFilas = array_chunk($vacantes, 5);
           <?php endif; ?>
           <p style="font-size: 0.92rem; color: var(--muted); line-height: 1.5; margin-bottom: 16px;"><?= htmlspecialchars($vac['descripcion']) ?></p>
           
+          <?php if (!empty($vac['imagen'])): ?>
+          <button type="button" class="btn-mas-info-vac" data-imagen="<?= basePath() ?>/<?= htmlspecialchars($vac['imagen']) ?>" data-titulo="<?= htmlspecialchars($vac['titulo']) ?>" onclick="abrirImagenVacante(this)" style="width: 100%; justify-content: center; margin-bottom: 10px;">
+            <i class="bi bi-image"></i> <span>Más Información</span>
+          </button>
+          <?php endif; ?>
           <button type="button" class="btn-postularme-action btn-open-modal-postulacion" data-vacante-id="<?= $vac['id'] ?>" data-vacante-titulo="<?= htmlspecialchars($vac['titulo']) ?>" style="width: 100%; justify-content: center;">
             <span>POSTULARME</span> <i class="bi bi-arrow-right"></i>
           </button>
@@ -552,6 +679,22 @@ $vacantesFilas = array_chunk($vacantes, 5);
     <?php endforeach; ?>
   </div>
 
+</div>
+
+<!-- LIGHTBOX IMAGEN DE VACANTE -->
+<div id="vacanteImgLightbox" class="vacante-lightbox-overlay" onclick="cerrarImagenVacante(event)">
+  <div class="vacante-lightbox-box" onclick="event.stopPropagation()">
+    <div class="vacante-lightbox-header">
+      <span class="vacante-lightbox-title" id="lightboxTituloVacante"></span>
+      <button class="vacante-lightbox-close" onclick="cerrarImagenVacante(null)"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <img src="" id="lightboxImgVacante" class="vacante-lightbox-img" alt="Información del puesto">
+    <div class="vacante-lightbox-footer">
+      <a id="lightboxImgLink" href="#" target="_blank" rel="noopener" class="btn-postularme-action" style="font-size:0.82rem; padding: 10px 20px;">
+        <i class="bi bi-box-arrow-up-right"></i> Ver en pantalla completa
+      </a>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL FORMULARIO DE POSTULACIÓN -->
@@ -840,6 +983,38 @@ function toggleMobileCard(header) {
     if (chevron) chevron.style.transform = 'rotate(180deg)';
   }
 }
+
+function abrirImagenVacante(btn) {
+  const lightbox = document.getElementById('vacanteImgLightbox');
+  const img = document.getElementById('lightboxImgVacante');
+  const titulo = document.getElementById('lightboxTituloVacante');
+  const link = document.getElementById('lightboxImgLink');
+  if (!lightbox || !img) return;
+
+  const imgSrc = btn.dataset.imagen;
+  const tituloVac = btn.dataset.titulo || '';
+
+  img.src = imgSrc;
+  if (titulo) titulo.textContent = tituloVac;
+  if (link) link.href = imgSrc;
+
+  lightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarImagenVacante(event) {
+  if (event && event.target !== event.currentTarget) return;
+  const lightbox = document.getElementById('vacanteImgLightbox');
+  if (!lightbox) return;
+  lightbox.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    cerrarImagenVacante(null);
+  }
+});
 </script>
 
 <?php include("./../layout/footer.php"); ?>
