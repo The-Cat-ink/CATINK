@@ -778,16 +778,21 @@ if ($notifUserId > 0) {
   align-items: center;
   gap: 14px;
   padding: 16px 20px;
-  background: rgba(239, 51, 99, 0.04);
-  border: 2px dashed rgba(239, 51, 99, 0.3);
+  background: var(--bg-subtle, #f8fafc);
+  border: 1.5px solid var(--border, #e2e8f0);
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.25s ease;
 }
 
+[data-bs-theme="dark"] .avatar-upload-dropzone {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
 .avatar-upload-dropzone:hover {
-  background: rgba(239, 51, 99, 0.08);
-  border-color: var(--accent);
+  background: rgba(239, 51, 99, 0.05);
+  border-color: var(--accent, #EF3363);
   transform: translateY(-1px);
 }
 
@@ -826,19 +831,39 @@ if ($notifUserId > 0) {
   max-height: 300px;
   overflow: hidden;
   border-radius: 16px;
-  background: #0f172a;
+  background: #090d16;
   border: 1px solid var(--border);
-  box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
-/* Make cropper mask circle */
-.cropper-view-box,
+/* Eliminar cuadrícula ajedrezada y estilizar el cropper */
+.cropper-bg {
+  background-image: none !important;
+  background-color: #0f172a !important;
+}
+
+[data-bs-theme="dark"] .cropper-bg {
+  background-color: #090d16 !important;
+}
+
+.cropper-modal {
+  opacity: 0.65 !important;
+  background-color: #000000 !important;
+}
+
+.cropper-view-box {
+  border-radius: 50% !important;
+  outline: 2.5px solid var(--accent, #EF3363) !important;
+  outline-color: var(--accent, #EF3363) !important;
+}
+
 .cropper-face {
   border-radius: 50% !important;
+  background-color: transparent !important;
 }
 
 .cropper-line, .cropper-point {
-  background-color: var(--accent) !important;
+  background-color: var(--accent, #EF3363) !important;
 }
 
 .cropper-actions-bar {
