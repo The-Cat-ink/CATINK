@@ -1126,11 +1126,13 @@ $lastEdit = $stmtLastEdit->get_result()->fetch_assoc();
   });
 
   // Botón Guardar sin Conexión (Offline Support)
-  const btnOffline = document.getElementById('btnOfflineSave');
-  const offlineText = document.getElementById('offlineSaveText');
+  function syncOfflineButtonState() {
+    const btnOffline = document.getElementById('btnOfflineSave');
+    const offlineText = document.getElementById('offlineSaveText');
 
-  if (btnOffline && window.CatInkOffline) {
+    if (!btnOffline || !window.CatInkOffline) return;
     const articleId = btnOffline.dataset.id;
+    if (!articleId) return;
 
     // Verificar si ya está guardado offline
     CatInkOffline.isArticleSaved(articleId).then(isSaved => {
@@ -1139,12 +1141,34 @@ $lastEdit = $stmtLastEdit->get_result()->fetch_assoc();
         btnOffline.style.background = 'var(--accent, #EF3363)';
         btnOffline.style.color = '#ffffff';
         btnOffline.style.borderColor = 'var(--accent, #EF3363)';
-        btnOffline.querySelector('i').className = 'bi bi-bookmark-check-fill';
+        const icon = btnOffline.querySelector('i');
+        if (icon) icon.className = 'bi bi-bookmark-check-fill';
         if (offlineText) offlineText.textContent = 'Guardado offline';
+      } else {
+        btnOffline.classList.remove('active');
+        btnOffline.style.background = 'rgba(255,255,255,0.06)';
+        btnOffline.style.color = 'var(--text)';
+        btnOffline.style.borderColor = 'var(--border)';
+        const icon = btnOffline.querySelector('i');
+        if (icon) icon.className = 'bi bi-bookmark-plus';
+        if (offlineText) offlineText.textContent = 'Guardar sin conexión';
       }
     });
+  }
 
-    btnOffline.addEventListener('click', async function() {
+  // Delegación global de clics para el botón Guardar sin conexión
+  if (!window._newsOfflineDelegated) {
+    window._newsOfflineDelegated = true;
+
+    document.addEventListener('click', async function(e) {
+      const btnOffline = e.target.closest('#btnOfflineSave, .btn-offline-save');
+      if (!btnOffline || !window.CatInkOffline) return;
+      e.preventDefault();
+
+      const offlineText = btnOffline.querySelector('#offlineSaveText') || document.getElementById('offlineSaveText');
+      const articleId = btnOffline.dataset.id;
+      if (!articleId) return;
+
       const isSaved = await CatInkOffline.isArticleSaved(articleId);
 
       if (isSaved) {
@@ -1154,43 +1178,52 @@ $lastEdit = $stmtLastEdit->get_result()->fetch_assoc();
         btnOffline.style.background = 'rgba(255,255,255,0.06)';
         btnOffline.style.color = 'var(--text)';
         btnOffline.style.borderColor = 'var(--border)';
-        btnOffline.querySelector('i').className = 'bi bi-bookmark-plus';
+        const icon = btnOffline.querySelector('i');
+        if (icon) icon.className = 'bi bi-bookmark-plus';
         if (offlineText) offlineText.textContent = 'Guardar sin conexión';
         CatInkOffline.showStatusToast('Noticia eliminada de tus lecturas offline', false);
       } else {
         // Extraer contenido para offline
         const container = document.querySelector('.container-noticia');
-        const contentEl = container ? (container.querySelector('.descripcion') ? container : null) : null;
         let htmlBody = '';
         if (container) {
           const clone = container.cloneNode(true);
-          // Remover botones de accion en el clon guardado
-          clone.querySelectorAll('#likeBtn, #btnOfflineSave, .back-to-top-container, form').forEach(el => el.remove());
+          // Remover elementos no deseados del clon guardado
+          clone.querySelectorAll('#likeBtn, #btnOfflineSave, .btn-offline-save, .back-to-top-container, form, .news-comments-section').forEach(el => el.remove());
           htmlBody = clone.innerHTML;
         }
 
         await CatInkOffline.saveArticle({
           id: articleId,
-          slug: this.dataset.slug,
-          titulo: this.dataset.title,
+          slug: btnOffline.dataset.slug || '',
+          titulo: btnOffline.dataset.title || document.querySelector('h1')?.textContent || '',
           descripcion: document.querySelector('.descripcion')?.textContent || '',
           contenido: htmlBody,
-          cover_image: this.dataset.img,
-          autor_nombre: this.dataset.author,
+          cover_image: btnOffline.dataset.img || '',
+          autor_nombre: btnOffline.dataset.author || 'CatInk',
           categorias: [<?= json_encode($cats[0] ?? 'Noticia') ?>],
-          fecha_publicacion: this.dataset.date
+          fecha_publicacion: btnOffline.dataset.date || ''
         });
 
         btnOffline.classList.add('active');
         btnOffline.style.background = 'var(--accent, #EF3363)';
         btnOffline.style.color = '#ffffff';
         btnOffline.style.borderColor = 'var(--accent, #EF3363)';
-        btnOffline.querySelector('i').className = 'bi bi-bookmark-check-fill';
+        const icon = btnOffline.querySelector('i');
+        if (icon) icon.className = 'bi bi-bookmark-check-fill';
         if (offlineText) offlineText.textContent = 'Guardado offline';
         CatInkOffline.showStatusToast('¡Noticia guardada para leer sin conexión!', false);
       }
     });
   }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', syncOfflineButtonState);
+  } else {
+    syncOfflineButtonState();
+  }
+  document.addEventListener('turbo:load', syncOfflineButtonState);
+  document.addEventListener('turbo:render', syncOfflineButtonState);
 </script>
 <script>
   // ============================
