@@ -5,11 +5,20 @@ proteger('noticias', 'editar');
 include("./../data/conexion.php");
 require_once("./../views/helpers/urlhelper.php");
 
+// Buscar si hay consulta de búsqueda
+$q = trim($_GET['q'] ?? '');
+
 // Obtener todas las vacantes
-$resVac = $con->query("SELECT * FROM vacantes_equipo ORDER BY orden ASC, id ASC");
+$sqlVac = "SELECT * FROM vacantes_equipo";
+if ($q !== '') {
+    $like = $con->real_escape_string("%$q%");
+    $sqlVac .= " WHERE titulo LIKE '$like' OR tag LIKE '$like' OR subtitulo_italic LIKE '$like'";
+}
+$sqlVac .= " ORDER BY orden ASC, id ASC";
+$resVac = $con->query($sqlVac);
 $vacantes = $resVac ? $resVac->fetch_all(MYSQLI_ASSOC) : [];
 
-// Obtener todas las solicitudes recibidas con información de vacante
+// Obtener todas las solicitudes recibidas
 $resSol = $con->query("
     SELECT s.*, v.titulo AS vacante_titulo, v.tag AS vacante_tag
     FROM solicitudes_vacantes s
@@ -19,263 +28,278 @@ $resSol = $con->query("
 $solicitudes = $resSol ? $resSol->fetch_all(MYSQLI_ASSOC) : [];
 
 $totalVacantes = count($vacantes);
+$totalAbiertas = count(array_filter($vacantes, fn($v) => $v['estado'] == 1));
 $totalSolicitudes = count($solicitudes);
 ?>
 
-<style>
-.vacantes-tabs {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid var(--border, rgba(255,255,255,0.1));
-  padding-bottom: 12px;
-}
-.vacante-tab-btn {
-  background: transparent;
-  color: var(--muted, #888);
-  border: 1px solid transparent;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-}
-.vacante-tab-btn.active {
-  background: rgba(239, 51, 99, 0.15);
-  color: var(--accent, #EF3363);
-  border-color: rgba(239, 51, 99, 0.3);
-}
-.vacante-badge-status {
-  padding: 3px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-.status-abierta { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
-.status-cerrada { background: rgba(231, 76, 60, 0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
-
-.status-pendiente { background: rgba(241, 196, 15, 0.15); color: #f1c40f; }
-.status-revisado { background: rgba(52, 152, 219, 0.15); color: #3498db; }
-.status-aceptado { background: rgba(46, 204, 113, 0.15); color: #2ecc71; }
-.status-rechazado { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }
-</style>
-
-<div class="container-fluid" style="padding-top: 20px; padding-bottom: 50px;">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
-    <div>
-      <h2 style="margin: 0; font-size: 1.8rem; font-weight: 800;">Gestión de Vacantes y Empleos</h2>
-      <p style="margin: 0; color: var(--muted); font-size: 0.9rem;">Administra las posiciones abiertas en CatInk y revisa las candidaturas recibidas</p>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 12px;">
+        <h1 style="margin:0;">Gestión de Vacantes y Empleos</h1>
+        <form method="GET" class="admin-search-form" style="display:flex; align-items:center; gap:8px;">
+            <i class="bi bi-search admin-search-icon"></i>
+            <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar vacante..." class="admin-search-input">
+            <?php if($q): ?><a href="./vacantes.php" class="admin-search-clear">&times;</a><?php endif; ?>
+        </form>
     </div>
-    
-    <button id="btnNuevaVacante" class="btn btn-accent" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; padding: 10px 20px; border-radius: 10px; background: var(--accent); color: #fff; border: none; cursor: pointer;">
-      <i class="bi bi-plus-lg"></i> Crear Nueva Vacante
-    </button>
-  </div>
 
-  <!-- Pestañas -->
-  <div class="vacantes-tabs">
-    <button class="vacante-tab-btn active" data-tab="vacantesList">
-      <i class="bi bi-briefcase-fill"></i> Vacantes de Empleo (<?= $totalVacantes ?>)
-    </button>
-    <button class="vacante-tab-btn" data-tab="solicitudesList">
-      <i class="bi bi-people-fill"></i> Postulaciones Recibidas (<?= $totalSolicitudes ?>)
-    </button>
-  </div>
-
-  <!-- Pestaña 1: Lista de Vacantes -->
-  <div id="tab-vacantesList" class="vacante-tab-content">
-    <div class="card shadow-sm" style="background: var(--card-bg, #1a1a20); border: 1px solid var(--border, rgba(255,255,255,0.1)); border-radius: 12px; overflow: hidden;">
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-dark table-hover mb-0" style="vertical-align: middle;">
-            <thead>
-              <tr style="border-bottom: 1px solid var(--border);">
-                <th style="padding: 14px 18px;">Orden</th>
-                <th>Etiqueta / Tag</th>
-                <th>Puesto / Título</th>
-                <th>Subtítulo en Cursiva</th>
-                <th>Modalidad</th>
-                <th>Estado</th>
-                <th style="text-align: right; padding-right: 18px;">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php if (empty($vacantes)): ?>
-                <tr><td colspan="7" style="text-align: center; color: var(--muted); padding: 40px;">No hay vacantes configuradas. Haz clic en "Crear Nueva Vacante".</td></tr>
-              <?php else: ?>
-                <?php foreach ($vacantes as $vac): ?>
-                  <tr>
-                    <td style="padding: 14px 18px; font-weight: 700; width: 60px;"><?= $vac['orden'] ?></td>
-                    <td><span style="font-size: 0.8rem; font-weight: 800; color: var(--accent);"><?= htmlspecialchars($vac['tag']) ?></span></td>
-                    <td><strong style="font-size: 1rem; color: #fff;"><?= htmlspecialchars($vac['titulo']) ?></strong></td>
-                    <td><span style="font-style: italic; color: var(--muted); font-size: 0.9rem;"><?= htmlspecialchars($vac['subtitulo_italic'] ?? '') ?></span></td>
-                    <td><span style="font-size: 0.85rem; color: var(--muted);"><?= htmlspecialchars($vac['modalidad']) ?></span></td>
-                    <td>
-                      <span class="vacante-badge-status <?= $vac['estado'] == 1 ? 'status-abierta' : 'status-cerrada' ?>">
-                        <?= $vac['estado'] == 1 ? 'Abierta' : 'Pausada' ?>
-                      </span>
-                    </td>
-                    <td style="text-align: right; padding-right: 18px;">
-                      <button class="btn-edit-vacante" data-vacante='<?= json_encode($vac, JSON_HEX_APOS|JSON_HEX_QUOT) ?>' style="background: rgba(255,255,255,0.08); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; cursor: pointer; margin-right: 6px;">
-                        <i class="bi bi-pencil"></i>
-                      </button>
-                      <button class="btn-toggle-vacante" data-id="<?= $vac['id'] ?>" style="background: rgba(255,255,255,0.08); color: var(--muted); border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; cursor: pointer; margin-right: 6px;" title="Pausar/Activar">
-                        <i class="bi bi-power"></i>
-                      </button>
-                      <button class="btn-delete-vacante" data-id="<?= $vac['id'] ?>" style="background: rgba(239,51,99,0.15); color: var(--accent); border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                <?php endforeach; ?>
-              <?php endif; ?>
-            </tbody>
-          </table>
+    <!-- Estadísticas rápidas estilo CatInk -->
+    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom: 24px;">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(239, 51, 99, 0.1); color: #EF3363;"><i class="bi bi-briefcase-fill"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $totalVacantes ?></span>
+                <span class="stat-label">Vacantes Configuradas</span>
+            </div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Pestaña 2: Solicitudes Recibidas -->
-  <div id="tab-solicitudesList" class="vacante-tab-content" style="display: none;">
-    <div class="card shadow-sm" style="background: var(--card-bg, #1a1a20); border: 1px solid var(--border, rgba(255,255,255,0.1)); border-radius: 12px; overflow: hidden;">
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-dark table-hover mb-0" style="vertical-align: middle;">
-            <thead>
-              <tr style="border-bottom: 1px solid var(--border);">
-                <th style="padding: 14px 18px;">Postulante</th>
-                <th>Vacante Solicitada</th>
-                <th>Fecha</th>
-                <th>Motivación</th>
-                <th>Estado</th>
-                <th style="text-align: right; padding-right: 18px;">CV Adjunto</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php if (empty($solicitudes)): ?>
-                <tr><td colspan="6" style="text-align: center; color: var(--muted); padding: 40px;">No se han recibido postulaciones de candidatos aún.</td></tr>
-              <?php else: ?>
-                <?php foreach ($solicitudes as $sol): ?>
-                  <tr>
-                    <td style="padding: 14px 18px;">
-                      <strong style="color: #fff; display: block; font-size: 0.95rem;"><?= htmlspecialchars($sol['nombre']) ?></strong>
-                      <span style="font-size: 0.8rem; color: var(--muted);"><i class="bi bi-envelope"></i> <?= htmlspecialchars($sol['email']) ?></span>
-                      <?php if (!empty($sol['telefono'])): ?>
-                        &bull; <span style="font-size: 0.8rem; color: var(--muted);"><i class="bi bi-phone"></i> <?= htmlspecialchars($sol['telefono']) ?></span>
-                      <?php endif; ?>
-                    </td>
-                    <td>
-                      <span style="font-weight: 700; color: var(--accent); font-size: 0.9rem;"><?= htmlspecialchars($sol['vacante_titulo'] ?? 'General') ?></span>
-                    </td>
-                    <td><span style="font-size: 0.85rem; color: var(--muted);"><?= date('d/m/Y H:i', strtotime($sol['fecha_solicitud'])) ?></span></td>
-                    <td style="max-width: 250px;">
-                      <div style="font-size: 0.85rem; color: #ddd; max-height: 50px; overflow-y: auto; white-space: pre-wrap; font-style: italic;">
-                        <?= htmlspecialchars($sol['razon']) ?>
-                      </div>
-                    </td>
-                    <td>
-                      <select class="form-select form-select-sm select-sol-estado" data-id="<?= $sol['id'] ?>" style="background: #111; color: #fff; border: 1px solid var(--border); font-size: 0.8rem; font-weight: 700; border-radius: 6px;">
-                        <option value="pendiente" <?= $sol['estado'] == 'pendiente' ? 'selected' : '' ?>>🟡 Pendiente</option>
-                        <option value="revisado" <?= $sol['estado'] == 'revisado' ? 'selected' : '' ?>>🔵 Revisado</option>
-                        <option value="aceptado" <?= $sol['estado'] == 'aceptado' ? 'selected' : '' ?>>🟢 Aceptado</option>
-                        <option value="rechazado" <?= $sol['estado'] == 'rechazado' ? 'selected' : '' ?>>🔴 Rechazado</option>
-                      </select>
-                    </td>
-                    <td style="text-align: right; padding-right: 18px;">
-                      <a href="<?= basePath() ?>/<?= htmlspecialchars($sol['cv_archivo']) ?>" target="_blank" class="btn btn-sm btn-outline-light" style="font-weight: 700; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px;">
-                        <i class="bi bi-file-earmark-pdf-fill" style="color: #EF3363;"></i> Descargar CV
-                      </a>
-                    </td>
-                  </tr>
-                <?php endforeach; ?>
-              <?php endif; ?>
-            </tbody>
-          </table>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: #10b981;"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $totalAbiertas ?></span>
+                <span class="stat-label">Vacantes Abiertas</span>
+            </div>
         </div>
-      </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(99,102,241,0.1); color: #6366f1;"><i class="bi bi-people-fill"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $totalSolicitudes ?></span>
+                <span class="stat-label">Postulaciones Recibidas</span>
+            </div>
+        </div>
     </div>
-  </div>
+
+    <!-- Toolbar oficial de CatInk -->
+    <div class="contenidos-toolbar">
+        <div class="contenidos-tabs">
+            <button type="button" class="tab-btn active" id="tabBtnVacantes" onclick="switchVacanteTab('vacantesList')">Todas las vacantes (<?= $totalVacantes ?>)</button>
+            <button type="button" class="tab-btn" id="tabBtnSolicitudes" onclick="switchVacanteTab('solicitudesList')">Postulaciones recibidas (<?= $totalSolicitudes ?>)</button>
+        </div>
+        <div class="contenidos-actions">
+            <button type="button" id="btnCrearVacante" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear vacante</button>
+        </div>
+    </div>
+
+    <!-- Pestaña 1: Vacantes -->
+    <div id="sectionVacantesList">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="contenidos-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">Orden</th>
+                                <th>Etiqueta / Tag</th>
+                                <th>Puesto / Título</th>
+                                <th>Subtítulo en Cursiva</th>
+                                <th>Modalidad</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($vacantes)): ?>
+                                <tr><td colspan="7" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron vacantes. Haz clic en "Crear vacante".</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($vacantes as $row): ?>
+                                    <tr>
+                                        <td><strong style="color:var(--text);"><?= $row['orden'] ?></strong></td>
+                                        <td><span class="estado-badge" style="background:rgba(239,51,99,0.1); color:#EF3363; font-weight:800;"><?= htmlspecialchars($row['tag']) ?></span></td>
+                                        <td><strong class="table-title"><?= htmlspecialchars($row['titulo']) ?></strong></td>
+                                        <td><span style="font-style:italic; color:var(--muted);"><?= htmlspecialchars($row['subtitulo_italic'] ?? '') ?></span></td>
+                                        <td><span style="font-size:0.85rem; color:var(--muted);"><?= htmlspecialchars($row['modalidad']) ?></span></td>
+                                        <td>
+                                            <?php if ($row['estado'] == 1): ?>
+                                                <span class="estado-badge estado-publicado">Abierta</span>
+                                            <?php else: ?>
+                                                <span class="estado-badge estado-borrador" style="background:rgba(239,68,68,0.1); color:#ef4444;">Pausada</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <div class="noticias-actions" style="border-top:none; padding:0; justify-content:flex-start;">
+                                                <button type="button" class="btn btn-edit btn-editar-vac" 
+                                                    data-id="<?= $row['id'] ?>"
+                                                    data-orden="<?= $row['orden'] ?>"
+                                                    data-tag="<?= htmlspecialchars($row['tag'], ENT_QUOTES) ?>"
+                                                    data-titulo="<?= htmlspecialchars($row['titulo'], ENT_QUOTES) ?>"
+                                                    data-subtitulo="<?= htmlspecialchars($row['subtitulo_italic'] ?? '', ENT_QUOTES) ?>"
+                                                    data-modalidad="<?= htmlspecialchars($row['modalidad'], ENT_QUOTES) ?>"
+                                                    data-descripcion="<?= htmlspecialchars($row['descripcion'], ENT_QUOTES) ?>"
+                                                    title="Editar Vacante y Contenido">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </button>
+
+                                                <button type="button" class="btn btn-edit btn-toggle-vac" 
+                                                    data-id="<?= $row['id'] ?>" 
+                                                    title="Pausar / Activar">
+                                                    <i class="bi bi-power"></i>
+                                                </button>
+
+                                                <button type="button" class="btn btn-delete btn-eliminar-vac" 
+                                                    data-id="<?= $row['id'] ?>" 
+                                                    data-titulo="<?= htmlspecialchars($row['titulo'], ENT_QUOTES) ?>" 
+                                                    title="Eliminar Vacante">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pestaña 2: Solicitudes de Postulantes -->
+    <div id="sectionSolicitudesList" style="display: none;">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="contenidos-table">
+                        <thead>
+                            <tr>
+                                <th>Postulante</th>
+                                <th>Vacante Solicitada</th>
+                                <th>Fecha</th>
+                                <th>Motivación / Presentación</th>
+                                <th>Estado</th>
+                                <th>CV Adjunto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($solicitudes)): ?>
+                                <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--muted);">No se han recibido postulaciones de candidatos todavía.</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($solicitudes as $sol): ?>
+                                    <tr>
+                                        <td>
+                                            <strong class="table-title" style="display:block;"><?= htmlspecialchars($sol['nombre']) ?></strong>
+                                            <span style="font-size:0.8rem; color:var(--muted);"><i class="bi bi-envelope"></i> <?= htmlspecialchars($sol['email']) ?></span>
+                                            <?php if (!empty($sol['telefono'])): ?>
+                                                &bull; <span style="font-size:0.8rem; color:var(--muted);"><i class="bi bi-telephone"></i> <?= htmlspecialchars($sol['telefono']) ?></span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <span class="estado-badge" style="background:rgba(239,51,99,0.1); color:#EF3363; font-weight:700;">
+                                                <?= htmlspecialchars($sol['vacante_titulo'] ?? 'General') ?>
+                                            </span>
+                                        </td>
+                                        <td><span style="font-size:0.85rem; color:var(--muted);"><?= date('d/m/Y H:i', strtotime($sol['fecha_solicitud'])) ?></span></td>
+                                        <td style="max-width: 280px;">
+                                            <div style="font-size:0.85rem; color:var(--text); max-height: 60px; overflow-y: auto; white-space: pre-wrap; font-style: italic;">
+                                                <?= htmlspecialchars($sol['razon']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <select class="form-select form-select-sm select-sol-estado" data-id="<?= $sol['id'] ?>" style="background: var(--card-bg); color: var(--text); border: 1px solid var(--border); font-size: 0.8rem; font-weight: 700; border-radius: 6px;">
+                                                <option value="pendiente" <?= $sol['estado'] == 'pendiente' ? 'selected' : '' ?>>🟡 Pendiente</option>
+                                                <option value="revisado" <?= $sol['estado'] == 'revisado' ? 'selected' : '' ?>>🔵 Revisado</option>
+                                                <option value="aceptado" <?= $sol['estado'] == 'aceptado' ? 'selected' : '' ?>>🟢 Aceptado</option>
+                                                <option value="rechazado" <?= $sol['estado'] == 'rechazado' ? 'selected' : '' ?>>🔴 Rechazado</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <a href="<?= basePath() ?>/<?= htmlspecialchars($sol['cv_archivo']) ?>" target="_blank" class="btn btn-sm btn-accent" style="padding: 4px 10px; font-size: 0.8rem; border-radius: 6px;">
+                                                <i class="bi bi-file-earmark-pdf-fill"></i> Descargar CV
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<!-- Modal Formulario de Vacante -->
-<div id="vacanteModal" class="crop-modal" style="display: none; align-items: center; justify-content: center; z-index: 10000;">
-  <div class="crop-modal-content" style="max-width: 600px; width: 90%; background: var(--card-bg, #1a1a20); color: #fff; border-radius: 14px; border: 1px solid var(--border); padding: 24px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
-      <h3 id="vacanteModalTitle" style="margin: 0; font-size: 1.25rem; font-weight: 800;">Crear Nueva Vacante</h3>
-      <button type="button" id="closeVacanteModal" style="background: none; border: none; color: #888; font-size: 1.4rem; cursor: pointer;">&times;</button>
+<!-- MODAL CROP/NATIVO ESTILO CATINK (CREAR / EDITAR VACANTE) -->
+<div id="vacanteModal" class="crop-modal" style="display: none; align-items: center; justify-content: center; z-index: 10000; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
+    <div class="card" style="max-width: 650px; width: 92%; border-radius: 16px; background: var(--card-bg, #ffffff); color: var(--text, #111827); border: 1px solid var(--border, #e2e8f0); box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+        <div class="crop-modal-content" style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+                <h3 id="modalVacanteTitle" style="margin: 0; font-size: 1.3rem; font-weight: 800;">Crear Vacante de Empleo</h3>
+                <button type="button" id="closeVacanteModal" style="background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+
+            <form id="formVacanteModal">
+                <input type="hidden" id="vacanteId" name="id" value="0">
+                
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Orden *</label>
+                        <input type="number" id="vacanteOrden" name="orden" value="1" min="1" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Tag / Etiqueta (ej: 01 · ANIME & MANGA) *</label>
+                        <input type="text" id="vacanteTag" name="tag" placeholder="01 · CULTURA POP" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Título del Puesto (ej: EDITOR) *</label>
+                    <input type="text" id="vacanteTitulo" name="titulo" placeholder="EDITOR" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Subtítulo en Cursiva (ej: Da forma al relato.)</label>
+                    <input type="text" id="vacanteSubtitulo" name="subtitulo_italic" placeholder="Crea contenido único." style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Modalidad de Trabajo</label>
+                    <input type="text" id="vacanteModalidad" name="modalidad" value="100% Remoto · Tiempo completo" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text);">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Modificar Contenido y Descripción Completa del Puesto *</label>
+                    <textarea id="vacanteDescripcion" name="descripcion" rows="5" required style="width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle, #f8fafc); color: var(--text); resize: vertical; line-height: 1.5;" placeholder="Detalla los requisitos, tareas y beneficios del puesto..."></textarea>
+                </div>
+
+                <div class="crop-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" id="closeVacanteBtn" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn btn-accent"><i class="bi bi-check-lg"></i> Guardar Vacante</button>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <form id="formVacante">
-      <input type="hidden" id="vacanteId" name="id" value="0">
-      
-      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 14px;">
-        <div>
-          <label style="font-size: 0.85rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Orden</label>
-          <input type="number" id="vacanteOrden" name="orden" value="1" min="1" class="form-control" style="background: #111; color: #fff; border: 1px solid var(--border);" required>
-        </div>
-        <div>
-          <label style="font-size: 0.85rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Tag (ej: 01 · ANIME & MANGA)</label>
-          <input type="text" id="vacanteTag" name="tag" placeholder="01 · CULTURA POP" class="form-control" style="background: #111; color: #fff; border: 1px solid var(--border);" required>
-        </div>
-      </div>
-
-      <div style="margin-bottom: 14px;">
-        <label style="font-size: 0.85rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Título de la Vacante (ej: EDITOR)</label>
-        <input type="text" id="vacanteTitulo" name="titulo" placeholder="EDITOR" class="form-control" style="background: #111; color: #fff; border: 1px solid var(--border);" required>
-      </div>
-
-      <div style="margin-bottom: 14px;">
-        <label style="font-size: 0.85rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Subtítulo en Cursiva (ej: Da forma al relato.)</label>
-        <input type="text" id="vacanteSubtitulo" name="subtitulo_italic" placeholder="Crea contenido único." class="form-control" style="background: #111; color: #fff; border: 1px solid var(--border);">
-      </div>
-
-      <div style="margin-bottom: 14px;">
-        <label style="font-size: 0.85rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Modalidad (ej: 100% Remoto · Tiempo completo)</label>
-        <input type="text" id="vacanteModalidad" name="modalidad" value="100% Remoto · Tiempo completo" class="form-control" style="background: #111; color: #fff; border: 1px solid var(--border);">
-      </div>
-
-      <div style="margin-bottom: 20px;">
-        <label style="font-size: 0.85rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px;">Descripción Completa del Puesto</label>
-        <textarea id="vacanteDescripcion" name="descripcion" rows="4" class="form-control" style="background: #111; color: #fff; border: 1px solid var(--border);" required></textarea>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button type="button" id="btnCancelVacante" class="btn btn-secondary" style="font-weight: 700;">Cancelar</button>
-        <button type="submit" class="btn btn-accent" style="font-weight: 700; background: var(--accent); color: #fff;">Guardar Vacante</button>
-      </div>
-    </form>
-  </div>
 </div>
 
 <script>
-function initVacantesAdmin() {
+function switchVacanteTab(tabName) {
+  const btnVac = document.getElementById('tabBtnVacantes');
+  const btnSol = document.getElementById('tabBtnSolicitudes');
+  const secVac = document.getElementById('sectionVacantesList');
+  const secSol = document.getElementById('sectionSolicitudesList');
+
+  if (tabName === 'vacantesList') {
+    btnVac.classList.add('active');
+    btnSol.classList.remove('active');
+    secVac.style.display = 'block';
+    secSol.style.display = 'none';
+  } else {
+    btnSol.classList.add('active');
+    btnVac.classList.remove('active');
+    secSol.style.display = 'block';
+    secVac.style.display = 'none';
+  }
+}
+
+function initVacantesView() {
   const modal = document.getElementById('vacanteModal');
-  const btnNueva = document.getElementById('btnNuevaVacante');
+  const btnCrear = document.getElementById('btnCrearVacante');
   const btnClose = document.getElementById('closeVacanteModal');
-  const btnCancel = document.getElementById('btnCancelVacante');
-  const form = document.getElementById('formVacante');
+  const btnCloseBtn = document.getElementById('closeVacanteBtn');
+  const form = document.getElementById('formVacanteModal');
 
-  if (!btnNueva || !form) return;
-
-  // Pestañas
-  document.querySelectorAll('.vacante-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.vacante-tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.vacante-tab-content').forEach(c => c.style.display = 'none');
-      btn.classList.add('active');
-      document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
-    });
-  });
+  if (!modal || !form) return;
 
   function openModal(data = null) {
     if (data) {
-      document.getElementById('vacanteModalTitle').textContent = 'Editar Vacante #' + data.id;
+      document.getElementById('modalVacanteTitle').textContent = 'Editar Vacante: ' + data.titulo;
       document.getElementById('vacanteId').value = data.id;
       document.getElementById('vacanteOrden').value = data.orden || 1;
       document.getElementById('vacanteTag').value = data.tag || '';
@@ -284,26 +308,72 @@ function initVacantesAdmin() {
       document.getElementById('vacanteModalidad').value = data.modalidad || '100% Remoto · Tiempo completo';
       document.getElementById('vacanteDescripcion').value = data.descripcion || '';
     } else {
-      document.getElementById('vacanteModalTitle').textContent = 'Crear Nueva Vacante';
+      document.getElementById('modalVacanteTitle').textContent = 'Crear Nueva Vacante de Empleo';
       form.reset();
       document.getElementById('vacanteId').value = 0;
     }
     modal.style.display = 'flex';
   }
 
-  btnNueva?.addEventListener('click', () => openModal());
+  btnCrear?.addEventListener('click', () => openModal());
   btnClose?.addEventListener('click', () => modal.style.display = 'none');
-  btnCancel?.addEventListener('click', () => modal.style.display = 'none');
+  btnCloseBtn?.addEventListener('click', () => modal.style.display = 'none');
 
-  document.querySelectorAll('.btn-edit-vacante').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const data = JSON.parse(this.dataset.vacante);
+  // Delegación de eventos para botones Editar
+  document.querySelectorAll('.btn-editar-vac').forEach(btn => {
+    btn.onclick = function() {
+      const data = {
+        id: this.dataset.id,
+        orden: this.dataset.orden,
+        tag: this.dataset.tag,
+        titulo: this.dataset.titulo,
+        subtitulo_italic: this.dataset.subtitulo,
+        modalidad: this.dataset.modalidad,
+        descripcion: this.dataset.descripcion
+      };
       openModal(data);
-    });
+    };
+  });
+
+  // Toggle estado
+  document.querySelectorAll('.btn-toggle-vac').forEach(btn => {
+    btn.onclick = function() {
+      const id = this.dataset.id;
+      fetch(BASE_PATH + '/controllers/vacantes_eliminar.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, action: 'toggle' })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) window.location.reload();
+        else alert(res.error || 'Error al cambiar estado');
+      });
+    };
+  });
+
+  // Eliminar
+  document.querySelectorAll('.btn-eliminar-vac').forEach(btn => {
+    btn.onclick = function() {
+      const id = this.dataset.id;
+      const titulo = this.dataset.titulo;
+      if (!confirm(`¿Estás seguro de que deseas eliminar la vacante "${titulo}"?`)) return;
+
+      fetch(BASE_PATH + '/controllers/vacantes_eliminar.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, action: 'delete' })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) window.location.reload();
+        else alert(res.error || 'Error al eliminar vacante');
+      });
+    };
   });
 
   // Form Submit
-  form.addEventListener('submit', function(e) {
+  form.onsubmit = function(e) {
     e.preventDefault();
     const payload = {
       id: parseInt(document.getElementById('vacanteId').value),
@@ -329,45 +399,11 @@ function initVacantesAdmin() {
         alert(res.error || 'Error al guardar vacante');
       }
     });
-  });
-
-  // Toggle & Delete
-  document.querySelectorAll('.btn-toggle-vacante').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const id = this.dataset.id;
-      fetch(BASE_PATH + '/controllers/vacantes_eliminar.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: id, action: 'toggle' })
-      })
-      .then(r => r.json())
-      .then(res => {
-        if (res.success) window.location.reload();
-        else alert(res.error);
-      });
-    });
-  });
-
-  document.querySelectorAll('.btn-delete-vacante').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const id = this.dataset.id;
-      if (!confirm('¿Estás seguro de que deseas eliminar esta vacante de empleo?')) return;
-      fetch(BASE_PATH + '/controllers/vacantes_eliminar.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: id, action: 'delete' })
-      })
-      .then(r => r.json())
-      .then(res => {
-        if (res.success) window.location.reload();
-        else alert(res.error);
-      });
-    });
-  });
+  };
 
   // Cambio de estado de solicitudes
   document.querySelectorAll('.select-sol-estado').forEach(sel => {
-    sel.addEventListener('change', function() {
+    sel.onchange = function() {
       const id = this.dataset.id;
       const estado = this.value;
       fetch(BASE_PATH + '/controllers/solicitud_estado.php', {
@@ -377,14 +413,15 @@ function initVacantesAdmin() {
       })
       .then(r => r.json())
       .then(res => {
-        if (!res.success) alert(res.error);
+        if (!res.success) alert(res.error || 'Error al actualizar estado');
       });
-    });
+    };
   });
 }
 
-document.addEventListener('DOMContentLoaded', initVacantesAdmin);
-document.addEventListener('turbo:load', initVacantesAdmin);
+document.addEventListener('DOMContentLoaded', initVacantesView);
+document.addEventListener('turbo:load', initVacantesView);
+document.addEventListener('turbo:render', initVacantesView);
 </script>
 
 <?php include("./../layout/footerAdmin.php"); ?>
