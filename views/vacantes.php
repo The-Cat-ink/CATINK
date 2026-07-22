@@ -287,7 +287,6 @@ $totalSolicitudes = count($solicitudes);
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
 const BASE_PATH = '<?= basePath() ?>';
 
@@ -325,6 +324,7 @@ function initVacantesView() {
       ghostClass: 'sortable-ghost',
       dragClass: 'sortable-drag',
       forceFallback: true,
+      fallbackOnBody: true,
       axis: 'y',
       onEnd: function () {
         guardarOrdenVacantes();

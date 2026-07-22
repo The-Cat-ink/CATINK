@@ -93,6 +93,7 @@ if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time
   <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
   <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/decoupled-document/ckeditor.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <script>window.ADMIN_BASE = '<?= basePath() ?>';</script>
   <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js" defer></script>
   <?php
