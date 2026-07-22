@@ -93,11 +93,30 @@ $totalSolicitudes = count($solicitudes);
   opacity: 0.4;
   background-color: var(--bg-subtle, #f1f5f9) !important;
   border: 2px dashed var(--accent, #EF3363) !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 .sortable-drag {
   opacity: 0.95;
   background: var(--card-bg, #ffffff) !important;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+.vacante-row,
+.vacante-row td {
+  user-select: none;
+  -webkit-user-select: none;
+}
+.vacante-row td:first-child,
+.bi-grip-vertical {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  cursor: grab;
+}
+.vacante-row.sortable-drag,
+.vacante-row.sortable-ghost {
+  cursor: grabbing !important;
 }
 </style>
 
