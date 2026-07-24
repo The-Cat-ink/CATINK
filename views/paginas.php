@@ -798,9 +798,28 @@ document.addEventListener('DOMContentLoaded', () => {
         let html = '';
 
         if (pageName === 'nosotros') {
+            const rawStats = meta.estadisticas || [
+                { num: meta.stat1_num || '500K+', lbl: meta.stat1_lbl || 'Lectores Mensuales' },
+                { num: meta.stat2_num || '10K+',  lbl: meta.stat2_lbl || 'Artículos Publicados' },
+                { num: meta.stat3_num || '100%',  lbl: meta.stat3_lbl || 'Pasión Geek' }
+            ];
+
+            let statsHtml = '';
+            rawStats.forEach(st => {
+                statsHtml += `
+                    <div class="stat-row-item" style="display:grid; grid-template-columns:130px 1fr 38px; gap:8px; align-items:center; background:var(--bg); padding:6px 10px; border-radius:10px; border:1px solid var(--border);">
+                        <input type="text" class="cn-input meta-stat-num" value="${st.num || ''}" placeholder="Número (500K+)">
+                        <input type="text" class="cn-input meta-stat-lbl" value="${st.lbl || ''}" placeholder="Etiqueta (Lectores Mensuales)">
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-stat" title="Eliminar estadística" style="border-radius:8px; padding:4px 8px; font-size:0.85rem;">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+
             html = `
                 <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Campos Exclusivos de "Nosotros"</h5>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
                     <div>
                         <label style="font-size:0.8rem; font-weight:700;">Hero Título</label>
                         <input type="text" class="cn-input meta-field" data-key="hero_title" value="${meta.hero_title || 'SOBRE NOSOTROS'}">
@@ -810,21 +829,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
                     </div>
                 </div>
-                <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">Estadísticas Principales</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px;">
-                    <div>
-                        <input type="text" class="cn-input meta-field" data-key="stat1_num" value="${meta.stat1_num || '500K+'}" placeholder="Número (ej: 500K+)">
-                        <input type="text" class="cn-input meta-field" data-key="stat1_lbl" value="${meta.stat1_lbl || 'Lectores Mensuales'}" placeholder="Etiqueta" style="margin-top:4px;">
-                    </div>
-                    <div>
-                        <input type="text" class="cn-input meta-field" data-key="stat2_num" value="${meta.stat2_num || '10K+'}" placeholder="Número (ej: 10K+)">
-                        <input type="text" class="cn-input meta-field" data-key="stat2_lbl" value="${meta.stat2_lbl || 'Artículos Publicados'}" placeholder="Etiqueta" style="margin-top:4px;">
-                    </div>
-                    <div>
-                        <input type="text" class="cn-input meta-field" data-key="stat3_num" value="${meta.stat3_num || '100%'}" placeholder="Número (ej: 100%)">
-                        <input type="text" class="cn-input meta-field" data-key="stat3_lbl" value="${meta.stat3_lbl || 'Pasión Geek'}" placeholder="Etiqueta" style="margin-top:4px;">
-                    </div>
+
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <label style="font-weight:800; font-size:0.85rem; color:var(--text); margin:0;">
+                        <i class="bi bi-bar-chart-line text-accent me-1"></i> Estadísticas Principales (Dinámicas)
+                    </label>
+                    <button type="button" class="btn btn-sm btn-outline-accent" id="btnAddStat" style="font-weight:700; font-size:0.78rem; border-radius:8px; padding:4px 10px;">
+                        <i class="bi bi-plus-circle me-1"></i> Agregar Estadística
+                    </button>
                 </div>
+
+                <div id="statsListContainer" style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+                    ${statsHtml}
+                </div>
+
                 <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">Misión / Visión / Valores</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
                     <textarea class="cn-input meta-field" data-key="mision" rows="3" placeholder="Misión">${meta.mision || ''}</textarea>
@@ -977,7 +995,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
         container.innerHTML = html;
         container.dataset.pageName = pageName;
+
+        const btnAddStat = container.querySelector('#btnAddStat');
+        const statsListContainer = container.querySelector('#statsListContainer');
+        if (btnAddStat && statsListContainer) {
+            btnAddStat.addEventListener('click', () => {
+                const row = document.createElement('div');
+                row.className = 'stat-row-item';
+                row.style.cssText = 'display:grid; grid-template-columns:130px 1fr 38px; gap:8px; align-items:center; background:var(--bg); padding:6px 10px; border-radius:10px; border:1px solid var(--border);';
+                row.innerHTML = `
+                    <input type="text" class="cn-input meta-stat-num" value="" placeholder="Número (50+)"/>
+                    <input type="text" class="cn-input meta-stat-lbl" value="" placeholder="Etiqueta (Premios Ganados)"/>
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-stat" title="Eliminar estadística" style="border-radius:8px; padding:4px 8px; font-size:0.85rem;">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                `;
+                statsListContainer.appendChild(row);
+            });
+        }
     }
+
+    // Delegación de eventos para eliminar estadísticas
+    document.addEventListener('click', e => {
+        const btnDel = e.target.closest('.btn-remove-stat');
+        if (btnDel) {
+            const row = btnDel.closest('.stat-row-item');
+            if (row) row.remove();
+        }
+    });
 
     const pagesWithEditor = ['nosotros', 'terminos', 'privacidad', 'cookies'];
 
@@ -1015,7 +1060,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        if (pageName === 'contacto') {
+        if (pageName === 'nosotros') {
+            const statNums = container.querySelectorAll('.meta-stat-num');
+            const statLbls = container.querySelectorAll('.meta-stat-lbl');
+            metaObj.estadisticas = [];
+            statNums.forEach((inp, idx) => {
+                const numVal = inp.value.trim();
+                const lblVal = statLbls[idx]?.value.trim() || '';
+                if (numVal || lblVal) {
+                    metaObj.estadisticas.push({ num: numVal, lbl: lblVal });
+                }
+            });
+            // Fallback compatibilidad legacy
+            metaObj.stat1_num = metaObj.estadisticas[0]?.num || '';
+            metaObj.stat1_lbl = metaObj.estadisticas[0]?.lbl || '';
+            metaObj.stat2_num = metaObj.estadisticas[1]?.num || '';
+            metaObj.stat2_lbl = metaObj.estadisticas[1]?.lbl || '';
+            metaObj.stat3_num = metaObj.estadisticas[2]?.num || '';
+            metaObj.stat3_lbl = metaObj.estadisticas[2]?.lbl || '';
+        } else if (pageName === 'contacto') {
             metaObj.horario = [
                 { dia: metaObj.horario_lv_dia || 'Lunes – Viernes', hora: metaObj.horario_lv_hora || '9:00 – 18:00 hrs' },
                 { dia: metaObj.horario_sab_dia || 'Sábado', hora: metaObj.horario_sab_hora || '10:00 – 14:00 hrs' },
