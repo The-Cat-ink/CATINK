@@ -45,57 +45,67 @@ window.CatInkOffline = (function() {
    * Guardar o actualizar artículo en IndexedDB
    */
   async function saveArticle(article) {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
+    try {
+      const db = await initDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
 
-      const dataToSave = {
-        id: parseInt(article.id),
-        slug: article.slug,
-        titulo: article.titulo,
-        descripcion: article.descripcion,
-        contenido: article.contenido,
-        cover_image: article.cover_image || null,
-        autor_nombre: article.autor_nombre || 'CatInk',
-        autor_foto: article.autor_foto || null,
-        categorias: article.categorias || [],
-        fecha_publicacion: article.fecha_publicacion || new Date().toISOString(),
-        saved_at: new Date().toISOString()
-      };
+        const dataToSave = {
+          id: parseInt(article.id),
+          slug: article.slug,
+          titulo: article.titulo,
+          descripcion: article.descripcion,
+          contenido: article.contenido,
+          cover_image: article.cover_image || null,
+          autor_nombre: article.autor_nombre || 'CatInk',
+          autor_foto: article.autor_foto || null,
+          categorias: article.categorias || [],
+          fecha_publicacion: article.fecha_publicacion || new Date().toISOString(),
+          saved_at: new Date().toISOString()
+        };
 
-      const request = store.put(dataToSave);
+        const request = store.put(dataToSave);
 
-      request.onsuccess = function() {
-        updateBadgeCounters();
-        resolve(dataToSave);
-      };
+        request.onsuccess = function() {
+          updateBadgeCounters();
+          resolve(dataToSave);
+        };
 
-      request.onerror = function(e) {
-        reject(e.target.error);
-      };
-    });
+        request.onerror = function(e) {
+          reject(e.target.error);
+        };
+      });
+    } catch (err) {
+      console.error('[CatInkOffline] Error al guardar artículo:', err);
+      throw err;
+    }
   }
 
   /**
    * Eliminar artículo por ID
    */
   async function removeArticle(id) {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-      const request = store.delete(parseInt(id));
+    try {
+      const db = await initDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.delete(parseInt(id));
 
-      request.onsuccess = function() {
-        updateBadgeCounters();
-        resolve(true);
-      };
+        request.onsuccess = function() {
+          updateBadgeCounters();
+          resolve(true);
+        };
 
-      request.onerror = function(e) {
-        reject(e.target.error);
-      };
-    });
+        request.onerror = function(e) {
+          reject(e.target.error);
+        };
+      });
+    } catch (err) {
+      console.error('[CatInkOffline] Error al eliminar artículo:', err);
+      return false;
+    }
   }
 
   /**
@@ -103,96 +113,130 @@ window.CatInkOffline = (function() {
    */
   async function isArticleSaved(id) {
     if (!id) return false;
-    const db = await initDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const store = tx.objectStore(STORE_NAME);
-      const request = store.get(parseInt(id));
+    try {
+      const db = await initDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.get(parseInt(id));
 
-      request.onsuccess = function() {
-        resolve(!!request.result);
-      };
+        request.onsuccess = function() {
+          resolve(!!request.result);
+        };
 
-      request.onerror = function() {
-        resolve(false);
-      };
-    });
+        request.onerror = function() {
+          resolve(false);
+        };
+      });
+    } catch (err) {
+      return false;
+    }
   }
 
   /**
-   * Obtener todos los artículos guardados
+   * Obtener todos los artículos guardados de forma segura
    */
   async function getAllArticles() {
-    const db = await initDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const store = tx.objectStore(STORE_NAME);
-      const index = store.index('saved_at');
-      const request = index.getAll();
+    try {
+      const db = await initDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        let request;
+        
+        if (store.indexNames && store.indexNames.contains('saved_at')) {
+          request = store.index('saved_at').getAll();
+        } else {
+          request = store.getAll();
+        }
 
-      request.onsuccess = function() {
-        // Ordenar de más reciente a más antiguo
-        const result = (request.result || []).reverse();
-        resolve(result);
-      };
+        request.onsuccess = function() {
+          const result = (request.result || []).reverse();
+          resolve(result);
+        };
 
-      request.onerror = function() {
-        resolve([]);
-      };
-    });
+        request.onerror = function() {
+          resolve([]);
+        };
+      });
+    } catch (err) {
+      console.warn('[CatInkOffline] Error al obtener artículos:', err);
+      return [];
+    }
   }
 
   /**
-   * Obtener un artículo por ID o Slug
+   * Obtener un artículo por ID o Slug de forma segura
    */
   async function getArticleByIdOrSlug(idOrSlug) {
-    const db = await initDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const store = tx.objectStore(STORE_NAME);
+    try {
+      const db = await initDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
 
-      if (!isNaN(idOrSlug) && Number.isInteger(Number(idOrSlug))) {
-        const req = store.get(parseInt(idOrSlug));
-        req.onsuccess = () => resolve(req.result || null);
-        req.onerror = () => resolve(null);
-      } else {
-        const index = store.index('slug');
-        const req = index.get(String(idOrSlug));
-        req.onsuccess = () => resolve(req.result || null);
-        req.onerror = () => resolve(null);
-      }
-    });
+        if (!isNaN(idOrSlug) && Number.isInteger(Number(idOrSlug))) {
+          const req = store.get(parseInt(idOrSlug));
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        } else if (store.indexNames && store.indexNames.contains('slug')) {
+          const index = store.index('slug');
+          const req = index.get(String(idOrSlug));
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        } else {
+          const req = store.getAll();
+          req.onsuccess = () => {
+            const list = req.result || [];
+            resolve(list.find(a => a.slug === String(idOrSlug)) || null);
+          };
+          req.onerror = () => resolve(null);
+        }
+      });
+    } catch (err) {
+      console.warn('[CatInkOffline] Error al obtener artículo:', err);
+      return null;
+    }
   }
 
   /**
    * Vaciar toda la base de datos de artículos offline
    */
   async function clearAllArticles() {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-      const request = store.clear();
+    try {
+      const db = await initDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.clear();
 
-      request.onsuccess = function() {
-        updateBadgeCounters();
-        resolve(true);
-      };
+        request.onsuccess = function() {
+          updateBadgeCounters();
+          resolve(true);
+        };
 
-      request.onerror = function(e) {
-        reject(e.target.error);
-      };
-    });
+        request.onerror = function(e) {
+          reject(e.target.error);
+        };
+      });
+    } catch (err) {
+      console.error('[CatInkOffline] Error al vaciar artículos:', err);
+      return false;
+    }
   }
 
   /**
    * Calcular memoria usada por las lecturas offline (en MB)
    */
   async function getStorageEstimateMB() {
-    const articles = await getAllArticles();
-    const jsonStr = JSON.stringify(articles);
-    const bytes = new Blob([jsonStr]).size;
-    return (bytes / (1024 * 1024)).toFixed(2);
+    try {
+      const articles = await getAllArticles();
+      const jsonStr = JSON.stringify(articles);
+      const bytes = new Blob([jsonStr]).size;
+      return (bytes / (1024 * 1024)).toFixed(2);
+    } catch (e) {
+      return "0.00";
+    }
   }
 
   /**
@@ -270,7 +314,11 @@ window.CatInkOffline = (function() {
   });
 
   // Ejecutar actualización de badges al cargar
-  document.addEventListener('DOMContentLoaded', updateBadgeCounters);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateBadgeCounters);
+  } else {
+    updateBadgeCounters();
+  }
 
   return {
     saveArticle,

@@ -223,19 +223,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const statSize = document.getElementById('statStorageSize');
   const btnClearAll = document.getElementById('btnClearAllOffline');
 
-  function renderLibrary() {
-    CatInkOffline.getAllArticles().then(async articles => {
-      const mb = await CatInkOffline.getStorageEstimateMB();
-      statCount.textContent = `${articles.length} guardados`;
-      statSize.textContent = `${mb} MB`;
+  async function renderLibrary() {
+    try {
+      if (!window.CatInkOffline) {
+        throw new Error("CatInkOffline no disponible");
+      }
 
-      if (articles.length === 0) {
+      const articles = await CatInkOffline.getAllArticles();
+      const mb = await CatInkOffline.getStorageEstimateMB();
+      
+      if (statCount) statCount.textContent = `${articles.length} guardados`;
+      if (statSize) statSize.textContent = `${mb} MB`;
+
+      if (!articles || articles.length === 0) {
         container.innerHTML = `
           <div class="offline-empty-state">
-            <i class="bi bi-bookmark-plus"></i>
-            <h2>Aún no tienes lecturas guardadas</h2>
-            <p>Guarda tus noticias favoritas presionando el botón <strong>«Guardar sin conexión»</strong> en cualquier artículo para leerlas sin necesidad de internet.</p>
-            <a href="${basePath}/" class="btn btn-accent" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; text-decoration: none; font-weight: 700; padding: 10px 20px; border-radius: 10px; color: #fff; background: var(--accent);">
+            <i class="bi bi-bookmark-plus" style="font-size: 3.2rem; color: var(--accent, #EF3363); display: block; margin-bottom: 12px;"></i>
+            <h2 style="font-weight: 800; font-size: 1.4rem; margin-bottom: 8px;">Aún no tienes lecturas guardadas</h2>
+            <p style="color: var(--muted); max-width: 480px; margin: 0 auto 20px; font-size: 0.92rem; line-height: 1.5;">
+              Guarda tus noticias favoritas presionando el botón <strong>«Guardar sin conexión»</strong> en cualquier artículo para leerlas sin necesidad de internet.
+            </p>
+            <a href="${typeof basePath !== 'undefined' ? basePath : ''}/" class="btn btn-accent" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 800; padding: 10px 22px; border-radius: 12px; color: #fff; background: var(--accent, #EF3363); text-decoration: none; box-shadow: 0 4px 15px rgba(239,51,99,0.3);">
               <i class="bi bi-newspaper"></i> Explorar Noticias
             </a>
           </div>`;
@@ -244,13 +252,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let html = '<div class="offline-grid">';
       articles.forEach(art => {
-        const cover = art.cover_image || `${basePath}/img/placeholder.svg`;
+        const cover = art.cover_image || `${typeof basePath !== 'undefined' ? basePath : ''}/img/placeholder.svg`;
         const cat = Array.isArray(art.categorias) && art.categorias.length ? art.categorias[0] : 'Noticia';
         const dateStr = art.fecha_publicacion ? new Date(art.fecha_publicacion).toLocaleDateString() : '';
 
         html += `
           <div class="offline-card" data-id="${art.id}">
-            <img src="${cover}" alt="${art.titulo}" class="offline-card-img" onerror="this.src='${basePath}/img/placeholder.svg'">
+            <img src="${cover}" alt="${art.titulo}" class="offline-card-img" onerror="this.src='${typeof basePath !== 'undefined' ? basePath : ''}/img/placeholder.svg'">
             <div class="offline-card-body">
               <span class="offline-card-tag">${cat}</span>
               <h3 class="offline-card-title">${art.titulo}</h3>
@@ -280,19 +288,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Event listeners para eliminar
       container.querySelectorAll('.offline-btn-delete').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', async function() {
           const id = this.dataset.id;
           if (confirm('¿Deseas eliminar este artículo de tus lecturas offline?')) {
-            CatInkOffline.removeArticle(id).then(() => {
-              renderLibrary();
-            });
+            await CatInkOffline.removeArticle(id);
+            renderLibrary();
           }
         });
       });
-    });
+    } catch (err) {
+      console.warn('[CatInkOffline] renderLibrary error:', err);
+      if (statCount) statCount.textContent = `0 guardados`;
+      if (statSize) statSize.textContent = `0.00 MB`;
+      container.innerHTML = `
+        <div class="offline-empty-state">
+          <i class="bi bi-bookmark-plus" style="font-size: 3.2rem; color: var(--accent, #EF3363); display: block; margin-bottom: 12px;"></i>
+          <h2 style="font-weight: 800; font-size: 1.4rem; margin-bottom: 8px;">Aún no tienes lecturas guardadas</h2>
+          <p style="color: var(--muted); max-width: 480px; margin: 0 auto 20px; font-size: 0.92rem; line-height: 1.5;">
+            Guarda tus noticias favoritas presionando el botón <strong>«Guardar sin conexión»</strong> en cualquier artículo para leerlas sin necesidad de internet.
+          </p>
+          <a href="${typeof basePath !== 'undefined' ? basePath : ''}/" class="btn btn-accent" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 800; padding: 10px 22px; border-radius: 12px; color: #fff; background: var(--accent, #EF3363); text-decoration: none; box-shadow: 0 4px 15px rgba(239,51,99,0.3);">
+            <i class="bi bi-newspaper"></i> Explorar Noticias
+          </a>
+        </div>`;
+    }
   }
 
   function openReader(id) {
+    if (!window.CatInkOffline) return;
     CatInkOffline.getArticleByIdOrSlug(id).then(art => {
       if (!art) return;
       
@@ -326,11 +349,12 @@ document.addEventListener('DOMContentLoaded', () => {
     container.style.display = 'block';
   });
 
-  btnClearAll?.addEventListener('click', () => {
+  btnClearAll?.addEventListener('click', async () => {
     if (confirm('¿Vaciar todas tus noticias guardadas offline?')) {
-      CatInkOffline.clearAllArticles().then(() => {
-        renderLibrary();
-      });
+      if (window.CatInkOffline) {
+        await CatInkOffline.clearAllArticles();
+      }
+      renderLibrary();
     }
   });
 
