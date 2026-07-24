@@ -1646,3 +1646,22 @@ INSERT IGNORE INTO `filtro_diccionario` (`palabra_baneada`, `reemplazo`) VALUES
 -- 69. Columnas para el sistema de verificación de correo de lectores
 ALTER TABLE `lectores` ADD COLUMN IF NOT EXISTS `verificado` TINYINT(1) NOT NULL DEFAULT 0;
 ALTER TABLE `lectores` ADD COLUMN IF NOT EXISTS `token_verificacion` VARCHAR(100) NULL DEFAULT NULL;
+
+-- 70. Icono y visibilidad en el menú para cada categoría (gestionado en views/cats.php)
+--     icono        = clase de Bootstrap Icons (catálogo en views/helpers/iconos_categorias.php)
+--     visible_menu = 0 oculta la categoría del menú hamburguesa y del desplegable de
+--                    escritorio. La categoría sigue existiendo y su página /categoria/x
+--                    sigue siendo accesible; solo desaparece de la navegación.
+ALTER TABLE `categorias` ADD COLUMN IF NOT EXISTS `icono` VARCHAR(64) NOT NULL DEFAULT 'bi-tag-fill' AFTER `nombre`;
+ALTER TABLE `categorias` ADD COLUMN IF NOT EXISTS `visible_menu` TINYINT(1) NOT NULL DEFAULT 1 AFTER `icono`;
+
+-- Iconos iniciales para las categorías que ya existen. El WHERE sobre el valor
+-- por defecto evita pisar cualquier icono que el admin ya haya elegido a mano.
+UPDATE `categorias` SET `icono` = 'bi-film'              WHERE `nombre` = 'cine'        AND `icono` = 'bi-tag-fill';
+UPDATE `categorias` SET `icono` = 'bi-stars'             WHERE `nombre` = 'anime'       AND `icono` = 'bi-tag-fill';
+UPDATE `categorias` SET `icono` = 'bi-camera-reels-fill' WHERE `nombre` = 'peliculas'   AND `icono` = 'bi-tag-fill';
+UPDATE `categorias` SET `icono` = 'bi-star-fill'         WHERE `nombre` = 'reviews'     AND `icono` = 'bi-tag-fill';
+UPDATE `categorias` SET `icono` = 'bi-tv-fill'           WHERE `nombre` = 'series'      AND `icono` = 'bi-tag-fill';
+UPDATE `categorias` SET `icono` = 'bi-cpu-fill'          WHERE `nombre` = 'tecnologia'  AND `icono` = 'bi-tag-fill';
+UPDATE `categorias` SET `icono` = 'bi-controller'        WHERE `nombre` = 'videojuegos' AND `icono` = 'bi-tag-fill';
+UPDATE `categorias` SET `icono` = 'bi-shuffle'           WHERE `nombre` = 'Random'      AND `icono` = 'bi-tag-fill';

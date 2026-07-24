@@ -499,12 +499,33 @@ h2 {
 .nav-mobile-extra {
   display: none;
 }
+/* Lo mismo para el icono de categoria: el <ul> de categorias es el mismo nodo
+   en ambos layouts, y en la barra horizontal de escritorio los iconos apretarian
+   los nombres. Solo se muestra dentro de la hamburguesa (<=1024px). */
+.nav-cat-icon {
+  display: none;
+}
 @media (max-width: 1024px) {
   .navbar-nav {
     gap: 14px;
   }
   .navbar-nav .nav-item {
     margin: 0;
+  }
+  /* Icono de la categoria (elegido desde el panel). Ancho fijo para que los
+     nombres queden alineados aunque los glifos midan distinto. */
+  .navbar-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-cat-icon {
+    display: inline-block;
+    width: 20px;
+    flex-shrink: 0;
+    text-align: center;
+    color: var(--accent);
+    font-size: 1rem;
   }
   /* Con las secciones nuevas el menu puede superar la altura de pantalla:
      se limita y hace scroll interno para que la barra nunca sea mas alta

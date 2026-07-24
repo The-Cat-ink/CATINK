@@ -10,12 +10,27 @@ if ($checkMetaCol && $checkMetaCol->num_rows === 0) {
     @$con->query("ALTER TABLE paginas ADD meta_json JSON DEFAULT NULL");
 }
 
+// Auto-migración defensiva: icono y visibilidad en el menú de cada categoría.
+// Si producción todavía no corrió migrations.sql, las columnas se crean aquí y
+// el menú sigue funcionando en lugar de romperse con un SQL error.
+$checkIconoCol = @$con->query("SHOW COLUMNS FROM categorias LIKE 'icono'");
+if ($checkIconoCol && $checkIconoCol->num_rows === 0) {
+    @$con->query("ALTER TABLE categorias ADD icono VARCHAR(64) NOT NULL DEFAULT 'bi-tag-fill' AFTER nombre");
+}
+$checkVisibleCol = @$con->query("SHOW COLUMNS FROM categorias LIKE 'visible_menu'");
+if ($checkVisibleCol && $checkVisibleCol->num_rows === 0) {
+    @$con->query("ALTER TABLE categorias ADD visible_menu TINYINT(1) NOT NULL DEFAULT 1 AFTER icono");
+}
+
 require_once(__DIR__ . "/../views/helpers/urlhelper.php");
 require_once(__DIR__ . "/../views/helpers/publicidadhelper.php");
 // =========================
 // Obtener categorías únicas
 // =========================
-$stmtCats = $con->prepare("SELECT nombre FROM categorias ORDER BY orden ASC, nombre ASC");
+// Solo las marcadas como visibles: el admin puede ocultar una categoría del menú
+// desde views/cats.php sin borrarla. Su página /categoria/x sigue accesible, solo
+// desaparece de la navegación (hamburguesa, desplegable de escritorio y JSON-LD).
+$stmtCats = $con->prepare("SELECT nombre, icono, visible_menu FROM categorias WHERE visible_menu = 1 ORDER BY orden ASC, nombre ASC");
 $stmtCats->execute();
 $resultCats = $stmtCats->get_result();
 $categorias = $resultCats->fetch_all(MYSQLI_ASSOC);
@@ -546,6 +561,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <?php foreach ($categorias as $cat): ?>
           <li class="nav-item">
             <a class="nav-link" href="<?= categoryUrl($cat['nombre']) ?>">
+              <i class="bi <?= htmlspecialchars($cat['icono'] ?: 'bi-tag-fill') ?> nav-cat-icon" aria-hidden="true"></i>
               <?= htmlspecialchars($cat['nombre']) ?>
             </a>
           </li>
@@ -646,7 +662,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div class="dropdown-label">Categorías</div>
             <?php foreach($categorias as $cat): ?>
               <a href="<?= basePath() ?>/categoria/<?= urlencode($cat['nombre']) ?>" class="dropdown-item">
-                <i class="bi bi-tag"></i> <?= htmlspecialchars($cat['nombre']) ?>
+                <i class="bi <?= htmlspecialchars($cat['icono'] ?: 'bi-tag-fill') ?>"></i> <?= htmlspecialchars($cat['nombre']) ?>
               </a>
             <?php endforeach; ?>
             <div class="dropdown-divider"></div>

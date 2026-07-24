@@ -1,24 +1,38 @@
 <?php
 include("./../layout/headerAdmin.php");
 include("./../data/conexion.php");
+require_once("./../views/helpers/iconos_categorias.php");
+
+// Auto-migración defensiva: mismas columnas que crea layout/header.php. Se repite
+// aquí porque el panel usa headerAdmin.php y podría abrirse antes de que alguien
+// visite el sitio público (o antes de correr migrations.sql en producción).
+$checkIconoCol = @$con->query("SHOW COLUMNS FROM categorias LIKE 'icono'");
+if ($checkIconoCol && $checkIconoCol->num_rows === 0) {
+    @$con->query("ALTER TABLE categorias ADD icono VARCHAR(64) NOT NULL DEFAULT 'bi-tag-fill' AFTER nombre");
+}
+$checkVisibleCol = @$con->query("SHOW COLUMNS FROM categorias LIKE 'visible_menu'");
+if ($checkVisibleCol && $checkVisibleCol->num_rows === 0) {
+    @$con->query("ALTER TABLE categorias ADD visible_menu TINYINT(1) NOT NULL DEFAULT 1 AFTER icono");
+}
+
 // Obtener todas las categorías y conteo de noticias
 $q = trim($_GET['q'] ?? '');
 if($q !== ''){
     $like = $con->real_escape_string("%$q%");
     $sql = "
-    SELECT c.id_c, c.nombre, c.orden, COUNT(DISTINCT nc.noticia_id) AS total_noticias
+    SELECT c.id_c, c.nombre, c.icono, c.visible_menu, c.orden, COUNT(DISTINCT nc.noticia_id) AS total_noticias
     FROM categorias c
     LEFT JOIN noticia_categoria nc ON c.id_c = nc.categoria_id
     WHERE c.nombre LIKE '$like'
-    GROUP BY c.id_c, c.nombre, c.orden
+    GROUP BY c.id_c, c.nombre, c.icono, c.visible_menu, c.orden
     ORDER BY c.orden ASC, c.nombre ASC
     ";
 } else {
     $sql = "
-    SELECT c.id_c, c.nombre, c.orden, COUNT(DISTINCT nc.noticia_id) AS total_noticias
+    SELECT c.id_c, c.nombre, c.icono, c.visible_menu, c.orden, COUNT(DISTINCT nc.noticia_id) AS total_noticias
     FROM categorias c
     LEFT JOIN noticia_categoria nc ON c.id_c = nc.categoria_id
-    GROUP BY c.id_c, c.nombre, c.orden
+    GROUP BY c.id_c, c.nombre, c.icono, c.visible_menu, c.orden
     ORDER BY c.orden ASC, c.nombre ASC
     ";
 }
@@ -30,6 +44,8 @@ while($row = $result->fetch_assoc()){
 }
 $totalCategorias = count($categorias);
 $totalNoticiasAsignadas = array_sum(array_column($categorias, 'total_noticias'));
+$totalOcultas = count(array_filter($categorias, fn($c) => intval($c['visible_menu']) === 0));
+$gruposIconos = iconosCategoriaPorGrupo();
 ?>
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 12px;">
@@ -57,6 +73,13 @@ $totalNoticiasAsignadas = array_sum(array_column($categorias, 'total_noticias'))
                 <span class="stat-label">Noticias Asignadas</span>
             </div>
         </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(148,163,184,0.12); color: #94a3b8;"><i class="bi bi-eye-slash-fill"></i></div>
+            <div class="stat-info">
+                <span class="stat-value" id="statOcultas"><?= $totalOcultas ?></span>
+                <span class="stat-label">Ocultas del Menú</span>
+            </div>
+        </div>
     </div>
 
     <!-- Toolbar -->
@@ -78,8 +101,10 @@ $totalNoticiasAsignadas = array_sum(array_column($categorias, 'total_noticias'))
                     <thead>
                         <tr>
                             <th style="width: 40px; text-align:center;"><i class="bi bi-arrows-move"></i></th>
+                            <th style="width: 60px; text-align:center;">Icono</th>
                             <th>Nombre</th>
                             <th>Total Noticias</th>
+                            <th>Menú</th>
                             <?php if($ACL['editar'] || $ACL['eliminar']): ?>
                                 <th>Acciones</th>
                             <?php endif; ?>
@@ -87,24 +112,46 @@ $totalNoticiasAsignadas = array_sum(array_column($categorias, 'total_noticias'))
                     </thead>
                     <tbody id="categoriasBody">
                         <?php if(empty($categorias)): ?>
-                            <tr><td colspan="4" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron categorías.</td></tr>
+                            <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron categorías.</td></tr>
                         <?php else: ?>
-                            <?php foreach($categorias as $row): ?>
+                            <?php foreach($categorias as $row):
+                                $icono  = sanearIconoCategoria($row['icono'] ?? null);
+                                $visible = intval($row['visible_menu']) === 1;
+                            ?>
                             <tr data-id="<?= $row['id_c'] ?>" class="categoria-row">
                                 <td style="cursor: grab; text-align: center; color:var(--muted);"><i class="bi bi-grip-vertical"></i></td>
+                                <td style="text-align:center;">
+                                    <span class="cat-icon-preview"><i class="bi <?= htmlspecialchars($icono) ?>"></i></span>
+                                </td>
                                 <td><strong class="table-title"><?= htmlspecialchars($row['nombre']) ?></strong></td>
                                 <td><span class="estado-badge estado-publicado" style="background:rgba(16,185,129,0.1); color:#10b981;"><?= $row['total_noticias'] ?> noticias</span></td>
+                                <td>
+                                    <?php if($ACL['editar']): ?>
+                                        <button type="button" class="btn btn-link p-0 text-decoration-none btn-toggle-menu"
+                                            data-id="<?= $row['id_c'] ?>"
+                                            title="Clic para mostrar u ocultar esta categoría en el menú"
+                                            style="border:none; background:none;">
+                                    <?php endif; ?>
+                                        <span class="badge badge-menu <?= $visible ? 'is-visible' : 'is-oculta' ?>">
+                                            <i class="bi <?= $visible ? 'bi-eye-fill' : 'bi-eye-slash-fill' ?>"></i>
+                                            <?= $visible ? 'Visible' : 'Oculta' ?>
+                                        </span>
+                                    <?php if($ACL['editar']): ?>
+                                        </button>
+                                    <?php endif; ?>
+                                </td>
                                 <?php if($ACL['editar'] || $ACL['eliminar']): ?>
                                     <td>
                                         <div class="noticias-actions" style="border-top:none; padding:0; justify-content:flex-start;">
                                             <?php if($ACL['editar']): ?>
-                                                <button class="btn btn-edit btn-editar" 
-                                                    data-id="<?= $row['id_c'] ?>" 
+                                                <button class="btn btn-edit btn-editar"
+                                                    data-id="<?= $row['id_c'] ?>"
+                                                    data-icono="<?= htmlspecialchars($icono) ?>"
                                                     data-nombre="<?= htmlspecialchars($row['nombre']) ?>" title="Editar"><i class="bi bi-pencil-square"></i></button>
                                             <?php endif; ?>
                                             <?php if($ACL['eliminar']): ?>
                                                 <button class="btn btn-delete btn-eliminar"
-                                                    data-id="<?= $row['id_c'] ?>" 
+                                                    data-id="<?= $row['id_c'] ?>"
                                                     data-nombre="<?= htmlspecialchars($row['nombre']) ?>" title="Eliminar"><i class="bi bi-trash"></i></button>
                                             <?php endif; ?>
                                         </div>
@@ -122,7 +169,7 @@ $totalNoticiasAsignadas = array_sum(array_column($categorias, 'total_noticias'))
 
 <!-- MODAL CROP/NATIVO -->
 <div id="modal" class="crop-modal" style="display: none;">
-    <div class="card" style="max-width: 400px; width:100%;">
+    <div class="card" style="max-width: 480px; width:100%;">
         <div class="crop-modal-content">
             <h3 id="modalTitle"></h3>
             <p id="modalConfirmText" style="display:none; color:var(--muted); font-size:0.9rem; margin-bottom:15px;"></p>
@@ -131,6 +178,28 @@ $totalNoticiasAsignadas = array_sum(array_column($categorias, 'total_noticias'))
                 <div style="margin-bottom: 16px;" id="modalNombreWrapper">
                     <label for="modalNombre" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Nombre de la categoría</label>
                     <input type="text" id="modalNombre" name="nombre" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--card-bg); color: var(--text);">
+                </div>
+                <!-- Selector de icono: el valor real viaja en el input oculto; los
+                     botones solo lo actualizan. El catálogo sale de
+                     views/helpers/iconos_categorias.php, el mismo que valida el POST. -->
+                <div style="margin-bottom: 16px;" id="modalIconoWrapper">
+                    <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; color:var(--text);">
+                        Icono en el menú
+                        <span id="modalIconoActual" class="cat-icon-preview" style="margin-left:6px; vertical-align:middle;"><i class="bi bi-tag-fill"></i></span>
+                    </label>
+                    <input type="hidden" name="icono" id="modalIcono" value="<?= ICONO_CATEGORIA_DEFAULT ?>">
+                    <div class="icon-picker">
+                        <?php foreach($gruposIconos as $grupo => $iconos): ?>
+                            <div class="icon-picker-group"><?= htmlspecialchars($grupo) ?></div>
+                            <div class="icon-picker-grid">
+                                <?php foreach($iconos as $ic): ?>
+                                    <button type="button" class="icon-option" data-icono="<?= htmlspecialchars($ic) ?>" title="<?= htmlspecialchars($ic) ?>">
+                                        <i class="bi <?= htmlspecialchars($ic) ?>"></i>
+                                    </button>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
                 <div class="crop-actions" style="display:flex; justify-content:flex-end; gap:8px;">
                     <button type="button" id="modalClose" class="btn btn-secondary">Cancelar</button>
@@ -144,7 +213,6 @@ $totalNoticiasAsignadas = array_sum(array_column($categorias, 'total_noticias'))
 <!-- SortableJS para Drag and Drop fluido -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
-<?php include("./../layout/footerAdmin.php"); ?>
 <style>
 .sortable-ghost {
     opacity: 0.4;
@@ -154,6 +222,89 @@ $totalNoticiasAsignadas = array_sum(array_column($categorias, 'total_noticias'))
     background-color: var(--card-bg);
     box-shadow: 0 5px 15px rgba(0,0,0,0.15);
     cursor: grabbing !important;
+}
+/* Icono de la categoria en la tabla y en la etiqueta del modal */
+.cat-icon-preview {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(239, 51, 99, 0.12);
+    color: var(--accent);
+    font-size: 1rem;
+}
+/* Badge de visibilidad en el menu */
+.badge-menu {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 6px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.badge-menu.is-visible {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.badge-menu.is-oculta {
+    background: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+}
+/* Selector de iconos */
+.icon-picker {
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: var(--card-bg);
+    scrollbar-width: thin;
+}
+.icon-picker-group {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin: 10px 0 6px;
+}
+.icon-picker-group:first-child { margin-top: 0; }
+.icon-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+}
+@media (max-width: 520px) {
+    .icon-picker-grid { grid-template-columns: repeat(6, 1fr); }
+}
+.icon-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.icon-option:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.icon-option.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
 }
 </style>
 <script>
@@ -166,7 +317,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalSubmit = document.getElementById('modalSubmit');
     const modalClose = document.getElementById('modalClose');
     const modalNombreWrapper = document.getElementById('modalNombreWrapper');
+    const modalIconoWrapper = document.getElementById('modalIconoWrapper');
+    const modalIcono = document.getElementById('modalIcono');
+    const modalIconoActual = document.getElementById('modalIconoActual');
     const btnCrear = document.getElementById('btnCrear');
+    const ICONO_DEFAULT = <?= json_encode(ICONO_CATEGORIA_DEFAULT) ?>;
+
+    // Marca el icono elegido en la cuadrícula, actualiza la vista previa de la
+    // etiqueta y deja el valor listo en el input oculto que se envía por POST.
+    function seleccionarIcono(icono) {
+        const valido = document.querySelector(`.icon-option[data-icono="${icono}"]`) ? icono : ICONO_DEFAULT;
+        modalIcono.value = valido;
+        modalIconoActual.innerHTML = `<i class="bi ${valido}"></i>`;
+        document.querySelectorAll('.icon-option').forEach(opt => {
+            opt.classList.toggle('selected', opt.dataset.icono === valido);
+        });
+    }
+
+    document.querySelectorAll('.icon-option').forEach(opt => {
+        opt.addEventListener('click', () => seleccionarIcono(opt.dataset.icono));
+    });
+
     if(btnCrear && ACL.crear){
         // Abrir modal de crear
         document.getElementById('btnCrear').addEventListener('click', () => {
@@ -175,8 +346,11 @@ document.addEventListener('DOMContentLoaded', () => {
             modalForm.dataset.action = "crear";
             modalId.value = "";
             modalNombre.value = "";
+            modalNombre.required = true;
             modalConfirmText.style.display = "none";
             modalNombreWrapper.style.display = "block"; // reset
+            modalIconoWrapper.style.display = "block";
+            seleccionarIcono(ICONO_DEFAULT);
             modal.style.display = "flex";
         });
     }
@@ -189,8 +363,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalForm.dataset.action = "editar";
                 modalId.value = btn.dataset.id;
                 modalNombre.value = btn.dataset.nombre;
+                modalNombre.required = true;
                 modalConfirmText.style.display = "none";
                 modalNombreWrapper.style.display = "block"; // reset
+                modalIconoWrapper.style.display = "block";
+                seleccionarIcono(btn.dataset.icono || ICONO_DEFAULT);
                 modal.style.display = "flex";
                 });
         });
@@ -207,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     `¿Estás seguro de eliminar la categoría "${btn.dataset.nombre}"?`;
                 modalNombre.required = false; // CLAVE
                 modalNombreWrapper.style.display = "none";
+                modalIconoWrapper.style.display = "none";
                 modal.style.display = "flex";
             });
         });
@@ -215,6 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalClose.addEventListener('click', () => {
         modal.style.display = "none";
         modalNombreWrapper.style.display = "block"; // reset
+        modalIconoWrapper.style.display = "block";
         modalConfirmText.style.display = "none";
     });
     // Enviar formulario
@@ -250,9 +429,52 @@ document.addEventListener('DOMContentLoaded', () => {
         if(e.target === modal) {
             modal.style.display = "none";
             modalNombreWrapper.style.display = "block";
+            modalIconoWrapper.style.display = "block";
             modalConfirmText.style.display = "none";
         }
     });
+
+    // Mostrar / ocultar la categoría en el menú al hacer clic en el badge.
+    // Solo cambia visible_menu: la categoría y sus noticias no se tocan.
+    document.querySelectorAll('.btn-toggle-menu').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const id = this.dataset.id;
+            const badge = this.querySelector('.badge-menu');
+            try {
+                const res = await fetch('./../controllers/categoria_toggle_menu.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `id=${encodeURIComponent(id)}`
+                });
+                const d = await res.json();
+                if (!d.ok) {
+                    showToast(d.error || 'No se pudo cambiar la visibilidad', 'error');
+                    return;
+                }
+                const visible = d.visible_menu === 1;
+                badge.classList.toggle('is-visible', visible);
+                badge.classList.toggle('is-oculta', !visible);
+                badge.innerHTML = `<i class="bi ${visible ? 'bi-eye-fill' : 'bi-eye-slash-fill'}"></i> ${visible ? 'Visible' : 'Oculta'}`;
+                showToast(
+                    visible
+                        ? `«${d.nombre}» ya aparece en el menú`
+                        : `«${d.nombre}» se ocultó del menú`,
+                    visible ? 'success' : 'info'
+                );
+                actualizarContadorOcultas();
+            } catch (err) {
+                console.error(err);
+                showToast('Error en la petición', 'error');
+            }
+        });
+    });
+
+    // Mantener al día la tarjeta "Ocultas del Menú" sin recargar la página
+    function actualizarContadorOcultas() {
+        const card = document.getElementById('statOcultas');
+        if (card) card.textContent = document.querySelectorAll('.badge-menu.is-oculta').length;
+    }
 
     // DRAG AND DROP PARA REORDENAR CATEGORÍAS (Usando SortableJS)
     const tbody = document.getElementById('categoriasBody');
