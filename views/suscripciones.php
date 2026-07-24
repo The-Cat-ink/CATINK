@@ -401,8 +401,15 @@ document.querySelectorAll('.sub-table tbody tr').forEach(row => {
     row.style.cursor = 'pointer';
 });
 
-function sendToAll() {
-    if (!confirm("¿Deseas enviar el resumen diario de noticias inmediatamente a TODOS los suscriptores?")) return;
+async function sendToAll() {
+    const confirmed = await cnConfirm({
+        title: '¿Enviar Resumen Masivo?',
+        message: '¿Deseas enviar el resumen diario de noticias inmediatamente a TODOS los suscriptores registrados?',
+        confirmText: 'Enviar a Todos',
+        cancelText: 'Cancelar',
+        isDanger: false
+    });
+    if (!confirmed) return;
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = './../controllers/enviarCorreoMultiple.php';

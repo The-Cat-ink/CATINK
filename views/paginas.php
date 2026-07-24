@@ -632,7 +632,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', async e => {
         const btnDel = e.target.closest('.btn-delete-logo');
         if (!btnDel) return;
-        if (!confirm('¿Seguro que deseas eliminar esta marca colaboradora?')) return;
+        const confirmed = await cnConfirm({
+            title: '¿Eliminar Marca?',
+            message: '¿Seguro que deseas eliminar esta marca colaboradora del carrusel?',
+            confirmText: 'Eliminar Marca',
+            cancelText: 'Cancelar',
+            isDanger: true
+        });
+        if (!confirmed) return;
 
         const id = btnDel.dataset.id;
         const fd = new FormData();
