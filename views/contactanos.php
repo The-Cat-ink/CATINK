@@ -115,9 +115,10 @@ $horario = $meta['horario'] ?? [
 .cnt-form-title { font-size: 1.2rem; font-weight: 900; color: var(--text); margin: 0 0 6px; }
 .cnt-form-sub { font-size: 0.85rem; color: var(--muted); margin: 0 0 28px; }
 .cnt-form-label {
-    display: block; font-size: 0.75rem; font-weight: 800;
-    text-transform: uppercase; letter-spacing: .12em;
+    display: block; font-size: 0.72rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .08em;
     color: var(--muted); margin-bottom: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .cnt-form-input, .cnt-form-select, .cnt-form-textarea {
     width: 100%; padding: 12px 14px;
@@ -129,8 +130,8 @@ $horario = $meta['horario'] ?? [
 }
 .cnt-form-textarea { resize: vertical; min-height: 130px; }
 .cnt-form-input:focus, .cnt-form-select:focus, .cnt-form-textarea:focus { border-color: var(--accent); }
-.cnt-form-group { margin-bottom: 18px; }
-.cnt-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.cnt-form-group { margin-bottom: 16px; display: flex; flex-direction: column; justify-content: flex-end; }
+.cnt-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: end; }
 .cnt-form-btn {
     width: 100%; padding: 14px;
     background: var(--accent); color: #fff;
@@ -177,11 +178,12 @@ $horario = $meta['horario'] ?? [
 }
 .cnt-corp-box {
     display: none;
-    background: rgba(239, 51, 99, 0.04);
-    border: 1px dashed rgba(239, 51, 99, 0.3);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 20px;
+    background: rgba(239, 51, 99, 0.03);
+    border: 1px solid rgba(239, 51, 99, 0.2);
+    border-radius: 18px;
+    padding: 22px 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 18px rgba(239, 51, 99, 0.05);
     animation: fadeInCorp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 @keyframes fadeInCorp {
@@ -194,7 +196,7 @@ $horario = $meta['horario'] ?? [
     text-transform: uppercase;
     letter-spacing: .12em;
     color: var(--accent, #EF3363);
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -312,28 +314,28 @@ $horario = $meta['horario'] ?? [
 
                         <div class="cnt-form-row">
                             <div class="cnt-form-group">
-                                <label class="cnt-form-label" for="cnt-empresa">Nombre de la Empresa / Marca *</label>
+                                <label class="cnt-form-label" for="cnt-empresa" title="Empresa o Marca *">Empresa o Marca *</label>
                                 <input type="text" id="cnt-empresa" name="empresa" class="cnt-form-input" placeholder="ej. PlayStation, Crunchyroll...">
                             </div>
                             <div class="cnt-form-group">
-                                <label class="cnt-form-label" for="cnt-cargo">Cargo / Puesto</label>
+                                <label class="cnt-form-label" for="cnt-cargo" title="Cargo / Puesto">Cargo / Puesto</label>
                                 <input type="text" id="cnt-cargo" name="cargo" class="cnt-form-input" placeholder="ej. PR Manager, Mkt">
                             </div>
                         </div>
 
                         <div class="cnt-form-row">
                             <div class="cnt-form-group">
-                                <label class="cnt-form-label" for="cnt-web">Sitio Web / Redes</label>
+                                <label class="cnt-form-label" for="cnt-web" title="Sitio Web / Redes">Sitio Web / Redes</label>
                                 <input type="url" id="cnt-web" name="sitio_web" class="cnt-form-input" placeholder="https://empresa.com">
                             </div>
                             <div class="cnt-form-group">
-                                <label class="cnt-form-label" for="cnt-telefono">Teléfono / WhatsApp</label>
+                                <label class="cnt-form-label" for="cnt-telefono" title="Teléfono / WhatsApp">Teléfono / WhatsApp</label>
                                 <input type="tel" id="cnt-telefono" name="telefono" class="cnt-form-input" placeholder="+52 55 0000 0000">
                             </div>
                         </div>
 
                         <div class="cnt-form-group mb-0">
-                            <label class="cnt-form-label" for="cnt-servicio">Servicio / Interés empresarial</label>
+                            <label class="cnt-form-label" for="cnt-servicio" title="Interés Empresarial">Interés Empresarial</label>
                             <select id="cnt-servicio" name="servicio_interes" class="cnt-form-select">
                                 <option value="Campaña Publicitaria (Banners / Display)">📣 Campaña Publicitaria (Banners / Display)</option>
                                 <option value="Artículo Patrocinado / Reseña">📝 Artículo Patrocinado / Reseña</option>
