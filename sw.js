@@ -1,4 +1,4 @@
-const CACHE_NAME = 'catink-offline-v2';
+const CACHE_NAME = 'catink-offline-v3';
 const STATIC_ASSETS = [
   '/',
   '/offline.html',

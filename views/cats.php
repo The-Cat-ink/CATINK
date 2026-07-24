@@ -33,19 +33,19 @@ $q = trim($_GET['q'] ?? '');
 if($q !== ''){
     $like = $con->real_escape_string("%$q%");
     $sql = "
-    SELECT c.id_c, c.nombre, c.icono, c.visible_menu, c.orden, COUNT(DISTINCT nc.noticia_id) AS total_noticias
+    SELECT c.id_c, c.nombre, c.icono, c.icono_img, c.visible_menu, c.orden, COUNT(DISTINCT nc.noticia_id) AS total_noticias
     FROM categorias c
     LEFT JOIN noticia_categoria nc ON c.id_c = nc.categoria_id
     WHERE c.nombre LIKE '$like'
-    GROUP BY c.id_c, c.nombre, c.icono, c.visible_menu, c.orden
+    GROUP BY c.id_c, c.nombre, c.icono, c.icono_img, c.visible_menu, c.orden
     ORDER BY c.orden ASC, c.nombre ASC
     ";
 } else {
     $sql = "
-    SELECT c.id_c, c.nombre, c.icono, c.visible_menu, c.orden, COUNT(DISTINCT nc.noticia_id) AS total_noticias
+    SELECT c.id_c, c.nombre, c.icono, c.icono_img, c.visible_menu, c.orden, COUNT(DISTINCT nc.noticia_id) AS total_noticias
     FROM categorias c
     LEFT JOIN noticia_categoria nc ON c.id_c = nc.categoria_id
-    GROUP BY c.id_c, c.nombre, c.icono, c.visible_menu, c.orden
+    GROUP BY c.id_c, c.nombre, c.icono, c.icono_img, c.visible_menu, c.orden
     ORDER BY c.orden ASC, c.nombre ASC
     ";
 }
