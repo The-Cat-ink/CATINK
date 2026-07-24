@@ -5043,6 +5043,20 @@ body, .nav-link, .btn, .card, .site-main {
   }
 }
 
+/* ── Movil: maximo 4 categorias por tarjeta ──────────────────────────
+   Con 5+ categorias la fila de pildoras se parte en dos lineas y rompe el
+   layout de la tarjeta. Se ocultan de la 5a en adelante; las categorias ya
+   llegan del SQL ordenadas por nc.orden ASC (el orden de importancia que se
+   define al crear la nota), asi que las 4 visibles son las mas relevantes.
+   Solo movil: en escritorio hay ancho de sobra y se muestran todas. */
+@media (max-width: 768px) {
+  .h-card-tags    > :nth-child(n+5),
+  .top-card-tags  > :nth-child(n+5),
+  .estreno-tags   > :nth-child(n+5) {
+    display: none;
+  }
+}
+
 /* ── SIDEBAR SECTIONS (RANKINGS 1-5) ── */
 .sidebar-reviews-section {
   background: var(--card-bg);
