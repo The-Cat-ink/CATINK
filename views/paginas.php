@@ -750,7 +750,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── CMS Edit Page Modal ──────────────────────
     let editorpag;
-    if (typeof ClassicEditor !== 'undefined') {
+    if (typeof DecoupledEditor !== 'undefined') {
+        DecoupledEditor
+            .create(document.querySelector('#editorpag'), {
+                placeholder: 'Escribe el contenido de esta sección aquí...',
+                language: 'es',
+                toolbar: {
+                    items: [
+                        'heading', '|', 'bold', 'italic', 'underline', 'strikethrough', '|',
+                        'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+                        'alignment', '|', 'numberedList', 'bulletedList', '|',
+                        'outdent', 'indent', '|', 'link', 'blockQuote', 'insertTable', '|',
+                        'undo', 'redo'
+                    ]
+                }
+            })
+            .then(ed => {
+                editorpag = ed;
+                const toolbarContainer = document.querySelector('#toolbarpag');
+                if (toolbarContainer) {
+                    toolbarContainer.appendChild(ed.ui.view.toolbar.element);
+                }
+            })
+            .catch(error => {
+                console.error('Error inicializando DecoupledEditor en paginas.php:', error);
+            });
+    } else if (typeof ClassicEditor !== 'undefined') {
         ClassicEditor
             .create(document.querySelector('#editorpag'), {
                 toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', 'undo', 'redo' ]
