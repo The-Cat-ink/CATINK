@@ -34,8 +34,11 @@
 
         <!-- ── Columna izquierda: Páginas legales ──────────── -->
         <div style="display:flex;flex-direction:column;">
-            <div class="mb-2">
-                <h2 style="margin:0 0 2px;font-size:2rem;font-weight:800;">Gestión de Páginas Legales</h2>
+            <div class="mb-2" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                <h2 style="margin:0;font-size:2rem;font-weight:800;">Gestión de Páginas Legales</h2>
+                <a href="./preview_email.php" target="_blank" class="btn btn-accent" style="display:inline-flex; align-items:center; gap:6px; font-size:0.85rem; padding:8px 16px; border-radius:10px;">
+                    <i class="bi bi-envelope-paper-heart-fill"></i> Previsualizar Correos
+                </a>
             </div>
             <div class="contenidos-toolbar" style="margin-bottom:10px;">
                 <div class="contenidos-tabs">
