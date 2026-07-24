@@ -30,6 +30,7 @@
     $hoy = date('Y-m-d');
 
     function estadoPublicidad($pub, $hoy) {
+        if (isset($pub['activo']) && intval($pub['activo']) === 0) return 'inactiva';
         $ini = !empty($pub['fecha_inicio']) ? date('Y-m-d', strtotime($pub['fecha_inicio'])) : null;
         $fin = !empty($pub['fecha_fin'])    ? date('Y-m-d', strtotime($pub['fecha_fin']))    : null;
         if ($ini !== null && $ini > $hoy) return 'programada';
@@ -40,7 +41,8 @@
     $totalPublicidad = count($publicidades);
     $activas     = count(array_filter($publicidades, fn($p) => estadoPublicidad($p, $hoy) === 'activa'));
     $programadas = count(array_filter($publicidades, fn($p) => estadoPublicidad($p, $hoy) === 'programada'));
-    $vencidas    = $totalPublicidad - $activas - $programadas;
+    $inactivas   = count(array_filter($publicidades, fn($p) => estadoPublicidad($p, $hoy) === 'inactiva'));
+    $vencidas    = $totalPublicidad - $activas - $programadas - $inactivas;
 ?>
 <div class="container-fluid px-3 py-2">
 
@@ -206,18 +208,30 @@
                                         </span>
                                     </td>
                                     <td>
+                                        <?php if(!empty($ACL['editar'])): ?>
+                                            <button type="button" class="btn btn-link p-0 text-decoration-none btn-toggle-pub" data-id="<?= $pub['id_pub'] ?>" title="Clic para cambiar estado activo/inactivo" style="border:none; background:none;">
+                                        <?php endif; ?>
+
                                         <?php if($estado === 'activa'): ?>
-                                            <span class="badge" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px; white-space:nowrap;">
+                                            <span class="badge" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px; white-space:nowrap; cursor:pointer;">
                                                 <i class="bi bi-circle-fill" style="font-size:0.4rem; vertical-align:middle; margin-right:4px;"></i> Activa
                                             </span>
                                         <?php elseif($estado === 'programada'): ?>
-                                            <span class="badge" style="background:rgba(245,158,11,0.12); color:#f59e0b; border:1px solid rgba(245,158,11,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px; white-space:nowrap;">
+                                            <span class="badge" style="background:rgba(245,158,11,0.12); color:#f59e0b; border:1px solid rgba(245,158,11,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px; white-space:nowrap; cursor:pointer;">
                                                 <i class="bi bi-clock-fill me-1"></i> Programada
                                             </span>
+                                        <?php elseif($estado === 'inactiva'): ?>
+                                            <span class="badge" style="background:rgba(148,163,184,0.12); color:#64748b; border:1px solid rgba(148,163,184,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px; white-space:nowrap; cursor:pointer;">
+                                                <i class="bi bi-pause-circle-fill me-1"></i> Inactiva / Pausada
+                                            </span>
                                         <?php else: ?>
-                                            <span class="badge" style="background:rgba(239,51,99,0.12); color:var(--accent); border:1px solid rgba(239,51,99,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px; white-space:nowrap;">
+                                            <span class="badge" style="background:rgba(239,51,99,0.12); color:var(--accent); border:1px solid rgba(239,51,99,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px; white-space:nowrap; cursor:pointer;">
                                                 <i class="bi bi-stop-circle-fill me-1"></i> Vencida
                                             </span>
+                                        <?php endif; ?>
+
+                                        <?php if(!empty($ACL['editar'])): ?>
+                                            </button>
                                         <?php endif; ?>
                                     </td>
                                     <td>
@@ -319,6 +333,30 @@ document.addEventListener("DOMContentLoaded", () => {
                     row.style.display = "none";
                 }
             });
+        });
+    });
+
+    // Toggle activo/inactivo de campaña al hacer clic en el badge de estado
+    document.querySelectorAll(".btn-toggle-pub").forEach(btn => {
+        btn.addEventListener("click", async function(e) {
+            e.preventDefault();
+            const id = this.dataset.id;
+            try {
+                const res = await fetch('./../controllers/publicidad_toggle.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `id=${id}`
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showToast(`Campaña "${data.titulo}" ${data.activo ? 'activada' : 'desactivada (pausada)'} correctamente`, data.activo ? 'success' : 'info');
+                    setTimeout(() => location.reload(), 350);
+                } else {
+                    showToast(data.error || 'Error al cambiar estado de la campaña', 'error');
+                }
+            } catch (err) {
+                showToast('Error de conexión al cambiar estado', 'error');
+            }
         });
     });
 
