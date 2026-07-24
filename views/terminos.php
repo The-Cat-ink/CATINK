@@ -97,8 +97,16 @@ $meta = json_decode($row['meta_json'] ?? '', true) ?: [];
 }
 .legal-sidebar {
     position: sticky;
-    top: 90px;
+    top: 100px;
+    max-height: calc(100vh - 130px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 6px;
 }
+.legal-sidebar::-webkit-scrollbar { width: 4px; }
+.legal-sidebar::-webkit-scrollbar-track { background: transparent; }
+.legal-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.legal-sidebar::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 .legal-sidebar-label {
     font-size: 0.68rem;
     font-weight: 800;
@@ -313,6 +321,7 @@ $meta = json_decode($row['meta_json'] ?? '', true) ?: [];
                             a.style.color = 'var(--accent, #EF3363)';
                             a.style.borderLeftColor = 'var(--accent, #EF3363)';
                             a.style.background = 'rgba(239,51,99,0.08)';
+                            a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
                         } else {
                             a.style.color = '';
                             a.style.borderLeftColor = '';
