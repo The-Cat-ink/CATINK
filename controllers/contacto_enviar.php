@@ -38,14 +38,14 @@ try {
     $mail->isSMTP();
     $mail->Host       = env('SMTP_HOST', 'smtp.hostinger.com');
     $mail->SMTPAuth   = true;
-    $mail->Username   = env('SMTP_USERNAME', env('SMTP_FROM_EMAIL'));
-    $mail->Password   = env('SMTP_PASSWORD', '');
+    $mail->Username   = env('SMTP_AUTH_USERNAME', env('SMTP_USERNAME', env('SMTP_FROM_EMAIL')));
+    $mail->Password   = env('SMTP_AUTH_PASSWORD', env('SMTP_PASSWORD', ''));
     $mail->SMTPSecure = env('SMTP_SECURE', 'ssl');
     $mail->Port       = intval(env('SMTP_PORT', 465));
     $mail->CharSet    = 'UTF-8';
 
-    $fromEmail = env('SMTP_FROM_EMAIL', 'no-reply@catink.com.mx');
-    $fromName  = env('SMTP_FROM_NAME',  'CatInk');
+    $fromEmail = env('SMTP_AUTH_FROM_EMAIL', env('SMTP_FROM_EMAIL', 'no-reply@catink.com.mx'));
+    $fromName  = env('SMTP_AUTH_FROM_NAME',  env('SMTP_FROM_NAME',  'CatInk'));
 
     $mail->setFrom($fromEmail, $fromName);
     $mail->addAddress('contacto@catink.com.mx', 'CatInk Contacto');
