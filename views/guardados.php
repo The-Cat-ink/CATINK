@@ -9,21 +9,23 @@ include("./../layout/header.php");
 
 <style>
 .offline-library-header {
-  background: linear-gradient(135deg, rgba(239, 51, 99, 0.1) 0%, rgba(18, 18, 22, 0.95) 100%);
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
-  border-radius: 16px;
-  padding: 30px 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--accent);
+  border-radius: 18px;
+  padding: 24px 28px;
   margin-bottom: 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 .offline-library-title {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 .offline-library-title i {
   font-size: 2.2rem;
@@ -31,24 +33,28 @@ include("./../layout/header.php");
 }
 .offline-library-title h1 {
   margin: 0;
-  font-size: 1.8rem;
+  font-size: 1.7rem;
   font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.01em;
 }
 .offline-library-stats {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 10px 18px;
+  background: var(--bg);
+  padding: 8px 16px;
   border-radius: 12px;
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--border);
+  color: var(--text);
 }
 .offline-stat-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-weight: 700;
-  font-size: 0.9rem;
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: var(--text);
 }
 .offline-stat-item i {
   color: var(--accent, #EF3363);
@@ -190,8 +196,8 @@ include("./../layout/header.php");
         <i class="bi bi-hdd-fill"></i>
         <span id="statStorageSize">0.00 MB</span>
       </div>
-      <button id="btnClearAllOffline" style="margin-left: 10px; background: transparent; color: var(--muted); border: none; cursor: pointer; font-size: 0.85rem; font-weight: 700;" title="Vaciar todas las lecturas">
-        <i class="bi bi-trash"></i> Vaciar
+      <button id="btnClearAllOffline" class="btn btn-sm btn-outline-danger px-3" style="margin-left: 6px; border-radius: 8px; font-weight: 800; font-size: 0.8rem; padding: 4px 10px;" title="Vaciar todas las lecturas">
+        <i class="bi bi-trash-fill me-1"></i> Vaciar
       </button>
     </div>
   </div>
