@@ -74,38 +74,38 @@ try {
 
     if ($isEmpresa) {
         $content = "
-            <p style='color:#cbd5e0; font-size:15px;'>Se ha recibido una nueva propuesta corporativa de una <strong>empresa / marca</strong> a través de CatInk.</p>
+            <p style='color:#475569; font-size:15px;'>Se ha recibido una nueva propuesta corporativa de una <strong>empresa / marca</strong> a través de CatInk.</p>
             
-            <table width='100%' cellpadding='0' cellspacing='0' style='background:#182234; border-radius:12px; padding:18px; margin:20px 0; border:1px solid rgba(239,51,99,0.3);'>
+            <table width='100%' cellpadding='0' cellspacing='0' style='background:#f8fafc; border-radius:12px; padding:18px; margin:20px 0; border:1px solid rgba(239,51,99,0.25);'>
                 <tr><td style='padding:6px 0; color:#EF3363; font-size:14px; font-weight:900;' colspan='2'>🏢 DATOS CORPORATIVOS DE LA EMPRESA</td></tr>
-                <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700; width:35%;'>Empresa / Marca:</td><td style='padding:6px 0; color:#ffffff; font-weight:800; font-size:15px;'>{$empresaEsc}</td></tr>
-                <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Persona de Contacto:</td><td style='padding:6px 0; color:#ffffff; font-weight:700;'>{$nomEsc} " . ($cargo ? "({$cargoEsc})" : "") . "</td></tr>
-                <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Correo Electrónico:</td><td style='padding:6px 0;'><a href='mailto:{$emailEsc}' style='color:#EF3363; font-weight:700;'>{$emailEsc}</a></td></tr>
-                " . ($telefono ? "<tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Teléfono / WhatsApp:</td><td style='padding:6px 0; color:#ffffff;'>{$telEsc}</td></tr>" : "") . "
-                " . ($sitio_web ? "<tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Sitio Web / Redes:</td><td style='padding:6px 0;'><a href='{$webEsc}' target='_blank' style='color:#818cf8;'>{$webEsc}</a></td></tr>" : "") . "
-                <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Interés / Servicio:</td><td style='padding:6px 0; color:#EF3363; font-weight:800;'>{$servicioEsc}</td></tr>
-                <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Asunto:</td><td style='padding:6px 0; color:#ffffff;'>{$asuntoEsc}</td></tr>
+                <tr><td style='padding:6px 0; color:#64748b; font-size:13px; font-weight:700; width:35%;'>Empresa / Marca:</td><td style='padding:6px 0; color:#0f172a; font-weight:800; font-size:15px;'>{$empresaEsc}</td></tr>
+                <tr><td style='padding:6px 0; color:#64748b; font-size:13px; font-weight:700;'>Persona de Contacto:</td><td style='padding:6px 0; color:#0f172a; font-weight:700;'>{$nomEsc} " . ($cargo ? "({$cargoEsc})" : "") . "</td></tr>
+                <tr><td style='padding:6px 0; color:#64748b; font-size:13px; font-weight:700;'>Correo Electrónico:</td><td style='padding:6px 0;'><a href='mailto:{$emailEsc}' style='color:#EF3363; font-weight:700;'>{$emailEsc}</a></td></tr>
+                " . ($telefono ? "<tr><td style='padding:6px 0; color:#64748b; font-size:13px; font-weight:700;'>Teléfono / WhatsApp:</td><td style='padding:6px 0; color:#0f172a;'>{$telEsc}</td></tr>" : "") . "
+                " . ($sitio_web ? "<tr><td style='padding:6px 0; color:#64748b; font-size:13px; font-weight:700;'>Sitio Web / Redes:</td><td style='padding:6px 0;'><a href='{$webEsc}' target='_blank' style='color:#4f46e5;'>{$webEsc}</a></td></tr>" : "") . "
+                <tr><td style='padding:6px 0; color:#64748b; font-size:13px; font-weight:700;'>Interés / Servicio:</td><td style='padding:6px 0; color:#EF3363; font-weight:800;'>{$servicioEsc}</td></tr>
+                <tr><td style='padding:6px 0; color:#64748b; font-size:13px; font-weight:700;'>Asunto:</td><td style='padding:6px 0; color:#0f172a;'>{$asuntoEsc}</td></tr>
             </table>
 
-            <div style='background:#162032; padding:18px; border-radius:12px; border-left:4px solid #EF3363; margin-top:16px;'>
+            <div style='background:#f1f5f9; padding:18px; border-radius:12px; border-left:4px solid #EF3363; margin-top:16px;'>
                 <strong style='color:#EF3363; font-size:13px; text-transform:uppercase; letter-spacing:0.05em;'>Propuesta / Mensaje:</strong>
-                <p style='color:#e2e8f0; margin:10px 0 0; line-height:1.7; white-space:pre-wrap;'>{$msgEsc}</p>
+                <p style='color:#334155; margin:10px 0 0; line-height:1.7; white-space:pre-wrap;'>{$msgEsc}</p>
             </div>
         ";
         $badgeText = 'Contacto Corporativo / Marca';
     } else {
         $content = "
-            <p style='color:#cbd5e0; font-size:15px;'>Se ha recibido un nuevo mensaje a través del formulario de contacto del sitio web.</p>
+            <p style='color:#475569; font-size:15px;'>Se ha recibido un nuevo mensaje a través del formulario de contacto del sitio web.</p>
             
-            <table width='100%' cellpadding='0' cellspacing='0' style='background:#182234; border-radius:12px; padding:18px; margin:20px 0; border:1px solid rgba(255,255,255,0.06);'>
-                <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>De:</td><td style='padding:6px 0; color:#ffffff; font-weight:700;'>{$nomEsc}</td></tr>
-                <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Correo:</td><td style='padding:6px 0;'><a href='mailto:{$emailEsc}' style='color:#EF3363;'>{$emailEsc}</a></td></tr>
-                <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Asunto:</td><td style='padding:6px 0; color:#EF3363; font-weight:800;'>{$asuntoEsc}</td></tr>
+            <table width='100%' cellpadding='0' cellspacing='0' style='background:#f8fafc; border-radius:12px; padding:18px; margin:20px 0; border:1px solid #e2e8f0;'>
+                <tr><td style='padding:6px 0; color:#64748b; font-size:13px; font-weight:700;'>De:</td><td style='padding:6px 0; color:#0f172a; font-weight:700;'>{$nomEsc}</td></tr>
+                <tr><td style='padding:6px 0; color:#64748b; font-size:13px; font-weight:700;'>Correo:</td><td style='padding:6px 0;'><a href='mailto:{$emailEsc}' style='color:#EF3363;'>{$emailEsc}</a></td></tr>
+                <tr><td style='padding:6px 0; color:#64748b; font-size:13px; font-weight:700;'>Asunto:</td><td style='padding:6px 0; color:#EF3363; font-weight:800;'>{$asuntoEsc}</td></tr>
             </table>
 
-            <div style='background:#162032; padding:18px; border-radius:12px; border-left:4px solid #EF3363; margin-top:16px;'>
+            <div style='background:#f1f5f9; padding:18px; border-radius:12px; border-left:4px solid #EF3363; margin-top:16px;'>
                 <strong style='color:#EF3363; font-size:13px; text-transform:uppercase; letter-spacing:0.05em;'>Mensaje:</strong>
-                <p style='color:#e2e8f0; margin:10px 0 0; line-height:1.7; white-space:pre-wrap;'>{$msgEsc}</p>
+                <p style='color:#334155; margin:10px 0 0; line-height:1.7; white-space:pre-wrap;'>{$msgEsc}</p>
             </div>
         ";
         $badgeText = 'Formulario de Contacto';
