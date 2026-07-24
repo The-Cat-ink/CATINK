@@ -154,11 +154,12 @@ $gruposIconos = iconosCategoriaPorGrupo();
                             <?php if($ACL['editar'] || $ACL['eliminar']): ?>
                                 <th>Acciones</th>
                             <?php endif; ?>
+                            <th class="col-fill" aria-hidden="true"></th>
                         </tr>
                     </thead>
                     <tbody id="categoriasBody">
                         <?php if(empty($categorias)): ?>
-                            <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron categorías.</td></tr>
+                            <tr><td colspan="7" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron categorías.</td></tr>
                         <?php else: ?>
                             <?php foreach($categorias as $row):
                                 $icono    = sanearIconoCategoria($row['icono'] ?? null);
@@ -212,6 +213,7 @@ $gruposIconos = iconosCategoriaPorGrupo();
                                         </div>
                                     </td>
                                 <?php endif; ?>
+                                <td class="col-fill"></td>
                             </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -329,19 +331,14 @@ $gruposIconos = iconosCategoriaPorGrupo();
 }
 .cats-config .icono-switch { justify-content: flex-start; }
 
-/* ── Tabla: repartir el ancho para que no queden huecos enormes ──────
-   La columna Nombre se lleva el espacio sobrante; las demas se ajustan a su
-   contenido y se centran, en vez de quedar dispersas a lo ancho. */
+/* ── Tabla: columnas juntas, sin huecos entre ellas ─────────────────
+   Las columnas con contenido se ajustan a su ancho natural y una ultima
+   columna vacia (.col-fill) absorbe todo el espacio sobrante. Asi no queda
+   un hueco muerto entre Nombre y Total: el sobrante se va al extremo derecho.
+   Las filas siguen ocupando el 100%, por lo que el hover cubre todo el ancho. */
 #categoriasTable th,
 #categoriasTable td { white-space: nowrap; }
-#categoriasTable th:nth-child(3),
-#categoriasTable td:nth-child(3) { width: 100%; }   /* Nombre: toma lo que sobra */
-#categoriasTable th:nth-child(4),
-#categoriasTable td:nth-child(4),
-#categoriasTable th:nth-child(5),
-#categoriasTable td:nth-child(5),
-#categoriasTable th:nth-child(6),
-#categoriasTable td:nth-child(6) { text-align: center; }
+#categoriasTable .col-fill { width: 100%; padding: 0; }
 
 .sortable-ghost {
     opacity: 0.4;
