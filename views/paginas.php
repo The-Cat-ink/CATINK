@@ -125,12 +125,12 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle m-0" style="color:var(--text);">
-                            <thead style="background:rgba(0,0,0,0.02); border-bottom:1px solid var(--border);">
+                        <table class="table table-hover align-middle m-0 paginas-table" style="color:var(--text);">
+                            <thead>
                                 <tr>
-                                    <th style="padding:12px 18px; font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted);">Sección / Página</th>
-                                    <th style="padding:12px 18px; font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted);">Estado</th>
-                                    <th style="padding:12px 18px; font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); text-align:right;">Acciones</th>
+                                    <th>Sección / Página</th>
+                                    <th>Estado</th>
+                                    <th style="text-align:right;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -398,6 +398,21 @@
 </div>
 
 <style>
+/* ── Estilos de Tabla Adaptables al Tema ──────────────────────── */
+.paginas-table thead th {
+    background: rgba(0, 0, 0, 0.03) !important;
+    color: var(--text) !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 12px 18px !important;
+}
+[data-bs-theme="dark"] .paginas-table thead th {
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
 /* ── Layout de dos columnas ──────────────────────────────────── */
 .paginas-layout-grid {
     display: grid;
