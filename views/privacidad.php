@@ -131,4 +131,88 @@ $meta = json_decode($row['meta_json'] ?? '', true) ?: [];
 
 </div>
 
+<script>
+(function() {
+    function buildLegalTOC() {
+        const editor = document.querySelector('.legal-content .ql-editor');
+        const navList = document.querySelector('.legal-nav-list');
+        const sidebar = document.querySelector('.legal-sidebar');
+        if (!editor || !navList) return;
+
+        let headings = Array.from(editor.querySelectorAll('h1, h2, h3, h4'));
+        if (headings.length === 0) {
+            headings = Array.from(editor.querySelectorAll('p strong')).map(el => el.closest('p')).filter(Boolean);
+        }
+
+        if (headings.length === 0) {
+            if (sidebar) sidebar.style.display = 'none';
+            return;
+        }
+
+        if (sidebar) sidebar.style.display = 'block';
+        navList.innerHTML = '';
+
+        headings.forEach((h, index) => {
+            const rawText = (h.textContent || '').trim();
+            if (!rawText) return;
+
+            const id = 'sec-priv-' + (index + 1);
+            h.id = id;
+            h.style.scrollMarginTop = '110px';
+
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#' + id;
+            a.innerHTML = '<i class="bi bi-dot"></i> ' + (rawText.length > 38 ? rawText.substring(0, 35) + '...' : rawText);
+            a.title = rawText;
+
+            a.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.getElementById(id);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+
+            li.appendChild(a);
+            navList.appendChild(li);
+        });
+
+        function updateActiveOnScroll() {
+            let activeId = '';
+            headings.forEach(h => {
+                const rect = h.getBoundingClientRect();
+                if (rect.top <= 150) {
+                    activeId = h.id;
+                }
+            });
+
+            navList.querySelectorAll('a').forEach(a => {
+                if (activeId && a.getAttribute('href') === '#' + activeId) {
+                    a.style.color = '#6366f1';
+                    a.style.borderLeftColor = '#6366f1';
+                    a.style.background = 'rgba(99,102,241,0.08)';
+                } else {
+                    a.style.color = '';
+                    a.style.borderLeftColor = '';
+                    a.style.background = '';
+                }
+            });
+        }
+
+        window.removeEventListener('scroll', updateActiveOnScroll);
+        window.addEventListener('scroll', updateActiveOnScroll);
+        updateActiveOnScroll();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', buildLegalTOC);
+    } else {
+        buildLegalTOC();
+    }
+    document.addEventListener('turbo:load', buildLegalTOC);
+    document.addEventListener('turbo:render', buildLegalTOC);
+})();
+</script>
+
 <?php include("./../layout/footer.php"); ?>
