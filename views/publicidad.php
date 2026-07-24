@@ -71,7 +71,7 @@
 
     <!-- ── TARJETAS DE ESTADÍSTICAS RÁPIDAS ────────────────────── -->
     <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
                 <div class="d-flex align-items-center gap-3">
                     <div style="width:44px; height:44px; border-radius:12px; background:rgba(99,102,241,0.12); color:#6366f1; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
@@ -85,7 +85,7 @@
             </div>
         </div>
 
-        <div class="col-6 col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
                 <div class="d-flex align-items-center gap-3">
                     <div style="width:44px; height:44px; border-radius:12px; background:rgba(16,185,129,0.12); color:#10b981; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
@@ -99,7 +99,7 @@
             </div>
         </div>
 
-        <div class="col-6 col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
                 <div class="d-flex align-items-center gap-3">
                     <div style="width:44px; height:44px; border-radius:12px; background:rgba(245,158,11,0.12); color:#f59e0b; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
@@ -113,7 +113,7 @@
             </div>
         </div>
 
-        <div class="col-6 col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
                 <div class="d-flex align-items-center gap-3">
                     <div style="width:44px; height:44px; border-radius:12px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
@@ -161,11 +161,11 @@
                         <tr>
                             <th style="width:120px;">Banner</th>
                             <th>Campaña & Enlace</th>
-                            <th style="width:160px;">Tipo de Elemento</th>
+                            <th style="width:170px;">Tipo de Elemento</th>
                             <th style="width:140px;">Estado</th>
                             <th style="width:200px;">Vigencia</th>
                             <?php if(!empty($ACL['editar']) || !empty($ACL['eliminar']) || !empty($ACL['leer'])): ?>
-                                <th style="width:130px; text-align:right;">Acciones</th>
+                                <th style="width:140px; text-align:right;">Acciones</th>
                             <?php endif; ?>
                         </tr>
                     </thead>
@@ -192,7 +192,7 @@
                                             <?= htmlspecialchars($pub['titulo']) ?>
                                         </strong>
                                         <?php if(!empty($pub['url'])): ?>
-                                            <a href="<?= htmlspecialchars($pub['url']) ?>" target="_blank" rel="noopener" style="font-size:0.78rem; font-weight:700; color:var(--accent); text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                                            <a href="<?= htmlspecialchars($pub['url']) ?>" target="_blank" rel="noopener" style="font-size:0.78rem; font-weight:700; color:var(--accent); text-decoration:none; display:inline-flex; align-items:center; gap:4px; word-break:break-all;">
                                                 <?= htmlspecialchars(mb_strimwidth($pub['url'], 0, 45, '...')) ?> <i class="bi bi-box-arrow-up-right" style="font-size:0.7rem;"></i>
                                             </a>
                                         <?php else: ?>
@@ -200,35 +200,35 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <span class="badge" style="background:var(--bg); color:var(--text); border:1px solid var(--border); font-size:0.78rem; font-weight:700; padding:6px 10px; border-radius:8px;">
+                                        <span class="badge" style="background:var(--bg); color:var(--text); border:1px solid var(--border); font-size:0.78rem; font-weight:700; padding:6px 10px; border-radius:8px; white-space:nowrap;">
                                             <i class="bi <?= $pub['tipo'] == 1 ? 'bi-aspect-ratio-fill text-accent' : 'bi-square-fill text-warning' ?> me-1"></i>
                                             <?= $pub['tipo'] == 1 ? 'Banner Largo' : 'Banner Cuadrado' ?>
                                         </span>
                                     </td>
                                     <td>
                                         <?php if($estado === 'activa'): ?>
-                                            <span class="badge" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px;">
+                                            <span class="badge" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px; white-space:nowrap;">
                                                 <i class="bi bi-circle-fill" style="font-size:0.4rem; vertical-align:middle; margin-right:4px;"></i> Activa
                                             </span>
                                         <?php elseif($estado === 'programada'): ?>
-                                            <span class="badge" style="background:rgba(245,158,11,0.12); color:#f59e0b; border:1px solid rgba(245,158,11,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px;">
+                                            <span class="badge" style="background:rgba(245,158,11,0.12); color:#f59e0b; border:1px solid rgba(245,158,11,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px; white-space:nowrap;">
                                                 <i class="bi bi-clock-fill me-1"></i> Programada
                                             </span>
                                         <?php else: ?>
-                                            <span class="badge" style="background:rgba(239,51,99,0.12); color:var(--accent); border:1px solid rgba(239,51,99,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px;">
+                                            <span class="badge" style="background:rgba(239,51,99,0.12); color:var(--accent); border:1px solid rgba(239,51,99,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px; white-space:nowrap;">
                                                 <i class="bi bi-stop-circle-fill me-1"></i> Vencida
                                             </span>
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <div style="font-size:0.8rem; font-weight:600; color:var(--text);">
+                                        <div style="font-size:0.8rem; font-weight:600; color:var(--text); white-space:nowrap;">
                                             <div><i class="bi bi-calendar-event me-1 text-muted"></i> <?= date("d/m/Y", strtotime($pub['fecha_inicio'])) ?></div>
                                             <div style="color:var(--muted); font-size:0.75rem;"><i class="bi bi-calendar-check me-1"></i> <?= date("d/m/Y", strtotime($pub['fecha_fin'])) ?></div>
                                         </div>
                                     </td>
                                     <?php if(!empty($ACL['editar']) || !empty($ACL['eliminar']) || !empty($ACL['leer'])): ?>
                                         <td style="text-align:right;">
-                                            <div class="d-inline-flex gap-1">
+                                            <div class="d-inline-flex gap-1 flex-nowrap align-items-center justify-content-end" style="white-space:nowrap;">
                                                 <?php if($ACL['editar']): ?>
                                                     <a href="editarp.php?id=<?= $pub['id_pub'] ?>" class="btn btn-sm btn-outline-secondary" style="border-radius:8px; width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:var(--bg);" title="Editar">
                                                         <i class="bi bi-pencil-square"></i>
