@@ -158,7 +158,7 @@ $horario = $meta['horario'] ?? [
 <!-- ═══ HERO ════════════════════════════════════════════════════════ -->
 <section class="cnt-hero">
     <div class="cnt-hero-inner">
-        <div class="cnt-hero-eyebrow"><i class="bi bi-chat-heart-fill"></i> Hablemos</div>
+        <div class="cnt-hero-eyebrow"><i class="bi bi-chat-heart-fill"></i> <?= htmlspecialchars($meta['eyebrow'] ?? 'Hablemos') ?></div>
         <h1 class="cnt-hero-title"><?= htmlspecialchars($meta['hero_title'] ?? 'Contáctanos') ?></h1>
         <p class="cnt-hero-sub"><?= htmlspecialchars($meta['hero_sub'] ?? '¿Quieres colaborar, tienes una propuesta, necesitas información o simplemente quieres saludar? Escríbenos, estamos aquí.') ?></p>
     </div>
@@ -170,8 +170,8 @@ $horario = $meta['horario'] ?? [
 
         <!-- Info -->
         <div>
-            <h2 class="cnt-info-title">Estamos para ayudarte</h2>
-            <p class="cnt-info-sub">Ya sea para colaboraciones, publicidad, press kits o preguntas generales, nuestro equipo responde en menos de 24 horas.</p>
+            <h2 class="cnt-info-title"><?= htmlspecialchars($meta['info_title'] ?? 'Estamos para ayudarte') ?></h2>
+            <p class="cnt-info-sub"><?= htmlspecialchars($meta['info_sub'] ?? 'Ya sea para colaboraciones, publicidad, press kits o preguntas generales, nuestro equipo responde en menos de 24 horas.') ?></p>
 
             <ul class="cnt-contact-list">
                 <li class="cnt-contact-item">
@@ -217,8 +217,8 @@ $horario = $meta['horario'] ?? [
         <!-- Formulario -->
         <div>
             <div class="cnt-form-card">
-                <h3 class="cnt-form-title">Envíanos un mensaje</h3>
-                <p class="cnt-form-sub">Responderemos a tu correo en menos de 24 horas hábiles.</p>
+                <h3 class="cnt-form-title"><?= htmlspecialchars($meta['form_title'] ?? 'Envíanos un mensaje') ?></h3>
+                <p class="cnt-form-sub"><?= htmlspecialchars($meta['form_sub'] ?? 'Responderemos a tu correo en menos de 24 horas hábiles.') ?></p>
 
                 <div class="cnt-toast-msg" id="cntToast"></div>
 

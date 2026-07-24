@@ -287,7 +287,7 @@ foreach ($filas as $i => $fila_logos) {
 <section class="nos-hero">
     <div class="nos-hero-inner">
         <div class="nos-hero-eyebrow">
-            <i class="bi bi-stars"></i> Quiénes Somos
+            <i class="bi bi-stars"></i> <?= htmlspecialchars($meta['eyebrow'] ?? 'Quiénes Somos') ?>
         </div>
         <h1 class="nos-hero-title">
             <?= htmlspecialchars($meta['hero_title'] ?? 'El medio geek que México necesitaba') ?>

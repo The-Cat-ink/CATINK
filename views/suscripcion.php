@@ -152,7 +152,7 @@ $beneficios = $meta['beneficios'] ?? [
 
 <!-- Hero -->
 <section class="sus-hero">
-    <div class="sus-hero-eyebrow"><i class="bi bi-envelope-heart-fill"></i> Newsletter</div>
+    <div class="sus-hero-eyebrow"><i class="bi bi-envelope-heart-fill"></i> <?= htmlspecialchars($meta['eyebrow'] ?? 'Newsletter') ?></div>
     <h1 class="sus-hero-title"><?= htmlspecialchars($meta['hero_title'] ?? 'Únete a la comunidad CatInk') ?></h1>
     <p class="sus-hero-sub"><?= htmlspecialchars($meta['hero_sub'] ?? 'Recibe contenido exclusivo de Anime, Manga, Cine y Videojuegos directamente en tu correo. Sin spam, solo lo mejor.') ?></p>
 </section>

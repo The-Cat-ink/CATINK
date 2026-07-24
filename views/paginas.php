@@ -37,7 +37,8 @@
         'privacidad'  => ['icon' => 'bi-shield-lock-fill',       'color' => '#8b5cf6', 'bg' => 'rgba(139,92,246,0.12)', 'url' => siteUrl() . '/privacidad',  'label' => 'Aviso de Privacidad'],
         'cookies'     => ['icon' => 'bi-cookie',                 'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.12)', 'url' => siteUrl() . '/cookies',    'label' => 'Política de Cookies'],
         'contacto'    => ['icon' => 'bi-envelope-heart-fill',    'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.12)', 'url' => siteUrl() . '/contactanos', 'label' => 'Contáctanos'],
-        'suscripcion' => ['icon' => 'bi-bell-fill',              'color' => '#ec4899', 'bg' => 'rgba(236,72,153,0.12)', 'url' => siteUrl() . '/suscripcion', 'label' => 'Suscríbete']
+        'suscripcion' => ['icon' => 'bi-bell-fill',              'color' => '#ec4899', 'bg' => 'rgba(236,72,153,0.12)', 'url' => siteUrl() . '/suscripcion', 'label' => 'Suscríbete'],
+        'unete'       => ['icon' => 'bi-briefcase-fill',         'color' => '#f43f5e', 'bg' => 'rgba(244,63,94,0.12)', 'url' => siteUrl() . '/unete',       'label' => 'Únete al Equipo']
     ];
 ?>
 <div class="container-fluid px-3 py-2">
@@ -317,6 +318,7 @@
                     <option value="cookies">Política de cookies</option>
                     <option value="suscripcion">Suscríbete</option>
                     <option value="contacto">Contáctanos</option>
+                    <option value="unete">Únete al Equipo</option>
                 </select>
             </div>
 
@@ -842,7 +844,11 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
             html = `
                 <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Configuración de la Página de Contacto</h5>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Etiqueta Eyebrow</label>
+                        <input type="text" class="cn-input meta-field" data-key="eyebrow" value="${meta.eyebrow || 'HABLEMOS'}">
+                    </div>
                     <div>
                         <label style="font-size:0.8rem; font-weight:700;">Hero Título</label>
                         <input type="text" class="cn-input meta-field" data-key="hero_title" value="${meta.hero_title || 'Contáctanos'}">
@@ -851,6 +857,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label style="font-size:0.8rem; font-weight:700;">Hero Subtítulo</label>
                         <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
                     </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Título Columna Info</label>
+                        <input type="text" class="cn-input meta-field" data-key="info_title" value="${meta.info_title || 'Estamos para ayudarte'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Subtítulo Columna Info</label>
+                        <input type="text" class="cn-input meta-field" data-key="info_sub" value="${meta.info_sub || ''}">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Título Formulario</label>
+                        <input type="text" class="cn-input meta-field" data-key="form_title" value="${meta.form_title || 'Envíanos un mensaje'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Subtítulo Formulario</label>
+                        <input type="text" class="cn-input meta-field" data-key="form_sub" value="${meta.form_sub || ''}">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
                     <div>
                         <label style="font-size:0.8rem; font-weight:700;">Email General</label>
                         <input type="text" class="cn-input meta-field" data-key="email_general" value="${meta.email_general || 'contacto@catink.com.mx'}">
@@ -859,10 +887,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label style="font-size:0.8rem; font-weight:700;">Email Publicidad</label>
                         <input type="text" class="cn-input meta-field" data-key="email_publicidad" value="${meta.email_publicidad || 'contacto@catink.com.mx'}">
                     </div>
-                </div>
-                <div style="margin-bottom:12px;">
-                    <label style="font-size:0.8rem; font-weight:700;">Ubicación</label>
-                    <input type="text" class="cn-input meta-field" data-key="ubicacion" value="${meta.ubicacion || 'Toluca de Lerdo, Estado de México, México'}">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Ubicación</label>
+                        <input type="text" class="cn-input meta-field" data-key="ubicacion" value="${meta.ubicacion || 'Toluca de Lerdo, Estado de México, México'}">
+                    </div>
                 </div>
                 <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">Horario de Atención</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:6px;">
@@ -878,6 +906,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     <input type="text" class="cn-input meta-field" data-key="horario_dom_hora" value="${hor[2]?.hora || 'Cerrado'}">
                 </div>
             `;
+        } else if (pageName === 'unete') {
+            html = `
+                <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Configuración de "Únete al Equipo"</h5>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Etiqueta Eyebrow</label>
+                        <input type="text" class="cn-input meta-field" data-key="eyebrow" value="${meta.eyebrow || 'Únete al Equipo'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Título</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_title" value="${meta.hero_title || 'Vacantes Abiertas'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Subtítulo</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
+                    </div>
+                </div>
+            `;
         } else {
             html = `<p style="font-size:0.85rem; color:var(--muted);">No hay opciones adicionales configurables para esta sección.</p>`;
         }
@@ -888,7 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ocultar / Mostrar el editor de texto HTML según si la sección lo requiere
         const editorGrp = document.getElementById("editorGroupContainer");
         if (editorGrp) {
-            if (pageName === 'suscripcion' || pageName === 'contacto') {
+            if (pageName === 'suscripcion' || pageName === 'contacto' || pageName === 'unete') {
                 editorGrp.style.display = 'none';
             } else {
                 editorGrp.style.display = 'block';
