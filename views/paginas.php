@@ -8,8 +8,18 @@
     }
     require_once("./../views/helpers/urlhelper.php");
 
+    // Asegurar que existan las 6 páginas obligatorias en la BD
+    $seccionesObligatorias = ['nosotros', 'terminos', 'privacidad', 'cookies', 'contacto', 'suscripcion'];
+    foreach ($seccionesObligatorias as $sec) {
+        $checkSec = @$con->query("SELECT id_pag FROM paginas WHERE nombre_pag='$sec'");
+        if ($checkSec && $checkSec->num_rows === 0) {
+            @$con->query("INSERT INTO paginas (nombre_pag, contenido_pag) VALUES ('$sec', '')");
+        }
+    }
+
     // Logos de marcas
-    $logos = $con->query("SELECT * FROM logos_marcas ORDER BY orden ASC, creado ASC")->fetch_all(MYSQLI_ASSOC);
+    $logosRes = @$con->query("SELECT * FROM logos_marcas ORDER BY orden ASC, creado ASC");
+    $logos    = ($logosRes && method_exists($logosRes, 'fetch_all')) ? $logosRes->fetch_all(MYSQLI_ASSOC) : [];
 
     $sql = "SELECT * FROM paginas";
     $result = $con->query($sql);
