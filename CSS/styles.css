@@ -503,8 +503,13 @@ h2 {
    hamburguesa y en la barra horizontal de escritorio, asi que no se puede decidir
    solo con el breakpoint: header.php le pone .cat-icons-movil y/o
    .cat-icons-escritorio segun los interruptores del panel, y cada media query
-   activa el suyo. Sin clase, oculto. */
-.nav-cat-icon {
+   activa el suyo. Sin clase, oculto.
+   Se usa .navbar-nav .nav-cat-icon (0,2,0) y no solo .nav-cat-icon (0,1,0)
+   porque mas abajo hay una regla global `.bi { display:inline-block }` que, al
+   tener la misma especificidad y venir despues, ganaba y dejaba los glifos
+   siempre visibles (las imagenes <img> si obedecian por no llevar .bi). Las
+   reglas de mostrar usan .navbar-nav.cat-icons-* (0,3,0) y siguen ganando. */
+.navbar-nav .nav-cat-icon {
   display: none;
 }
 /* Imagen subida como icono: se encaja en el mismo cuadro que el glifo. */
