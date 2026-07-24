@@ -1,14 +1,59 @@
 <?php require_once(__DIR__ . "/../views/helpers/urlhelper.php"); ?>
-<!-- Modal de cookies -->
-<div id="cookie-modal" class="cookie-modal" style="display:none;">
-  <div class="cookie-content">
-    <h2>Uso de Cookies</h2>
-    <p>Utilizamos cookies para publicidad, análisis y contenido embebido. 
-       Puede aceptar o rechazar el uso de cookies según su preferencia.</p>
-    <div class="cookie-buttons">
-      <button onclick="aceptarCookies()">Aceptar</button>
-      <button onclick="negarCookies()">Negar</button>
-      <a href="<?= basePath() . '/cookies' ?>" class="leer-mas">Leer más</a>
+<!-- Banner Flotante de Cookies Premium CatInk -->
+<div id="cookie-modal" class="cn-cookie-banner" style="display:none;" aria-label="Aviso de Cookies">
+  <div class="cn-cookie-banner-inner">
+    <div class="cn-cookie-header">
+      <div class="cn-cookie-badge-icon">
+        <i class="bi bi-cookie"></i>
+      </div>
+      <div>
+        <h4 class="cn-cookie-title">Privacidad & Cookies en CatInk</h4>
+        <p class="cn-cookie-desc">
+          Utilizamos cookies para mejorar tu experiencia de lectura, analizar nuestro tráfico y adaptar la publicidad a tus gustos.
+        </p>
+      </div>
+    </div>
+
+    <!-- Panel de Preferencias Desplegable -->
+    <div id="cn-cookie-preferences" class="cn-cookie-prefs" style="display:none;">
+      <div class="cn-cookie-pref-item">
+        <div class="cn-cookie-pref-info">
+          <strong><i class="bi bi-shield-check text-success"></i> Esenciales (Técnicas)</strong>
+          <span>Requeridas para la sesión, lectura sin conexión (PWA) y seguridad.</span>
+        </div>
+        <input type="checkbox" checked disabled style="accent-color:var(--accent); width:18px; height:18px;">
+      </div>
+      <div class="cn-cookie-pref-item">
+        <div class="cn-cookie-pref-info">
+          <strong><i class="bi bi-bar-chart-line-fill text-primary"></i> Métricas & Analítica</strong>
+          <span>Nos ayudan a entender qué noticias son las más leídas y populares.</span>
+        </div>
+        <input type="checkbox" id="ck-pref-analytics" checked style="accent-color:var(--accent); width:18px; height:18px; cursor:pointer;">
+      </div>
+      <div class="cn-cookie-pref-item">
+        <div class="cn-cookie-pref-info">
+          <strong><i class="bi bi-badge-ad-fill text-accent"></i> Publicidad & Embebidos</strong>
+          <span>Permite ver reproductores de video (YouTube, X) y anuncios personalizados.</span>
+        </div>
+        <input type="checkbox" id="ck-pref-marketing" checked style="accent-color:var(--accent); width:18px; height:18px; cursor:pointer;">
+      </div>
+    </div>
+
+    <div class="cn-cookie-footer">
+      <div class="cn-cookie-links">
+        <a href="<?= basePath() . '/cookies' ?>"><i class="bi bi-file-earmark-text me-1"></i> Política de Cookies</a>
+      </div>
+      <div class="cn-cookie-actions">
+        <button type="button" class="btn-ck-outline" id="btn-ck-toggle-prefs" onclick="toggleCookiePrefs()">
+          <i class="bi bi-sliders me-1"></i> Preferencias
+        </button>
+        <button type="button" class="btn-ck-secondary" onclick="negarCookies()">
+          Solo necesarias
+        </button>
+        <button type="button" class="btn-ck-primary" onclick="aceptarCookies()">
+          <i class="bi bi-check2-circle me-1"></i> Aceptar todas
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -171,6 +216,18 @@
   }
 </script>
 <script>
+  function toggleCookiePrefs() {
+      const prefs = document.getElementById("cn-cookie-preferences");
+      const btn = document.getElementById("btn-ck-toggle-prefs");
+      if (prefs) {
+          const isHidden = (prefs.style.display === "none");
+          prefs.style.display = isHidden ? "flex" : "none";
+          if (btn) {
+              btn.innerHTML = isHidden ? '<i class="bi bi-chevron-up me-1"></i> Ocultar' : '<i class="bi bi-sliders me-1"></i> Preferencias';
+          }
+      }
+  }
+
   function handleInstagramAndCookies() {
       if(window.instgrm){
           window.instgrm.Embeds.process();
@@ -181,7 +238,7 @@
               modal.style.display = "none";
               if(document.cookie.includes("cookies_decision=aceptadas")) cargarCookies();
           } else {
-              modal.style.display = "flex";
+              modal.style.display = "block";
           }
       }
   }
@@ -192,7 +249,7 @@
       document.cookie = "cookies_decision=aceptadas; path=/; max-age=" + (60*60*24*365);
       ocultarModal();
       cargarCookies();
-      location.reload(); // para contenido embebido
+      location.reload();
   }
 
   function negarCookies(){
@@ -202,7 +259,10 @@
 
   function ocultarModal(){
       const modal = document.getElementById("cookie-modal");
-      if(modal) modal.style.display = "none";
+      if(modal) {
+          modal.style.animation = "cookieBannerSlideUp 0.3s reverse ease-in";
+          setTimeout(() => { modal.style.display = "none"; }, 280);
+      }
   }
 
   function cargarCookies(){
