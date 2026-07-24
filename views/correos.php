@@ -33,92 +33,156 @@
     $enviados = count(array_filter($correos, fn($c) => isset($c['enviado']) && $c['enviado'] == 1));
     $pendientes = $totalCorreos - $enviados;
 ?>
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 12px;">
-        <h1 style="margin:0;">Gestión de Correos Publicitarios</h1>
-        <form method="GET" class="admin-search-form" style="display:flex; align-items:center; gap:8px;">
-            <i class="bi bi-search admin-search-icon"></i>
-            <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar por título o contenido..." class="admin-search-input">
-            <?php if($q): ?><a href="./correos.php" class="admin-search-clear">&times;</a><?php endif; ?>
+<div class="container-fluid px-3 py-2">
+
+    <!-- ── ENCABEZADO Y BÚSQUEDA ───────────────────────────────── -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h1 style="font-weight:900; font-size:1.8rem; margin:0; color:var(--text); letter-spacing:-0.02em;">
+                    Gestión de Correos Publicitarios
+                </h1>
+                <span class="badge" style="background:rgba(239,51,99,0.12); color:var(--accent); border:1px solid rgba(239,51,99,0.25); border-radius:20px; padding:4px 10px; font-weight:800; font-size:0.72rem;">
+                    <?= $totalCorreos ?> Plantillas / Envíos
+                </span>
+            </div>
+            <p class="text-muted m-0" style="font-size:0.88rem;">Crea y gestiona plantillas personalizadas de correo masivo para campañas o avisos.</p>
+        </div>
+
+        <form method="GET" class="d-flex align-items-center gap-2 m-0">
+            <div style="position:relative; width:280px;">
+                <i class="bi bi-search" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:0.9rem;"></i>
+                <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar por título..." class="cn-input" style="padding-left:38px; padding-right:<?= $q ? '36px' : '14px' ?>; border-radius:12px; font-size:0.88rem;">
+                <?php if($q): ?>
+                    <a href="./correos.php" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--muted); text-decoration:none; font-weight:bold; font-size:1.1rem;">&times;</a>
+                <?php endif; ?>
+            </div>
         </form>
     </div>
 
-    <!-- Estadísticas rápidas -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(99,102,241,0.1); color: #6366f1;"><i class="bi bi-envelope"></i></div>
-            <div class="stat-info">
-                <span class="stat-value"><?= $totalCorreos ?></span>
-                <span class="stat-label">Total Correos</span>
+    <!-- ── TARJETAS DE ESTADÍSTICAS RÁPIDAS ────────────────────── -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4">
+            <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(99,102,241,0.12); color:#6366f1; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
+                        <i class="bi bi-envelope-fill"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $totalCorreos ?></div>
+                        <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Total Correos</div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: #10b981;"><i class="bi bi-send-check"></i></div>
-            <div class="stat-info">
-                <span class="stat-value"><?= $enviados ?></span>
-                <span class="stat-label">Enviados</span>
+
+        <div class="col-6 col-md-4">
+            <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(16,185,129,0.12); color:#10b981; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
+                        <i class="bi bi-send-check-fill"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $enviados ?></div>
+                        <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Enviados</div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(245,158,11,0.1); color: #f59e0b;"><i class="bi bi-hourglass-split"></i></div>
-            <div class="stat-info">
-                <span class="stat-value"><?= $pendientes ?></span>
-                <span class="stat-label">Pendientes</span>
+
+        <div class="col-6 col-md-4">
+            <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(245,158,11,0.12); color:#f59e0b; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $pendientes ?></div>
+                        <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Pendientes</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Toolbar -->
-    <div class="contenidos-toolbar">
-        <div class="contenidos-tabs">
-            <span class="tab-btn active">Todos los correos</span>
-        </div>
-        <div class="contenidos-actions">
-            <?php if ($ACL['crear']): ?>
-                <a href="correo_pub.php" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Nuevo Correo</a>
-            <?php endif; ?>
-        </div>
+    <!-- ── TOOLBAR DE ACCIÓN ───────────────────────────────────── -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+        <h5 class="m-0 font-weight-bold" style="font-weight:800; font-size:1.05rem; color:var(--text);">
+            Listado de Correos Registrados
+        </h5>
+
+        <?php if ($ACL['crear']): ?>
+            <a href="correo_pub.php" class="btn btn-accent px-4 py-2" style="border-radius:12px; font-weight:800; font-size:0.9rem; box-shadow:0 4px 15px rgba(239,51,99,0.3);">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo Correo Publicitario
+            </a>
+        <?php endif; ?>
     </div>
 
-    <div class="card shadow-sm">
+    <!-- ── TABLA DE CORREOS ────────────────────────────────────── -->
+    <div class="card border-0 shadow-sm mb-4" style="background:var(--card-bg); border-radius:18px; border:1px solid var(--border)!important; overflow:hidden;">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="contenidos-table">
+                <table class="table table-hover align-middle m-0 correos-table" style="color:var(--text);">
                     <thead>
                         <tr>
-                            <th>Título</th>
-                            <th>Contenido Corto</th>
-                            <th>Estado Envío</th>
-                            <th>Programado Para</th>
+                            <th>Título del Asunto</th>
+                            <th>Vista Previa del Contenido</th>
+                            <th style="width:140px;">Estado Envío</th>
+                            <th style="width:170px;">Programado Para</th>
                             <?php if(!empty($ACL['editar']) || !empty($ACL['eliminar'])): ?>
-                                <th>Acciones</th>
+                                <th style="width:110px; text-align:right;">Acciones</th>
                             <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if(empty($correos)): ?>
-                            <tr><td colspan="5" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron correos publicitarios.</td></tr>
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="bi bi-envelope-paper" style="font-size:2.5rem; opacity:0.3; display:block; margin-bottom:8px;"></i>
+                                    No se encontraron correos publicitarios registrados.
+                                </td>
+                            </tr>
                         <?php else: ?>
                             <?php foreach($correos as $correo): ?>
                                 <tr>
-                                    <td><strong class="table-title"><?= htmlspecialchars($correo['titulo']) ?></strong></td>
-                                    <td><span style="font-size:0.85rem; color:var(--muted);"><?= mb_strimwidth(htmlspecialchars(strip_tags($correo['contenido'])), 0, 50, '...') ?></span></td>
+                                    <td>
+                                        <strong style="font-weight:800; font-size:0.92rem; color:var(--text);">
+                                            <?= htmlspecialchars($correo['titulo']) ?>
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted" style="font-size:0.82rem;">
+                                            <?= mb_strimwidth(htmlspecialchars(strip_tags($correo['contenido'])), 0, 60, '...') ?>
+                                        </span>
+                                    </td>
                                     <td>
                                         <?php if(($correo['enviado'] ?? 0) == 1): ?>
-                                            <span class="estado-badge estado-publicado"><i class="bi bi-check-circle-fill"></i> Enviado</span>
+                                            <span class="badge" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px;">
+                                                <i class="bi bi-check-circle-fill me-1"></i> Enviado
+                                            </span>
                                         <?php else: ?>
-                                            <span class="estado-badge estado-por_publicar"><i class="bi bi-clock-fill"></i> Pendiente</span>
+                                            <span class="badge" style="background:rgba(245,158,11,0.12); color:#f59e0b; border:1px solid rgba(245,158,11,0.25); font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:20px;">
+                                                <i class="bi bi-clock-fill me-1"></i> Pendiente
+                                            </span>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="table-date"><?= !empty($correo['envio']) ? date('d/m/Y H:i', strtotime($correo['envio'])) : '-' ?></td>
+                                    <td>
+                                        <span style="font-size:0.82rem; font-weight:600; color:var(--muted);">
+                                            <i class="bi bi-calendar-event me-1"></i> <?= !empty($correo['envio']) ? date('d/m/Y H:i', strtotime($correo['envio'])) : '-' ?>
+                                        </span>
+                                    </td>
                                     <?php if(!empty($ACL['editar']) || !empty($ACL['eliminar'])): ?>
-                                        <td>
-                                            <div class="noticias-actions" style="border-top:none; padding:0; justify-content:flex-start;">
+                                        <td style="text-align:right;">
+                                            <div class="d-inline-flex gap-1">
                                                 <?php if(!empty($ACL['editar'])): ?>
-                                                    <a href="correo_pub_edit.php?id=<?= $correo['id_correo'] ?>" class="btn btn-edit" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                                                    <a href="correo_pub_edit.php?id=<?= $correo['id_correo'] ?>" class="btn btn-sm btn-outline-secondary" style="border-radius:8px; width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:var(--bg);" title="Editar">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </a>
                                                 <?php endif;?>
                                                 <?php if(!empty($ACL['eliminar'])): ?>
-                                                    <button type="button" class="btn btn-delete btnEliminarCorreo" data-id="<?= $correo['id_correo'] ?>" title="Eliminar"><i class="bi bi-trash"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger btnEliminarCorreo" data-id="<?= $correo['id_correo'] ?>" style="border-radius:8px; width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:var(--bg);" title="Eliminar">
+                                                        <i class="bi bi-trash-fill"></i>
+                                                    </button>
                                                 <?php endif;?>
                                             </div>
                                         </td>
@@ -133,29 +197,52 @@
     </div>
 </div>
 
-<div id="modalCorreo" class="crop-modal" style="display:none;">
-    <div class="crop-modal-content">
-        <h3><i class="bi bi-trash"></i> Confirmar eliminación</h3>
-        <p style="color:var(--muted); font-size:0.9rem; margin-bottom:15px; margin-top:5px;">
-            ¿Estás seguro de que deseas eliminar este correo publicitario?
-            Esta acción eliminará también su imagen adjunta si existe.
-        </p>
-
-        <form id="modalForm" action="./../controllers/eliminarCorreoPub.php" method="POST">
-            <input type="hidden" name="id" id="modalIdCorreo">
-
-            <div class="crop-actions" style="display:flex; justify-content:flex-end; gap:8px;">
-                <button type="button" class="btn btn-secondary" id="btnCancel">Cancelar</button>
-                <button type="submit" class="btn btn-accent">Eliminar</button>
-            </div>
-        </form>
+<!-- Modal de Confirmación para Eliminar -->
+<div id="modalCorreo" class="modal-nativo" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.6); backdrop-filter:blur(4px); justify-content:center; align-items:center;">
+    <div class="modal-content-nativo" style="max-width:440px; border-radius:18px; background:var(--card-bg); overflow:hidden; margin:auto; border:1px solid var(--border);">
+        <div class="modal-header-nativo" style="padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <h5 class="m-0 font-weight-bold" style="font-weight:800; color:var(--text);"><i class="bi bi-trash-fill text-danger me-2"></i> Confirmar Eliminación</h5>
+            <span id="btnCancel" style="font-size:24px; font-weight:bold; cursor:pointer; color:var(--muted);">&times;</span>
+        </div>
+        <div class="modal-body-nativo" style="padding:20px;">
+            <p style="color:var(--text); font-size:0.9rem; margin-bottom:15px; font-weight:600;">
+                ¿Estás seguro de que deseas eliminar este correo publicitario?
+            </p>
+            <p class="text-muted small mb-4">Esta acción no se puede deshacer y la plantilla junto con su imagen adjunta se eliminarán del servidor.</p>
+            <form id="modalForm" action="./../controllers/eliminarCorreoPub.php" method="POST">
+                <input type="hidden" name="id" id="modalIdCorreo">
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary px-3" id="btnCancelModal" style="border-radius:10px; font-weight:700;">Cancelar</button>
+                    <button type="submit" class="btn btn-danger px-4" style="border-radius:10px; font-weight:800;"><i class="bi bi-trash-fill me-1"></i> Eliminar</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+<style>
+.correos-table thead th {
+    background: rgba(0, 0, 0, 0.03) !important;
+    color: var(--text) !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 12px 16px !important;
+}
+[data-bs-theme="dark"] .correos-table thead th {
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+</style>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById("modalCorreo");
     const modalIdCorreo = document.getElementById("modalIdCorreo");
     const cancelBtn = document.getElementById("btnCancel");
+    const btnCancelModal = document.getElementById("btnCancelModal");
+
     document.querySelectorAll(".btnEliminarCorreo").forEach(btn => {
         btn.addEventListener("click", () => {
             const id = btn.dataset.id;
@@ -163,16 +250,16 @@ document.addEventListener("DOMContentLoaded", () => {
             modal.style.display = "flex";
         });
     });
-    cancelBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-    });
+
+    if(cancelBtn) cancelBtn.addEventListener("click", () => modal.style.display = "none");
+    if(btnCancelModal) btnCancelModal.addEventListener("click", () => modal.style.display = "none");
+
     window.addEventListener("click", (e) => {
         if(e.target === modal){
             modal.style.display = "none";
         }
     });
 
-    // ── NOTIFICACIONES TOAST EN TIEMPO REAL ──
     function showToast(msg, type = '') {
         let container = document.querySelector('.toast-container');
         if (!container) {
@@ -207,4 +294,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 </script>
+
 <?php include("./../layout/footerAdmin.php") ?>
