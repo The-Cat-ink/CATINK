@@ -142,6 +142,64 @@ $horario = $meta['horario'] ?? [
 .cnt-form-btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(239,51,99,0.3); }
 .cnt-form-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
+/* ─── Profile Switcher ─────────────────────────────────────────────── */
+.cnt-profile-toggle {
+    display: flex;
+    background: var(--bg);
+    padding: 5px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+    gap: 6px;
+}
+.cnt-toggle-btn {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.84rem;
+    font-weight: 800;
+    border-radius: 10px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: center;
+}
+.cnt-toggle-btn.active {
+    background: var(--card-bg);
+    color: var(--accent, #EF3363);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    border-color: var(--border);
+}
+.cnt-corp-box {
+    display: none;
+    background: rgba(239, 51, 99, 0.04);
+    border: 1px dashed rgba(239, 51, 99, 0.3);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    animation: fadeInCorp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes fadeInCorp {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.cnt-corp-title {
+    font-size: 0.78rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--accent, #EF3363);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 /* ─── Toast ─────────────────────────────────────────────────────── */
 .cnt-toast-msg {
     display: none; padding: 12px 16px; border-radius: 10px;
@@ -220,12 +278,24 @@ $horario = $meta['horario'] ?? [
                 <h3 class="cnt-form-title"><?= htmlspecialchars($meta['form_title'] ?? 'Envíanos un mensaje') ?></h3>
                 <p class="cnt-form-sub"><?= htmlspecialchars($meta['form_sub'] ?? 'Responderemos a tu correo en menos de 24 horas hábiles.') ?></p>
 
+                <!-- Profile Switcher -->
+                <div class="cnt-profile-toggle">
+                    <button type="button" class="cnt-toggle-btn active" id="btnPerfilPersona" data-profile="persona">
+                        <i class="bi bi-person-fill"></i> Persona / Lector
+                    </button>
+                    <button type="button" class="cnt-toggle-btn" id="btnPerfilEmpresa" data-profile="empresa">
+                        <i class="bi bi-building-fill"></i> Empresa / Marca
+                    </button>
+                </div>
+
                 <div class="cnt-toast-msg" id="cntToast"></div>
 
                 <form id="formContacto" novalidate>
+                    <input type="hidden" name="tipo_contacto" id="cnt-tipo-contacto" value="persona">
+
                     <div class="cnt-form-row">
                         <div class="cnt-form-group">
-                            <label class="cnt-form-label" for="cnt-nombre">Nombre *</label>
+                            <label class="cnt-form-label" for="cnt-nombre">Nombre de contacto *</label>
                             <input type="text" id="cnt-nombre" name="nombre" class="cnt-form-input" placeholder="Tu nombre" required>
                         </div>
                         <div class="cnt-form-group">
@@ -233,8 +303,49 @@ $horario = $meta['horario'] ?? [
                             <input type="email" id="cnt-email" name="email" class="cnt-form-input" placeholder="tu@correo.com" required>
                         </div>
                     </div>
+
+                    <!-- Campos Corporativos para Empresas -->
+                    <div class="cnt-corp-box" id="corporateFields">
+                        <div class="cnt-corp-title">
+                            <i class="bi bi-briefcase-fill"></i> Información Corporativa
+                        </div>
+
+                        <div class="cnt-form-row">
+                            <div class="cnt-form-group">
+                                <label class="cnt-form-label" for="cnt-empresa">Nombre de la Empresa / Marca *</label>
+                                <input type="text" id="cnt-empresa" name="empresa" class="cnt-form-input" placeholder="ej. PlayStation, Crunchyroll...">
+                            </div>
+                            <div class="cnt-form-group">
+                                <label class="cnt-form-label" for="cnt-cargo">Cargo / Puesto</label>
+                                <input type="text" id="cnt-cargo" name="cargo" class="cnt-form-input" placeholder="ej. PR Manager, Mkt">
+                            </div>
+                        </div>
+
+                        <div class="cnt-form-row">
+                            <div class="cnt-form-group">
+                                <label class="cnt-form-label" for="cnt-web">Sitio Web / Redes</label>
+                                <input type="url" id="cnt-web" name="sitio_web" class="cnt-form-input" placeholder="https://empresa.com">
+                            </div>
+                            <div class="cnt-form-group">
+                                <label class="cnt-form-label" for="cnt-telefono">Teléfono / WhatsApp</label>
+                                <input type="tel" id="cnt-telefono" name="telefono" class="cnt-form-input" placeholder="+52 55 0000 0000">
+                            </div>
+                        </div>
+
+                        <div class="cnt-form-group mb-0">
+                            <label class="cnt-form-label" for="cnt-servicio">Servicio / Interés empresarial</label>
+                            <select id="cnt-servicio" name="servicio_interes" class="cnt-form-select">
+                                <option value="Campaña Publicitaria (Banners / Display)">📣 Campaña Publicitaria (Banners / Display)</option>
+                                <option value="Artículo Patrocinado / Reseña">📝 Artículo Patrocinado / Reseña</option>
+                                <option value="Alianza Comercial / Patrocinio">🤝 Alianza Comercial / Patrocinio</option>
+                                <option value="Envíos de Prensa / Press Kit">📰 Envíos de Prensa / Press Kit</option>
+                                <option value="Otro acuerdo corporativo">💼 Otro acuerdo corporativo</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="cnt-form-group">
-                        <label class="cnt-form-label" for="cnt-asunto">Asunto</label>
+                        <label class="cnt-form-label" for="cnt-asunto">Asunto principal</label>
                         <select id="cnt-asunto" name="asunto" class="cnt-form-select">
                             <option value="Colaboración">Colaboración o alianza</option>
                             <option value="Publicidad">Publicidad y marcas</option>
@@ -244,10 +355,12 @@ $horario = $meta['horario'] ?? [
                             <option value="Otro">Otro</option>
                         </select>
                     </div>
+
                     <div class="cnt-form-group">
                         <label class="cnt-form-label" for="cnt-mensaje">Mensaje *</label>
-                        <textarea id="cnt-mensaje" name="mensaje" class="cnt-form-textarea" placeholder="Cuéntanos en qué podemos ayudarte..." required></textarea>
+                        <textarea id="cnt-mensaje" name="mensaje" class="cnt-form-textarea" placeholder="Cuéntanos los detalles de tu propuesta..." required></textarea>
                     </div>
+
                     <button type="submit" class="cnt-form-btn" id="btnEnviarContacto">
                         <i class="bi bi-send-fill"></i> Enviar mensaje
                     </button>
@@ -265,6 +378,35 @@ $horario = $meta['horario'] ?? [
     const form = document.getElementById('formContacto');
     const toast = document.getElementById('cntToast');
     const btn = document.getElementById('btnEnviarContacto');
+
+    const btnPersona = document.getElementById('btnPerfilPersona');
+    const btnEmpresa = document.getElementById('btnPerfilEmpresa');
+    const inputTipo = document.getElementById('cnt-tipo-contacto');
+    const corpBox = document.getElementById('corporateFields');
+    const selectAsunto = document.getElementById('cnt-asunto');
+
+    function setProfile(profile) {
+        if (profile === 'empresa') {
+            btnEmpresa.classList.add('active');
+            btnPersona.classList.remove('active');
+            inputTipo.value = 'empresa';
+            corpBox.style.display = 'block';
+        } else {
+            btnPersona.classList.add('active');
+            btnEmpresa.classList.remove('active');
+            inputTipo.value = 'persona';
+            corpBox.style.display = 'none';
+        }
+    }
+
+    btnPersona?.addEventListener('click', () => setProfile('persona'));
+    btnEmpresa?.addEventListener('click', () => setProfile('empresa'));
+
+    selectAsunto?.addEventListener('change', function() {
+        if (this.value === 'Publicidad' || this.value === 'Prensa') {
+            setProfile('empresa');
+        }
+    });
 
     function showToastMsg(msg, type) {
         toast.textContent = msg;
@@ -287,9 +429,16 @@ $horario = $meta['horario'] ?? [
             const nombre  = document.getElementById('cnt-nombre').value.trim();
             const email   = document.getElementById('cnt-email').value.trim();
             const mensaje = document.getElementById('cnt-mensaje').value.trim();
+            const tipo    = inputTipo.value;
+            const empresa = document.getElementById('cnt-empresa').value.trim();
 
-            if (!nombre) { showToastMsg('Por favor ingresa tu nombre.', 'error'); return; }
+            if (!nombre) { showToastMsg('Por favor ingresa tu nombre de contacto.', 'error'); return; }
             if (!email)  { showToastMsg('Por favor ingresa tu correo electrónico.', 'error'); return; }
+            if (tipo === 'empresa' && !empresa) {
+                showToastMsg('Por favor ingresa el nombre de la empresa o marca.', 'error');
+                document.getElementById('cnt-empresa').focus();
+                return;
+            }
             if (!mensaje){ showToastMsg('Por favor escribe tu mensaje.', 'error'); return; }
 
             btn.disabled = true;
@@ -302,6 +451,7 @@ $horario = $meta['horario'] ?? [
                 if (data.success) {
                     showToastMsg('✓ ' + data.message, 'success');
                     form.reset();
+                    setProfile('persona');
                 } else {
                     showToastMsg('✕ ' + (data.error || 'Error al enviar. Intenta de nuevo.'), 'error');
                 }
