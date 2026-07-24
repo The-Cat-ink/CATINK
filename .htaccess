@@ -21,6 +21,7 @@ RewriteRule ^sitemap\.xml$ views/sitemap.php [L,QSA]
 RewriteRule ^sw\.js$ sw.js [L]
 RewriteRule ^manifest\.json$ manifest.json [L]
 RewriteRule ^guardados/?$ views/guardados.php [L,QSA]
+RewriteRule ^views/guardados/?$ views/guardados.php [L,QSA]
 RewriteRule ^offline/?$ views/guardados.php [L,QSA]
 
 # =========================
