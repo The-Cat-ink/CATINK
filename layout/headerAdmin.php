@@ -248,6 +248,13 @@ if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time
                 </a>
             </li>
         <?php endif; ?>
+        <?php if (($_SESSION['ACL']['paginas']['leer']?? false) || ($_SESSION['ACL']['noticias']['leer']?? false) || $_SESSION['superadmin']): ?>
+            <li class="sidebar-menu-item">
+                <a href="./paginas.php" class="sidebar-menu-link" data-tooltip="Gestión de Páginas">
+                    <i class="bi bi-file-earmark-code"></i> <span class="sb-label">Páginas</span>
+                </a>
+            </li>
+        <?php endif; ?>
         <?php if (($_SESSION['ACL']['actividad']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
                 <a href="./actividad.php" class="sidebar-menu-link" data-tooltip="Registro de Actividad">

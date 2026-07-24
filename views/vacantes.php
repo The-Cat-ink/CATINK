@@ -596,10 +596,17 @@ function initVacantesView() {
 
   // Eliminar
   document.querySelectorAll('.btn-eliminar-vac').forEach(btn => {
-    btn.onclick = function() {
+    btn.onclick = async function() {
       const id = this.dataset.id;
       const titulo = this.dataset.titulo;
-      if (!confirm(`¿Estás seguro de que deseas eliminar la vacante "${titulo}"?`)) return;
+      const confirmed = await cnConfirm({
+        title: '¿Eliminar Vacante?',
+        message: `¿Estás seguro de que deseas eliminar permanentemente la vacante "${titulo}"?`,
+        confirmText: 'Eliminar Vacante',
+        cancelText: 'Cancelar',
+        isDanger: true
+      });
+      if (!confirmed) return;
 
       fetch(BASE_PATH + '/controllers/vacantes_eliminar.php', {
         method: 'POST',

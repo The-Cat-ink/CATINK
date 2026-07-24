@@ -1,10 +1,13 @@
 <?php
-include("./../layout/header.php");
-include("./../data/conexion.php");
+include_once(__DIR__ . "/../layout/header.php");
+include_once(__DIR__ . "/../data/conexion.php");
 
-$sql = "SELECT contenido_pag FROM paginas WHERE nombre_pag='privacidad'";
-$result = $con->query($sql);
-$row = $result && $result->num_rows > 0 ? $result->fetch_assoc() : null;
+$result = @$con->query("SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='privacidad'");
+if (!$result) {
+    $result = @$con->query("SELECT contenido_pag FROM paginas WHERE nombre_pag='privacidad'");
+}
+$row  = ($result && $result !== true && method_exists($result, 'fetch_assoc')) ? $result->fetch_assoc() : [];
+$meta = json_decode($row['meta_json'] ?? '', true) ?: [];
 ?>
 
 <style>
@@ -48,7 +51,11 @@ $row = $result && $result->num_rows > 0 ? $result->fetch_assoc() : null;
 .legal-hero-badge { background:rgba(99,102,241,0.1); color:#6366f1; font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:20px; border:1px solid rgba(99,102,241,0.2); }
 .legal-body { padding:64px 32px 96px; background:var(--bg); }
 .legal-body-inner { max-width:1080px; margin:0 auto; display:grid; grid-template-columns:220px 1fr; gap:64px; align-items:start; }
-.legal-sidebar { position:sticky; top:90px; }
+.legal-sidebar { position:sticky; top:100px; max-height:calc(100vh - 130px); overflow-y:auto; overscroll-behavior:contain; padding-right:6px; }
+.legal-sidebar::-webkit-scrollbar { width:4px; }
+.legal-sidebar::-webkit-scrollbar-track { background:transparent; }
+.legal-sidebar::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+.legal-sidebar::-webkit-scrollbar-thumb:hover { background:#6366f1; }
 .legal-sidebar-label { font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.18em; color:var(--muted); margin-bottom:14px; }
 .legal-nav-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:4px; }
 .legal-nav-list a { display:block; font-size:0.85rem; color:var(--muted); text-decoration:none; padding:7px 12px; border-radius:8px; border-left:2px solid transparent; transition:all 0.2s ease; font-weight:600; }
@@ -75,10 +82,10 @@ $row = $result && $result->num_rows > 0 ? $result->fetch_assoc() : null;
         <div>
             <div class="legal-hero-icon"><i class="bi bi-shield-lock-fill"></i></div>
             <p class="legal-hero-eyebrow">Privacidad & Datos</p>
-            <h1 class="legal-hero-title">Aviso de Privacidad</h1>
+            <h1 class="legal-hero-title"><?= htmlspecialchars($meta['hero_title'] ?? 'Aviso de Privacidad') ?></h1>
             <div class="legal-hero-meta">
                 <i class="bi bi-calendar3"></i>
-                <span>Última actualización: Julio 2025</span>
+                <span>Última actualización: <?= htmlspecialchars($meta['fecha_actualizacion'] ?? 'Julio 2025') ?></span>
                 <span class="legal-hero-badge">Versión vigente</span>
             </div>
         </div>
@@ -129,5 +136,92 @@ $row = $result && $result->num_rows > 0 ? $result->fetch_assoc() : null;
 </section>
 
 </div>
+
+<script>
+(function() {
+    function buildLegalTOC() {
+        const editor = document.querySelector('.legal-content .ql-editor');
+        const navList = document.querySelector('.legal-nav-list');
+        const sidebar = document.querySelector('.legal-sidebar');
+        if (!editor || !navList) return;
+
+        let headings = Array.from(editor.querySelectorAll('h1, h2, h3, h4'));
+        if (headings.length === 0) {
+            headings = Array.from(editor.querySelectorAll('p strong')).map(el => el.closest('p')).filter(Boolean);
+        }
+
+        if (headings.length === 0) {
+            if (sidebar) sidebar.style.display = 'none';
+            return;
+        }
+
+        if (sidebar) sidebar.style.display = 'block';
+        navList.innerHTML = '';
+
+        headings.forEach((h, index) => {
+            const rawText = (h.textContent || '').trim();
+            if (!rawText) return;
+
+            const id = 'sec-priv-' + (index + 1);
+            h.id = id;
+            h.style.scrollMarginTop = '110px';
+
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#' + id;
+            a.innerHTML = '<i class="bi bi-dot"></i> ' + (rawText.length > 38 ? rawText.substring(0, 35) + '...' : rawText);
+            a.title = rawText;
+
+            a.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.getElementById(id);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+
+            li.appendChild(a);
+            navList.appendChild(li);
+        });
+
+        if (window.legalTocObserverPriv) {
+            window.legalTocObserverPriv.disconnect();
+        }
+
+        window.legalTocObserverPriv = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    navList.querySelectorAll('a').forEach(a => {
+                        if (a.getAttribute('href') === '#' + id) {
+                            a.style.color = '#6366f1';
+                            a.style.borderLeftColor = '#6366f1';
+                            a.style.background = 'rgba(99,102,241,0.08)';
+                            a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                        } else {
+                            a.style.color = '';
+                            a.style.borderLeftColor = '';
+                            a.style.background = '';
+                        }
+                    });
+                }
+            });
+        }, {
+            rootMargin: '-80px 0px -60% 0px',
+            threshold: 0
+        });
+
+        headings.forEach(h => window.legalTocObserverPriv.observe(h));
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', buildLegalTOC);
+    } else {
+        buildLegalTOC();
+    }
+    document.addEventListener('turbo:load', buildLegalTOC);
+    document.addEventListener('turbo:render', buildLegalTOC);
+})();
+</script>
 
 <?php include("./../layout/footer.php"); ?>

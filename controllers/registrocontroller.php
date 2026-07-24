@@ -208,6 +208,8 @@ if ($ejecutado) {
                 )
             );
 
+            require_once(__DIR__ . "/../views/helpers/emailhelper.php");
+
             $fromEmail = env('SMTP_FROM_EMAIL', 'no-reply@catink.com.mx');
             $fromName = env('SMTP_FROM_NAME', 'CatInk');
             $mail->setFrom($fromEmail, $fromName);
@@ -220,23 +222,19 @@ if ($ejecutado) {
             $mail->isHTML(true);
             $mail->Subject = "Verifica tu cuenta en CatInk";
 
-            $htmlBody = "
-            <div style='font-family: Arial, sans-serif; max-width:600px; margin:auto; background:#f9f9f9; padding:20px; border-radius:10px; border: 1px solid #eee;'>
-                <h2 style='color:#EF3363; text-align:center;'>¡Te damos la bienvenida a CatInk!</h2>
-                <p>Hola <strong>{$nombre}</strong>,</p>
-                <p>Gracias por registrarte en nuestra plataforma de noticias y comunidad. Para activar tu cuenta y empezar a participar, por favor confirma tu dirección de correo haciendo clic en el siguiente botón:</p>
-                <p style='text-align:center; margin:30px 0;'>
-                    <a href='{$verifyUrl}' style='display:inline-block; padding:12px 30px; background:#EF3363; color:#fff; text-decoration:none; border-radius:5px; font-weight:bold; box-shadow: 0 4px 6px rgba(239, 51, 99, 0.2);'>
-                        Verificar mi cuenta
-                    </a>
-                </p>
-                <p style='color:#666; font-size:12px;'>Si no puedes hacer clic en el botón, copia y pega el siguiente enlace en tu navegador:</p>
-                <p style='color:#EF3363; font-size:12px; word-break:break-all;'>{$verifyUrl}</p>
-                <hr style='border:none; border-top:1px solid #ddd; margin:20px 0;'>
-                <p style='color:#999; font-size:11px; text-align:center;'>© 2026 CatInk. Todos los derechos reservados.</p>
-            </div>";
+            $content = "
+                <p>Hola <strong style='color:#ffffff;'>{$nombre}</strong>,</p>
+                <p style='color:#cbd5e0; line-height:1.7;'>¡Te damos la bienvenida a CatInk! Gracias por registrarte en nuestra plataforma. Para activar tu cuenta y comenzar a participar, por favor confirma tu correo electrónico:</p>
+                <p style='color:#718096; font-size:12px; margin-top:24px; word-break:break-all;'>Si tienes problemas con el botón, copia este enlace en tu navegador:<br><a href='{$verifyUrl}' style='color:#EF3363;'>{$verifyUrl}</a></p>
+            ";
 
-            $mail->Body = $htmlBody;
+            $mail->Body = renderCatInkEmail([
+                'title'     => '¡Te damos la bienvenida a CatInk!',
+                'badge'     => 'Verificación de Cuenta',
+                'content'   => $content,
+                'cta_url'   => $verifyUrl,
+                'cta_text'  => 'Verificar mi cuenta'
+            ]);
             $mail->send();
 
         } catch (\Throwable $e) {

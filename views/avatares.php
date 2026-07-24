@@ -299,7 +299,15 @@ document.querySelectorAll('.btn-toggle-avatar').forEach(btn => {
 // Eliminar
 document.querySelectorAll('.btn-delete-avatar').forEach(btn => {
   btn.addEventListener('click', async function(){
-    if(!confirm('¿Eliminar este avatar definitivamente?')) return;
+    const confirmed = await cnConfirm({
+      title: '¿Eliminar Avatar?',
+      message: '¿Estás seguro de que deseas eliminar este avatar de forma permanente? Se borrará el archivo de imagen del servidor.',
+      confirmText: 'Eliminar Avatar',
+      cancelText: 'Cancelar',
+      isDanger: true
+    });
+    if (!confirmed) return;
+
     const id = this.dataset.id;
     const res = await fetch('./../controllers/avatar_eliminar.php', {
       method:'POST',
@@ -307,7 +315,12 @@ document.querySelectorAll('.btn-delete-avatar').forEach(btn => {
       body: `id=${id}`
     });
     const data = await res.json();
-    if(data.ok) document.getElementById('avatar-'+id).remove();
+    if(data.ok) {
+      document.getElementById('avatar-'+id).remove();
+      showToast('Avatar eliminado correctamente', 'success');
+    } else {
+      showToast(data.error || 'No se pudo eliminar el avatar', 'error');
+    }
   });
 });
 </script>

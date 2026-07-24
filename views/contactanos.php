@@ -1,4 +1,20 @@
-<?php include("./../layout/header.php"); ?>
+<?php
+include_once(__DIR__ . "/../layout/header.php");
+include_once(__DIR__ . "/../data/conexion.php");
+
+$resPag = @$con->query("SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='contacto'");
+if (!$resPag) {
+    $resPag = @$con->query("SELECT contenido_pag FROM paginas WHERE nombre_pag='contacto'");
+}
+$row  = ($resPag && $resPag !== true && method_exists($resPag, 'fetch_assoc')) ? $resPag->fetch_assoc() : [];
+$meta = json_decode($row['meta_json'] ?? '', true) ?: [];
+
+$horario = $meta['horario'] ?? [
+    ['dia' => 'Lunes – Viernes', 'hora' => '9:00 – 18:00 hrs'],
+    ['dia' => 'Sábado', 'hora' => '10:00 – 14:00 hrs'],
+    ['dia' => 'Domingo', 'hora' => 'Cerrado']
+];
+?>
 
 <style>
 .cnt-page { --cw: 1080px; }
@@ -142,9 +158,9 @@
 <!-- ═══ HERO ════════════════════════════════════════════════════════ -->
 <section class="cnt-hero">
     <div class="cnt-hero-inner">
-        <div class="cnt-hero-eyebrow"><i class="bi bi-chat-heart-fill"></i> Hablemos</div>
-        <h1 class="cnt-hero-title">Contáctanos</h1>
-        <p class="cnt-hero-sub">¿Quieres colaborar, tienes una propuesta, necesitas información o simplemente quieres saludar? Escríbenos, estamos aquí.</p>
+        <div class="cnt-hero-eyebrow"><i class="bi bi-chat-heart-fill"></i> <?= htmlspecialchars($meta['eyebrow'] ?? 'Hablemos') ?></div>
+        <h1 class="cnt-hero-title"><?= htmlspecialchars($meta['hero_title'] ?? 'Contáctanos') ?></h1>
+        <p class="cnt-hero-sub"><?= htmlspecialchars($meta['hero_sub'] ?? '¿Quieres colaborar, tienes una propuesta, necesitas información o simplemente quieres saludar? Escríbenos, estamos aquí.') ?></p>
     </div>
 </section>
 
@@ -154,38 +170,38 @@
 
         <!-- Info -->
         <div>
-            <h2 class="cnt-info-title">Estamos para ayudarte</h2>
-            <p class="cnt-info-sub">Ya sea para colaboraciones, publicidad, press kits o preguntas generales, nuestro equipo responde en menos de 24 horas.</p>
+            <h2 class="cnt-info-title"><?= htmlspecialchars($meta['info_title'] ?? 'Estamos para ayudarte') ?></h2>
+            <p class="cnt-info-sub"><?= htmlspecialchars($meta['info_sub'] ?? 'Ya sea para colaboraciones, publicidad, press kits o preguntas generales, nuestro equipo responde en menos de 24 horas.') ?></p>
 
             <ul class="cnt-contact-list">
                 <li class="cnt-contact-item">
                     <div class="cnt-contact-icon"><i class="bi bi-envelope-fill"></i></div>
                     <div class="cnt-contact-text">
                         <h4>Correo general</h4>
-                        <a href="mailto:contacto@catink.com.mx">contacto@catink.com.mx</a>
+                        <a href="mailto:<?= htmlspecialchars($meta['email_general'] ?? 'contacto@catink.com.mx') ?>"><?= htmlspecialchars($meta['email_general'] ?? 'contacto@catink.com.mx') ?></a>
                     </div>
                 </li>
                 <li class="cnt-contact-item">
                     <div class="cnt-contact-icon"><i class="bi bi-briefcase-fill"></i></div>
                     <div class="cnt-contact-text">
                         <h4>Publicidad y marcas</h4>
-                        <a href="mailto:contacto@catink.com.mx">contacto@catink.com.mx</a>
+                        <a href="mailto:<?= htmlspecialchars($meta['email_publicidad'] ?? 'contacto@catink.com.mx') ?>"><?= htmlspecialchars($meta['email_publicidad'] ?? 'contacto@catink.com.mx') ?></a>
                     </div>
                 </li>
                 <li class="cnt-contact-item">
                     <div class="cnt-contact-icon"><i class="bi bi-geo-alt-fill"></i></div>
                     <div class="cnt-contact-text">
                         <h4>Ubicación</h4>
-                        <span>Toluca de Lerdo, Estado de México, México</span>
+                        <span><?= htmlspecialchars($meta['ubicacion'] ?? 'Toluca de Lerdo, Estado de México, México') ?></span>
                     </div>
                 </li>
             </ul>
 
             <div class="cnt-hours">
                 <p class="cnt-hours-label"><i class="bi bi-clock-fill"></i> Horario de atención</p>
-                <div class="cnt-hours-item">Lunes – Viernes <span>9:00 – 18:00 hrs</span></div>
-                <div class="cnt-hours-item">Sábado <span>10:00 – 14:00 hrs</span></div>
-                <div class="cnt-hours-item">Domingo <span>Cerrado</span></div>
+                <?php foreach($horario as $h): ?>
+                <div class="cnt-hours-item"><?= htmlspecialchars($h['dia'] ?? '') ?> <span><?= htmlspecialchars($h['hora'] ?? '') ?></span></div>
+                <?php endforeach; ?>
             </div>
 
             <div class="cnt-divider"></div>
@@ -201,8 +217,8 @@
         <!-- Formulario -->
         <div>
             <div class="cnt-form-card">
-                <h3 class="cnt-form-title">Envíanos un mensaje</h3>
-                <p class="cnt-form-sub">Responderemos a tu correo en menos de 24 horas hábiles.</p>
+                <h3 class="cnt-form-title"><?= htmlspecialchars($meta['form_title'] ?? 'Envíanos un mensaje') ?></h3>
+                <p class="cnt-form-sub"><?= htmlspecialchars($meta['form_sub'] ?? 'Responderemos a tu correo en menos de 24 horas hábiles.') ?></p>
 
                 <div class="cnt-toast-msg" id="cntToast"></div>
 

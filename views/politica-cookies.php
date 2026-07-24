@@ -1,13 +1,9 @@
 <?php
-include("./../layout/header.php");
-include("./../data/conexion.php");
-$sql = "SELECT contenido_pag FROM paginas WHERE nombre_pag='cookies'";
-$result = $con->query($sql);
-if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-} else {
-    echo "No se encontró el contenido de 'Política de cookies'.";
-}
+include_once(__DIR__ . "/../layout/header.php");
+include_once(__DIR__ . "/../data/conexion.php");
+
+$result = @$con->query("SELECT contenido_pag FROM paginas WHERE nombre_pag='cookies'");
+$row = ($result && $result !== true && method_exists($result, 'fetch_assoc')) ? $result->fetch_assoc() : ['contenido_pag' => ''];
 ?>
 <div class="container-fluid">
     <div class="post-content">

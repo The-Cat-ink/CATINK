@@ -1,6 +1,13 @@
 <?php
-include("./../layout/header.php");
-include("./../data/conexion.php");
+include_once(__DIR__ . "/../layout/header.php");
+include_once(__DIR__ . "/../data/conexion.php");
+
+$resPag = @$con->query("SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='unete'");
+if (!$resPag) {
+    $resPag = @$con->query("SELECT contenido_pag FROM paginas WHERE nombre_pag='unete'");
+}
+$rowPag  = ($resPag && $resPag !== true && method_exists($resPag, 'fetch_assoc')) ? $resPag->fetch_assoc() : [];
+$metaPag = json_decode($rowPag['meta_json'] ?? '', true) ?: [];
 
 // Obtener todas las vacantes activas ordenadas
 $resVac = $con->query("SELECT * FROM vacantes_equipo WHERE estado = 1 ORDER BY orden ASC, id ASC");
@@ -580,9 +587,9 @@ $vacantesFilas = array_chunk($vacantes, 5);
 
   <!-- Encabezado Limpio de la Sección -->
   <div class="unete-section-header">
-    <span class="unete-badge-header">Únete al Equipo</span>
-    <h1 class="unete-main-title"><?= $totalVacantes ?> Vacantes Abiertas</h1>
-    <p class="unete-sub-desc">Selecciona un rol para conocer los detalles e iniciar tu postulación</p>
+    <span class="unete-badge-header"><?= htmlspecialchars($metaPag['eyebrow'] ?? 'Únete al Equipo') ?></span>
+    <h1 class="unete-main-title"><?= htmlspecialchars($metaPag['hero_title'] ?? "{$totalVacantes} Vacantes Abiertas") ?></h1>
+    <p class="unete-sub-desc"><?= htmlspecialchars($metaPag['hero_sub'] ?? 'Selecciona un rol para conocer los detalles e iniciar tu postulación') ?></p>
   </div>
 
   <!-- Vista Desktop: Acordeón Horizontal (Dividido en filas de máximo 5 vacantes) -->

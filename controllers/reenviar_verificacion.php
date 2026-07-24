@@ -87,28 +87,27 @@ try {
 
     $proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
     $domain = $_SERVER['HTTP_HOST'] ?? 'catink.test';
+    require_once(__DIR__ . "/../views/helpers/emailhelper.php");
+
     $verifyUrl = "{$proto}://{$domain}" . basePath() . "/verificar.php?token=" . urlencode($token);
 
     $mail->isHTML(true);
     $mail->Subject = "Verifica tu cuenta en CatInk";
 
-    $htmlBody = "
-    <div style='font-family: Arial, sans-serif; max-width:600px; margin:auto; background:#f9f9f9; padding:20px; border-radius:10px; border: 1px solid #eee;'>
-        <h2 style='color:#EF3363; text-align:center;'>¡Te damos la bienvenida a CatInk!</h2>
-        <p>Hola <strong>" . htmlspecialchars($lector['nombre']) . "</strong>,</p>
-        <p>Has solicitado reenviar el correo de verificación para activar tu cuenta. Por favor haz clic en el siguiente botón:</p>
-        <p style='text-align:center; margin:30px 0;'>
-            <a href='{$verifyUrl}' style='display:inline-block; padding:12px 30px; background:#EF3363; color:#fff; text-decoration:none; border-radius:5px; font-weight:bold; box-shadow: 0 4px 6px rgba(239, 51, 99, 0.2);'>
-                Verificar mi cuenta
-            </a>
-        </p>
-        <p style='color:#666; font-size:12px;'>Si no puedes hacer clic en el botón, copia y pega el siguiente enlace en tu navegador:</p>
-        <p style='color:#EF3363; font-size:12px; word-break:break-all;'>{$verifyUrl}</p>
-        <hr style='border:none; border-top:1px solid #ddd; margin:20px 0;'>
-        <p style='color:#999; font-size:11px; text-align:center;'>© 2026 CatInk. Todos los derechos reservados.</p>
-    </div>";
+    $nombreLector = htmlspecialchars($lector['nombre']);
+    $content = "
+        <p>Hola <strong style='color:#ffffff;'>{$nombreLector}</strong>,</p>
+        <p style='color:#cbd5e0; line-height:1.7;'>Has solicitado reenviar el correo de verificación para activar tu cuenta. Por favor haz clic en el siguiente botón para confirmar tu correo:</p>
+        <p style='color:#718096; font-size:12px; margin-top:24px; word-break:break-all;'>Si tienes problemas con el botón, copia este enlace en tu navegador:<br><a href='{$verifyUrl}' style='color:#EF3363;'>{$verifyUrl}</a></p>
+    ";
 
-    $mail->Body = $htmlBody;
+    $mail->Body = renderCatInkEmail([
+        'title'     => 'Verificación de Cuenta',
+        'badge'     => 'Reenvío de Verificación',
+        'content'   => $content,
+        'cta_url'   => $verifyUrl,
+        'cta_text'  => 'Verificar mi cuenta'
+    ]);
     $mail->send();
 
     echo json_encode(['success' => true, 'message' => 'Correo de verificación reenviado con éxito.']);

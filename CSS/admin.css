@@ -1927,12 +1927,12 @@ select, input[type="datetime-local"] {
 }
 /* Encabezado */
 .table thead th {
-    background-color: #343a40;
-    color: #fff;
-    text-align: center;
+    background-color: var(--card-bg, #f8fafc);
+    color: var(--text, #1e293b);
+    text-align: left;
     vertical-align: middle;
-    font-weight: 600;
-    border-bottom: 2px solid #495057;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border, #e2e8f0);
 }
 /* Filas */
 .table tbody tr:hover {

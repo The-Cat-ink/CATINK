@@ -1,10 +1,13 @@
 <?php
-include("./../layout/header.php");
-include("./../data/conexion.php");
+include_once(__DIR__ . "/../layout/header.php");
+include_once(__DIR__ . "/../data/conexion.php");
 
-$sql = "SELECT contenido_pag FROM paginas WHERE nombre_pag='terminos'";
-$result = $con->query($sql);
-$row = $result && $result->num_rows > 0 ? $result->fetch_assoc() : null;
+$result = @$con->query("SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='terminos'");
+if (!$result) {
+    $result = @$con->query("SELECT contenido_pag FROM paginas WHERE nombre_pag='terminos'");
+}
+$row  = ($result && $result !== true && method_exists($result, 'fetch_assoc')) ? $result->fetch_assoc() : [];
+$meta = json_decode($row['meta_json'] ?? '', true) ?: [];
 ?>
 
 <style>
@@ -96,8 +99,16 @@ $row = $result && $result->num_rows > 0 ? $result->fetch_assoc() : null;
 }
 .legal-sidebar {
     position: sticky;
-    top: 90px;
+    top: 100px;
+    max-height: calc(100vh - 130px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 6px;
 }
+.legal-sidebar::-webkit-scrollbar { width: 4px; }
+.legal-sidebar::-webkit-scrollbar-track { background: transparent; }
+.legal-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.legal-sidebar::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 .legal-sidebar-label {
     font-size: 0.68rem;
     font-weight: 800;
@@ -195,10 +206,10 @@ $row = $result && $result->num_rows > 0 ? $result->fetch_assoc() : null;
         <div>
             <div class="legal-hero-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
             <p class="legal-hero-eyebrow">Documentos Legales</p>
-            <h1 class="legal-hero-title">Términos y Condiciones</h1>
+            <h1 class="legal-hero-title"><?= htmlspecialchars($meta['hero_title'] ?? 'Términos y Condiciones') ?></h1>
             <div class="legal-hero-meta">
                 <i class="bi bi-calendar3"></i>
-                <span>Última actualización: Julio 2025</span>
+                <span>Última actualización: <?= htmlspecialchars($meta['fecha_actualizacion'] ?? 'Julio 2025') ?></span>
                 <span class="legal-hero-badge">Versión vigente</span>
             </div>
         </div>
@@ -251,5 +262,92 @@ $row = $result && $result->num_rows > 0 ? $result->fetch_assoc() : null;
 </section>
 
 </div>
+
+<script>
+(function() {
+    function buildLegalTOC() {
+        const editor = document.querySelector('.legal-content .ql-editor');
+        const navList = document.querySelector('.legal-nav-list');
+        const sidebar = document.querySelector('.legal-sidebar');
+        if (!editor || !navList) return;
+
+        let headings = Array.from(editor.querySelectorAll('h1, h2, h3, h4'));
+        if (headings.length === 0) {
+            headings = Array.from(editor.querySelectorAll('p strong')).map(el => el.closest('p')).filter(Boolean);
+        }
+
+        if (headings.length === 0) {
+            if (sidebar) sidebar.style.display = 'none';
+            return;
+        }
+
+        if (sidebar) sidebar.style.display = 'block';
+        navList.innerHTML = '';
+
+        headings.forEach((h, index) => {
+            const rawText = (h.textContent || '').trim();
+            if (!rawText) return;
+
+            const id = 'sec-ter-' + (index + 1);
+            h.id = id;
+            h.style.scrollMarginTop = '110px';
+
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#' + id;
+            a.innerHTML = '<i class="bi bi-dot"></i> ' + (rawText.length > 38 ? rawText.substring(0, 35) + '...' : rawText);
+            a.title = rawText;
+
+            a.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.getElementById(id);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+
+            li.appendChild(a);
+            navList.appendChild(li);
+        });
+
+        if (window.legalTocObserver) {
+            window.legalTocObserver.disconnect();
+        }
+
+        window.legalTocObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    navList.querySelectorAll('a').forEach(a => {
+                        if (a.getAttribute('href') === '#' + id) {
+                            a.style.color = 'var(--accent, #EF3363)';
+                            a.style.borderLeftColor = 'var(--accent, #EF3363)';
+                            a.style.background = 'rgba(239,51,99,0.08)';
+                            a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                        } else {
+                            a.style.color = '';
+                            a.style.borderLeftColor = '';
+                            a.style.background = '';
+                        }
+                    });
+                }
+            });
+        }, {
+            rootMargin: '-80px 0px -60% 0px',
+            threshold: 0
+        });
+
+        headings.forEach(h => window.legalTocObserver.observe(h));
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', buildLegalTOC);
+    } else {
+        buildLegalTOC();
+    }
+    document.addEventListener('turbo:load', buildLegalTOC);
+    document.addEventListener('turbo:render', buildLegalTOC);
+})();
+</script>
 
 <?php include("./../layout/footer.php"); ?>

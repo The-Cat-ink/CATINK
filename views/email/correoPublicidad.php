@@ -97,40 +97,29 @@ foreach ($correosPendientes as $correo) {
         $sqlUsuarios = "SELECT correo, nombre_completo FROM suscripciones";
         $resUsuarios = $con->query($sqlUsuarios);
 
+        require_once(__DIR__ . "/../helpers/emailhelper.php");
+
         while ($user = $resUsuarios->fetch_assoc()) {
             $mail->clearAddresses();
             $mail->addAddress($user['correo'], $user['nombre_completo']);
 
             $unsubscribeUrl = 'https://www.catink.com.mx/views/email/unsubscribe.php?email=' . urlencode($user['correo']);
 
-            $html = "
-            <div style='font-family: Arial, sans-serif; max-width:600px; margin:auto; background:#f9f9f9; padding:20px; border-radius:10px;'>
-                <h2 style='color:#EF3363;'>{$titulo}</h2>
-                <p style='color:#333;'>{$contenido}</p>
-                {$imgHtml}
-                <a href='{$urlBoton}' 
-                   style='display:inline-block; padding:10px 20px; background:#EF3363; color:#fff; text-decoration:none; border-radius:5px; margin-top:10px;'>
-                   Ver promoción
-                </a>
-                <div style='margin-top:20px; padding:15px; background:#333333; color:#ffffff; border-radius:10px;'>
-                    <h3 style='margin:0 0 10px;'>Síguenos</h3>
-                    <p style='margin:0 0 10px;'>
-                        <a href='https://www.facebook.com/TheCatink?locale=es_LA' style='color:#ffffff; text-decoration:none; margin-right:8px;'>Facebook</a>
-                        <a href='https://x.com/The_Catink/' style='color:#ffffff; text-decoration:none; margin-right:8px;'>Twitter / X</a>
-                        <a href='https://www.instagram.com/the.catink/' style='color:#ffffff; text-decoration:none; margin-right:8px;'>Instagram</a>
-                        <a href='https://www.youtube.com/@thecatink' style='color:#ffffff; text-decoration:none; margin-right:8px;'>YouTube</a>
-                        <a href='https://www.tiktok.com/@thecatink' style='color:#ffffff; text-decoration:none;'>TikTok</a>
-                    </p>
-                    <p style='margin:10px 0;'>
-                        <a href='https://www.catink.com.mx/terminos-condiciones' style='display:inline-block; margin:0 6px 6px; padding:8px 12px; background:#EF3363; color:#ffffff; border-radius:6px; text-decoration:none;'>Términos y condiciones</a>
-                        <a href='https://www.catink.com.mx/privacidad' style='display:inline-block; margin:0 6px 6px; padding:8px 12px; background:#EF3363; color:#ffffff; border-radius:6px; text-decoration:none;'>Política de privacidad</a>
-                        <a href='{$unsubscribeUrl}' style='display:inline-block; margin:0 6px 6px; padding:8px 12px; background:#EF3363; color:#ffffff; border-radius:6px; text-decoration:none;'>Cancelar suscripción</a>
-                    </p>
-                    <p style='margin:8px 0 0; font-size:12px; color:#dddddd;'>En caso de requerir aclaraciones, dudas o reclamaciones, favor de contactarte al siguiente correo: help@catink.com.mx</p>
+            $content = "
+                <div style='color:#e2e8f0; font-size:15px; line-height:1.7;'>
+                    " . nl2br($contenido) . "
                 </div>
-            </div>";
+                " . (!empty($imgHtml) ? "<div style='text-align:center; margin:20px 0;'>{$imgHtml}</div>" : "") . "
+            ";
 
-            $mail->Body = $html;
+            $mail->Body = renderCatInkEmail([
+                'title'           => $titulo,
+                'badge'           => 'Anuncio / Promoción',
+                'content'         => $content,
+                'cta_url'         => $urlBoton,
+                'cta_text'        => 'Ver promoción',
+                'unsubscribe_url' => $unsubscribeUrl
+            ]);
             $mail->send();
         }
 

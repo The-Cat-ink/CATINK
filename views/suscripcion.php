@@ -1,4 +1,21 @@
-<?php include("./../layout/header.php"); ?>
+<?php
+include_once(__DIR__ . "/../layout/header.php");
+include_once(__DIR__ . "/../data/conexion.php");
+
+$resPag = @$con->query("SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='suscripcion'");
+if (!$resPag) {
+    $resPag = @$con->query("SELECT contenido_pag FROM paginas WHERE nombre_pag='suscripcion'");
+}
+$row  = ($resPag && $resPag !== true && method_exists($resPag, 'fetch_assoc')) ? $resPag->fetch_assoc() : [];
+$meta = json_decode($row['meta_json'] ?? '', true) ?: [];
+
+$beneficios = $meta['beneficios'] ?? [
+    ['icono' => 'bi-lightning-charge-fill', 'titulo' => 'Noticias antes que nadie', 'desc' => 'Sé el primero en enterarte de anuncios, trailers y lanzamientos del mundo geek.'],
+    ['icono' => 'bi-gift-fill', 'titulo' => 'Contenido exclusivo', 'desc' => 'Artículos, análisis y reseñas especiales solo para suscriptores del newsletter.'],
+    ['icono' => 'bi-slash-circle', 'titulo' => 'Cero spam, siempre', 'desc' => 'Nos importa tu bandeja. Solo enviamos lo que vale la pena leer, una vez por semana.'],
+    ['icono' => 'bi-door-open-fill', 'titulo' => '100% gratuito', 'desc' => 'Sin planes premium, sin tarjetas. Solo tu correo y tu pasión por la cultura pop.']
+];
+?>
 
 <style>
 .sus-page { --cw: 1080px; }
@@ -135,9 +152,9 @@
 
 <!-- Hero -->
 <section class="sus-hero">
-    <div class="sus-hero-eyebrow"><i class="bi bi-envelope-heart-fill"></i> Newsletter</div>
-    <h1 class="sus-hero-title">Únete a la<br><span>comunidad CatInk</span></h1>
-    <p class="sus-hero-sub">Recibe contenido exclusivo de Anime, Manga, Cine y Videojuegos directamente en tu correo. Sin spam, solo lo mejor.</p>
+    <div class="sus-hero-eyebrow"><i class="bi bi-envelope-heart-fill"></i> <?= htmlspecialchars($meta['eyebrow'] ?? 'Newsletter') ?></div>
+    <h1 class="sus-hero-title"><?= htmlspecialchars($meta['hero_title'] ?? 'Únete a la comunidad CatInk') ?></h1>
+    <p class="sus-hero-sub"><?= htmlspecialchars($meta['hero_sub'] ?? 'Recibe contenido exclusivo de Anime, Manga, Cine y Videojuegos directamente en tu correo. Sin spam, solo lo mejor.') ?></p>
 </section>
 
 <!-- Main Split -->
@@ -150,34 +167,15 @@
             <p class="sus-left-sub">Miles de fans de la cultura geek ya reciben nuestro newsletter semanal. No te quedes fuera del loop.</p>
 
             <ul class="sus-benefits">
+                <?php foreach($beneficios as $ben): ?>
                 <li class="sus-benefit-item">
-                    <div class="sus-benefit-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+                    <div class="sus-benefit-icon"><i class="bi <?= htmlspecialchars($ben['icono'] ?? 'bi-check-circle-fill') ?>"></i></div>
                     <div class="sus-benefit-text">
-                        <h4>Noticias antes que nadie</h4>
-                        <p>Sé el primero en enterarte de anuncios, trailers y lanzamientos del mundo geek.</p>
+                        <h4><?= htmlspecialchars($ben['titulo'] ?? '') ?></h4>
+                        <p><?= htmlspecialchars($ben['desc'] ?? '') ?></p>
                     </div>
                 </li>
-                <li class="sus-benefit-item">
-                    <div class="sus-benefit-icon"><i class="bi bi-gift-fill"></i></div>
-                    <div class="sus-benefit-text">
-                        <h4>Contenido exclusivo</h4>
-                        <p>Artículos, análisis y reseñas especiales solo para suscriptores del newsletter.</p>
-                    </div>
-                </li>
-                <li class="sus-benefit-item">
-                    <div class="sus-benefit-icon"><i class="bi bi-slash-circle"></i></div>
-                    <div class="sus-benefit-text">
-                        <h4>Cero spam, siempre</h4>
-                        <p>Nos importa tu bandeja. Solo enviamos lo que vale la pena leer, una vez por semana.</p>
-                    </div>
-                </li>
-                <li class="sus-benefit-item">
-                    <div class="sus-benefit-icon"><i class="bi bi-door-open-fill"></i></div>
-                    <div class="sus-benefit-text">
-                        <h4>100% gratuito</h4>
-                        <p>Sin planes premium, sin tarjetas. Solo tu correo y tu pasión por la cultura pop.</p>
-                    </div>
-                </li>
+                <?php endforeach; ?>
             </ul>
 
             <div class="sus-divider"></div>
@@ -193,8 +191,8 @@
         <!-- Formulario -->
         <div>
             <div class="sus-form-card">
-                <h3 class="sus-form-title">Suscríbete gratis</h3>
-                <p class="sus-form-sub">Empieza a recibir el mejor contenido geek hoy mismo.</p>
+                <h3 class="sus-form-title"><?= htmlspecialchars($meta['form_title'] ?? 'Suscríbete gratis') ?></h3>
+                <p class="sus-form-sub"><?= htmlspecialchars($meta['form_sub'] ?? 'Empieza a recibir el mejor contenido geek hoy mismo.') ?></p>
 
                 <div id="susToast" style="display:none; padding:12px 16px; border-radius:10px; margin-bottom:20px; font-size:0.88rem; font-weight:600;"></div>
 

@@ -1,13 +1,13 @@
-const CACHE_NAME = 'catink-offline-v1';
+const CACHE_NAME = 'catink-offline-v2';
 const STATIC_ASSETS = [
-  './',
-  './offline.html',
-  './CSS/styles.css',
-  './CSS/scripts.js',
-  './CSS/offline-manager.js',
-  './img/catink-icon.png',
-  './img/logo.png',
-  './catink-icon.ico',
+  '/',
+  '/offline.html',
+  '/CSS/styles.css',
+  '/CSS/scripts.js',
+  '/CSS/offline-manager.js',
+  '/img/catink-icon.png',
+  '/img/logo.png',
+  '/catink-icon.ico',
   'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css',
   'https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap'
 ];
@@ -43,28 +43,44 @@ self.addEventListener('fetch', event => {
   // Ignorar peticiones que no sean GET (como POST de comentarios o likes)
   if (request.method !== 'GET') return;
 
-  // Ignorar peticiones a servicios externos no cacheables
-  if (url.origin.includes('googlesyndication.com') || url.origin.includes('googletagmanager.com')) {
+  // EXCLUIR RUTAS DEL PANEL DE ADMINISTRACIÓN Y CONTROLADORES INTERNOS
+  // Esto evita falsos positivos de "Modo Sin Conexión" causados por bloqueadores de anuncios (uBlock, Brave, etc.)
+  // o por errores de servidor en páginas de administración.
+  if (
+    url.pathname.includes('/views/') || 
+    url.pathname.includes('/controllers/') || 
+    url.pathname.includes('/data/') ||
+    url.pathname.includes('/layout/') ||
+    url.pathname.includes('admin') ||
+    url.pathname.includes('login')
+  ) {
     return;
   }
 
-  // Estrategia para páginas HTML (Navegación)
+  // Ignorar peticiones a servicios externos no cacheables
+  if (url.origin.includes('googlesyndication.com') || url.origin.includes('googletagmanager.com') || url.origin.includes('google-analytics.com')) {
+    return;
+  }
+
+  // Estrategia para páginas HTML públicas (Navegación del sitio)
   if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       fetch(request)
         .then(response => {
-          // Si responde bien, clonar en cache para accesibilidad posterior
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, responseClone));
+          // Si responde bien (status 200), clonar en caché para accesibilidad posterior
+          if (response && response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, responseClone));
+          }
           return response;
         })
         .catch(async () => {
-          // Si falla la red (offline), buscar en cache o entregar fallback offline.html
+          // Si falla realmente la red (offline), buscar en caché o entregar fallback /offline.html
           const cachedResponse = await caches.match(request);
           if (cachedResponse) return cachedResponse;
           
-          const offlinePage = await caches.match('./offline.html');
-          return offlinePage || new Response('<h1>Sin Conexión</h1><p>No se pudo cargar la página y no tienes conexión a internet.</p>', {
+          const offlinePage = await caches.match('/offline.html');
+          return offlinePage || new Response('<h1>Sin Conexión</h1><p>No tienes conexión a internet para cargar esta página.</p>', {
             headers: { 'Content-Type': 'text/html; charset=utf-8' }
           });
         })
@@ -72,7 +88,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Estrategia Stale-While-Revalidate para recursos estáticos (CSS, JS, imágenes)
+  // Estrategia Stale-While-Revalidate para recursos estáticos (CSS, JS, imágenes públicas)
   event.respondWith(
     caches.match(request).then(cachedResponse => {
       const fetchPromise = fetch(request).then(networkResponse => {

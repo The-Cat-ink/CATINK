@@ -3,345 +3,403 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>404 - CatInk News</title>
+<title>404 - Página no encontrada | CatInk News</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Segoe UI', sans-serif;
-}
-body{
-    min-height:100vh;
-    background: radial-gradient(circle at center,#0f0c29,#1a1a40,#000);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    color:white;
-    padding:20px;
-}
-/* GRID GAMER */
-body::before{
-    content:"";
-    position:absolute;
-    width:100%;
-    height:100%;
-    background-size:40px 40px;
-    animation:gridMove 8s linear infinite;
-}
-@keyframes gridMove{
-    from{transform:translateY(0);}
-    to{transform:translateY(40px);}
+:root {
+    --accent: #EF3363;
+    --accent-glow: rgba(239, 51, 99, 0.4);
+    --bg-dark: #07070a;
+    --card-bg: rgba(18, 18, 26, 0.75);
+    --border: rgba(255, 255, 255, 0.08);
 }
 
-.container{
-    text-align:center;
-    z-index:2;
-    max-width:600px;
-    width:100%;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-/* 404 */
-.error{
-    font-size:clamp(60px, 11vw, 120px);
-    font-weight:700;
-    text-shadow:0 0 15px #00ffff, 0 0 30px #00ffff;
-    animation:flicker 3s infinite;
+body {
+    min-height: 100vh;
+    background: var(--bg-dark);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    padding: 24px;
+    overflow: hidden;
+    position: relative;
 }
 
-@keyframes flicker{
-    0%,18%,22%,25%,53%,57%,100%{opacity:1;}
-    20%,24%,55%{opacity:0.4;}
+/* FONDOS AMBIENTALES GLASSMORPHIC */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 20%, rgba(239, 51, 99, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 80%, rgba(93, 0, 113, 0.2) 0%, transparent 60%),
+      radial-gradient(circle at 50% 50%, rgba(7, 7, 10, 0.8) 0%, #07070a 100%);
+    z-index: 0;
 }
 
-.message{
-    font-size:clamp(16px, 3vw, 22px);
-    margin-bottom:30px;
-    text-shadow:0 0 15px #00ffff, 0 0 30px #00ffff;
-    animation:flicker 3s infinite;
+/* RETÍCULA DE FONDO ELEGANTE */
+.grid-overlay {
+    position: fixed;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+    pointer-events: none;
 }
 
-/* Mancha tinta */
-.ink-bg{
-    position:absolute;
-    width:0;
-    height:0;
-    background:black;
-    border-radius:50%;
-    animation:spread 2s ease-out forwards;
-    z-index:1;
-}
-@keyframes spread{
-    to{
-        width:1400px;
-        height:1400px;
-        margin-left:-700px;
-        margin-top:-700px;
-        opacity:0.3;
-    }
-}
-/* ===== GATO SVG ===== */
-.cat-wrapper{
-    width:clamp(200px, 50vw, 320px);
-    margin-top: 30px;
-    margin-left:auto;
-    margin-right:auto;
-    margin-bottom: 10px;
+.container {
+    text-align: center;
+    z-index: 2;
+    max-width: 540px;
+    width: 100%;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 40px 30px;
+    border-radius: 28px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
 }
 
-.cat-svg{
-    width:100%;
-    animation:floatCat 3s ease-in-out infinite;
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-@keyframes floatCat{
-    0%{transform:translateY(0);}
-    50%{transform:translateY(-12px);}
-    100%{transform:translateY(0);}
+/* 404 TITULO CON TINTA FLUIDA */
+.error-code {
+    font-family: 'Baloo 2', cursive;
+    font-size: clamp(90px, 16vw, 150px);
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -3px;
+    background: linear-gradient(135deg, #EF3363 0%, #ff7fa2 50%, #EF3363 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 4s ease-in-out infinite;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 4px 15px rgba(239, 51, 99, 0.3));
 }
 
-.cat-fill{
-    fill:#5a0071;
-    stroke:#111;
-    stroke-width:6;
-}
-.cat-fill-dark{
-    fill:#000000;
-    stroke-width:6;
-}
-.eye{
-    fill:black;
-    stroke:#111;
-    stroke-width:4;
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
-.pupil{
-    fill: white;
-    transition:transform 0.08s linear;
-    stroke: #000;
-    stroke-width:2;
+.subtitle {
+    font-size: clamp(17px, 3.5vw, 22px);
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
 }
 
-.mouth{
-    fill:black;
+.message {
+    font-size: clamp(14px, 2.5vw, 15px);
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.6;
+    margin-bottom: 24px;
+    font-weight: 500;
 }
 
-.logo-letter{
-    font-size:120px;
-    font-weight:bold;
-    fill:#FFD54F;
-    font-family:Arial, sans-serif;
+/* GATO ANIMADO CON PUPILAS INTERACTIVAS */
+.cat-wrapper {
+    width: clamp(180px, 40vw, 240px);
+    margin: 10px auto 20px;
+    filter: drop-shadow(0 12px 25px rgba(239, 51, 99, 0.25));
 }
 
-/* Cola */
-.tail{
-    transform-origin:360px 450px;
-    animation:wag 2s ease-in-out infinite;
-}
-@keyframes wag{
-    0%{transform:rotate(10deg);}
-    50%{transform:rotate(-15deg);}
-    100%{transform:rotate(10deg);}
+.cat-svg {
+    width: 100%;
+    animation: floatCat 4s ease-in-out infinite;
 }
 
-/* BOTÓN */
-.btn{
-    margin-top:35px;
-    padding:12px 30px;
-    border:none;
-    border-radius:30px;
-    background:#00ffff;
-    color:black;
-    font-weight:bold;
-    cursor:pointer;
-    box-shadow:0 0 20px #00ffff;
-    transition:0.3s;
-    opacity:0;
-    transform:scale(0.5);
-    font-size:clamp(14px,2.5vw,16px);
-}
-.btn:hover{
-    background:white;
-    box-shadow:0 0 30px white;
-}
-.show{
-    opacity:1;
-    transform:scale(1);
+@keyframes floatCat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
 }
 
-/* SPLASH */
-.splash{
-    position:absolute;
-    width:15px;
-    height:15px;
-    background:black;
-    border-radius:50%;
-    pointer-events:none;
-    animation:splashAnim 800ms ease-out forwards;
-}
-@keyframes splashAnim{
-    to{
-        transform:translate(var(--x), var(--y)) scale(0.3);
-        opacity:0;
-    }
+.cat-fill {
+    fill: #EF3363;
+    stroke: #07070a;
+    stroke-width: 5;
 }
 
-/* Partículas */
-.particle{
-    position:absolute;
-    width:4px;
-    height:4px;
-    background:#00ffff;
-    border-radius:50%;
-    animation:floatParticle 6s linear infinite;
+.cat-fill-dark {
+    fill: #3b0918;
+    stroke-width: 4;
 }
-@keyframes floatParticle{
-    from{transform:translateY(0);}
-    to{transform:translateY(-800px);}
+
+.eye {
+    fill: #ffffff;
+    stroke: #07070a;
+    stroke-width: 4;
 }
-.tail-ink{
+
+.pupil {
+    fill: #07070a;
+    transition: transform 0.08s linear;
+}
+
+.mouth {
+    fill: #07070a;
+}
+
+.tail-ink {
     fill: none;
-    stroke: #5a0071;
+    stroke: #EF3363;
     stroke-width: 22;
     stroke-linecap: round;
     stroke-linejoin: round;
-    transform-origin:380px 450px;
-    animation:inkWag 3s ease-in-out infinite;
+    transform-origin: 380px 450px;
+    animation: inkWag 3.5s ease-in-out infinite;
 }
-@keyframes inkWag{
-    0%{transform:rotate(5deg);}
-    50%{transform:rotate(-8deg);}
-    100%{transform:rotate(5deg);}
+
+@keyframes inkWag {
+    0%, 100% { transform: rotate(5deg); }
+    50% { transform: rotate(-10deg); }
+}
+
+/* BOTONES DE ACCIÓN */
+.btn-group-custom {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 24px;
+}
+
+.btn-primary-custom {
+    padding: 13px 28px;
+    border: none;
+    border-radius: 14px;
+    background: var(--accent);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 6px 20px rgba(239, 51, 99, 0.4);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(239, 51, 99, 0.6);
+    background: #e62052;
+}
+
+.btn-secondary-custom {
+    padding: 13px 24px;
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 700;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.btn-secondary-custom:hover {
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+/* GOTAS DE TINTA ANIMADAS AL DAR CLIC */
+.splash {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: splashAnim 700ms ease-out forwards;
+    z-index: 9999;
+}
+
+@keyframes splashAnim {
+    to {
+        transform: translate(var(--x), var(--y)) scale(0.2);
+        opacity: 0;
+    }
+}
+
+/* PARTÍCULAS DE POLVO FLOTANTES */
+.particle {
+    position: fixed;
+    width: 3px;
+    height: 3px;
+    background: rgba(239, 51, 99, 0.5);
+    border-radius: 50%;
+    animation: floatParticle 8s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes floatParticle {
+    from { transform: translateY(0); opacity: 0; }
+    50% { opacity: 0.8; }
+    to { transform: translateY(-100vh); opacity: 0; }
 }
 </style>
 </head>
 <body>
 
-<div class="ink-bg"></div>
+<div class="grid-overlay"></div>
+
 <div class="container">
-    <div class="error">404</div>
-    <div class="message">Oops... Parece que esta página se perdió en la tinta <i class="bi bi-heartbreak-fill"></i></div>
+    <div class="error-code">404</div>
+    <h1 class="subtitle">Oops... Esta página se perdió en la tinta</h1>
+    <p class="message">El enlace que buscas no existe o ha sido movido. Nuestro minino reportero está rastreando la ruta.</p>
+
+    <!-- ILUSTRACIÓN SVG DE GATO DE TINTA -->
     <div class="cat-wrapper">
-        <svg class="cat-svg" viewBox="0 0 500 600">
-            <g transform="translate(12.5, 15) scale(0.85)">
+        <svg class="cat-svg" viewBox="0 0 500 560">
+            <g transform="translate(12.5, 10) scale(0.85)">
                 <!-- Cola -->
                 <path class="tail-ink"
                     d="M380 450 
                         C400 400, 420 320, 380 260
                         C360 230, 390 200, 420 220"/>
-                <!-- Patas traseras (atrás) -->
+                <!-- Patas traseras -->
                 <ellipse cx="150" cy="530" rx="60" ry="40" class="cat-fill"/>
                 <ellipse cx="350" cy="530" rx="60" ry="40" class="cat-fill"/>
                 <!-- Dedos patas traseras -->
-                <line x1="100" y1="520" x2="100" y2="550" stroke="#111" stroke-width="4"/>
-                <line x1="125" y1="510" x2="125" y2="570" stroke="#111" stroke-width="4"/>
-
-                <line x1="375" y1="510" x2="375" y2="570" stroke="#111" stroke-width="4"/>
-                <line x1="400" y1="520" x2="400" y2="550" stroke="#111" stroke-width="4"/>
+                <line x1="100" y1="520" x2="100" y2="550" stroke="#07070a" stroke-width="4"/>
+                <line x1="125" y1="510" x2="125" y2="570" stroke="#07070a" stroke-width="4"/>
+                <line x1="375" y1="510" x2="375" y2="570" stroke="#07070a" stroke-width="4"/>
+                <line x1="400" y1="520" x2="400" y2="550" stroke="#07070a" stroke-width="4"/>
                 <!-- Orejas -->
                 <polygon points="95,180 90,20 180,85" class="cat-fill"/>
                 <polygon points="320,85 410,20 405,180" class="cat-fill"/>
                 <polygon points="118,150 110,65 157,105" class="cat-fill-dark"/>
                 <polygon points="343,105 390,65 382,150" class="cat-fill-dark"/>
-                <!-- Cuerpo (delante de patas traseras) -->
+                <!-- Cuerpo -->
                 <ellipse cx="250" cy="420" rx="120" ry="150" class="cat-fill"/>
-                <text x="250" y="450" text-anchor="middle" class="logo-letter">C</text>
                 <circle cx="250" cy="230" r="160" class="cat-fill"/>
                 <!-- Ojos -->
-                <ellipse cx="200" cy="220" rx="50" ry="65" class="eye"/>
-                <ellipse cx="300" cy="220" rx="50" ry="65" class="eye"/>
-                <!-- Pupilas que se mueven -->
-                <circle cx="200" cy="220" r="35" class="pupil" id="pupilLeft"/>
-                <circle cx="300" cy="220" r="35" class="pupil" id="pupilRight"/>
-                <!-- Boca estilo :3 -->
+                <ellipse cx="190" cy="210" rx="45" ry="60" class="eye"/>
+                <ellipse cx="310" cy="210" rx="45" ry="60" class="eye"/>
+                <!-- Pupilas que siguen el cursor -->
+                <circle cx="190" cy="210" r="24" class="pupil" id="pupilLeft"/>
+                <circle cx="310" cy="210" r="24" class="pupil" id="pupilRight"/>
+                <!-- Nariz y Boca estilo :3 -->
+                <polygon points="250,250 240,265 260,265" fill="#ffffff"/>
                 <path d="
-                M150 280           
-                Q200 340 250 300 
-                Q300 340 350 280 
-                Q250 465 150 280
+                M160 280           
+                Q200 330 250 295 
+                Q300 330 340 280 
+                Q250 430 160 280
                 Z" class="mouth"/>
-                <ellipse cx="250" cy="290" rx="20" ry="10" fill="#ffdce0"/>
-                <ellipse cx="250" cy="358" rx="20" ry="10" fill="#dc2a74"/>
-                <!-- Patas delanteras (delante del cuerpo) -->
-                <ellipse cx="190" cy="560" rx="60" ry="40" class="cat-fill"/>
-                <ellipse cx="310" cy="560" rx="60" ry="40" class="cat-fill"/>
+                <ellipse cx="250" cy="335" rx="22" ry="12" fill="#FFD54F"/>
+                <!-- Patas delanteras -->
+                <ellipse cx="190" cy="550" rx="55" ry="38" class="cat-fill"/>
+                <ellipse cx="310" cy="550" rx="55" ry="38" class="cat-fill"/>
                 <!-- Dedos patas delanteras -->
-                <line x1="165" y1="560" x2="165" y2="600" stroke="#111" stroke-width="4"/>
-                <line x1="190" y1="535" x2="190" y2="600" stroke="#111" stroke-width="4"/>
-                <line x1="215" y1="560" x2="215" y2="600" stroke="#111" stroke-width="4"/>
-
-                <line x1="285" y1="560" x2="285" y2="600" stroke="#111" stroke-width="4"/>
-                <line x1="310" y1="535" x2="310" y2="600" stroke="#111" stroke-width="4"/>
-                <line x1="335" y1="560" x2="335" y2="600" stroke="#111" stroke-width="4"/>
+                <line x1="165" y1="550" x2="165" y2="585" stroke="#07070a" stroke-width="4"/>
+                <line x1="190" y1="525" x2="190" y2="585" stroke="#07070a" stroke-width="4"/>
+                <line x1="215" y1="550" x2="215" y2="585" stroke="#07070a" stroke-width="4"/>
+                <line x1="285" y1="550" x2="285" y2="585" stroke="#07070a" stroke-width="4"/>
+                <line x1="310" y1="525" x2="310" y2="585" stroke="#07070a" stroke-width="4"/>
+                <line x1="335" y1="550" x2="335" y2="585" stroke="#07070a" stroke-width="4"/>
             </g>
         </svg>
     </div>
-    <button class="btn" id="backBtn">Volver al inicio</button>
+
+    <!-- BOTONES DE NAVEGACIÓN -->
+    <div class="btn-group-custom">
+        <a href="/" class="btn-primary-custom" id="backBtn">
+            <i class="bi bi-house-door-fill"></i> Volver al Inicio
+        </a>
+        <a href="/popular.php" class="btn-secondary-custom">
+            <i class="bi bi-newspaper"></i> Ver Noticias
+        </a>
+    </div>
 </div>
+
 <script>
-const btn = document.getElementById("backBtn");
+// SEGUIMIENTO DE PUPILAS CON EL CURSOR
 const pupils = [
     document.getElementById("pupilLeft"),
     document.getElementById("pupilRight")
 ];
 
 const eyeCenters = [
-    {x:200,y:220},
-    {x:300,y:220}
+    {x: 190, y: 210},
+    {x: 310, y: 210}
 ];
 
 document.addEventListener("mousemove", e => {
-    pupils.forEach((pupil,index)=>{
-        const rect = document.querySelector(".cat-svg").getBoundingClientRect();
+    pupils.forEach((pupil, index) => {
+        const svg = document.querySelector(".cat-svg");
+        if (!svg) return;
+        const rect = svg.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
         const dx = mouseX - eyeCenters[index].x;
         const dy = mouseY - eyeCenters[index].y;
 
-        const angle = Math.atan2(dy,dx);
-        const radius = 12;
+        const angle = Math.atan2(dy, dx);
+        const radius = 16;
 
-        const x = Math.cos(angle)*radius;
-        const y = Math.sin(angle)*radius;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
 
         pupil.style.transform = `translate(${x}px, ${y}px)`;
     });
 });
 
-/* Mostrar botón */
-setTimeout(()=> btn.classList.add("show"),1500);
-
-/* Splash */
-btn.addEventListener("click",(e)=>{
-    for(let i=0;i<20;i++){
-        let splash=document.createElement("div");
-        splash.className="splash";
-        splash.style.left=e.clientX+"px";
-        splash.style.top=e.clientY+"px";
-        splash.style.setProperty("--x",(Math.random()-0.5)*200+"px");
-        splash.style.setProperty("--y",(Math.random()-0.5)*200+"px");
+// EFECTO DE GOTAS DE TINTA EN CLIC
+document.addEventListener("click", (e) => {
+    for (let i = 0; i < 12; i++) {
+        let splash = document.createElement("div");
+        splash.className = "splash";
+        splash.style.left = e.clientX + "px";
+        splash.style.top = e.clientY + "px";
+        splash.style.setProperty("--x", (Math.random() - 0.5) * 180 + "px");
+        splash.style.setProperty("--y", (Math.random() - 0.5) * 180 + "px");
         document.body.appendChild(splash);
-        setTimeout(()=> splash.remove(),800);
+        setTimeout(() => splash.remove(), 700);
     }
-
-    setTimeout(()=>{
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            window.location.href = "/";
-        }
-    },400);
 });
 
-/* partículas */
-for(let i=0;i<30;i++){
-    let p=document.createElement("div");
-    p.className="particle";
-    p.style.left=Math.random()*100+"vw";
-    p.style.top=Math.random()*100+"vh";
-    p.style.animationDuration=(4+Math.random()*4)+"s";
+// PARTÍCULAS AMBIENTALES
+for (let i = 0; i < 25; i++) {
+    let p = document.createElement("div");
+    p.className = "particle";
+    p.style.left = Math.random() * 100 + "vw";
+    p.style.top = (50 + Math.random() * 50) + "vh";
+    p.style.animationDuration = (5 + Math.random() * 5) + "s";
+    p.style.animationDelay = (Math.random() * 3) + "s";
     document.body.appendChild(p);
 }
 </script>

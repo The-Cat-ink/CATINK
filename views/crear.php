@@ -877,7 +877,6 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
                   <div class="pv-rank-title">Lo que más esperamos</div>
                   <div class="pv-rank-hero pv-card">
                     <div class="pv-bg" id="pvEspHero"></div>
-                    <div class="pv-rank-num">1</div>
                     <div class="pv-rank-ov"><div class="pv-rank-name" id="pvEspName">Título de la noticia</div></div>
                     <div class="pv-rank-score" id="pvEspScore">10.0</div>
                   </div>

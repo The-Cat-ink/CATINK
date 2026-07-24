@@ -8,8 +8,18 @@
     }
     require_once("./../views/helpers/urlhelper.php");
 
+    // Asegurar que existan las 6 páginas obligatorias en la BD
+    $seccionesObligatorias = ['nosotros', 'terminos', 'privacidad', 'cookies', 'contacto', 'suscripcion'];
+    foreach ($seccionesObligatorias as $sec) {
+        $checkSec = @$con->query("SELECT id_pag FROM paginas WHERE nombre_pag='$sec'");
+        if ($checkSec && $checkSec->num_rows === 0) {
+            @$con->query("INSERT INTO paginas (nombre_pag, contenido_pag) VALUES ('$sec', '')");
+        }
+    }
+
     // Logos de marcas
-    $logos = $con->query("SELECT * FROM logos_marcas ORDER BY orden ASC, creado ASC")->fetch_all(MYSQLI_ASSOC);
+    $logosRes = @$con->query("SELECT * FROM logos_marcas ORDER BY orden ASC, creado ASC");
+    $logos    = ($logosRes && method_exists($logosRes, 'fetch_all')) ? $logosRes->fetch_all(MYSQLI_ASSOC) : [];
 
     $sql = "SELECT * FROM paginas";
     $result = $con->query($sql);
@@ -19,56 +29,152 @@
         $paginas[] = $row;
     }
     $totalPaginas = count($paginas);
+
+    // Configuración estética por sección
+    $pageMap = [
+        'nosotros'    => ['icon' => 'bi-people-fill',            'color' => '#EF3363', 'bg' => 'rgba(239,51,99,0.12)', 'url' => siteUrl() . '/nosotros',    'label' => 'Sobre Nosotros'],
+        'terminos'    => ['icon' => 'bi-file-earmark-text-fill', 'color' => '#3b82f6', 'bg' => 'rgba(59,130,246,0.12)', 'url' => siteUrl() . '/terminos',    'label' => 'Términos y Condiciones'],
+        'privacidad'  => ['icon' => 'bi-shield-lock-fill',       'color' => '#8b5cf6', 'bg' => 'rgba(139,92,246,0.12)', 'url' => siteUrl() . '/privacidad',  'label' => 'Aviso de Privacidad'],
+        'cookies'     => ['icon' => 'bi-cookie',                 'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.12)', 'url' => siteUrl() . '/cookies',    'label' => 'Política de Cookies'],
+        'contacto'    => ['icon' => 'bi-envelope-heart-fill',    'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.12)', 'url' => siteUrl() . '/contactanos', 'label' => 'Contáctanos'],
+        'suscripcion' => ['icon' => 'bi-bell-fill',              'color' => '#ec4899', 'bg' => 'rgba(236,72,153,0.12)', 'url' => siteUrl() . '/suscripcion', 'label' => 'Suscríbete'],
+        'unete'       => ['icon' => 'bi-briefcase-fill',         'color' => '#f43f5e', 'bg' => 'rgba(244,63,94,0.12)', 'url' => siteUrl() . '/unete',       'label' => 'Únete al Equipo']
+    ];
 ?>
-<div class="container-fluid">
+<div class="container-fluid px-3 py-2">
 
     <?php if (isset($_GET['msg']) && $_GET['msg'] == 'actualizado'): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert" style="background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2); border-radius:8px; margin-bottom:16px;">
-            <i class="bi bi-check-circle-fill"></i> Página actualizada correctamente.
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25); border-radius:12px; margin-bottom:20px; font-weight:600;">
+            <i class="bi bi-check-circle-fill me-2"></i> Página y datos de contenido actualizados correctamente.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
 
-    <!-- ── Cuadrícula principal: tabla izq / subir logo der ── -->
-    <div class="paginas-layout-grid">
+    <!-- ── Título Principal y Stats ───────────────────────────── -->
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+        <div>
+            <h1 class="h2 font-weight-bold m-0" style="font-weight:900; color:var(--text); letter-spacing:-0.02em;">Gestión de Páginas & CMS</h1>
+            <p class="text-muted m-0 mt-1" style="font-size:0.88rem;">Administra las secciones secundarias, aviso legal, marcas colaboradoras y correos de la plataforma.</p>
+        </div>
+        <a href="./preview_email.php" target="_blank" class="btn btn-accent px-3 py-2" style="display:inline-flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:800; border-radius:12px; box-shadow:0 4px 15px rgba(239,51,99,0.3);">
+            <i class="bi bi-envelope-paper-heart-fill"></i> Previsualizador de Correos
+        </a>
+    </div>
 
-        <!-- ── Columna izquierda: Páginas legales ──────────── -->
-        <div style="display:flex;flex-direction:column;">
-            <div class="mb-2">
-                <h2 style="margin:0 0 2px;font-size:2rem;font-weight:800;">Gestión de Páginas Legales</h2>
-            </div>
-            <div class="contenidos-toolbar" style="margin-bottom:10px;">
-                <div class="contenidos-tabs">
-                    <span>Todas las páginas</span>
+    <!-- ── 3 Tarjetas de Resumen Rápido ────────────────────────── -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+                <div class="card-body p-3 d-flex align-items-center gap-3">
+                    <div style="width:48px; height:48px; border-radius:14px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0;">
+                        <i class="bi bi-file-earmark-code-fill"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $totalPaginas ?></div>
+                        <div style="font-size:0.8rem; font-weight:700; color:var(--muted); margin-top:4px;">Secciones Editables CMS</div>
+                    </div>
                 </div>
             </div>
-            <div class="card shadow-sm" style="flex:1;">
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+                <div class="card-body p-3 d-flex align-items-center gap-3">
+                    <div style="width:48px; height:48px; border-radius:14px; background:rgba(139,92,246,0.12); color:#8b5cf6; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0;">
+                        <i class="bi bi-building-check"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= count($logos) ?></div>
+                        <div style="font-size:0.8rem; font-weight:700; color:var(--muted); margin-top:4px;">Marcas Colaboradoras</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:48px; height:48px; border-radius:14px; background:rgba(16,185,129,0.12); color:#10b981; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0;">
+                            <i class="bi bi-envelope-check-fill"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;">6</div>
+                            <div style="font-size:0.8rem; font-weight:700; color:var(--muted); margin-top:4px;">Plantillas HTML de Correo</div>
+                        </div>
+                    </div>
+                    <a href="./preview_email.php" target="_blank" class="btn btn-sm btn-outline-secondary" style="border-radius:10px; font-size:0.78rem; font-weight:700; padding:6px 12px; white-space:nowrap;">
+                        Ver <i class="bi bi-arrow-up-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Cuadrícula principal: tabla izq / subir logo der ── -->
+    <div class="paginas-layout-grid mb-4">
+
+        <!-- ── Columna izquierda: Páginas legales / Secundarias ── -->
+        <div class="d-flex flex-column h-100">
+            <div class="card border-0 shadow-sm flex-fill" style="background:var(--card-bg); border-radius:18px; border:1px solid var(--border)!important; overflow:hidden;">
+                <div class="card-header bg-transparent border-bottom p-3 d-flex align-items-center justify-content-between">
+                    <h5 class="m-0 font-weight-bold" style="font-weight:800; font-size:1.05rem; color:var(--text);">
+                        <i class="bi bi-journal-text me-2 text-accent" style="color:var(--accent);"></i> Páginas y Secciones
+                    </h5>
+                    <span class="badge" style="background:rgba(239,51,99,0.12); color:var(--accent); border-radius:20px; padding:6px 12px; font-weight:800; font-size:0.75rem;">
+                        <?= $totalPaginas ?> Registradas
+                    </span>
+                </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="contenidos-table paginas-table-compact">
+                        <table class="table table-hover align-middle m-0 paginas-table" style="color:var(--text);">
                             <thead>
                                 <tr>
-                                    <th>Nombre de la Sección</th>
-                                    <th>Acciones</th>
+                                    <th>Sección / Página</th>
+                                    <th>Estado</th>
+                                    <th style="text-align:right;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach($paginas as $row): ?>
-                                    <tr>
-                                        <td>
-                                            <strong class="table-title" style="text-transform: capitalize;">
-                                                <i class="bi bi-file-text text-muted" style="margin-right:5px;"></i> <?= htmlspecialchars($row['nombre_pag']) ?>
-                                            </strong>
+                                <?php foreach($paginas as $row): 
+                                    $key = strtolower(trim($row['nombre_pag']));
+                                    $cfg = $pageMap[$key] ?? [
+                                        'icon'  => 'bi-file-text-fill',
+                                        'color' => '#64748b',
+                                        'bg'    => 'rgba(100,116,139,0.12)',
+                                        'url'   => siteUrl() . '/' . $key,
+                                        'label' => ucfirst($row['nombre_pag'])
+                                    ];
+                                ?>
+                                    <tr style="border-bottom:1px solid var(--border); transition:background 0.2s ease;">
+                                        <td style="padding:14px 18px;">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div style="width:40px; height:40px; border-radius:12px; background:<?= $cfg['bg'] ?>; color:<?= $cfg['color'] ?>; display:flex; align-items:center; justify-content:center; font-size:1.15rem; flex-shrink:0;">
+                                                    <i class="bi <?= $cfg['icon'] ?>"></i>
+                                                </div>
+                                                <div>
+                                                    <strong style="font-size:0.95rem; font-weight:800; color:var(--text); display:block; line-height:1.2;"><?= htmlspecialchars($cfg['label']) ?></strong>
+                                                    <span style="font-size:0.75rem; color:var(--muted); font-family:monospace;"><?= str_replace(siteUrl(), '', $cfg['url']) ?></span>
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td>
-                                            <div class="noticias-actions" style="border-top:none; padding:0; justify-content:flex-start;">
+                                        <td style="padding:14px 18px;">
+                                            <span class="badge" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25); padding:5px 10px; border-radius:20px; font-weight:700; font-size:0.72rem;">
+                                                <i class="bi bi-circle-fill" style="font-size:0.45rem; vertical-align:middle; margin-right:4px;"></i> CMS Activo
+                                            </span>
+                                        </td>
+                                        <td style="padding:14px 18px; text-align:right;">
+                                            <div class="d-inline-flex gap-2">
                                                 <button
-                                                    class="btn btn-edit btnEditar"
+                                                    class="btn btn-sm btn-accent btnEditar"
                                                     data-id="<?= $row['id_pag'] ?>"
                                                     data-nombre="<?= htmlspecialchars($row['nombre_pag']) ?>"
-                                                    data-contenido="<?= base64_encode($row['contenido_pag']) ?>" title="Editar Contenido">
-                                                    <i class="bi bi-pencil-square"></i>
+                                                    data-contenido="<?= base64_encode($row['contenido_pag'] ?? '') ?>"
+                                                    data-meta="<?= htmlspecialchars($row['meta_json'] ?? '', ENT_QUOTES) ?>"
+                                                    style="padding:6px 14px; font-size:0.82rem; font-weight:800; border-radius:10px; display:inline-flex; align-items:center; gap:6px;">
+                                                    <i class="bi bi-pencil-square"></i> Editar
                                                 </button>
+                                                <a href="<?= $cfg['url'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary" style="padding:6px 12px; font-size:0.82rem; font-weight:600; border-radius:10px; display:inline-flex; align-items:center; gap:4px;" title="Ver en la web">
+                                                    <i class="bi bi-eye"></i> Ver
+                                                </a>
                                             </div>
                                         </td>
                                     </tr>
@@ -80,55 +186,74 @@
             </div>
         </div>
 
-        <!-- ── Columna derecha: Subir logo ─────────────────── -->
-        <div>
-            <div class="mb-2">
-                <h2 style="margin:0 0 2px;font-size:2rem;font-weight:800;">Logos de Marcas Colaboradoras</h2>
-                <p style="color:var(--muted);margin:0;font-size:13px;">Se muestran en "Sobre nosotros" debajo del contenido.</p>
-            </div>
-            <div class="card shadow-sm" style="margin-top:10px;">
-                <div class="card-body">
-                    <h5 class="card-title" style="margin-top:0;font-size:0.95rem;">Subir Nuevo Logo</h5>
-                    <label class="file-drop-zone" id="logoDropZone">
+        <!-- ── Columna derecha: Subir logo de marca ────────────── -->
+        <div class="d-flex flex-column h-100">
+            <div class="card border-0 shadow-sm flex-fill" style="background:var(--card-bg); border-radius:18px; border:1px solid var(--border)!important; overflow:hidden;">
+                <div class="card-header bg-transparent border-bottom p-3">
+                    <h5 class="m-0 font-weight-bold" style="font-weight:800; font-size:1.05rem; color:var(--text);">
+                        <i class="bi bi-cloud-arrow-up-fill me-2 text-accent" style="color:var(--accent);"></i> Subir Marca Colaboradora
+                    </h5>
+                    <p class="text-muted m-0 mt-1" style="font-size:0.8rem;">Se muestran en el carrusel de "Sobre Nosotros".</p>
+                </div>
+                <div class="card-body p-3">
+                    <label class="file-drop-zone" id="logoDropZone" style="border-radius:14px; padding:24px; text-align:center;">
                         <input type="file" id="logoFile" accept="image/*" hidden>
-                        <div class="file-drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
-                        <div class="file-drop-text">Arrastra una imagen o <span>haz clic aquí</span></div>
-                        <div class="file-drop-hint">PNG, JPG, — Mejor si es fondo transparente</div>
-                        <img id="logoPreview" class="file-drop-preview" style="display:none;max-height:80px;object-fit:contain;">
+                        <div class="file-drop-icon" style="font-size:2.2rem; color:var(--accent);"><i class="bi bi-cloud-arrow-up"></i></div>
+                        <div class="file-drop-text" style="font-size:0.95rem; font-weight:700; margin-top:8px;">Arrastra una imagen o <span style="color:var(--accent); text-decoration:underline;">haz clic aquí</span></div>
+                        <div class="file-drop-hint" style="font-size:0.78rem; color:var(--muted); margin-top:4px;">Formatos recomendados: PNG, WebP o SVG (fondo transparente)</div>
+                        <img id="logoPreview" class="file-drop-preview" style="display:none; max-height:80px; object-fit:contain; margin:10px auto 0;">
                     </label>
-                    <div class="cn-field" style="margin-top:12px;">
-                        <label for="logoNombre" style="font-size:13px;font-weight:600;">Nombre de la marca <span style="color:var(--muted);font-weight:400;">(opcional)</span></label>
-                        <input type="text" id="logoNombre" class="cn-input">
+
+                    <div class="cn-field mt-3">
+                        <label for="logoNombre" style="font-size:0.82rem; font-weight:700; color:var(--text);">Nombre de la marca <span style="color:var(--muted); font-weight:400;">(opcional)</span></label>
+                        <input type="text" id="logoNombre" class="cn-input" placeholder="Ej: Disney+, Sony, Crunchyroll..." style="border-radius:10px;">
                     </div>
-                    <div class="cn-field" style="margin-top:12px;">
-                        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Visible hasta <span style="color:var(--muted);font-weight:400;">(opcional — se retira automáticamente al vencer)</span></label>
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <div class="logo-exp-fields" style="flex:1;min-width:0;">
-                                <div class="cn-date-input">
+
+                    <div class="cn-field mt-3">
+                        <label style="font-size:0.82rem; font-weight:700; color:var(--text); display:block; margin-bottom:6px;">Visibilidad / Expiración <span style="color:var(--muted); font-weight:400;">(opcional)</span></label>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="logo-exp-fields flex-fill">
+                                <div class="cn-date-input" style="border-radius:10px;">
                                     <i class="bi bi-calendar3"></i>
                                     <input type="date" id="logoExpFecha" min="<?= date('Y-m-d', strtotime('+1 day')) ?>">
                                 </div>
-                                <div class="cn-date-input">
+                                <div class="cn-date-input" style="border-radius:10px;">
                                     <i class="bi bi-clock"></i>
                                     <input type="time" id="logoExpHora" value="23:59">
                                 </div>
                             </div>
-                            <button type="button" id="btnSubirLogo" class="btn btn-accent" style="flex-shrink:0;white-space:nowrap;align-self:center;"><i class="bi bi-upload"></i> Subir Logo</button>
+                            <button type="button" id="btnSubirLogo" class="btn btn-accent px-3 py-2" style="border-radius:10px; font-weight:800; font-size:0.85rem; flex-shrink:0;">
+                                <i class="bi bi-upload me-1"></i> Subir Logo
+                            </button>
                         </div>
                     </div>
-                    <p id="logoMsg" style="margin-top:8px;font-size:0.85rem;font-weight:600;text-align:right;min-height:1.2em;"></p>
+                    <p id="logoMsg" style="margin-top:10px; font-size:0.85rem; font-weight:700; text-align:right; min-height:1.2em;"></p>
                 </div>
             </div>
         </div>
 
     </div><!-- /.paginas-layout-grid -->
 
-    <!-- ── Galería de logos: ancho completo ──────────────────── -->
-    <div class="card shadow-sm">
+    <!-- ── Galería de logos de marcas: ancho completo ──────────── -->
+    <div class="card border-0 shadow-sm" style="background:var(--card-bg); border-radius:18px; border:1px solid var(--border)!important;">
+        <div class="card-header bg-transparent border-bottom p-3 d-flex align-items-center justify-content-between">
+            <h5 class="m-0 font-weight-bold" style="font-weight:800; font-size:1.05rem; color:var(--text);">
+                <i class="bi bi-grid-3x3-gap-fill me-2 text-accent" style="color:var(--accent);"></i> Marcas Colaboradoras Registradas
+            </h5>
+            <span class="badge" style="background:rgba(139,92,246,0.12); color:#8b5cf6; border-radius:20px; padding:6px 12px; font-weight:800; font-size:0.75rem;">
+                <?= count($logos) ?> Marcas
+            </span>
+        </div>
         <div class="card-body p-3">
             <div class="logos-grid" id="logosGrid">
                 <?php if (empty($logos)): ?>
-                    <p style="color:var(--muted);text-align:center;grid-column:1/-1;padding:20px;" id="logosEmpty">No hay logos. Sube el primero.</p>
+                    <div style="text-align:center; padding:48px 24px; grid-column:1/-1;" id="logosEmpty">
+                        <div style="width:64px; height:64px; border-radius:50%; background:rgba(239,51,99,0.1); color:var(--accent); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:1.8rem;">
+                            <i class="bi bi-images"></i>
+                        </div>
+                        <h4 style="margin:0 0 6px; font-weight:800; color:var(--text);">Aún no has agregado marcas colaboradoras</h4>
+                        <p style="margin:0; color:var(--muted); font-size:0.88rem; max-width:440px; margin-inline:auto;">Sube los logotipos de empresas y marcas aliadas en el formulario de arriba para mostrarlos en el carrusel de <strong>"Sobre Nosotros"</strong>.</p>
+                    </div>
                 <?php endif; ?>
                 <?php foreach ($logos as $i => $logo):
                     $exp       = $logo['fecha_expiracion'] ?? null;
@@ -146,13 +271,13 @@
                         }
                     }
                 ?>
-                    <div class="logo-card <?= $vencido ? 'logo-card-vencida' : '' ?>" id="logo-<?= $logo['id_logo'] ?>" draggable="true" data-id="<?= $logo['id_logo'] ?>">
+                    <div class="logo-card <?= $vencido ? 'logo-card-vencida' : '' ?>" id="logo-<?= $logo['id_logo'] ?>" draggable="true" data-id="<?= $logo['id_logo'] ?>" style="border-radius:14px;">
                         <div class="logo-num"><?= $i + 1 ?></div>
-                        <div class="logo-img-wrap">
+                        <div class="logo-img-wrap" style="padding:16px;">
                             <img src="<?= imageUrl($logo['imagen']) ?>" alt="<?= htmlspecialchars($logo['nombre']) ?>" loading="lazy">
                         </div>
                         <?php if ($logo['nombre']): ?>
-                            <div class="logo-nombre"><?= htmlspecialchars($logo['nombre']) ?></div>
+                            <div class="logo-nombre" style="font-weight:700;"><?= htmlspecialchars($logo['nombre']) ?></div>
                         <?php endif; ?>
                         <?= $expBadge ?>
                         <div class="logo-actions">
@@ -178,36 +303,45 @@
 
 <!-- ══ Modal editar página ════════════════════════════════════════ -->
 <div id="modalPagina" class="crop-modal" style="display: none;">
-    <div class="crop-modal-content" style="max-width: 800px; width:95%;">
-        <h3><i class="bi bi-pencil-square"></i> Editar Página</h3>
+    <div class="crop-modal-content" style="max-width: 850px; width:95%; border-radius:18px;">
+        <h3 style="font-weight:800; margin-top:0;"><i class="bi bi-pencil-square text-accent"></i> Editar Configuración de Página</h3>
 
         <form id="formPagina" action="./../controllers/pagina.php" method="POST">
             <input type="hidden" name="id" id="pagina_id">
 
             <div style="margin-bottom: 16px;">
-                <label for="nombre" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Sección</label>
-                <select name="nombre" id="nombre" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--bg); color: var(--text);">
+                <label for="nombre" style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; color: var(--text);">Sección / Página</label>
+                <select name="nombre" id="nombre" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; background: var(--bg); color: var(--text); font-weight:700;">
                     <option value="nosotros">Nosotros</option>
                     <option value="terminos">Términos y condiciones</option>
                     <option value="privacidad">Aviso de privacidad</option>
                     <option value="cookies">Política de cookies</option>
+                    <option value="suscripcion">Suscríbete</option>
+                    <option value="contacto">Contáctanos</option>
+                    <option value="unete">Únete al Equipo</option>
                 </select>
             </div>
 
-            <div style="margin-bottom: 16px;">
-                <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Contenido</label>
+            <input type="hidden" name="meta_json_raw" id="meta_json_raw">
+
+            <div id="metaFieldsContainer" style="margin-bottom: 20px; border-top: 1px solid var(--border); padding-top: 16px; max-height: 420px; overflow-y: auto;">
+                <!-- Poblado dinámicamente según la sección elegida -->
+            </div>
+
+            <div style="margin-bottom: 16px;" id="editorGroupContainer">
+                <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; color: var(--text);">Contenido Editor (Texto / HTML)</label>
                 <div class="document-editor">
                     <div class="document-editor__toolbar" id="toolbarpag"></div>
-                    <div class="document-editor__editable-container" style="height: 350px; overflow-y: auto;">
+                    <div class="document-editor__editable-container" style="height: 280px; overflow-y: auto;">
                         <div id="editorpag" class="editor-content"></div>
                     </div>
                 </div>
                 <input type="hidden" name="contenido" id="contenido">
             </div>
 
-            <div class="crop-actions">
-                <button type="button" class="btn btn-secondary" id="modalClosePag">Cancelar</button>
-                <button type="submit" class="btn btn-accent"><i class="bi bi-save"></i> Guardar Cambios</button>
+            <div class="crop-actions" style="margin-top:20px;">
+                <button type="button" class="btn btn-secondary px-4 py-2" id="modalClosePag" style="border-radius:10px; font-weight:700;">Cancelar</button>
+                <button type="submit" class="btn btn-accent px-4 py-2" style="border-radius:10px; font-weight:800;"><i class="bi bi-save me-1"></i> Guardar Cambios</button>
             </div>
         </form>
     </div>
@@ -215,41 +349,40 @@
 
 <!-- ══ Modal editar logo ══════════════════════════════════════════ -->
 <div id="modalEditLogo" class="crop-modal" style="display:none;">
-  <div class="crop-modal-content" style="max-width:440px;width:95%;">
-    <h3 style="margin-top:0;"><i class="bi bi-pencil-square"></i> Editar Logo</h3>
+  <div class="crop-modal-content" style="max-width:440px; width:95%; border-radius:18px;">
+    <h3 style="margin-top:0; font-weight:800;"><i class="bi bi-pencil-square text-accent"></i> Editar Logo</h3>
 
     <div class="cn-field" style="margin-bottom:16px;">
-      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
-        Imagen <span style="color:var(--muted);font-weight:400;">(dejar sin cambios para conservar la actual)</span>
+      <label style="font-size:13px;font-weight:700;display:block;margin-bottom:6px;">
+        Imagen <span style="color:var(--muted);font-weight:400;">(dejar sin cambios para conservar)</span>
       </label>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <img id="editLogoImgActual" style="max-height:56px;max-width:90px;object-fit:contain;border:1px solid var(--border);border-radius:8px;padding:4px;background:var(--bg);">
-        <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--text);background:var(--bg);">
+        <img id="editLogoImgActual" style="max-height:56px;max-width:90px;object-fit:contain;border:1px solid var(--border);border-radius:10px;padding:4px;background:var(--bg);">
+        <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:700;color:var(--text);background:var(--bg);">
           <i class="bi bi-image"></i> Cambiar imagen
           <input type="file" id="editLogoFile" accept="image/*" hidden>
         </label>
-        <img id="editLogoNewPreview" style="display:none;max-height:56px;max-width:90px;object-fit:contain;border:2px solid var(--accent);border-radius:8px;padding:4px;background:var(--bg);">
+        <img id="editLogoNewPreview" style="display:none;max-height:56px;max-width:90px;object-fit:contain;border:2px solid var(--accent);border-radius:10px;padding:4px;background:var(--bg);">
       </div>
     </div>
 
     <div class="cn-field" style="margin-bottom:16px;">
-      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
+      <label style="font-size:13px;font-weight:700;display:block;margin-bottom:6px;">
         Nombre de la marca <span style="color:var(--muted);font-weight:400;">(opcional)</span>
       </label>
-      <input type="text" id="editLogoNombre" class="cn-input" placeholder="Ej: Disney+">
+      <input type="text" id="editLogoNombre" class="cn-input" placeholder="Ej: Disney+" style="border-radius:10px;">
     </div>
 
     <div class="cn-field" style="margin-bottom:24px;">
-      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
+      <label style="font-size:13px;font-weight:700;display:block;margin-bottom:6px;">
         Visible hasta <span style="color:var(--muted);font-weight:400;">(dejar en blanco = sin vencimiento)</span>
       </label>
       <div class="logo-exp-fields">
-        <div class="cn-date-input">
+        <div class="cn-date-input" style="border-radius:10px;">
           <i class="bi bi-calendar3"></i>
-          <!-- min = hoy: evita elegir una fecha ya pasada, que dejaría el logo vencido -->
           <input type="date" id="editLogoFecha" min="<?= date('Y-m-d') ?>">
         </div>
-        <div class="cn-date-input">
+        <div class="cn-date-input" style="border-radius:10px;">
           <i class="bi bi-clock"></i>
           <input type="time" id="editLogoHora">
         </div>
@@ -257,126 +390,135 @@
     </div>
 
     <div class="crop-actions">
-      <button type="button" class="btn btn-secondary" id="closeEditLogo">Cancelar</button>
-      <button type="button" class="btn btn-accent" id="btnGuardarEditLogo"><i class="bi bi-save"></i> Guardar</button>
+      <button type="button" class="btn btn-secondary px-3" id="closeEditLogo" style="border-radius:10px; font-weight:700;">Cancelar</button>
+      <button type="button" class="btn btn-accent px-4" id="btnGuardarEditLogo" style="border-radius:10px; font-weight:800;"><i class="bi bi-save me-1"></i> Guardar</button>
     </div>
-    <p id="editLogoMsg" style="margin-top:10px;font-size:0.85rem;font-weight:600;text-align:right;min-height:1.2em;"></p>
+    <p id="editLogoMsg" style="margin-top:10px;font-size:0.85rem;font-weight:700;text-align:right;min-height:1.2em;"></p>
   </div>
 </div>
 
 <style>
+/* ── Estilos de Tabla Adaptables al Tema ──────────────────────── */
+.paginas-table thead th {
+    background: rgba(0, 0, 0, 0.03) !important;
+    color: var(--text) !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 12px 18px !important;
+}
+[data-bs-theme="dark"] .paginas-table thead th {
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
 /* ── Layout de dos columnas ──────────────────────────────────── */
 .paginas-layout-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.15fr 0.85fr;
     gap: 24px;
     align-items: stretch;
-    margin-bottom: 20px;
 }
-@media (max-width: 900px) {
+@media (max-width: 992px) {
     .paginas-layout-grid { grid-template-columns: 1fr; }
-}
-
-/* Compactar filas de la tabla de páginas */
-.paginas-table-compact td,
-.paginas-table-compact th {
-    padding: 10px 14px;
 }
 
 /* ── Galería de logos ────────────────────────────────────────── */
 .logos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
 }
 .logo-card {
     position: relative;
-    border-radius: 12px;
-    border: 2px solid var(--border);
+    border-radius: 14px;
+    border: 1px solid var(--border);
     background: var(--bg);
     overflow: hidden;
-    transition: transform .2s, box-shadow .2s;
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
-.logo-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+.logo-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.12); border-color: var(--accent); }
 .logo-img-wrap {
-    padding: 12px;
+    padding: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 90px;
+    min-height: 96px;
 }
 .logo-img-wrap img {
     max-width: 100%;
-    max-height: 70px;
+    max-height: 75px;
     object-fit: contain;
     display: block;
 }
 .logo-nombre {
     text-align: center;
-    font-size: 11px;
+    font-size: 12px;
+    font-weight: 700;
     color: var(--muted);
-    padding: 0 8px 8px;
+    padding: 0 10px 10px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 .logo-actions {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: 8px;
+    right: 8px;
     display: none;
-    gap: 4px;
+    gap: 6px;
 }
 .logo-card:hover .logo-actions { display: flex; }
 .btn-delete-logo,
 .btn-edit-logo {
     border: none;
     color: #fff;
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: .85rem;
     cursor: pointer;
-    backdrop-filter: blur(4px);
-    transition: background .2s;
+    backdrop-filter: blur(6px);
+    transition: background .2s, transform .15s;
 }
-.btn-delete-logo { background: rgba(239,51,99,.85); }
-.btn-delete-logo:hover { background: #d42a55; }
-.btn-edit-logo { background: rgba(99,102,241,.85); }
-.btn-edit-logo:hover { background: #4f46e5; }
+.btn-delete-logo { background: rgba(239,51,99,.9); }
+.btn-delete-logo:hover { background: #d42a55; transform: scale(1.08); }
+.btn-edit-logo { background: rgba(99,102,241,.9); }
+.btn-edit-logo:hover { background: #4f46e5; transform: scale(1.08); }
 
 /* Inputs fecha + hora de expiración */
 .logo-exp-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .cn-date-input {
     display: flex; align-items: center; gap: 8px;
     padding: 9px 12px; border: 1px solid var(--border);
-    border-radius: 8px; background: var(--bg); color: var(--text); font-size: 13px;
+    border-radius: 10px; background: var(--bg); color: var(--text); font-size: 13px;
 }
 .cn-date-input i { color: var(--muted); font-size: 15px; flex-shrink: 0; }
 .cn-date-input input[type="date"],
 .cn-date-input input[type="time"] {
     border: none; background: none; color: var(--text);
-    font-size: 13px; padding: 0; outline: none; width: 100%; font-family: inherit;
+    font-size: 13px; padding: 0; outline: none; width: 100%; font-family: inherit; font-weight:600;
 }
 
 /* Badge de expiración */
 .logo-exp-badge {
     font-size: 10px;
-    font-weight: 700;
+    font-weight: 800;
     text-align: center;
-    padding: 3px 0;
+    padding: 4px 0;
     letter-spacing: .02em;
 }
 .logo-exp-activo {
     color: #10b981;
+    background: rgba(16,185,129,0.1);
 }
 .logo-exp-vencido {
     color: #fff;
     background: rgba(239,51,99,.85);
-    padding: 4px 0;
 }
 .logo-card-vencida {
     opacity: .55;
@@ -386,20 +528,21 @@
 /* Badge numérico de orden */
 .logo-num {
     position: absolute;
-    top: 6px;
-    left: 6px;
-    width: 20px;
-    height: 20px;
+    top: 8px;
+    left: 8px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     background: var(--accent);
     color: #fff;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 2;
     pointer-events: none;
+    box-shadow: 0 2px 6px rgba(239,51,99,0.4);
 }
 
 /* Drag & drop */
@@ -439,363 +582,444 @@ document.addEventListener('DOMContentLoaded', () => {
     logoDropZone.addEventListener('drop', e => {
         e.preventDefault();
         logoDropZone.classList.remove('dragover');
-        if (e.dataTransfer.files[0]) {
-            const dt = new DataTransfer();
-            dt.items.add(e.dataTransfer.files[0]);
-            logoFile.files = dt.files;
+        if (e.dataTransfer.files.length) {
+            logoFile.files = e.dataTransfer.files;
             logoFile.dispatchEvent(new Event('change'));
         }
     });
 
-    btnSubirLogo.addEventListener('click', () => {
-        if (!logoFile.files[0]) { logoMsg.style.color = '#e74c3c'; logoMsg.textContent = 'Selecciona una imagen primero.'; return; }
-        const fd = new FormData();
-        fd.append('imagen', logoFile.files[0]);
-        fd.append('nombre', logoNombre.value.trim());
-        const expFecha = logoExpFecha.value.trim();
-        const expHora  = logoExpHora.value.trim() || '23:59';
-        fd.append('fecha_expiracion', expFecha ? `${expFecha} ${expHora}:00` : '');
+    btnSubirLogo.addEventListener('click', async () => {
+        const f = logoFile.files[0];
+        if (!f) {
+            logoMsg.style.color = '#ef4444';
+            logoMsg.textContent = 'Selecciona una imagen primero';
+            return;
+        }
+
         btnSubirLogo.disabled = true;
-        logoMsg.style.color = 'var(--muted)';
-        logoMsg.textContent = 'Subiendo…';
-        fetch(BASE_PATH + '/controllers/logo_subir.php', { method: 'POST', body: fd })
-            .then(r => r.json())
-            .then(data => {
-                if (data.ok) {
-                    logoMsg.style.color = '#10b981';
-                    logoMsg.textContent = 'Logo subido correctamente.';
-                    // Remove empty message
-                    const empty = document.getElementById('logosEmpty');
-                    if (empty) empty.remove();
-                    // Prepend new card
-                    const card = buildLogoCard(data.id, data.imagen, data.nombre, data.fecha_expiracion, data.imagen);
-                    logosGrid.insertAdjacentHTML('afterbegin', card);
-                    const newCard = logosGrid.firstElementChild;
-                    attachDeleteBtn(newCard.querySelector('.btn-delete-logo'));
-                    attachEditBtn(newCard.querySelector('.btn-edit-logo'));
-                    setupLogoDrag(newCard);
-                    renumberLogos();
-                    saveLogoOrder();
-                    // Reset form
-                    logoFile.value = '';
-                    logoNombre.value = '';
-                    logoExpFecha.value = '';
-                    logoExpHora.value  = '23:59';
-                    logoPreview.style.display = 'none';
-                    logoDropZone.querySelector('.file-drop-icon').style.display = '';
-                    logoDropZone.querySelector('.file-drop-text').style.display = '';
-                    logoDropZone.querySelector('.file-drop-hint').style.display = '';
-                } else {
-                    logoMsg.style.color = '#e74c3c';
-                    logoMsg.textContent = data.error || 'Error al subir.';
-                }
-            })
-            .catch(() => { logoMsg.style.color = '#e74c3c'; logoMsg.textContent = 'Error de conexión.'; })
-            .finally(() => { btnSubirLogo.disabled = false; });
+        btnSubirLogo.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Subiendo...';
+        logoMsg.textContent = '';
+
+        const fd = new FormData();
+        fd.append('accion', 'crear');
+        fd.append('imagen', f);
+        fd.append('nombre', logoNombre.value.trim());
+
+        if (logoExpFecha.value) {
+            const hora = logoExpHora.value || '23:59';
+            fd.append('fecha_expiracion', `${logoExpFecha.value} ${hora}:00`);
+        }
+
+        try {
+            const res = await fetch(BASE_PATH + '/controllers/logo_marca.php', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (data.ok) {
+                location.reload();
+            } else {
+                logoMsg.style.color = '#ef4444';
+                logoMsg.textContent = data.msg || 'Error al subir';
+            }
+        } catch (e) {
+            logoMsg.style.color = '#ef4444';
+            logoMsg.textContent = 'Error de red al subir el logo';
+        } finally {
+            btnSubirLogo.disabled = false;
+            btnSubirLogo.innerHTML = '<i class="bi bi-upload me-1"></i> Subir Logo';
+        }
     });
 
-    function buildLogoCard(id, imagen, nombre, fechaExp, imagenPath) {
-        const imgSrc     = BASE_PATH + '/serve-image.php?file=' + encodeURIComponent(imagen);
-        const nombreHtml = nombre ? `<div class="logo-nombre">${escapeHtml(nombre)}</div>` : '';
-        const badge    = badgeExpiracion(fechaExp);
-        const expBadge = badge ? `<div class="${badge.cls}">${badge.html}</div>` : '';
-        const num = logosGrid.querySelectorAll('.logo-card').length + 1;
-        return `<div class="logo-card${badge && badge.vencido ? ' logo-card-vencida' : ''}" id="logo-${id}" draggable="true" data-id="${id}">
-            <div class="logo-num">${num}</div>
-            <div class="logo-img-wrap"><img src="${imgSrc}" alt="${escapeHtml(nombre)}" loading="lazy"></div>
-            ${nombreHtml}
-            ${expBadge}
-            <div class="logo-actions">
-                <button class="btn-edit-logo" data-id="${id}" data-nombre="${escapeHtml(nombre)}" data-exp="${escapeHtml(fechaExp||'')}" data-imagen="${escapeHtml(imagen)}" title="Editar"><i class="bi bi-pencil-fill"></i></button>
-                <button class="btn-delete-logo" data-id="${id}" title="Eliminar"><i class="bi bi-trash-fill"></i></button>
-            </div>
-        </div>`;
-    }
-
-    function escapeHtml(str) {
-        return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    // MySQL devuelve "YYYY-MM-DD HH:MM:SS"; ese formato con espacio no es
-    // estándar en JS (algunos navegadores dan Invalid Date). Se normaliza a
-    // ISO local para que el cálculo de "restantes/vencido" nunca dé NaN.
-    function parseFechaLocal(str) {
-        if (!str) return null;
-        const d = new Date(String(str).trim().replace(' ', 'T'));
-        return isNaN(d.getTime()) ? null : d;
-    }
-
-    // HTML del badge de expiración a partir de la fecha guardada.
-    // Devuelve { html, cls, vencido } o null si el logo no expira.
-    function badgeExpiracion(fechaExp) {
-        const d = parseFechaLocal(fechaExp);
-        if (!d) return null;
-        const ms = d - new Date();
-        if (ms <= 0) {
-            return { html: '<i class="bi bi-clock-history"></i> Vencido',
-                     cls: 'logo-exp-badge logo-exp-vencido', vencido: true };
-        }
-        const dias  = Math.floor(ms / 86400000);
-        const horas = Math.floor((ms % 86400000) / 3600000);
-        const label = dias > 0 ? `${dias}d ${horas}h restantes` : `${horas}h restantes`;
-        return { html: `<i class="bi bi-calendar-check"></i> ${label}`,
-                 cls: 'logo-exp-badge logo-exp-activo', vencido: false };
-    }
-
-    function attachDeleteBtn(btn) {
-        btn.addEventListener('click', function() {
-            if (!confirm('¿Eliminar este logo?')) return;
-            const id = this.dataset.id;
-            fetch(BASE_PATH + '/controllers/logo_eliminar.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'id=' + id
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.ok) {
-                    const card = document.getElementById('logo-' + id);
-                    if (card) card.remove();
-                    if (!logosGrid.querySelector('.logo-card')) {
-                        logosGrid.innerHTML = '<p style="color:var(--muted);text-align:center;grid-column:1/-1;padding:20px;" id="logosEmpty">No hay logos. Sube el primero.</p>';
-                    } else {
-                        renumberLogos();
-                        saveLogoOrder();
-                    }
-                }
-            });
+    // ── Delete Logo ──────────────────────────────
+    document.addEventListener('click', async e => {
+        const btnDel = e.target.closest('.btn-delete-logo');
+        if (!btnDel) return;
+        const confirmed = await cnConfirm({
+            title: '¿Eliminar Marca?',
+            message: '¿Seguro que deseas eliminar esta marca colaboradora del carrusel?',
+            confirmText: 'Eliminar Marca',
+            cancelText: 'Cancelar',
+            isDanger: true
         });
-    }
+        if (!confirmed) return;
 
-    // ── Edit logo ────────────────────────────────────────────────
+        const id = btnDel.dataset.id;
+        const fd = new FormData();
+        fd.append('accion', 'eliminar');
+        fd.append('id', id);
+
+        try {
+            const res = await fetch(BASE_PATH + '/controllers/logo_marca.php', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (data.ok) {
+                const card = document.getElementById('logo-' + id);
+                if (card) card.remove();
+            } else {
+                alert(data.msg || 'Error al eliminar');
+            }
+        } catch(err) {
+            alert('Error de conexión al eliminar logo');
+        }
+    });
+
+    // ── Edit Logo ────────────────────────────────
     const modalEditLogo      = document.getElementById('modalEditLogo');
+    const closeEditLogo      = document.getElementById('closeEditLogo');
+    const editLogoImgActual  = document.getElementById('editLogoImgActual');
+    const editLogoFile       = document.getElementById('editLogoFile');
+    const editLogoNewPreview = document.getElementById('editLogoNewPreview');
     const editLogoNombre     = document.getElementById('editLogoNombre');
     const editLogoFecha      = document.getElementById('editLogoFecha');
     const editLogoHora       = document.getElementById('editLogoHora');
+    const btnGuardarEditLogo = document.getElementById('btnGuardarEditLogo');
     const editLogoMsg        = document.getElementById('editLogoMsg');
-    const btnGuardar         = document.getElementById('btnGuardarEditLogo');
-    const editLogoFile       = document.getElementById('editLogoFile');
-    const editLogoImgActual  = document.getElementById('editLogoImgActual');
-    const editLogoNewPreview = document.getElementById('editLogoNewPreview');
-    let   editingLogoId      = null;
+    let editLogoId = null;
+
+    document.addEventListener('click', e => {
+        const btnEdit = e.target.closest('.btn-edit-logo');
+        if (!btnEdit) return;
+
+        editLogoId = btnEdit.dataset.id;
+        editLogoImgActual.src = BASE_PATH + '/' + btnEdit.dataset.imagen;
+        editLogoNombre.value  = btnEdit.dataset.nombre || '';
+        editLogoFile.value    = '';
+        editLogoNewPreview.style.display = 'none';
+        editLogoMsg.textContent = '';
+
+        const rawExp = btnEdit.dataset.exp;
+        if (rawExp) {
+            const parts = rawExp.split(' ');
+            editLogoFecha.value = parts[0] || '';
+            editLogoHora.value  = parts[1] ? parts[1].substring(0, 5) : '23:59';
+        } else {
+            editLogoFecha.value = '';
+            editLogoHora.value  = '23:59';
+        }
+
+        modalEditLogo.style.display = 'flex';
+    });
 
     editLogoFile.addEventListener('change', () => {
         const f = editLogoFile.files[0];
-        if (!f) { editLogoNewPreview.style.display = 'none'; return; }
+        if (!f) return;
         editLogoNewPreview.src = URL.createObjectURL(f);
         editLogoNewPreview.style.display = 'block';
     });
 
-    function openEditModal(id, nombre, fechaExp, imagen) {
-        editingLogoId        = id;
-        editLogoNombre.value = nombre || '';
+    closeEditLogo.addEventListener('click', () => modalEditLogo.style.display = 'none');
+    window.addEventListener('click', e => { if (e.target === modalEditLogo) modalEditLogo.style.display = 'none'; });
+
+    btnGuardarEditLogo.addEventListener('click', async () => {
+        if (!editLogoId) return;
+
+        btnGuardarEditLogo.disabled = true;
+        btnGuardarEditLogo.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
         editLogoMsg.textContent = '';
-        editLogoFile.value = '';
-        editLogoNewPreview.style.display = 'none';
-        editLogoImgActual.src = imagen
-            ? BASE_PATH + '/serve-image.php?file=' + encodeURIComponent(imagen)
-            : '';
-        const d = parseFechaLocal(fechaExp);
-        if (d && d > new Date()) {
-            // Vigente: se precarga para poder ajustarla.
-            const parts       = fechaExp.split(' ');
-            editLogoFecha.value = parts[0] || '';
-            editLogoHora.value  = (parts[1] || '23:59:00').slice(0, 5);
-        } else {
-            // Sin fecha, o ya vencida: no se precarga la fecha pasada, porque el
-            // calendario abriría en el mes vencido e invitaría a elegir otro día
-            // igual de pasado (el logo seguiría sin publicarse).
-            editLogoFecha.value = '';
-            editLogoHora.value  = '23:59';
-            if (d) {
-                editLogoMsg.style.color = 'var(--muted)';
-                editLogoMsg.textContent = 'Venció el ' + d.toLocaleDateString('es-MX',
-                    { day: '2-digit', month: 'short', year: 'numeric' }) + '. Elige una fecha futura.';
-            }
-        }
-        modalEditLogo.style.display = 'flex';
-    }
-
-    function attachEditBtn(btn) {
-        btn.addEventListener('click', function() {
-            openEditModal(this.dataset.id, this.dataset.nombre, this.dataset.exp, this.dataset.imagen);
-        });
-    }
-
-    document.getElementById('closeEditLogo').addEventListener('click', () => {
-        modalEditLogo.style.display = 'none';
-    });
-    modalEditLogo.addEventListener('click', e => {
-        if (e.target === modalEditLogo) modalEditLogo.style.display = 'none';
-    });
-
-    btnGuardar.addEventListener('click', () => {
-        if (!editingLogoId) return;
-        const nombre   = editLogoNombre.value.trim();
-        const fecha    = editLogoFecha.value.trim();
-        const hora     = editLogoHora.value.trim() || '23:59';
-        const fechaExp = fecha ? `${fecha} ${hora}:00` : '';
-
-        btnGuardar.disabled = true;
-        editLogoMsg.style.color = 'var(--muted)';
-        editLogoMsg.textContent = 'Guardando…';
 
         const fd = new FormData();
-        fd.append('id',               editingLogoId);
-        fd.append('nombre',           nombre);
-        fd.append('fecha_expiracion', fechaExp);
-        if (editLogoFile.files[0]) fd.append('imagen', editLogoFile.files[0]);
+        fd.append('accion', 'editar');
+        fd.append('id', editLogoId);
+        fd.append('nombre', editLogoNombre.value.trim());
 
-        fetch(BASE_PATH + '/controllers/logo_editar.php', { method: 'POST', body: fd })
-            .then(r => r.json())
-            .then(data => {
-                if (data.ok) {
-                    // Guardar una fecha ya pasada es válido, pero deja el logo
-                    // fuera del sitio: hay que decirlo en vez de un "Guardado" seco.
-                    const guardado = badgeExpiracion(data.fecha_expiracion);
-                    const sigueVencido = guardado && guardado.vencido;
-                    editLogoMsg.style.color = sigueVencido ? '#e0a800' : '#10b981';
-                    editLogoMsg.textContent = sigueVencido
-                        ? 'Guardado, pero esa fecha ya pasó: el logo sigue vencido y no aparece en el sitio.'
-                        : 'Guardado correctamente.';
+        if (editLogoFile.files[0]) {
+            fd.append('imagen', editLogoFile.files[0]);
+        }
 
-                    // Actualizar DOM de la tarjeta
-                    const card     = document.getElementById('logo-' + editingLogoId);
-                    if (card) {
-                        // Imagen
-                        if (data.imagen) {
-                            const imgEl = card.querySelector('.logo-img-wrap img');
-                            if (imgEl) imgEl.src = BASE_PATH + '/serve-image.php?file=' + encodeURIComponent(data.imagen);
-                        }
-                        // Nombre
-                        let nombreEl = card.querySelector('.logo-nombre');
-                        if (data.nombre) {
-                            if (!nombreEl) { nombreEl = document.createElement('div'); nombreEl.className = 'logo-nombre'; card.querySelector('.logo-img-wrap').after(nombreEl); }
-                            nombreEl.textContent = data.nombre;
-                        } else if (nombreEl) {
-                            nombreEl.remove();
-                        }
-                        // Badge expiración + estado vencido de la tarjeta
-                        let badgeEl = card.querySelector('.logo-exp-badge');
-                        const badge = badgeExpiracion(data.fecha_expiracion);
-                        if (badge) {
-                            if (!badgeEl) { badgeEl = document.createElement('div'); card.querySelector('.logo-actions').before(badgeEl); }
-                            badgeEl.className   = badge.cls;
-                            badgeEl.innerHTML   = badge.html;
-                            card.classList.toggle('logo-card-vencida', badge.vencido);
-                        } else {
-                            if (badgeEl) badgeEl.remove();
-                            card.classList.remove('logo-card-vencida');
-                        }
-                        // Actualizar data-attributes del botón editar
-                        const editBtn = card.querySelector('.btn-edit-logo');
-                        if (editBtn) {
-                            editBtn.dataset.nombre = data.nombre || '';
-                            editBtn.dataset.exp    = data.fecha_expiracion || '';
-                            if (data.imagen) editBtn.dataset.imagen = data.imagen;
-                        }
-                    }
-                    // Si quedó vencido se deja el modal abierto para que se vea el aviso.
-                    if (!sigueVencido) setTimeout(() => { modalEditLogo.style.display = 'none'; }, 800);
-                } else {
-                    editLogoMsg.style.color = '#e74c3c';
-                    editLogoMsg.textContent = data.error || 'Error al guardar.';
-                }
-            })
-            .catch(() => { editLogoMsg.style.color = '#e74c3c'; editLogoMsg.textContent = 'Error de conexión.'; })
-            .finally(() => { btnGuardar.disabled = false; });
+        if (editLogoFecha.value) {
+            const h = editLogoHora.value || '23:59';
+            fd.append('fecha_expiracion', `${editLogoFecha.value} ${h}:00`);
+        } else {
+            fd.append('fecha_expiracion', '');
+        }
+
+        try {
+            const res = await fetch(BASE_PATH + '/controllers/logo_marca.php', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (data.ok) {
+                location.reload();
+            } else {
+                editLogoMsg.style.color = '#ef4444';
+                editLogoMsg.textContent = data.msg || 'Error al guardar';
+            }
+        } catch (e) {
+            editLogoMsg.style.color = '#ef4444';
+            editLogoMsg.textContent = 'Error de comunicación con el servidor';
+        } finally {
+            btnGuardarEditLogo.disabled = false;
+            btnGuardarEditLogo.innerHTML = '<i class="bi bi-save me-1"></i> Guardar';
+        }
     });
 
-    // Attach delete to existing logos
-    document.querySelectorAll('.btn-delete-logo').forEach(attachDeleteBtn);
-    document.querySelectorAll('.btn-edit-logo').forEach(attachEditBtn);
-
-    // ── Drag & drop para reordenar logos ────────────────────────
-    let dragSrc = null;
-
-    function renumberLogos() {
-        logosGrid.querySelectorAll('.logo-card').forEach((card, i) => {
-            const num = card.querySelector('.logo-num');
-            if (num) num.textContent = i + 1;
-        });
+    // ── CMS Edit Page Modal ──────────────────────
+    let editorpag;
+    if (typeof ClassicEditor !== 'undefined') {
+        ClassicEditor
+            .create(document.querySelector('#editorpag'), {
+                toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', 'undo', 'redo' ]
+            })
+            .then(ed => {
+                editorpag = ed;
+            })
+            .catch(error => {
+                console.error(error);
+            });
     }
-
-    function saveLogoOrder() {
-        const ids = [...logosGrid.querySelectorAll('.logo-card')].map(c => c.dataset.id);
-        fetch(BASE_PATH + '/controllers/logo_reordenar.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(ids)
-        });
-    }
-
-    function setupLogoDrag(card) {
-        card.addEventListener('dragstart', e => {
-            dragSrc = card;
-            e.dataTransfer.effectAllowed = 'move';
-            setTimeout(() => card.classList.add('dragging'), 0);
-        });
-        card.addEventListener('dragend', () => {
-            card.classList.remove('dragging');
-            dragSrc = null;
-        });
-        card.addEventListener('dragover', e => {
-            e.preventDefault();
-            if (dragSrc && dragSrc !== card) card.classList.add('drag-over');
-        });
-        card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
-        card.addEventListener('drop', e => {
-            e.preventDefault();
-            card.classList.remove('drag-over');
-            if (!dragSrc || dragSrc === card) return;
-            const all = [...logosGrid.querySelectorAll('.logo-card')];
-            if (all.indexOf(dragSrc) < all.indexOf(card)) card.after(dragSrc);
-            else card.before(dragSrc);
-            renumberLogos();
-            saveLogoOrder();
-        });
-    }
-
-    document.querySelectorAll('.logo-card').forEach(setupLogoDrag);
-
-    // ── File drop zone CSS (inline for self-containment) ─────────────────
-    const dropStyle = document.createElement('style');
-    dropStyle.textContent = `
-    .file-drop-zone { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-height:120px; border:2px dashed var(--border); border-radius:12px; cursor:pointer; padding:20px; transition:border-color .2s,background .2s; text-align:center; }
-    .file-drop-zone:hover, .file-drop-zone.dragover { border-color:var(--accent); background:rgba(239,51,99,.04); }
-    .file-drop-icon { font-size:2rem; color:var(--accent); }
-    .file-drop-text { font-size:.9rem; color:var(--text); }
-    .file-drop-text span { color:var(--accent); font-weight:600; }
-    .file-drop-hint { font-size:.75rem; color:var(--muted); }
-    `;
-    document.head.appendChild(dropStyle);
-
-    // ── CKEditor 5 (page editor) ──────────────────────────────────────────
-    let editorpag = null;
-    DecoupledEditor
-        .create(document.querySelector('#editorpag'), {
-            placeholder: 'Escribe el contenido aquí...',
-            language: 'es'
-        })
-        .then(editor => {
-            editorpag = editor;
-            const toolbarContainer = document.querySelector('#toolbarpag');
-            if (toolbarContainer) {
-                toolbarContainer.appendChild(editor.ui.view.toolbar.element);
-            }
-        })
-        .catch(error => {
-            console.error('Error inicializando CKEditor para páginas:', error);
-        });
 
     const modalPagina = document.getElementById("modalPagina");
     const modalClosePag = document.getElementById("modalClosePag");
+
+    function renderMetaFields(pageName, meta = {}) {
+        const container = document.getElementById("metaFieldsContainer");
+        if (!container) return;
+
+        let html = '';
+
+        if (pageName === 'nosotros') {
+            html = `
+                <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Campos Exclusivos de "Nosotros"</h5>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Título</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_title" value="${meta.hero_title || 'SOBRE NOSOTROS'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Subtítulo</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
+                    </div>
+                </div>
+                <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">Estadísticas Principales</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px;">
+                    <div>
+                        <input type="text" class="cn-input meta-field" data-key="stat1_num" value="${meta.stat1_num || '500K+'}" placeholder="Número (ej: 500K+)">
+                        <input type="text" class="cn-input meta-field" data-key="stat1_lbl" value="${meta.stat1_lbl || 'Lectores Mensuales'}" placeholder="Etiqueta" style="margin-top:4px;">
+                    </div>
+                    <div>
+                        <input type="text" class="cn-input meta-field" data-key="stat2_num" value="${meta.stat2_num || '10K+'}" placeholder="Número (ej: 10K+)">
+                        <input type="text" class="cn-input meta-field" data-key="stat2_lbl" value="${meta.stat2_lbl || 'Artículos Publicados'}" placeholder="Etiqueta" style="margin-top:4px;">
+                    </div>
+                    <div>
+                        <input type="text" class="cn-input meta-field" data-key="stat3_num" value="${meta.stat3_num || '100%'}" placeholder="Número (ej: 100%)">
+                        <input type="text" class="cn-input meta-field" data-key="stat3_lbl" value="${meta.stat3_lbl || 'Pasión Geek'}" placeholder="Etiqueta" style="margin-top:4px;">
+                    </div>
+                </div>
+                <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">Misión / Visión / Valores</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                    <textarea class="cn-input meta-field" data-key="mision" rows="3" placeholder="Misión">${meta.mision || ''}</textarea>
+                    <textarea class="cn-input meta-field" data-key="vision" rows="3" placeholder="Visión">${meta.vision || ''}</textarea>
+                    <textarea class="cn-input meta-field" data-key="valores" rows="3" placeholder="Valores">${meta.valores || ''}</textarea>
+                </div>
+            `;
+        } else if (pageName === 'terminos' || pageName === 'privacidad') {
+            html = `
+                <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Campos Exclusivos de Encabezado</h5>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Título</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_title" value="${meta.hero_title || ''}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Subtítulo / Versión</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Fecha de Actualización</label>
+                        <input type="text" class="cn-input meta-field" data-key="updated_date" value="${meta.updated_date || ''}">
+                    </div>
+                </div>
+            `;
+        } else if (pageName === 'suscripcion') {
+            const ben = meta.beneficios || [
+                { icono: 'bi-lightning-charge-fill', titulo: 'Noticias en tiempo real', desc: 'Recibe alertas sobre las novedades más importantes al instante.' },
+                { icono: 'bi-star-fill', titulo: 'Contenido exclusivo', desc: 'Resúmenes semanales y análisis que no encontrarás en otro lugar.' },
+                { icono: 'bi-gift-fill', titulo: 'Sorteos y beneficios', desc: 'Acceso a dinámicas exclusivas para miembros de nuestra comunidad.' },
+                { icono: 'bi-shield-check', titulo: 'Cero spam garantizado', desc: 'Solo contenido relevante. Puedes cancelar tu suscripción en un clic.' }
+            ];
+            html = `
+                <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Configuración de la Página de Suscripción</h5>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Título</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_title" value="${meta.hero_title || 'Suscríbete a CatInk'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Subtítulo</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
+                    </div>
+                </div>
+                <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">4 Beneficios Destacados</div>
+            `;
+            ben.forEach((b, idx) => {
+                html += `
+                    <div style="border:1px solid var(--border); padding:10px; border-radius:10px; margin-bottom:8px; background:var(--bg);">
+                        <div style="font-size:0.78rem; font-weight:800; color:var(--accent);">Beneficio ${idx+1}</div>
+                        <div style="display:grid; grid-template-columns:140px 1fr; gap:8px; margin-top:4px;">
+                            <input type="text" class="cn-input meta-ben-icon" value="${b.icono || ''}" placeholder="Icono (bi-...)">
+                            <input type="text" class="cn-input meta-ben-title" value="${b.titulo || ''}" placeholder="Título">
+                        </div>
+                        <input type="text" class="cn-input meta-ben-desc" value="${b.desc || ''}" placeholder="Descripción corta" style="margin-top:4px;">
+                    </div>
+                `;
+            });
+        } else if (pageName === 'contacto') {
+            const hor = meta.horario || [
+                { dia: 'Lunes – Viernes', hora: '9:00 – 18:00 hrs' },
+                { dia: 'Sábado', hora: '10:00 – 14:00 hrs' },
+                { dia: 'Domingo', hora: 'Cerrado' }
+            ];
+            html = `
+                <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Configuración de la Página de Contacto</h5>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Etiqueta Eyebrow</label>
+                        <input type="text" class="cn-input meta-field" data-key="eyebrow" value="${meta.eyebrow || 'HABLEMOS'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Título</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_title" value="${meta.hero_title || 'Contáctanos'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Subtítulo</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Título Columna Info</label>
+                        <input type="text" class="cn-input meta-field" data-key="info_title" value="${meta.info_title || 'Estamos para ayudarte'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Subtítulo Columna Info</label>
+                        <input type="text" class="cn-input meta-field" data-key="info_sub" value="${meta.info_sub || ''}">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Título Formulario</label>
+                        <input type="text" class="cn-input meta-field" data-key="form_title" value="${meta.form_title || 'Envíanos un mensaje'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Subtítulo Formulario</label>
+                        <input type="text" class="cn-input meta-field" data-key="form_sub" value="${meta.form_sub || ''}">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Email General</label>
+                        <input type="text" class="cn-input meta-field" data-key="email_general" value="${meta.email_general || 'contacto@catink.com.mx'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Email Publicidad</label>
+                        <input type="text" class="cn-input meta-field" data-key="email_publicidad" value="${meta.email_publicidad || 'contacto@catink.com.mx'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Ubicación</label>
+                        <input type="text" class="cn-input meta-field" data-key="ubicacion" value="${meta.ubicacion || 'Toluca de Lerdo, Estado de México, México'}">
+                    </div>
+                </div>
+                <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">Horario de Atención</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:6px;">
+                    <input type="text" class="cn-input meta-field" data-key="horario_lv_dia" value="${hor[0]?.dia || 'Lunes – Viernes'}">
+                    <input type="text" class="cn-input meta-field" data-key="horario_lv_hora" value="${hor[0]?.hora || '9:00 – 18:00 hrs'}">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:6px;">
+                    <input type="text" class="cn-input meta-field" data-key="horario_sab_dia" value="${hor[1]?.dia || 'Sábado'}">
+                    <input type="text" class="cn-input meta-field" data-key="horario_sab_hora" value="${hor[1]?.hora || '10:00 – 14:00 hrs'}">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <input type="text" class="cn-input meta-field" data-key="horario_dom_dia" value="${hor[2]?.dia || 'Domingo'}">
+                    <input type="text" class="cn-input meta-field" data-key="horario_dom_hora" value="${hor[2]?.hora || 'Cerrado'}">
+                </div>
+            `;
+        } else if (pageName === 'unete') {
+            html = `
+                <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Configuración de "Únete al Equipo"</h5>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Etiqueta Eyebrow</label>
+                        <input type="text" class="cn-input meta-field" data-key="eyebrow" value="${meta.eyebrow || 'Únete al Equipo'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Título</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_title" value="${meta.hero_title || 'Vacantes Abiertas'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Subtítulo</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
+                    </div>
+                </div>
+            `;
+        } else {
+            html = `<p style="font-size:0.85rem; color:var(--muted);">No hay opciones adicionales configurables para esta sección.</p>`;
+        }
+
+        container.innerHTML = html;
+        container.dataset.pageName = pageName;
+    }
+
+    const pagesWithEditor = ['nosotros', 'terminos', 'privacidad', 'cookies'];
+
+    function updateEditorState(pageName, content = '') {
+        const needsEditor = pagesWithEditor.includes(pageName);
+        const editorGrp = document.getElementById("editorGroupContainer");
+        if (editorGrp) {
+            editorGrp.style.display = needsEditor ? 'block' : 'none';
+        }
+        if (needsEditor) {
+            setTimeout(() => {
+                if (editorpag) {
+                    try { editorpag.setData(content); } catch(e) {}
+                } else {
+                    const el = document.getElementById('editorpag');
+                    if (el) el.innerHTML = content;
+                }
+                window.dispatchEvent(new Event('resize'));
+            }, 60);
+        }
+    }
+
+    function serializeMetaFields() {
+        const container = document.getElementById("metaFieldsContainer");
+        const rawInput = document.getElementById("meta_json_raw");
+        if (!container || !rawInput) return;
+
+        const pageName = container.dataset.pageName || '';
+        const metaObj = {};
+
+        container.querySelectorAll(".meta-field").forEach(inp => {
+            const key = inp.dataset.key;
+            if (key) {
+                metaObj[key] = inp.value;
+            }
+        });
+
+        if (pageName === 'contacto') {
+            metaObj.horario = [
+                { dia: metaObj.horario_lv_dia || 'Lunes – Viernes', hora: metaObj.horario_lv_hora || '9:00 – 18:00 hrs' },
+                { dia: metaObj.horario_sab_dia || 'Sábado', hora: metaObj.horario_sab_hora || '10:00 – 14:00 hrs' },
+                { dia: metaObj.horario_dom_dia || 'Domingo', hora: metaObj.horario_dom_hora || 'Cerrado' }
+            ];
+            delete metaObj.horario_lv_dia; delete metaObj.horario_lv_hora;
+            delete metaObj.horario_sab_dia; delete metaObj.horario_sab_hora;
+            delete metaObj.horario_dom_dia; delete metaObj.horario_dom_hora;
+        } else if (pageName === 'suscripcion') {
+            const benIcons = container.querySelectorAll(".meta-ben-icon");
+            const benTitles = container.querySelectorAll(".meta-ben-title");
+            const benDescs = container.querySelectorAll(".meta-ben-desc");
+            metaObj.beneficios = [];
+            benIcons.forEach((inp, i) => {
+                metaObj.beneficios.push({
+                    icono: inp.value,
+                    titulo: benTitles[i]?.value || '',
+                    desc: benDescs[i]?.value || ''
+                });
+            });
+        }
+
+        rawInput.value = JSON.stringify(metaObj);
+    }
 
     document.querySelectorAll(".btnEditar").forEach(btn => {
         btn.addEventListener("click", function(){
             document.getElementById("pagina_id").value = this.dataset.id;
 
-            // Asignar select option
             const selectNombre = document.getElementById("nombre");
             for(let i=0; i<selectNombre.options.length; i++){
                 if(selectNombre.options[i].value === this.dataset.nombre) {
@@ -804,23 +1028,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            let contenido = decodeURIComponent(escape(atob(this.dataset.contenido)));
-            modalPagina.style.display = "flex";
+            let contenido = '';
+            try {
+                contenido = decodeURIComponent(escape(atob(this.dataset.contenido)));
+            } catch(e) {
+                contenido = this.dataset.contenido || '';
+            }
 
-            setTimeout(() => {
-                if (editorpag) {
-                    editorpag.setData(contenido);
-                } else {
-                    document.getElementById('editorpag').innerHTML = contenido;
-                }
-            }, 100);
+            let metaData = {};
+            try {
+                metaData = JSON.parse(this.dataset.meta || '{}');
+            } catch(e) {}
+
+            renderMetaFields(this.dataset.nombre, metaData);
+            updateEditorState(this.dataset.nombre, contenido);
+
+            modalPagina.style.display = "flex";
+            setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 80);
         });
     });
 
+    document.getElementById("nombre").addEventListener("change", function(){
+        renderMetaFields(this.value, {});
+        updateEditorState(this.value, '');
+    });
+
     document.getElementById("formPagina").addEventListener("submit", function(){
-        if (editorpag) {
-            document.getElementById("contenido").value = editorpag.getData();
+        const pageName = document.getElementById("nombre").value;
+        if (pagesWithEditor.includes(pageName)) {
+            if (editorpag) {
+                document.getElementById("contenido").value = editorpag.getData();
+            } else {
+                const el = document.getElementById('editorpag');
+                if (el) document.getElementById("contenido").value = el.innerHTML;
+            }
+        } else {
+            document.getElementById("contenido").value = '';
         }
+        serializeMetaFields();
     });
 
     modalClosePag.addEventListener('click', () => {
