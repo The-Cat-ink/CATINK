@@ -1,27 +1,32 @@
 <?php
-include("./../layout/header.php");
-include("./../data/conexion.php");
+include_once(__DIR__ . "/../layout/header.php");
+include_once(__DIR__ . "/../data/conexion.php");
 
-$row   = $con->query("SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='nosotros'")->fetch_assoc();
-$meta  = json_decode($row['meta_json'] ?? '', true) ?: [];
-$logos = $con->query("SELECT * FROM logos_marcas WHERE activo=1 AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW()) ORDER BY orden ASC, creado ASC")->fetch_all(MYSQLI_ASSOC);
+$resPag = $con->query("SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='nosotros'");
+$row    = ($resPag && $resPag->num_rows > 0) ? $resPag->fetch_assoc() : [];
+$meta   = json_decode($row['meta_json'] ?? '', true) ?: [];
+
+$resLogos = $con->query("SELECT * FROM logos_marcas WHERE (fecha_expiracion IS NULL OR fecha_expiracion > NOW()) ORDER BY orden ASC, creado ASC");
+$logos    = ($resLogos && method_exists($resLogos, 'fetch_all')) ? $resLogos->fetch_all(MYSQLI_ASSOC) : [];
 
 $card_w   = 200;
 $card_gap = 12;
 $px_per_s = 60;
-$filas = array_chunk($logos, 7);
+$filas    = array_chunk($logos, 7);
 $rows_cfg = [];
 foreach ($filas as $i => $fila_logos) {
-    $set_w    = count($fila_logos) * ($card_w + $card_gap);
-    $copies   = max(4, (int)ceil(3600 / $set_w));
-    if ($copies % 2 !== 0) $copies++;
-    $duration = max(8, round(($copies / 2) * $set_w / $px_per_s, 1));
-    $rows_cfg[] = [
-        'logos'    => $fila_logos,
-        'dir'      => $i % 2 === 0 ? 'row-left' : 'row-right',
-        'duration' => $duration,
-        'copies'   => $copies,
-    ];
+    $set_w = count($fila_logos) * ($card_w + $card_gap);
+    if ($set_w > 0) {
+        $copies   = max(4, (int)ceil(3600 / $set_w));
+        if ($copies % 2 !== 0) $copies++;
+        $duration = max(8, round(($copies / 2) * $set_w / $px_per_s, 1));
+        $rows_cfg[] = [
+            'logos'    => $fila_logos,
+            'dir'      => $i % 2 === 0 ? 'row-left' : 'row-right',
+            'duration' => $duration,
+            'copies'   => $copies,
+        ];
+    }
 }
 ?>
 
@@ -289,16 +294,16 @@ foreach ($filas as $i => $fila_logos) {
         </p>
         <div class="nos-hero-stats">
             <div class="nos-stat-item">
-                <span class="nos-stat-num"><?= htmlspecialchars($meta['stat_1'] ?? '+100K') ?></span>
-                <span class="nos-stat-label"><?= htmlspecialchars($meta['stat_1_label'] ?? 'Seguidores') ?></span>
+                <span class="nos-stat-num"><?= htmlspecialchars($meta['stat1_num'] ?? $meta['stat_1'] ?? '500K+') ?></span>
+                <span class="nos-stat-label"><?= htmlspecialchars($meta['stat1_lbl'] ?? $meta['stat_1_label'] ?? 'Lectores Mensuales') ?></span>
             </div>
             <div class="nos-stat-item">
-                <span class="nos-stat-num"><?= htmlspecialchars($meta['stat_2'] ?? '+3') ?></span>
-                <span class="nos-stat-label"><?= htmlspecialchars($meta['stat_2_label'] ?? 'Años activos') ?></span>
+                <span class="nos-stat-num"><?= htmlspecialchars($meta['stat2_num'] ?? $meta['stat_2'] ?? '10K+') ?></span>
+                <span class="nos-stat-label"><?= htmlspecialchars($meta['stat2_lbl'] ?? $meta['stat_2_label'] ?? 'Artículos Publicados') ?></span>
             </div>
             <div class="nos-stat-item">
-                <span class="nos-stat-num"><?= htmlspecialchars($meta['stat_3'] ?? '+500') ?></span>
-                <span class="nos-stat-label"><?= htmlspecialchars($meta['stat_3_label'] ?? 'Publicaciones') ?></span>
+                <span class="nos-stat-num"><?= htmlspecialchars($meta['stat3_num'] ?? $meta['stat_3'] ?? '100%') ?></span>
+                <span class="nos-stat-label"><?= htmlspecialchars($meta['stat3_lbl'] ?? $meta['stat_3_label'] ?? 'Pasión Geek') ?></span>
             </div>
         </div>
     </div>
@@ -313,17 +318,17 @@ foreach ($filas as $i => $fila_logos) {
             <div class="nos-card">
                 <div class="nos-card-icon"><i class="bi bi-crosshair2"></i></div>
                 <h3 class="nos-card-title">Misión</h3>
-                <p class="nos-card-desc"><?= htmlspecialchars($meta['card_mision'] ?? 'Crear contenido de calidad sobre cultura geek que informe, entretenga e inspire a la comunidad hispanohablante de manera auténtica y apasionada.') ?></p>
+                <p class="nos-card-desc"><?= htmlspecialchars($meta['mision'] ?? $meta['card_mision'] ?? 'Crear contenido de calidad sobre cultura geek que informe, entretenga e inspire a la comunidad hispanohablante de manera auténtica y apasionada.') ?></p>
             </div>
             <div class="nos-card">
                 <div class="nos-card-icon"><i class="bi bi-eye"></i></div>
                 <h3 class="nos-card-title">Visión</h3>
-                <p class="nos-card-desc"><?= htmlspecialchars($meta['card_vision'] ?? 'Convertirnos en el referente digital líder de cultura pop y entretenimiento geek en México y Latinoamérica, conectando marcas con comunidades.') ?></p>
+                <p class="nos-card-desc"><?= htmlspecialchars($meta['vision'] ?? $meta['card_vision'] ?? 'Convertirnos en el referente digital líder de cultura pop y entretenimiento geek en México y Latinoamérica, conectando marcas con comunidades.') ?></p>
             </div>
             <div class="nos-card">
                 <div class="nos-card-icon"><i class="bi bi-heart-fill"></i></div>
                 <h3 class="nos-card-title">Valores</h3>
-                <p class="nos-card-desc"><?= htmlspecialchars($meta['card_valores'] ?? 'Autenticidad, pasión por el contenido, comunidad antes que clics, calidad editorial y respeto total a nuestra audiencia y colaboradores.') ?></p>
+                <p class="nos-card-desc"><?= htmlspecialchars($meta['valores'] ?? $meta['card_valores'] ?? 'Autenticidad, pasión por el contenido, comunidad antes que clics, calidad editorial y respeto total a nuestra audiencia y colaboradores.') ?></p>
             </div>
         </div>
     </div>
