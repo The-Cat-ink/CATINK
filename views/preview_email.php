@@ -1,250 +1,325 @@
 <?php
-/**
- * Previsualizador Web Interactivo de Plantillas de Correo Electrónico CatInk
- * Soporta Modo Oscuro (Dark) y Modo Claro (Light)
- */
-include_once(__DIR__ . "/../data/conexion.php");
-include_once(__DIR__ . "/../views/helpers/emailhelper.php");
+session_start();
+include("./../data/conexion.php");
+require_once("./../views/helpers/urlhelper.php");
+require_once("./../views/helpers/emailhelper.php");
 
-$tipo  = $_GET['tipo']  ?? 'boletin';
-$theme = $_GET['theme'] ?? 'dark'; // 'dark' o 'light'
-$isLight = ($theme === 'light');
-$html  = '';
+// Verificar si es administrador logueado
+$id_u = $_SESSION['id_u'] ?? 0;
+if ($id_u <= 0) {
+    header("Location: " . basePath() . "/views/login.php");
+    exit();
+}
+
+$tipo  = strtolower($_GET['tipo'] ?? 'boletin');
+$theme = strtolower($_GET['theme'] ?? 'light');
+
+$baseUrl = siteUrl();
+
+// Generar contenido de prueba según tipo
+$title     = "Notificaciones CatInk";
+$preheader = "Previsualización de correo electrónico institucional CatInk.";
+$badge     = "Previsualización";
+$ctaText   = "";
+$ctaUrl    = "";
+$content   = "";
 
 switch ($tipo) {
-    case 'verificacion':
-        $textColor = $isLight ? '#334155' : '#cbd5e0';
-        $subColor  = $isLight ? '#64748b' : '#718096';
-        $content = "
-            <p>Hola <strong style='color:" . ($isLight ? '#0f172a' : '#ffffff') . ";'>Alex Developer</strong>,</p>
-            <p style='color:{$textColor}; line-height:1.7;'>¡Te damos la bienvenida a CatInk! Gracias por registrarte en nuestra plataforma de noticias y comunidad. Para activar tu cuenta y comenzar a participar, por favor confirma tu correo electrónico:</p>
-            <p style='color:{$subColor}; font-size:12px; margin-top:24px; word-break:break-all;'>Si tienes problemas con el botón, copia este enlace en tu navegador:<br><a href='https://catink.com.mx/verificar.php?token=demo123' style='color:#EF3363;'>https://catink.com.mx/verificar.php?token=demo123</a></p>
-        ";
-        $html = renderCatInkEmail([
-            'title'     => '¡Te damos la bienvenida a CatInk!',
-            'badge'     => 'Verificación de Cuenta',
-            'content'   => $content,
-            'cta_url'   => 'https://catink.com.mx/verificar.php?token=demo123',
-            'cta_text'  => 'Verificar mi cuenta',
-            'theme'     => $theme
-        ]);
+    case 'promocional':
+        $title     = "¡Oferta Exclusiva Geek!";
+        $preheader = "Aprovecha descuentos únicos en merchandising y juegos.";
+        $badge     = "Anuncio Patrocinado";
+        $ctaText   = "Ver Promoción Exclusiva";
+        $ctaUrl    = $baseUrl;
+        $content   = "
+            <h2 style='margin:0 0 12px; font-size:20px; font-weight:800; color:" . ($theme === 'light' ? '#0f172a' : '#ffffff') . ";'>Gran Venta Especial de Aniversario CatInk</h2>
+            <p style='margin:0 0 16px; line-height:1.6;'>Querida comunidad geek, traemos para ti alianzas exclusivas con las mejores tiendas de cómics, manga y figuras coleccionables de México.</p>
+            <div style='background:" . ($theme === 'light' ? '#f8fafc' : '#1a2234') . "; border:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.1)') . "; border-radius:12px; padding:16px; margin:20px 0; text-align:center;'>
+                <span style='font-size:24px; font-weight:900; color:#EF3363;'>25% DE DESCUENTO</span>
+                <p style='margin:4px 0 0; font-size:13px; color:" . ($theme === 'light' ? '#64748b' : '#94a3b8') . ";'>Código: <strong>CATINK2026</strong> en tus compras mayores a $500 MXN.</p>
+            </div>";
+        break;
+
+    case 'registro':
+        $title     = "¡Bienvenido a la comunidad CatInk!";
+        $preheader = "Por favor confirma tu correo electrónico para completar tu registro.";
+        $badge     = "Verificación de Cuenta";
+        $ctaText   = "Confirmar Mi Cuenta";
+        $ctaUrl    = $baseUrl . "/controllers/confirmar.php?token=demo123456";
+        $content   = "
+            <h2 style='margin:0 0 12px; font-size:20px; font-weight:800; color:" . ($theme === 'light' ? '#0f172a' : '#ffffff') . ";'>¡Hola, Lector Geek!</h2>
+            <p style='margin:0 0 16px; line-height:1.6;'>Gracias por unirte a <strong>CatInk News</strong>. Estamos muy emocionados de tenerte con nosotros para compartir las mejores reseñas, noticias y análisis del mundo geek.</p>
+            <p style='margin:0 0 16px; line-height:1.6;'>Para comenzar a personalizar tu feed, guardar lecturas offline y comentar en los artículos, haz clic en el siguiente botón para verificar tu correo:</p>";
         break;
 
     case 'reset':
-        $textColor = $isLight ? '#334155' : '#cbd5e0';
-        $subColor  = $isLight ? '#64748b' : '#718096';
-        $content = "
-            <p>Hola <strong style='color:" . ($isLight ? '#0f172a' : '#ffffff') . ";'>Alex Developer</strong>,</p>
-            <p style='color:{$textColor}; line-height:1.7;'>Recibimos una solicitud para restablecer la contraseña de tu cuenta en CatInk. Haz clic en el botón a continuación para definir una nueva contraseña:</p>
-            <p style='color:{$subColor}; font-size:12px; margin-top:20px;'>* Este enlace de recuperación expira en 24 horas por razones de seguridad.<br>Si no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
-        ";
-        $html = renderCatInkEmail([
-            'title'     => 'Recuperación de Contraseña',
-            'badge'     => 'Seguridad de Cuenta',
-            'content'   => $content,
-            'cta_url'   => 'https://catink.com.mx/reset_contrasena?token=demo123',
-            'cta_text'  => 'Restablecer mi Contraseña',
-            'theme'     => $theme
-        ]);
+        $title     = "Solicitud de Restablecimiento de Contraseña";
+        $preheader = "Recibimos una solicitud para cambiar la contraseña de tu cuenta CatInk.";
+        $badge     = "Seguridad de la Cuenta";
+        $ctaText   = "Restablecer Contraseña";
+        $ctaUrl    = $baseUrl . "/views/reset_password.php?token=demo_token_reset";
+        $content   = "
+            <h2 style='margin:0 0 12px; font-size:20px; font-weight:800; color:" . ($theme === 'light' ? '#0f172a' : '#ffffff') . ";'>¿Olvidaste tu contraseña?</h2>
+            <p style='margin:0 0 16px; line-height:1.6;'>Recibimos una petición para restablecer la contraseña asociada a tu cuenta. Si fuiste tú, haz clic en el botón de abajo para elegir una nueva clave:</p>
+            <p style='margin:0 0 16px; font-size:13px; color:" . ($theme === 'light' ? '#64748b' : '#94a3b8') . ";'>Este enlace expirará en 60 minutos por razones de seguridad. Si no realizaste esta solicitud, puedes ignorar este correo de forma segura.</p>";
         break;
 
     case 'vacante':
-        $tableBg    = $isLight ? '#f8fafc' : '#182234';
-        $tableBorder= $isLight ? '#e2e8f0' : 'rgba(255,255,255,0.06)';
-        $lblColor   = $isLight ? '#64748b' : '#718096';
-        $valColor   = $isLight ? '#0f172a' : '#ffffff';
-        $boxBg      = $isLight ? '#f1f5f9' : '#162032';
-
-        $content = "
-            <p style='color:" . ($isLight ? '#334155' : '#cbd5e0') . "; font-size:15px;'>Se ha recibido una nueva candidatura a través del portal de reclutamiento.</p>
-            
-            <table width='100%' cellpadding='0' cellspacing='0' style='background:{$tableBg}; border-radius:12px; padding:18px; margin:20px 0; border:1px solid {$tableBorder};'>
-                <tr><td style='padding:6px 0; color:{$lblColor}; font-size:13px; font-weight:700;'>Puesto Solicitado:</td><td style='padding:6px 0; color:#EF3363; font-weight:800; font-size:15px;'>Redactor Senior de Anime & Manga</td></tr>
-                <tr><td style='padding:6px 0; color:{$lblColor}; font-size:13px; font-weight:700;'>Postulante:</td><td style='padding:6px 0; color:{$valColor}; font-weight:700;'>Carlos Mendoza</td></tr>
-                <tr><td style='padding:6px 0; color:{$lblColor}; font-size:13px; font-weight:700;'>Correo:</td><td style='padding:6px 0;'><a href='mailto:carlos@ejemplo.com' style='color:#EF3363;'>carlos@ejemplo.com</a></td></tr>
-                <tr><td style='padding:6px 0; color:{$lblColor}; font-size:13px; font-weight:700;'>Teléfono:</td><td style='padding:6px 0; color:" . ($isLight ? '#334155' : '#e2e8f0') . ";'>+52 722 123 4567</td></tr>
-            </table>
-
-            <div style='background:{$boxBg}; padding:18px; border-radius:12px; border-left:4px solid #EF3363; margin-top:16px;'>
-                <strong style='color:#EF3363; font-size:13px; text-transform:uppercase; letter-spacing:0.05em;'>Motivación / Presentación:</strong>
-                <p style='color:" . ($isLight ? '#334155' : '#e2e8f0') . "; margin:10px 0 0; line-height:1.7; white-space:pre-wrap;'>Hola equipo de CatInk, me apasiona el mundo del anime y cuento con 4 años de experiencia en redacción digital y cobertura de estrenos. Me encantaría unirme al equipo.</p>
-            </div>
-
-            <p style='color:{$lblColor}; font-size:12px; margin-top:24px;'>* Se adjunta a este correo el archivo de CV/Portafolio recibido (CV_Carlos_Mendoza.pdf).</p>
-        ";
-        $html = renderCatInkEmail([
-            'title'     => 'Nueva Solicitud de Empleo',
-            'badge'     => 'Reclutamiento CatInk',
-            'content'   => $content,
-            'cta_url'   => 'mailto:carlos@ejemplo.com',
-            'cta_text'  => 'Responder Candidato',
-            'theme'     => $theme
-        ]);
+        $title     = "Nueva Postulación: Redactor de Contenidos Anime";
+        $preheader = "Un candidato ha enviado su solicitud para la vacante de Redactor.";
+        $badge     = "CatInk Vacantes";
+        $ctaText   = "Ver Solicitudes en Admin";
+        $ctaUrl    = $baseUrl . "/views/admin.php";
+        $content   = "
+            <h2 style='margin:0 0 16px; font-size:20px; font-weight:800; color:" . ($theme === 'light' ? '#0f172a' : '#ffffff') . ";'>Detalles de la Postulación</h2>
+            <table style='width:100%; border-collapse:collapse; background:" . ($theme === 'light' ? '#f8fafc' : '#161f30') . "; border-radius:12px; overflow:hidden; border:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . ";'>
+                <tr><td style='padding:10px 14px; font-weight:800; font-size:13px; color:" . ($theme === 'light' ? '#64748b' : '#94a3b8') . "; border-bottom:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . "; width:130px;'>Candidato:</td><td style='padding:10px 14px; font-weight:700; font-size:13px; color:" . ($theme === 'light' ? '#0f172a' : '#ffffff') . "; border-bottom:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . ";'>Carlos Mendoza</td></tr>
+                <tr><td style='padding:10px 14px; font-weight:800; font-size:13px; color:" . ($theme === 'light' ? '#64748b' : '#94a3b8') . "; border-bottom:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . ";'>Correo:</td><td style='padding:10px 14px; font-weight:700; font-size:13px; color:#EF3363; border-bottom:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . ";'>carlos.mendoza@example.com</td></tr>
+                <tr><td style='padding:10px 14px; font-weight:800; font-size:13px; color:" . ($theme === 'light' ? '#64748b' : '#94a3b8') . "; border-bottom:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . ";'>Teléfono:</td><td style='padding:10px 14px; font-weight:700; font-size:13px; color:" . ($theme === 'light' ? '#0f172a' : '#ffffff') . "; border-bottom:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . ";'>55 9876 5432</td></tr>
+                <tr><td style='padding:10px 14px; font-weight:800; font-size:13px; color:" . ($theme === 'light' ? '#64748b' : '#94a3b8') . ";'>Mensaje:</td><td style='padding:10px 14px; font-size:13px; color:" . ($theme === 'light' ? '#334155' : '#e2e8f0') . ";'>Hola equipo de CatInk, me encantaría colaborar redactando noticias de la temporada de Anime. Adjunto mi CV.</td></tr>
+            </table>";
         break;
 
     case 'contacto':
-        $tableBg    = $isLight ? '#f8fafc' : '#182234';
-        $tableBorder= $isLight ? '#e2e8f0' : 'rgba(255,255,255,0.06)';
-        $lblColor   = $isLight ? '#64748b' : '#718096';
-        $valColor   = $isLight ? '#0f172a' : '#ffffff';
-        $boxBg      = $isLight ? '#f1f5f9' : '#162032';
-
-        $content = "
-            <p style='color:" . ($isLight ? '#334155' : '#cbd5e0') . "; font-size:15px;'>Se ha recibido un nuevo mensaje a través del formulario de contacto del sitio web.</p>
-            
-            <table width='100%' cellpadding='0' cellspacing='0' style='background:{$tableBg}; border-radius:12px; padding:18px; margin:20px 0; border:1px solid {$tableBorder};'>
-                <tr><td style='padding:6px 0; color:{$lblColor}; font-size:13px; font-weight:700;'>De:</td><td style='padding:6px 0; color:{$valColor}; font-weight:700;'>Mariana López</td></tr>
-                <tr><td style='padding:6px 0; color:{$lblColor}; font-size:13px; font-weight:700;'>Correo:</td><td style='padding:6px 0;'><a href='mailto:mariana@empresa.com' style='color:#EF3363;'>mariana@empresa.com</a></td></tr>
-                <tr><td style='padding:6px 0; color:{$lblColor}; font-size:13px; font-weight:700;'>Asunto:</td><td style='padding:6px 0; color:#EF3363; font-weight:800;'>Propuesta de Alianza Comercial / Patrocinio</td></tr>
-            </table>
-
-            <div style='background:{$boxBg}; padding:18px; border-radius:12px; border-left:4px solid #EF3363; margin-top:16px;'>
-                <strong style='color:#EF3363; font-size:13px; text-transform:uppercase; letter-spacing:0.05em;'>Mensaje:</strong>
-                <p style='color:" . ($isLight ? '#334155' : '#e2e8f0') . "; margin:10px 0 0; line-height:1.7;'>Hola equipo de CatInk, nos gustaría coordinar una campaña de patrocinio para el lanzamiento de nuestra nueva línea de figuras coleccionables. ¿Podríamos agendar una llamada?</p>
-            </div>
-        ";
-        $html = renderCatInkEmail([
-            'title'     => 'Nuevo Mensaje de Contacto',
-            'badge'     => 'Formulario de Contacto',
-            'content'   => $content,
-            'cta_url'   => 'mailto:mariana@empresa.com',
-            'cta_text'  => 'Responder a Mariana',
-            'theme'     => $theme
-        ]);
-        break;
-
-    case 'publicidad':
-        $content = "
-            <div style='color:" . ($isLight ? '#334155' : '#e2e8f0') . "; font-size:15px; line-height:1.7;'>
-                <p>¡Hola fan de la cultura geek!</p>
-                <p>Tenemos noticias espectaculares: ¡El mayor evento de cultura pop del año ya está aquí y queremos que vivas la experiencia antes que nadie!</p>
-            </div>
-            <div style='text-align:center; margin:20px 0;'>
-                <img src='https://catink.com.mx/img/logo_alt.png' style='width:100%; max-width:480px; border-radius:12px; background:#0b1220; padding:16px;'>
-            </div>
-        ";
-        $html = renderCatInkEmail([
-            'title'           => '¡Gran Lanzamiento CatInk Exclusivo!',
-            'badge'           => 'Anuncio / Promoción',
-            'content'         => $content,
-            'cta_url'         => 'https://catink.com.mx',
-            'cta_text'        => 'Descubrir Promoción',
-            'unsubscribe_url' => 'https://catink.com.mx/unsubscribe',
-            'theme'           => $theme
-        ]);
+        $title     = "Nuevo Mensaje de Contacto - Empresa / Marca";
+        $preheader = "Has recibido una nueva propuesta comercial desde la página de contacto.";
+        $badge     = "Formulario de Contacto";
+        $ctaText   = "Responder al Cliente";
+        $ctaUrl    = "mailto:contacto.empresa@brand.com";
+        $content   = "
+            <h2 style='margin:0 0 16px; font-size:20px; font-weight:800; color:" . ($theme === 'light' ? '#0f172a' : '#ffffff') . ";'>Datos de la Empresa / Marca</h2>
+            <table style='width:100%; border-collapse:collapse; background:" . ($theme === 'light' ? '#f8fafc' : '#161f30') . "; border-radius:12px; overflow:hidden; border:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . "; margin-bottom:16px;'>
+                <tr><td style='padding:10px 14px; font-weight:800; font-size:13px; color:" . ($theme === 'light' ? '#64748b' : '#94a3b8') . "; border-bottom:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . "; width:140px;'>Empresa / Marca:</td><td style='padding:10px 14px; font-weight:800; font-size:13px; color:#EF3363; border-bottom:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . ";'>Gaming Studio MX</td></tr>
+                <tr><td style='padding:10px 14px; font-weight:800; font-size:13px; color:" . ($theme === 'light' ? '#64748b' : '#94a3b8') . "; border-bottom:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . ";'>Contacto:</td><td style='padding:10px 14px; font-weight:700; font-size:13px; color:" . ($theme === 'light' ? '#0f172a' : '#ffffff') . "; border-bottom:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . ";'>Mariana Ríos (PR Manager)</td></tr>
+                <tr><td style='padding:10px 14px; font-weight:800; font-size:13px; color:" . ($theme === 'light' ? '#64748b' : '#94a3b8') . "; border-bottom:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . ";'>Interés:</td><td style='padding:10px 14px; font-weight:700; font-size:13px; color:" . ($theme === 'light' ? '#0f172a' : '#ffffff') . "; border-bottom:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . ";'>Campaña Publicitaria Patrocinada</td></tr>
+                <tr><td style='padding:10px 14px; font-weight:800; font-size:13px; color:" . ($theme === 'light' ? '#64748b' : '#94a3b8') . ";'>Mensaje:</td><td style='padding:10px 14px; font-size:13px; color:" . ($theme === 'light' ? '#334155' : '#e2e8f0') . ";'>Estamos interesados en patrocinar un banner publicitario de 4:1 en la portada durante el próximo mes.</td></tr>
+            </table>";
         break;
 
     case 'boletin':
     default:
-        $noticiasRes = $con->query("SELECT * FROM noticias WHERE eliminado_en IS NULL ORDER BY id DESC LIMIT 3");
-        $noticiasItems = '';
-        $cardBg     = $isLight ? '#f8fafc' : '#182234';
-        $cardBorder = $isLight ? '#e2e8f0' : 'rgba(255,255,255,0.06)';
-        $titleColor = $isLight ? '#0f172a' : '#ffffff';
-        $descColor  = $isLight ? '#64748b' : '#a0aec0';
+        $title     = "Boletín Diario de Noticias - CatInk News";
+        $preheader = "Las 3 noticias más leídas de la jornada en CatInk.";
+        $badge     = "Resumen Diario";
+        $ctaText   = "Ver Más Noticias en CatInk";
+        $ctaUrl    = $baseUrl;
+        $content   = "
+            <h2 style='margin:0 0 16px; font-size:20px; font-weight:800; color:" . ($theme === 'light' ? '#0f172a' : '#ffffff') . ";'>Noticias Destacadas de Hoy</h2>
+            
+            <div style='background:" . ($theme === 'light' ? '#f8fafc' : '#161f30') . "; border-radius:12px; padding:14px; margin-bottom:12px; border:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . ";'>
+                <span style='background:rgba(239,51,99,0.12); color:#EF3363; font-size:10px; font-weight:800; text-transform:uppercase; padding:3px 8px; border-radius:10px;'>ANIME</span>
+                <h3 style='margin:6px 0 4px; font-size:15px; font-weight:800; color:" . ($theme === 'light' ? '#0f172a' : '#ffffff') . ";'>Se confirma la nueva temporada de Kimetsu no Yaiba para 2026</h3>
+                <p style='margin:0; font-size:13px; color:" . ($theme === 'light' ? '#64748b' : '#94a3b8') . ";'>Ufotable reveló el primer avance oficial durante el evento especial en Tokio...</p>
+            </div>
 
-        if ($noticiasRes && $noticiasRes->num_rows > 0) {
-            while ($n = $noticiasRes->fetch_assoc()) {
-                $desc = mb_strimwidth(strip_tags($n['descripcion']), 0, 100, '...');
-                $img = !empty($n['crop3']) ? 'https://catink.com.mx/serve-image.php?file=' . urlencode($n['crop3']) : 'https://catink.com.mx/img/logo_alt.png';
-                $tituloEsc = htmlspecialchars($n['titulo']);
-                $urlNoticia = "https://catink.com.mx/views/news.php?id={$n['id']}";
-                $noticiasItems .= "
-                <table width='100%' cellpadding='0' cellspacing='0' border='0' style='background:{$cardBg};margin-bottom:16px;border-radius:14px;overflow:hidden;border:1px solid {$cardBorder};'>
-                <tr>
-                <td width='180' valign='middle' class='stack-col' style='padding:12px;'>
-                    <a href='{$urlNoticia}' target='_blank'>
-                        <img src='{$img}' width='180' class='stack-img' style='width:100%;max-width:180px;height:auto;display:block;border-radius:10px;border:0;margin:0;'>
-                    </a>
-                </td>
-                <td valign='middle' class='stack-col' style='padding:14px 16px 14px 4px;font-family:Arial,sans-serif;'>
-                    <a href='{$urlNoticia}' target='_blank' style='display:block;text-decoration:none;color:{$titleColor};'>
-                        <h3 style='margin:0 0 8px;font-family:Arial,sans-serif;color:{$titleColor};font-size:16px;font-weight:800;line-height:1.3;'>{$tituloEsc}</h3>
-                    </a>
-                    <p style='margin:0 0 12px;color:{$descColor};font-size:13px;line-height:1.5;'>{$desc}</p>
-                    <a href='{$urlNoticia}' target='_blank' style='display:inline-block;color:#EF3363;font-size:12px;font-weight:800;text-decoration:none;text-transform:uppercase;letter-spacing:0.05em;'>
-                        Leer noticia completa →
-                    </a>
-                </td>
-                </tr>
-                </table>";
-            }
-        } else {
-            $noticiasItems = "<p style='color:{$descColor}; text-align:center;'>No hay noticias cargadas en la BD.</p>";
-        }
-
-        if ($isLight) {
-            $content = "
-                <div style='display:inline-block; background:rgba(239,51,99,0.08); color:#EF3363; border:1px solid rgba(239,51,99,0.25); font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.15em; padding:5px 12px; border-radius:20px; margin-bottom:12px;'>Newsletter Diario</div>
-                <h1 style='margin:0 0 10px; font-size:22px; font-weight:900; color:#0f172a; line-height:1.25;'>Lo mejor de las últimas 24 horas</h1>
-                <p style='margin:0 0 20px; color:#64748b; font-size:14px; line-height:1.6;'>Aquí tienes el resumen con las noticias y acontecimientos más relevantes seleccionados por nuestro equipo editorial.</p>
-                {$noticiasItems}
-            ";
-            $html = renderCatInkEmail([
-                'title'           => 'Resumen Diario — CatInk',
-                'content'         => $content,
-                'unsubscribe_url' => 'https://catink.com.mx/unsubscribe',
-                'theme'           => 'light'
-            ]);
-        } else {
-            $plantilla = file_get_contents(__DIR__ . "/email/diarias.html");
-            $html = str_replace(['{{noticias}}', '{{unsubscribe_url}}'], [$noticiasItems, 'https://catink.com.mx/unsubscribe'], $plantilla);
-        }
+            <div style='background:" . ($theme === 'light' ? '#f8fafc' : '#161f30') . "; border-radius:12px; padding:14px; margin-bottom:12px; border:1px solid " . ($theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.08)') . ";'>
+                <span style='background:rgba(59,130,246,0.12); color:#3b82f6; font-size:10px; font-weight:800; text-transform:uppercase; padding:3px 8px; border-radius:10px;'>VIDEOJUEGOS</span>
+                <h3 style='margin:6px 0 4px; font-size:15px; font-weight:800; color:" . ($theme === 'light' ? '#0f172a' : '#ffffff') . ";'>Análisis de la nueva consola de Nintendo y sus títulos de lanzamiento</h3>
+                <p style='margin:0; font-size:13px; color:" . ($theme === 'light' ? '#64748b' : '#94a3b8') . ";'>Probamos en exclusiva los primeros juegos optimizados para la plataforma...</p>
+            </div>";
         break;
 }
 
-if (isset($_GET['raw']) && $_GET['raw'] == '1') {
-    echo $html;
-    exit;
+$emailHtml = renderCatInkEmail([
+    'title'          => $title,
+    'preheader'      => $preheader,
+    'badge'          => $badge,
+    'content'        => $content,
+    'cta_text'       => $ctaText,
+    'cta_url'        => $ctaUrl,
+    'unsubscribe_url'=> $baseUrl . '/suscripcion',
+    'theme'          => $theme
+]);
+
+// Si es solicitud iframe/raw
+if (isset($_GET['raw']) && $_GET['raw'] === '1') {
+    echo $emailHtml;
+    exit();
 }
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <title>Previsualizador de Correos — CatInk</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previsualizador de Correos - CatInk</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        body { margin:0; padding:0; background:#080d16; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:#fff; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
-        .toolbar { background:#121927; border-bottom:1px solid rgba(255,255,255,0.08); padding:12px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
-        .toolbar-title { font-size:1.1rem; font-weight:800; display:flex; align-items:center; gap:8px; color:#fff; }
-        .toolbar-title i { color:#EF3363; font-size:1.3rem; }
-        .tabs { display:flex; gap:8px; flex-wrap:wrap; }
-        .tab-btn { background:rgba(255,255,255,0.05); color:#a0aec0; border:1px solid rgba(255,255,255,0.08); padding:8px 14px; border-radius:10px; font-size:0.85rem; font-weight:700; text-decoration:none; transition:all 0.2s ease; display:inline-flex; align-items:center; gap:6px; }
-        .tab-btn:hover, .tab-btn.active { background:#EF3363; color:#fff; border-color:#EF3363; box-shadow:0 4px 12px rgba(239,51,99,0.3); }
-        .theme-toggle { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:8px 14px; border-radius:10px; font-size:0.85rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s ease; }
-        .theme-toggle:hover { background:rgba(255,255,255,0.15); color:#fff; }
-        .iframe-container { flex:1; width:100%; background:<?= $isLight ? '#e2e8f0' : '#0b1220' ?>; position:relative; }
-        iframe { width:100%; height:100%; border:none; display:block; }
+        :root {
+            --bg: #0b111e;
+            --card: #151d2a;
+            --border: #232d3f;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --accent: #EF3363;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .toolbar {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+        .toolbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 900;
+            font-size: 1.05rem;
+            color: var(--text);
+            text-decoration: none;
+        }
+        .toolbar-brand i { color: var(--accent); font-size: 1.3rem; }
+        .toolbar-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .toolbar-select, .toolbar-btn {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .toolbar-select:focus, .toolbar-btn:hover {
+            border-color: var(--accent);
+        }
+        .toolbar-btn-accent {
+            background: var(--accent);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 4px 14px rgba(239, 51, 99, 0.4);
+        }
+        .toolbar-btn-accent:hover {
+            opacity: 0.9;
+        }
+        .preview-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: #070b13;
+            position: relative;
+        }
+        iframe {
+            width: 100%;
+            max-width: 680px;
+            height: 100%;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: #ffffff;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: max-width 0.3s ease;
+        }
+        .viewport-mobile iframe { max-width: 380px; }
     </style>
 </head>
 <body>
-    <div class="toolbar">
-        <div class="toolbar-title">
-            <i class="bi bi-envelope-paper-heart-fill"></i> Previsualizador de Correos
+
+    <header class="toolbar">
+        <a href="<?= basePath() ?>/views/paginas.php" class="toolbar-brand">
+            <i class="bi bi-envelope-paper-heart-fill"></i>
+            <span>CatInk Email Previewer</span>
+        </a>
+
+        <div class="toolbar-controls">
+            <!-- Selector de Tipo -->
+            <div>
+                <label style="font-size:0.75rem; color:var(--muted); display:block; margin-bottom:2px; font-weight:700;">FORMATO DE CORREO</label>
+                <select class="toolbar-select" id="selTipo" onchange="updatePreview()">
+                    <option value="boletin" <?= $tipo === 'boletin' ? 'selected' : '' ?>>📬 Boletín Diario de Noticias</option>
+                    <option value="promocional" <?= $tipo === 'promocional' ? 'selected' : '' ?>>📢 Anuncio Promocional Patrocinado</option>
+                    <option value="registro" <?= $tipo === 'registro' ? 'selected' : '' ?>>🎉 Bienvenida / Verificación de Cuenta</option>
+                    <option value="reset" <?= $tipo === 'reset' ? 'selected' : '' ?>>🔐 Restablecer Contraseña</option>
+                    <option value="vacante" <?= $tipo === 'vacante' ? 'selected' : '' ?>>💼 Postulación a Vacantes</option>
+                    <option value="contacto" <?= $tipo === 'contacto' ? 'selected' : '' ?>>🏢 Formulario de Contacto Corporativo</option>
+                </select>
+            </div>
+
+            <!-- Selector de Tema -->
+            <div>
+                <label style="font-size:0.75rem; color:var(--muted); display:block; margin-bottom:2px; font-weight:700;">TEMA DE COLOR</label>
+                <select class="toolbar-select" id="selTheme" onchange="updatePreview()">
+                    <option value="light" <?= $theme === 'light' ? 'selected' : '' ?>>☀️ Tema Claro (Light Default)</option>
+                    <option value="dark" <?= $theme === 'dark' ? 'selected' : '' ?>>🌙 Tema Oscuro (Dark Mode)</option>
+                </select>
+            </div>
+
+            <!-- Selector de Dispositivo -->
+            <div>
+                <label style="font-size:0.75rem; color:var(--muted); display:block; margin-bottom:2px; font-weight:700;">DISPOSITIVO</label>
+                <button type="button" class="toolbar-btn" id="btnDesktop" onclick="setViewport('desktop')" title="Vista Desktop">
+                    <i class="bi bi-display me-1"></i> Desktop
+                </button>
+                <button type="button" class="toolbar-btn" id="btnMobile" onclick="setViewport('mobile')" title="Vista Móvil">
+                    <i class="bi bi-phone me-1"></i> Móvil
+                </button>
+            </div>
+
+            <!-- Botón Volver -->
+            <div style="align-self:flex-end;">
+                <a href="<?= basePath() ?>/views/paginas.php" class="toolbar-btn toolbar-btn-accent" style="text-decoration:none;">
+                    <i class="bi bi-arrow-left me-1"></i> Volver a CMS
+                </a>
+            </div>
         </div>
-        <div class="tabs">
-            <a href="?tipo=boletin&theme=<?= $theme ?>" class="tab-btn <?= $tipo==='boletin'?'active':'' ?>"><i class="bi bi-newspaper"></i> Resumen Diario</a>
-            <a href="?tipo=verificacion&theme=<?= $theme ?>" class="tab-btn <?= $tipo==='verificacion'?'active':'' ?>"><i class="bi bi-check-circle-fill"></i> Bienvenida / Verificación</a>
-            <a href="?tipo=reset&theme=<?= $theme ?>" class="tab-btn <?= $tipo==='reset'?'active':'' ?>"><i class="bi bi-key-fill"></i> Reset Contraseña</a>
-            <a href="?tipo=vacante&theme=<?= $theme ?>" class="tab-btn <?= $tipo==='vacante'?'active':'' ?>"><i class="bi bi-briefcase-fill"></i> Postulación Vacante</a>
-            <a href="?tipo=contacto&theme=<?= $theme ?>" class="tab-btn <?= $tipo==='contacto'?'active':'' ?>"><i class="bi bi-chat-dots-fill"></i> Formulario Contacto</a>
-            <a href="?tipo=publicidad&theme=<?= $theme ?>" class="tab-btn <?= $tipo==='publicidad'?'active':'' ?>"><i class="bi bi-megaphone-fill"></i> Anuncio / Promoción</a>
-        </div>
-        <div style="display:flex; align-items:center; gap:10px;">
-            <a href="?tipo=<?= urlencode($tipo) ?>&theme=<?= $isLight ? 'dark' : 'light' ?>" class="theme-toggle">
-                <?php if ($isLight): ?>
-                    <i class="bi bi-moon-stars-fill" style="color:#a78bfa;"></i> Ver Modo Oscuro
-                <?php else: ?>
-                    <i class="bi bi-sun-fill" style="color:#fbbf24;"></i> Ver Modo Claro
-                <?php endif; ?>
-            </a>
-            <a href="/views/paginas.php" class="tab-btn" style="background:transparent;"><i class="bi bi-arrow-left"></i> Volver a Admin</a>
-        </div>
-    </div>
-    <div class="iframe-container">
-        <iframe src="?tipo=<?= urlencode($tipo) ?>&theme=<?= urlencode($theme) ?>&raw=1"></iframe>
-    </div>
+    </header>
+
+    <main class="preview-container" id="previewWrapper">
+        <iframe src="preview_email.php?tipo=<?= urlencode($tipo) ?>&theme=<?= urlencode($theme) ?>&raw=1" id="emailIframe"></iframe>
+    </main>
+
+    <script>
+        function updatePreview() {
+            const tipo = document.getElementById('selTipo').value;
+            const theme = document.getElementById('selTheme').value;
+            const iframe = document.getElementById('emailIframe');
+            iframe.src = `preview_email.php?tipo=${tipo}&theme=${theme}&raw=1`;
+            
+            // Actualizar URL sin recargar la página
+            const newUrl = window.location.pathname + `?tipo=${tipo}&theme=${theme}`;
+            window.history.pushState({ path: newUrl }, '', newUrl);
+        }
+
+        function setViewport(mode) {
+            const wrapper = document.getElementById('previewWrapper');
+            const btnD = document.getElementById('btnDesktop');
+            const btnM = document.getElementById('btnMobile');
+
+            if (mode === 'mobile') {
+                wrapper.classList.add('viewport-mobile');
+                btnM.style.borderColor = 'var(--accent)';
+                btnD.style.borderColor = 'var(--border)';
+            } else {
+                wrapper.classList.remove('viewport-mobile');
+                btnD.style.borderColor = 'var(--accent)';
+                btnM.style.borderColor = 'var(--border)';
+            }
+        }
+    </script>
 </body>
 </html>
