@@ -103,6 +103,8 @@
 
   // Habilitar View Transitions API nativa en navegación Turbo Drive
   document.addEventListener('turbo:before-render', (event) => {
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
     if (document.startViewTransition) {
       const newBody = event.detail.newBody;
       const articleId = sessionStorage.getItem('transitionActiveId');
@@ -130,6 +132,8 @@
 
   // Escuchar evento turbo:load en lugar de DOMContentLoaded
   document.addEventListener('turbo:load', function() {
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
     console.log('Turbo: Página cargada e inicializando scripts.js');
 
     // Configurar retardo de la barra de progreso de Turbo a 100ms

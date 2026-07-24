@@ -178,31 +178,33 @@ $meta = json_decode($row['meta_json'] ?? '', true) ?: [];
             navList.appendChild(li);
         });
 
-        function updateActiveOnScroll() {
-            let activeId = '';
-            headings.forEach(h => {
-                const rect = h.getBoundingClientRect();
-                if (rect.top <= 150) {
-                    activeId = h.id;
-                }
-            });
-
-            navList.querySelectorAll('a').forEach(a => {
-                if (activeId && a.getAttribute('href') === '#' + activeId) {
-                    a.style.color = '#6366f1';
-                    a.style.borderLeftColor = '#6366f1';
-                    a.style.background = 'rgba(99,102,241,0.08)';
-                } else {
-                    a.style.color = '';
-                    a.style.borderLeftColor = '';
-                    a.style.background = '';
-                }
-            });
+        if (window.legalTocObserverPriv) {
+            window.legalTocObserverPriv.disconnect();
         }
 
-        window.removeEventListener('scroll', updateActiveOnScroll);
-        window.addEventListener('scroll', updateActiveOnScroll);
-        updateActiveOnScroll();
+        window.legalTocObserverPriv = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    navList.querySelectorAll('a').forEach(a => {
+                        if (a.getAttribute('href') === '#' + id) {
+                            a.style.color = '#6366f1';
+                            a.style.borderLeftColor = '#6366f1';
+                            a.style.background = 'rgba(99,102,241,0.08)';
+                        } else {
+                            a.style.color = '';
+                            a.style.borderLeftColor = '';
+                            a.style.background = '';
+                        }
+                    });
+                }
+            });
+        }, {
+            rootMargin: '-80px 0px -60% 0px',
+            threshold: 0
+        });
+
+        headings.forEach(h => window.legalTocObserverPriv.observe(h));
     }
 
     if (document.readyState === 'loading') {

@@ -80,7 +80,7 @@ html,body { min-height: 100%; font-family: system-ui, -apple-system, 'Segoe UI',
   content: url('../img/logo_alt.png');
 }
 /* Layout general: cuerpo como columna flex para sticky footer */
-body { display:flex; flex-direction:column; min-height:100vh; background: var(--bg); color: var(--text); overflow-x: clip; }
+body { display:flex; flex-direction:column; min-height:100vh; background: var(--bg); color: var(--text); overflow-x: hidden; }
 .site-main {
   padding: 0;
   flex: 1;
