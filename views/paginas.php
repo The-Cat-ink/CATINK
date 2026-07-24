@@ -951,7 +951,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let benHtml = '';
             ben.forEach((b, idx) => {
-                const currentIcon = b.icono || 'bi-star-fill';
+                const currentIcon = String(b.icono || 'bi-star-fill');
                 const isImg = (currentIcon.startsWith('http://') || currentIcon.startsWith('https://') || currentIcon.startsWith('data:image') || currentIcon.startsWith('/') || currentIcon.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(currentIcon));
                 const isPreset = availableIcons.some(ic => ic.code === currentIcon);
 
@@ -1327,11 +1327,14 @@ document.addEventListener('DOMContentLoaded', () => {
             benRows.forEach(row => {
                 const sel = row.querySelector(".meta-ben-icon");
                 const customInp = row.querySelector(".meta-ben-custom-icon");
+                const imgInp = row.querySelector(".meta-ben-img-url");
                 const titleInp = row.querySelector(".meta-ben-title");
                 const descInp = row.querySelector(".meta-ben-desc");
 
                 let iconVal = sel ? sel.value : 'bi-star-fill';
-                if (iconVal === '__custom__' && customInp) {
+                if (iconVal === '__image__' && imgInp) {
+                    iconVal = imgInp.value.trim() || 'bi-image';
+                } else if (iconVal === '__custom__' && customInp) {
                     iconVal = customInp.value.trim() || 'bi-star-fill';
                 }
                 const titleVal = titleInp ? titleInp.value.trim() : '';
