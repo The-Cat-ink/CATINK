@@ -120,59 +120,52 @@ $otros = $totalSuscripciones - $hombres - $mujeres;
     <?php endif; ?>
 
     <!-- ── TARJETAS DE ESTADÍSTICAS RÁPIDAS ────────────────────── -->
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
-                <div class="d-flex align-items-center gap-3">
-                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(99,102,241,0.12); color:#6366f1; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
-                        <i class="bi bi-people-fill"></i>
-                    </div>
-                    <div>
-                        <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $totalSuscripciones ?></div>
-                        <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Total Suscriptores</div>
-                    </div>
+    <!-- ── TARJETAS DE ESTADÍSTICAS RÁPIDAS ────────────────────── -->
+    <div class="cn-stats-grid mb-4">
+        <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width:44px; height:44px; border-radius:12px; background:rgba(99,102,241,0.12); color:#6366f1; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $totalSuscripciones ?></div>
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Total Suscriptores</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
-                <div class="d-flex align-items-center gap-3">
-                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(59,130,246,0.12); color:#3b82f6; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
-                        <i class="bi bi-gender-male"></i>
-                    </div>
-                    <div>
-                        <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $hombres ?></div>
-                        <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Hombres</div>
-                    </div>
+        <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width:44px; height:44px; border-radius:12px; background:rgba(59,130,246,0.12); color:#3b82f6; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
+                    <i class="bi bi-gender-male"></i>
+                </div>
+                <div>
+                    <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $hombres ?></div>
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Hombres</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
-                <div class="d-flex align-items-center gap-3">
-                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
-                        <i class="bi bi-gender-female"></i>
-                    </div>
-                    <div>
-                        <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $mujeres ?></div>
-                        <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Mujeres</div>
-                    </div>
+        <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width:44px; height:44px; border-radius:12px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
+                    <i class="bi bi-gender-female"></i>
+                </div>
+                <div>
+                    <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $mujeres ?></div>
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Mujeres</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
-                <div class="d-flex align-items-center gap-3">
-                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(245,158,11,0.12); color:#f59e0b; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
-                        <i class="bi bi-gender-ambiguous"></i>
-                    </div>
-                    <div>
-                        <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $otros ?></div>
-                        <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Otro / N/A</div>
-                    </div>
+        <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width:44px; height:44px; border-radius:12px; background:rgba(245,158,11,0.12); color:#f59e0b; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
+                    <i class="bi bi-gender-ambiguous"></i>
+                </div>
+                <div>
+                    <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $otros ?></div>
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Otro / N/A</div>
                 </div>
             </div>
         </div>

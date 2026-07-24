@@ -72,59 +72,51 @@
     </div>
 
     <!-- ── TARJETAS DE ESTADÍSTICAS RÁPIDAS ────────────────────── -->
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
-                <div class="d-flex align-items-center gap-3">
-                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(99,102,241,0.12); color:#6366f1; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
-                        <i class="bi bi-megaphone-fill"></i>
-                    </div>
-                    <div>
-                        <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $totalPublicidad ?></div>
-                        <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Total Campañas</div>
-                    </div>
+    <div class="cn-stats-grid mb-4">
+        <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width:44px; height:44px; border-radius:12px; background:rgba(99,102,241,0.12); color:#6366f1; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
+                    <i class="bi bi-megaphone-fill"></i>
+                </div>
+                <div>
+                    <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $totalPublicidad ?></div>
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Total Campañas</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
-                <div class="d-flex align-items-center gap-3">
-                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(16,185,129,0.12); color:#10b981; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
-                        <i class="bi bi-play-circle-fill"></i>
-                    </div>
-                    <div>
-                        <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $activas ?></div>
-                        <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Activas</div>
-                    </div>
+        <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width:44px; height:44px; border-radius:12px; background:rgba(16,185,129,0.12); color:#10b981; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
+                    <i class="bi bi-play-circle-fill"></i>
+                </div>
+                <div>
+                    <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $activas ?></div>
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Activas</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
-                <div class="d-flex align-items-center gap-3">
-                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(245,158,11,0.12); color:#f59e0b; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
-                        <i class="bi bi-calendar-event-fill"></i>
-                    </div>
-                    <div>
-                        <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $programadas ?></div>
-                        <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Programadas</div>
-                    </div>
+        <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width:44px; height:44px; border-radius:12px; background:rgba(245,158,11,0.12); color:#f59e0b; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
+                    <i class="bi bi-calendar-event-fill"></i>
+                </div>
+                <div>
+                    <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $programadas ?></div>
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Programadas</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
-                <div class="d-flex align-items-center gap-3">
-                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
-                        <i class="bi bi-stop-circle-fill"></i>
-                    </div>
-                    <div>
-                        <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $vencidas ?></div>
-                        <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Vencidas</div>
-                    </div>
+        <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width:44px; height:44px; border-radius:12px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
+                    <i class="bi bi-stop-circle-fill"></i>
+                </div>
+                <div>
+                    <div style="font-size:1.4rem; font-weight:900; color:var(--text); line-height:1;"><?= $vencidas ?></div>
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.04em;">Vencidas</div>
                 </div>
             </div>
         </div>

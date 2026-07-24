@@ -3662,6 +3662,24 @@ img.umod-avatar { display: block; }
   .col-lg-4 { flex: 0 0 33.333333% !important; width: 33.333333% !important; }
 }
 
+/* ─── Standard 4-Card Stats Grid ───────────────────────────────── */
+.cn-stats-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 16px !important;
+  margin-bottom: 24px !important;
+}
+@media (max-width: 1100px) {
+  .cn-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 576px) {
+  .cn-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 .kpi-card__body { flex: 1; min-width: 0; }
 .kpi-card__value {
   font-size: 1.45rem;
