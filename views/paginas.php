@@ -791,6 +791,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalPagina = document.getElementById("modalPagina");
     const modalClosePag = document.getElementById("modalClosePag");
 
+    function updateBenefitIconPreview(row) {
+        if (!row) return;
+        const sel = row.querySelector('.meta-ben-icon');
+        const customWrap = row.querySelector('.meta-ben-custom-wrap');
+        const imgWrap = row.querySelector('.meta-ben-img-wrap');
+        const previewBox = row.querySelector('.icon-preview-box');
+        if (!sel || !previewBox) return;
+
+        if (sel.value === '__image__') {
+            if (customWrap) customWrap.style.display = 'none';
+            if (imgWrap) imgWrap.style.display = 'block';
+            const imgVal = imgWrap ? imgWrap.querySelector('.meta-ben-img-url').value.trim() : '';
+            if (imgVal) {
+                previewBox.innerHTML = `<img src="${imgVal}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;">`;
+            } else {
+                previewBox.innerHTML = `<i class="bi bi-image" style="font-size:1.2rem;"></i>`;
+            }
+        } else if (sel.value === '__custom__') {
+            if (customWrap) customWrap.style.display = 'block';
+            if (imgWrap) imgWrap.style.display = 'none';
+            const customVal = customWrap ? customWrap.querySelector('input').value.trim() || 'bi-star-fill' : 'bi-star-fill';
+            previewBox.innerHTML = `<i class="bi ${customVal}" style="font-size:1.2rem;"></i>`;
+        } else {
+            if (customWrap) customWrap.style.display = 'none';
+            if (imgWrap) imgWrap.style.display = 'none';
+            previewBox.innerHTML = `<i class="bi ${sel.value}" style="font-size:1.2rem;"></i>`;
+        }
+    }
+
+    function handleBenFileSelect(input) {
+        if (!input || !input.files || !input.files[0]) return;
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const row = input.closest('.ben-row-item');
+            const urlInput = row ? row.querySelector('.meta-ben-img-url') : null;
+            if (urlInput) {
+                urlInput.value = e.target.result;
+                updateBenefitIconPreview(row);
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
     function renderMetaFields(pageName, meta = {}) {
         const container = document.getElementById("metaFieldsContainer");
         if (!container) return;
@@ -908,15 +952,31 @@ document.addEventListener('DOMContentLoaded', () => {
             let benHtml = '';
             ben.forEach((b, idx) => {
                 const currentIcon = b.icono || 'bi-star-fill';
+                const isImg = (currentIcon.startsWith('http://') || currentIcon.startsWith('https://') || currentIcon.startsWith('data:image') || currentIcon.startsWith('/') || currentIcon.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(currentIcon));
                 const isPreset = availableIcons.some(ic => ic.code === currentIcon);
-                const selectedOptionValue = isPreset ? currentIcon : '__custom__';
-                const customIconValue = isPreset ? '' : currentIcon;
+
+                let selectedOptionValue = 'bi-star-fill';
+                if (isImg) {
+                    selectedOptionValue = '__image__';
+                } else if (isPreset) {
+                    selectedOptionValue = currentIcon;
+                } else {
+                    selectedOptionValue = '__custom__';
+                }
+
+                const customIconValue = (!isPreset && !isImg) ? currentIcon : '';
+                const customImgValue = isImg ? currentIcon : '';
 
                 let optionsHtml = '';
                 availableIcons.forEach(ic => {
                     optionsHtml += `<option value="${ic.code}" ${selectedOptionValue === ic.code ? 'selected' : ''}>${ic.label}</option>`;
                 });
-                optionsHtml += `<option value="__custom__" ${selectedOptionValue === '__custom__' ? 'selected' : ''}>✍️ Escribir ícono personalizado...</option>`;
+                optionsHtml += `<option value="__image__" ${selectedOptionValue === '__image__' ? 'selected' : ''}>🖼️ Subir / Usar Imagen (PNG, SVG, WebP)...</option>`;
+                optionsHtml += `<option value="__custom__" ${selectedOptionValue === '__custom__' ? 'selected' : ''}>✍️ Escribir clase Bootstrap personalizada...</option>`;
+
+                const previewContent = isImg 
+                    ? `<img src="${currentIcon}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;">`
+                    : `<i class="bi ${currentIcon}"></i>`;
 
                 benHtml += `
                     <div class="ben-row-item" style="border:1px solid var(--border); padding:12px; border-radius:12px; margin-bottom:10px; background:var(--bg);">
@@ -928,33 +988,36 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div style="display:grid; grid-template-columns: 210px 1fr; gap:10px; margin-bottom:8px; align-items:center;">
                             <div style="display:flex; align-items:center; gap:8px;">
-                                <div class="icon-preview-box" style="width:36px; height:36px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid rgba(239,51,99,0.2);">
-                                    <i class="bi ${currentIcon}"></i>
+                                <div class="icon-preview-box" style="width:36px; height:36px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid rgba(239,51,99,0.2); overflow:hidden;">
+                                    ${previewContent}
                                 </div>
-                                <select class="cn-input meta-ben-icon" onchange="
-                                    const customWrap = this.closest('.ben-row-item').querySelector('.meta-ben-custom-wrap');
-                                    const iconI = this.previousElementSibling.querySelector('i');
-                                    if (this.value === '__custom__') {
-                                        customWrap.style.display = 'block';
-                                        const customVal = customWrap.querySelector('input').value.trim() || 'bi-star-fill';
-                                        iconI.className = 'bi ' + customVal;
-                                    } else {
-                                        customWrap.style.display = 'none';
-                                        iconI.className = 'bi ' + this.value;
-                                    }
-                                " style="font-weight:700; font-size:0.82rem; padding:8px 10px; cursor:pointer;">
+                                <select class="cn-input meta-ben-icon" onchange="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-weight:700; font-size:0.82rem; padding:8px 10px; cursor:pointer;">
                                     ${optionsHtml}
                                 </select>
                             </div>
                             <input type="text" class="cn-input meta-ben-title" value="${b.titulo || ''}" placeholder="Título del Beneficio">
                         </div>
-                        <div class="meta-ben-custom-wrap" style="margin-bottom:8px; display:${selectedOptionValue === '__custom__' ? 'block' : 'none'};">
-                            <label style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:2px;">Clase de ícono Bootstrap (ej: bi-discord, bi-twitch, bi-shield-slash):</label>
-                            <input type="text" class="cn-input meta-ben-custom-icon" value="${customIconValue}" placeholder="Ej: bi-discord" oninput="
-                                const iconI = this.closest('.ben-row-item').querySelector('.icon-preview-box i');
-                                if (iconI) iconI.className = 'bi ' + (this.value.trim() || 'bi-star-fill');
-                            ">
+
+                        <!-- Selector de Imagen -->
+                        <div class="meta-ben-img-wrap" style="margin-bottom:8px; display:${selectedOptionValue === '__image__' ? 'block' : 'none'}; background:rgba(239,51,99,0.05); padding:10px; border-radius:10px; border:1px dashed rgba(239,51,99,0.2);">
+                            <label style="font-size:0.75rem; font-weight:800; color:var(--accent); display:block; margin-bottom:6px;">
+                                <i class="bi bi-image me-1"></i> Imagen del Ícono (SVG, PNG, WebP)
+                            </label>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <input type="text" class="cn-input meta-ben-img-url" value="${customImgValue}" placeholder="URL o sube archivo (https://... o /img/icono.svg)" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-size:0.82rem;">
+                                <input type="file" class="meta-ben-file-input" accept="image/*" style="display:none;" onchange="handleBenFileSelect(this)">
+                                <button type="button" class="btn btn-sm btn-outline-accent" onclick="this.previousElementSibling.click()" style="border-radius:8px; font-weight:700; font-size:0.78rem; white-space:nowrap;">
+                                    <i class="bi bi-upload me-1"></i> Subir Imagen
+                                </button>
+                            </div>
                         </div>
+
+                        <!-- Selector de Clase Custom -->
+                        <div class="meta-ben-custom-wrap" style="margin-bottom:8px; display:${selectedOptionValue === '__custom__' ? 'block' : 'none'};">
+                            <label style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:2px;">Clase de ícono Bootstrap (ej: bi-discord, bi-twitch):</label>
+                            <input type="text" class="cn-input meta-ben-custom-icon" value="${customIconValue}" placeholder="Ej: bi-discord" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))">
+                        </div>
+
                         <input type="text" class="cn-input meta-ben-desc" value="${b.desc || ''}" placeholder="Descripción corta explicativa">
                     </div>
                 `;
@@ -1135,7 +1198,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 availableIcons.forEach(ic => {
                     optionsHtml += `<option value="${ic.code}" ${ic.code === 'bi-star-fill' ? 'selected' : ''}>${ic.label}</option>`;
                 });
-                optionsHtml += `<option value="__custom__">✍️ Escribir ícono personalizado...</option>`;
+                optionsHtml += `<option value="__image__">🖼️ Subir / Usar Imagen (PNG, SVG, WebP)...</option>`;
+                optionsHtml += `<option value="__custom__">✍️ Escribir clase Bootstrap personalizada...</option>`;
 
                 row.innerHTML = `
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
@@ -1146,35 +1210,40 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div style="display:grid; grid-template-columns: 210px 1fr; gap:10px; margin-bottom:8px; align-items:center;">
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <div class="icon-preview-box" style="width:36px; height:36px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid rgba(239,51,99,0.2);">
+                            <div class="icon-preview-box" style="width:36px; height:36px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid rgba(239,51,99,0.2); overflow:hidden;">
                                 <i class="bi bi-star-fill"></i>
                             </div>
-                            <select class="cn-input meta-ben-icon" onchange="
-                                const customWrap = this.closest('.ben-row-item').querySelector('.meta-ben-custom-wrap');
-                                const iconI = this.previousElementSibling.querySelector('i');
-                                if (this.value === '__custom__') {
-                                    customWrap.style.display = 'block';
-                                    const customVal = customWrap.querySelector('input').value.trim() || 'bi-star-fill';
-                                    iconI.className = 'bi ' + customVal;
-                                } else {
-                                    customWrap.style.display = 'none';
-                                    iconI.className = 'bi ' + this.value;
-                                }
-                            " style="font-weight:700; font-size:0.82rem; padding:8px 10px; cursor:pointer;">
+                            <select class="cn-input meta-ben-icon" onchange="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-weight:700; font-size:0.82rem; padding:8px 10px; cursor:pointer;">
                                 ${optionsHtml}
                             </select>
                         </div>
                         <input type="text" class="cn-input meta-ben-title" value="" placeholder="Título del Beneficio">
                     </div>
-                    <div class="meta-ben-custom-wrap" style="margin-bottom:8px; display:none;">
-                        <label style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:2px;">Clase de ícono Bootstrap (ej: bi-discord, bi-twitch, bi-shield-slash):</label>
-                        <input type="text" class="cn-input meta-ben-custom-icon" value="" placeholder="Ej: bi-discord" oninput="
-                            const iconI = this.closest('.ben-row-item').querySelector('.icon-preview-box i');
-                            if (iconI) iconI.className = 'bi ' + (this.value.trim() || 'bi-star-fill');
-                        ">
+
+                    <!-- Selector de Imagen -->
+                    <div class="meta-ben-img-wrap" style="margin-bottom:8px; display:none; background:rgba(239,51,99,0.05); padding:10px; border-radius:10px; border:1px dashed rgba(239,51,99,0.2);">
+                        <label style="font-size:0.75rem; font-weight:800; color:var(--accent); display:block; margin-bottom:6px;">
+                            <i class="bi bi-image me-1"></i> Imagen del Ícono (SVG, PNG, WebP)
+                        </label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="text" class="cn-input meta-ben-img-url" value="" placeholder="URL o sube archivo (https://... o /img/icono.svg)" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-size:0.82rem;">
+                            <input type="file" class="meta-ben-file-input" accept="image/*" style="display:none;" onchange="handleBenFileSelect(this)">
+                            <button type="button" class="btn btn-sm btn-outline-accent" onclick="this.previousElementSibling.click()" style="border-radius:8px; font-weight:700; font-size:0.78rem; white-space:nowrap;">
+                                <i class="bi bi-upload me-1"></i> Subir Imagen
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- Selector de Clase Custom -->
+                    <div class="meta-ben-custom-wrap" style="margin-bottom:8px; display:none;">
+                        <label style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:2px;">Clase de ícono Bootstrap (ej: bi-discord, bi-twitch):</label>
+                        <input type="text" class="cn-input meta-ben-custom-icon" value="" placeholder="Ej: bi-discord" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))">
+                    </div>
+
                     <input type="text" class="cn-input meta-ben-desc" value="" placeholder="Descripción corta explicativa">
                 `;
+                beneficiosListContainer.appendChild(row);
+            });
                 beneficiosListContainer.appendChild(row);
             });
         }

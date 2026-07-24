@@ -167,9 +167,18 @@ $beneficios = $meta['beneficios'] ?? [
             <p class="sus-left-sub">Miles de fans de la cultura geek ya reciben nuestro newsletter semanal. No te quedes fuera del loop.</p>
 
             <ul class="sus-benefits">
-                <?php foreach($beneficios as $ben): ?>
+                <?php foreach($beneficios as $ben): 
+                    $ic = trim($ben['icono'] ?? 'bi-check-circle-fill');
+                    $isImg = (strpos($ic, 'http://') === 0 || strpos($ic, 'https://') === 0 || strpos($ic, 'data:image') === 0 || strpos($ic, '/') === 0 || strpos($ic, 'img/') === 0 || preg_match('/\.(png|jpg|jpeg|svg|webp)$/i', $ic));
+                ?>
                 <li class="sus-benefit-item">
-                    <div class="sus-benefit-icon"><i class="bi <?= htmlspecialchars($ben['icono'] ?? 'bi-check-circle-fill') ?>"></i></div>
+                    <div class="sus-benefit-icon">
+                        <?php if ($isImg): ?>
+                            <img src="<?= htmlspecialchars($ic) ?>" alt="" style="width:24px; height:24px; object-fit:contain; border-radius:4px;">
+                        <?php else: ?>
+                            <i class="bi <?= htmlspecialchars($ic) ?>"></i>
+                        <?php endif; ?>
+                    </div>
                     <div class="sus-benefit-text">
                         <h4><?= htmlspecialchars($ben['titulo'] ?? '') ?></h4>
                         <p><?= htmlspecialchars($ben['desc'] ?? '') ?></p>
