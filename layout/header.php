@@ -3,6 +3,13 @@ if(session_status() === PHP_SESSION_NONE){
     session_start();
 }
 require_once(__DIR__ . "/../data/conexion.php");
+
+// Auto-migración defensiva: asegurar columna meta_json en la tabla paginas de la BD
+$checkMetaCol = @$con->query("SHOW COLUMNS FROM paginas LIKE 'meta_json'");
+if ($checkMetaCol && $checkMetaCol->num_rows === 0) {
+    @$con->query("ALTER TABLE paginas ADD meta_json JSON DEFAULT NULL");
+}
+
 require_once(__DIR__ . "/../views/helpers/urlhelper.php");
 require_once(__DIR__ . "/../views/helpers/publicidadhelper.php");
 // =========================

@@ -2,12 +2,15 @@
 include_once(__DIR__ . "/../layout/header.php");
 include_once(__DIR__ . "/../data/conexion.php");
 
-$resPag = $con->query("SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='nosotros'");
-$row    = ($resPag && $resPag->num_rows > 0) ? $resPag->fetch_assoc() : [];
-$meta   = json_decode($row['meta_json'] ?? '', true) ?: [];
+$resPag = @$con->query("SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='nosotros'");
+if (!$resPag) {
+    $resPag = @$con->query("SELECT contenido_pag FROM paginas WHERE nombre_pag='nosotros'");
+}
+$row  = ($resPag && $resPag !== true && method_exists($resPag, 'fetch_assoc')) ? $resPag->fetch_assoc() : [];
+$meta = json_decode($row['meta_json'] ?? '', true) ?: [];
 
-$resLogos = $con->query("SELECT * FROM logos_marcas WHERE (fecha_expiracion IS NULL OR fecha_expiracion > NOW()) ORDER BY orden ASC, creado ASC");
-$logos    = ($resLogos && method_exists($resLogos, 'fetch_all')) ? $resLogos->fetch_all(MYSQLI_ASSOC) : [];
+$resLogos = @$con->query("SELECT * FROM logos_marcas WHERE (fecha_expiracion IS NULL OR fecha_expiracion > NOW()) ORDER BY orden ASC, creado ASC");
+$logos    = ($resLogos && $resLogos !== true && method_exists($resLogos, 'fetch_all')) ? $resLogos->fetch_all(MYSQLI_ASSOC) : [];
 
 $card_w   = 200;
 $card_gap = 12;

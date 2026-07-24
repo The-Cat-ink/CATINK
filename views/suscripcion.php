@@ -1,8 +1,12 @@
 <?php
-include("./../layout/header.php");
-include("./../data/conexion.php");
+include_once(__DIR__ . "/../layout/header.php");
+include_once(__DIR__ . "/../data/conexion.php");
 
-$row = $con->query("SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='suscripcion'")->fetch_assoc();
+$resPag = @$con->query("SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='suscripcion'");
+if (!$resPag) {
+    $resPag = @$con->query("SELECT contenido_pag FROM paginas WHERE nombre_pag='suscripcion'");
+}
+$row  = ($resPag && $resPag !== true && method_exists($resPag, 'fetch_assoc')) ? $resPag->fetch_assoc() : [];
 $meta = json_decode($row['meta_json'] ?? '', true) ?: [];
 
 $beneficios = $meta['beneficios'] ?? [
