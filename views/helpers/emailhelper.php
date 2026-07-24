@@ -2,6 +2,7 @@
 /**
  * CatInk Master Email Layout Generator
  * Genera correos en formato HTML ultra-premium, responsivos y compatibles con clientes de correo.
+ * Soporta temas 'dark' (predeterminado) y 'light'.
  */
 if (!function_exists('renderCatInkEmail')) {
     function renderCatInkEmail($options = []) {
@@ -12,11 +13,30 @@ if (!function_exists('renderCatInkEmail')) {
         $ctaUrl         = htmlspecialchars($options['cta_url'] ?? '');
         $ctaText        = htmlspecialchars($options['cta_text'] ?? '');
         $unsubscribeUrl = htmlspecialchars($options['unsubscribe_url'] ?? '');
+        $theme          = strtolower($options['theme'] ?? 'dark');
         $year           = date('Y');
+
+        $isLight = ($theme === 'light');
+
+        // Paleta de colores según tema
+        $bgColor        = $isLight ? '#f1f5f9' : '#0b1220';
+        $cardBg         = $isLight ? '#ffffff' : '#121927';
+        $headerBg       = $isLight ? '#0b1220' : '#162032'; // Cabecera oscura para resaltar logo CatInk
+        $headerBorder   = $isLight ? '#0b1220' : 'rgba(255,255,255,0.06)';
+        $cardBorder     = $isLight ? '#e2e8f0' : 'rgba(255,255,255,0.08)';
+        $titleColor     = $isLight ? '#0f172a' : '#ffffff';
+        $textColor      = $isLight ? '#334155' : '#e2e8f0';
+        $footerBg       = $isLight ? '#f8fafc' : '#0c1320';
+        $footerBorder   = $isLight ? '#e2e8f0' : 'rgba(255,255,255,0.06)';
+        $footerText     = $isLight ? '#64748b' : '#718096';
+        $footerSub      = $isLight ? '#94a3b8' : '#a0aec0';
+        $footerCopy     = $isLight ? '#94a3b8' : '#4a5568';
+        $badgeBg        = $isLight ? 'rgba(239,51,99,0.08)' : 'rgba(239,51,99,0.15)';
+        $badgeBorder    = $isLight ? 'rgba(239,51,99,0.25)' : 'rgba(239,51,99,0.3)';
 
         $badgeHtml = '';
         if (!empty($badge)) {
-            $badgeHtml = "<div style='display:inline-block; background:rgba(239,51,99,0.15); color:#EF3363; border:1px solid rgba(239,51,99,0.3); font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.15em; padding:5px 12px; border-radius:20px; margin-bottom:16px;'>{$badge}</div>";
+            $badgeHtml = "<div style='display:inline-block; background:{$badgeBg}; color:#EF3363; border:1px solid {$badgeBorder}; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.15em; padding:5px 12px; border-radius:20px; margin-bottom:16px;'>{$badge}</div>";
         }
 
         $ctaHtml = '';
@@ -31,7 +51,7 @@ if (!function_exists('renderCatInkEmail')) {
 
         $unsubscribeHtml = '';
         if (!empty($unsubscribeUrl)) {
-            $unsubscribeHtml = " | <a href='{$unsubscribeUrl}' style='color:#a0aec0; text-decoration:underline;'>Cancelar suscripción</a>";
+            $unsubscribeHtml = " | <a href='{$unsubscribeUrl}' style='color:{$footerSub}; text-decoration:underline;'>Cancelar suscripción</a>";
         }
 
         return "<!DOCTYPE html>
@@ -58,18 +78,18 @@ if (!function_exists('renderCatInkEmail')) {
         }
     </style>
 </head>
-<body style='margin:0; padding:0; background-color:#0b1220; font-family:Arial, Helvetica, sans-serif; -webkit-font-smoothing:antialiased;'>
-    " . (!empty($preheader) ? "<div style='display:none;font-size:1px;color:#0b1220;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;'>{$preheader}</div>" : "") . "
+<body style='margin:0; padding:0; background-color:{$bgColor}; font-family:Arial, Helvetica, sans-serif; -webkit-font-smoothing:antialiased;'>
+    " . (!empty($preheader) ? "<div style='display:none;font-size:1px;color:{$bgColor};line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;'>{$preheader}</div>" : "") . "
 
-    <table width='100%' cellpadding='0' cellspacing='0' border='0' style='background-color:#0b1220; padding:24px 8px;'>
+    <table width='100%' cellpadding='0' cellspacing='0' border='0' style='background-color:{$bgColor}; padding:24px 8px;'>
         <tr>
             <td align='center'>
                 <!-- Contenedor Principal (Max 600px) -->
-                <table width='600' cellpadding='0' cellspacing='0' border='0' class='email-container' style='width:100%; max-width:600px; background:#121927; border:1px solid rgba(255,255,255,0.08); border-radius:18px; overflow:hidden;'>
+                <table width='600' cellpadding='0' cellspacing='0' border='0' class='email-container' style='width:100%; max-width:600px; background:{$cardBg}; border:1px solid {$cardBorder}; border-radius:18px; overflow:hidden;'>
                     
                     <!-- HEADER CON LOGO -->
                     <tr>
-                        <td align='center' style='padding:28px 24px 20px; background:#162032; border-bottom:1px solid rgba(255,255,255,0.06);'>
+                        <td align='center' style='padding:28px 24px 20px; background:{$headerBg}; border-bottom:1px solid {$headerBorder};'>
                             <a href='https://catink.com.mx' target='_blank' style='text-decoration:none;'>
                                 <img src='https://catink.com.mx/img/logo_alt.png' alt='CatInk' width='150' style='width:150px; max-width:150px; height:auto; display:block; border:0; margin:0 auto;'>
                             </a>
@@ -78,9 +98,9 @@ if (!function_exists('renderCatInkEmail')) {
 
                     <!-- CUERPO DE CONTENIDO -->
                     <tr>
-                        <td class='content-padding' style='padding:32px 28px 24px; color:#e2e8f0; font-size:15px; line-height:1.7;'>
+                        <td class='content-padding' style='padding:32px 28px 24px; color:{$textColor}; font-size:15px; line-height:1.7;'>
                             {$badgeHtml}
-                            <h1 style='margin:0 0 16px; font-size:22px; font-weight:900; color:#ffffff; line-height:1.25;'>{$title}</h1>
+                            <h1 style='margin:0 0 16px; font-size:22px; font-weight:900; color:{$titleColor}; line-height:1.25;'>{$title}</h1>
                             {$bodyContent}
                             {$ctaHtml}
                         </td>
@@ -88,21 +108,21 @@ if (!function_exists('renderCatInkEmail')) {
 
                     <!-- FOOTER -->
                     <tr>
-                        <td style='padding:24px 24px; background:#0c1320; border-top:1px solid rgba(255,255,255,0.06); color:#718096; font-size:12px; line-height:1.6; text-align:center;'>
+                        <td style='padding:24px 24px; background:{$footerBg}; border-top:1px solid {$footerBorder}; color:{$footerText}; font-size:12px; line-height:1.6; text-align:center;'>
                             <div style='margin-bottom:14px;'>
-                                <a href='https://www.facebook.com/catink.mx' target='_blank' style='display:inline-block; margin:0 8px; color:#e2e8f0; font-weight:700; text-decoration:none; font-size:12px;'>Facebook</a>
-                                <a href='https://www.instagram.com/catink.mx' target='_blank' style='display:inline-block; margin:0 8px; color:#e2e8f0; font-weight:700; text-decoration:none; font-size:12px;'>Instagram</a>
-                                <a href='https://www.tiktok.com/@catink.mx' target='_blank' style='display:inline-block; margin:0 8px; color:#e2e8f0; font-weight:700; text-decoration:none; font-size:12px;'>TikTok</a>
-                                <a href='https://www.youtube.com/@catink' target='_blank' style='display:inline-block; margin:0 8px; color:#e2e8f0; font-weight:700; text-decoration:none; font-size:12px;'>YouTube</a>
+                                <a href='https://www.facebook.com/catink.mx' target='_blank' style='display:inline-block; margin:0 8px; color:{$textColor}; font-weight:700; text-decoration:none; font-size:12px;'>Facebook</a>
+                                <a href='https://www.instagram.com/catink.mx' target='_blank' style='display:inline-block; margin:0 8px; color:{$textColor}; font-weight:700; text-decoration:none; font-size:12px;'>Instagram</a>
+                                <a href='https://www.tiktok.com/@catink.mx' target='_blank' style='display:inline-block; margin:0 8px; color:{$textColor}; font-weight:700; text-decoration:none; font-size:12px;'>TikTok</a>
+                                <a href='https://www.youtube.com/@catink' target='_blank' style='display:inline-block; margin:0 8px; color:{$textColor}; font-weight:700; text-decoration:none; font-size:12px;'>YouTube</a>
                             </div>
 
-                            <p style='margin:0 0 10px; color:#a0aec0;'>
-                                <a href='https://catink.com.mx/terminos' style='color:#a0aec0; text-decoration:underline;'>Términos y condiciones</a> | 
-                                <a href='https://catink.com.mx/privacidad' style='color:#a0aec0; text-decoration:underline;'>Aviso de Privacidad</a>
+                            <p style='margin:0 0 10px; color:{$footerSub};'>
+                                <a href='https://catink.com.mx/terminos' style='color:{$footerSub}; text-decoration:underline;'>Términos y condiciones</a> | 
+                                <a href='https://catink.com.mx/privacidad' style='color:{$footerSub}; text-decoration:underline;'>Aviso de Privacidad</a>
                                 {$unsubscribeHtml}
                             </p>
 
-                            <p style='margin:0; color:#4a5568; font-size:11px;'>
+                            <p style='margin:0; color:{$footerCopy}; font-size:11px;'>
                                 © {$year} CatInk — El medio geek de México. Todos los derechos reservados.<br>
                                 Soporte y contacto: <a href='mailto:contacto@catink.com.mx' style='color:#EF3363; text-decoration:none;'>contacto@catink.com.mx</a>
                             </p>
