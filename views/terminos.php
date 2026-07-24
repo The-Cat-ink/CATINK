@@ -2,9 +2,10 @@
 include("./../layout/header.php");
 include("./../data/conexion.php");
 
-$sql = "SELECT contenido_pag FROM paginas WHERE nombre_pag='terminos'";
+$sql = "SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='terminos'";
 $result = $con->query($sql);
 $row = $result && $result->num_rows > 0 ? $result->fetch_assoc() : null;
+$meta = json_decode($row['meta_json'] ?? '', true) ?: [];
 ?>
 
 <style>
@@ -195,10 +196,10 @@ $row = $result && $result->num_rows > 0 ? $result->fetch_assoc() : null;
         <div>
             <div class="legal-hero-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
             <p class="legal-hero-eyebrow">Documentos Legales</p>
-            <h1 class="legal-hero-title">Términos y Condiciones</h1>
+            <h1 class="legal-hero-title"><?= htmlspecialchars($meta['hero_title'] ?? 'Términos y Condiciones') ?></h1>
             <div class="legal-hero-meta">
                 <i class="bi bi-calendar3"></i>
-                <span>Última actualización: Julio 2025</span>
+                <span>Última actualización: <?= htmlspecialchars($meta['fecha_actualizacion'] ?? 'Julio 2025') ?></span>
                 <span class="legal-hero-badge">Versión vigente</span>
             </div>
         </div>

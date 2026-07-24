@@ -1,4 +1,16 @@
-<?php include("./../layout/header.php"); ?>
+<?php
+include("./../layout/header.php");
+include("./../data/conexion.php");
+
+$row = $con->query("SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='contacto'")->fetch_assoc();
+$meta = json_decode($row['meta_json'] ?? '', true) ?: [];
+
+$horario = $meta['horario'] ?? [
+    ['dia' => 'Lunes – Viernes', 'hora' => '9:00 – 18:00 hrs'],
+    ['dia' => 'Sábado', 'hora' => '10:00 – 14:00 hrs'],
+    ['dia' => 'Domingo', 'hora' => 'Cerrado']
+];
+?>
 
 <style>
 .cnt-page { --cw: 1080px; }
@@ -143,8 +155,8 @@
 <section class="cnt-hero">
     <div class="cnt-hero-inner">
         <div class="cnt-hero-eyebrow"><i class="bi bi-chat-heart-fill"></i> Hablemos</div>
-        <h1 class="cnt-hero-title">Contáctanos</h1>
-        <p class="cnt-hero-sub">¿Quieres colaborar, tienes una propuesta, necesitas información o simplemente quieres saludar? Escríbenos, estamos aquí.</p>
+        <h1 class="cnt-hero-title"><?= htmlspecialchars($meta['hero_title'] ?? 'Contáctanos') ?></h1>
+        <p class="cnt-hero-sub"><?= htmlspecialchars($meta['hero_sub'] ?? '¿Quieres colaborar, tienes una propuesta, necesitas información o simplemente quieres saludar? Escríbenos, estamos aquí.') ?></p>
     </div>
 </section>
 
@@ -162,30 +174,30 @@
                     <div class="cnt-contact-icon"><i class="bi bi-envelope-fill"></i></div>
                     <div class="cnt-contact-text">
                         <h4>Correo general</h4>
-                        <a href="mailto:contacto@catink.com.mx">contacto@catink.com.mx</a>
+                        <a href="mailto:<?= htmlspecialchars($meta['email_general'] ?? 'contacto@catink.com.mx') ?>"><?= htmlspecialchars($meta['email_general'] ?? 'contacto@catink.com.mx') ?></a>
                     </div>
                 </li>
                 <li class="cnt-contact-item">
                     <div class="cnt-contact-icon"><i class="bi bi-briefcase-fill"></i></div>
                     <div class="cnt-contact-text">
                         <h4>Publicidad y marcas</h4>
-                        <a href="mailto:contacto@catink.com.mx">contacto@catink.com.mx</a>
+                        <a href="mailto:<?= htmlspecialchars($meta['email_publicidad'] ?? 'contacto@catink.com.mx') ?>"><?= htmlspecialchars($meta['email_publicidad'] ?? 'contacto@catink.com.mx') ?></a>
                     </div>
                 </li>
                 <li class="cnt-contact-item">
                     <div class="cnt-contact-icon"><i class="bi bi-geo-alt-fill"></i></div>
                     <div class="cnt-contact-text">
                         <h4>Ubicación</h4>
-                        <span>Toluca de Lerdo, Estado de México, México</span>
+                        <span><?= htmlspecialchars($meta['ubicacion'] ?? 'Toluca de Lerdo, Estado de México, México') ?></span>
                     </div>
                 </li>
             </ul>
 
             <div class="cnt-hours">
                 <p class="cnt-hours-label"><i class="bi bi-clock-fill"></i> Horario de atención</p>
-                <div class="cnt-hours-item">Lunes – Viernes <span>9:00 – 18:00 hrs</span></div>
-                <div class="cnt-hours-item">Sábado <span>10:00 – 14:00 hrs</span></div>
-                <div class="cnt-hours-item">Domingo <span>Cerrado</span></div>
+                <?php foreach($horario as $h): ?>
+                <div class="cnt-hours-item"><?= htmlspecialchars($h['dia'] ?? '') ?> <span><?= htmlspecialchars($h['hora'] ?? '') ?></span></div>
+                <?php endforeach; ?>
             </div>
 
             <div class="cnt-divider"></div>

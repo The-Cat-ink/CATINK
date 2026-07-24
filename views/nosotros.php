@@ -2,7 +2,8 @@
 include("./../layout/header.php");
 include("./../data/conexion.php");
 
-$row  = $con->query("SELECT contenido_pag FROM paginas WHERE nombre_pag='nosotros'")->fetch_assoc();
+$row   = $con->query("SELECT contenido_pag, meta_json FROM paginas WHERE nombre_pag='nosotros'")->fetch_assoc();
+$meta  = json_decode($row['meta_json'] ?? '', true) ?: [];
 $logos = $con->query("SELECT * FROM logos_marcas WHERE activo=1 AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW()) ORDER BY orden ASC, creado ASC")->fetch_all(MYSQLI_ASSOC);
 
 $card_w   = 200;
@@ -281,23 +282,23 @@ foreach ($filas as $i => $fila_logos) {
             <i class="bi bi-stars"></i> Quiénes Somos
         </div>
         <h1 class="nos-hero-title">
-            El medio geek que<br><span>México necesitaba</span>
+            <?= htmlspecialchars($meta['hero_title'] ?? 'El medio geek que México necesitaba') ?>
         </h1>
         <p class="nos-hero-sub">
-            Somos CatInk, un medio de comunicación digital y agencia creativa enfocada en el entretenimiento geek: Anime, Manga, Cine, Videojuegos y Cultura Pop.
+            <?= htmlspecialchars($meta['hero_sub'] ?? 'Somos CatInk, un medio de comunicación digital y agencia creativa enfocada en el entretenimiento geek: Anime, Manga, Cine, Videojuegos y Cultura Pop.') ?>
         </p>
         <div class="nos-hero-stats">
             <div class="nos-stat-item">
-                <span class="nos-stat-num">+100K</span>
-                <span class="nos-stat-label">Seguidores</span>
+                <span class="nos-stat-num"><?= htmlspecialchars($meta['stat_1'] ?? '+100K') ?></span>
+                <span class="nos-stat-label"><?= htmlspecialchars($meta['stat_1_label'] ?? 'Seguidores') ?></span>
             </div>
             <div class="nos-stat-item">
-                <span class="nos-stat-num">+3</span>
-                <span class="nos-stat-label">Años activos</span>
+                <span class="nos-stat-num"><?= htmlspecialchars($meta['stat_2'] ?? '+3') ?></span>
+                <span class="nos-stat-label"><?= htmlspecialchars($meta['stat_2_label'] ?? 'Años activos') ?></span>
             </div>
             <div class="nos-stat-item">
-                <span class="nos-stat-num">+500</span>
-                <span class="nos-stat-label">Publicaciones</span>
+                <span class="nos-stat-num"><?= htmlspecialchars($meta['stat_3'] ?? '+500') ?></span>
+                <span class="nos-stat-label"><?= htmlspecialchars($meta['stat_3_label'] ?? 'Publicaciones') ?></span>
             </div>
         </div>
     </div>
@@ -312,17 +313,17 @@ foreach ($filas as $i => $fila_logos) {
             <div class="nos-card">
                 <div class="nos-card-icon"><i class="bi bi-crosshair2"></i></div>
                 <h3 class="nos-card-title">Misión</h3>
-                <p class="nos-card-desc">Crear contenido de calidad sobre cultura geek que informe, entretenga e inspire a la comunidad hispanohablante de manera auténtica y apasionada.</p>
+                <p class="nos-card-desc"><?= htmlspecialchars($meta['card_mision'] ?? 'Crear contenido de calidad sobre cultura geek que informe, entretenga e inspire a la comunidad hispanohablante de manera auténtica y apasionada.') ?></p>
             </div>
             <div class="nos-card">
                 <div class="nos-card-icon"><i class="bi bi-eye"></i></div>
                 <h3 class="nos-card-title">Visión</h3>
-                <p class="nos-card-desc">Convertirnos en el referente digital líder de cultura pop y entretenimiento geek en México y Latinoamérica, conectando marcas con comunidades.</p>
+                <p class="nos-card-desc"><?= htmlspecialchars($meta['card_vision'] ?? 'Convertirnos en el referente digital líder de cultura pop y entretenimiento geek en México y Latinoamérica, conectando marcas con comunidades.') ?></p>
             </div>
             <div class="nos-card">
                 <div class="nos-card-icon"><i class="bi bi-heart-fill"></i></div>
                 <h3 class="nos-card-title">Valores</h3>
-                <p class="nos-card-desc">Autenticidad, pasión por el contenido, comunidad antes que clics, calidad editorial y respeto total a nuestra audiencia y colaboradores.</p>
+                <p class="nos-card-desc"><?= htmlspecialchars($meta['card_valores'] ?? 'Autenticidad, pasión por el contenido, comunidad antes que clics, calidad editorial y respeto total a nuestra audiencia y colaboradores.') ?></p>
             </div>
         </div>
     </div>

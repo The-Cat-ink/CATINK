@@ -66,7 +66,9 @@
                                                     class="btn btn-edit btnEditar"
                                                     data-id="<?= $row['id_pag'] ?>"
                                                     data-nombre="<?= htmlspecialchars($row['nombre_pag']) ?>"
-                                                    data-contenido="<?= base64_encode($row['contenido_pag']) ?>" title="Editar Contenido">
+                                                    data-contenido="<?= base64_encode($row['contenido_pag'] ?? '') ?>"
+                                                    data-meta="<?= htmlspecialchars($row['meta_json'] ?? '', ENT_QUOTES) ?>"
+                                                    title="Editar Contenido">
                                                     <i class="bi bi-pencil-square"></i>
                                                 </button>
                                             </div>
@@ -191,14 +193,22 @@
                     <option value="terminos">Términos y condiciones</option>
                     <option value="privacidad">Aviso de privacidad</option>
                     <option value="cookies">Política de cookies</option>
+                    <option value="suscripcion">Suscríbete</option>
+                    <option value="contacto">Contáctanos</option>
                 </select>
             </div>
 
-            <div style="margin-bottom: 16px;">
-                <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Contenido</label>
+            <input type="hidden" name="meta_json_raw" id="meta_json_raw">
+
+            <div id="metaFieldsContainer" style="margin-bottom: 20px; border-top: 1px solid var(--border); padding-top: 16px; max-height: 420px; overflow-y: auto;">
+                <!-- Poblado dinámicamente según la sección elegida -->
+            </div>
+
+            <div style="margin-bottom: 16px;" id="editorGroupContainer">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">Contenido Editor (Texto / HTML)</label>
                 <div class="document-editor">
                     <div class="document-editor__toolbar" id="toolbarpag"></div>
-                    <div class="document-editor__editable-container" style="height: 350px; overflow-y: auto;">
+                    <div class="document-editor__editable-container" style="height: 280px; overflow-y: auto;">
                         <div id="editorpag" class="editor-content"></div>
                     </div>
                 </div>
@@ -791,11 +801,207 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalPagina = document.getElementById("modalPagina");
     const modalClosePag = document.getElementById("modalClosePag");
 
+    function renderMetaFields(pageName, meta) {
+        meta = meta || {};
+        const container = document.getElementById("metaFieldsContainer");
+        if (!container) return;
+
+        let html = '';
+
+        if (pageName === 'nosotros') {
+            html = `
+                <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Campos Editables de Sobre Nosotros</h5>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Título</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_title" value="${meta.hero_title || ''}" placeholder="El medio geek que México necesitaba">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Subtítulo</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
+                    </div>
+                </div>
+                <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">Estadísticas (3 ítems)</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:14px;">
+                    <div>
+                        <input type="text" class="cn-input meta-field" data-key="stat_1" value="${meta.stat_1 || '+100K'}" placeholder="Num 1">
+                        <input type="text" class="cn-input meta-field" data-key="stat_1_label" value="${meta.stat_1_label || 'Seguidores'}" placeholder="Etiqueta 1" style="margin-top:4px;">
+                    </div>
+                    <div>
+                        <input type="text" class="cn-input meta-field" data-key="stat_2" value="${meta.stat_2 || '+3'}" placeholder="Num 2">
+                        <input type="text" class="cn-input meta-field" data-key="stat_2_label" value="${meta.stat_2_label || 'Años activos'}" placeholder="Etiqueta 2" style="margin-top:4px;">
+                    </div>
+                    <div>
+                        <input type="text" class="cn-input meta-field" data-key="stat_3" value="${meta.stat_3 || '+500'}" placeholder="Num 3">
+                        <input type="text" class="cn-input meta-field" data-key="stat_3_label" value="${meta.stat_3_label || 'Publicaciones'}" placeholder="Etiqueta 3" style="margin-top:4px;">
+                    </div>
+                </div>
+                <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">Tarjetas de Identidad</div>
+                <div style="margin-bottom:8px;">
+                    <label style="font-size:0.78rem; font-weight:700;">Misión</label>
+                    <textarea class="cn-input meta-field" data-key="card_mision" rows="2">${meta.card_mision || ''}</textarea>
+                </div>
+                <div style="margin-bottom:8px;">
+                    <label style="font-size:0.78rem; font-weight:700;">Visión</label>
+                    <textarea class="cn-input meta-field" data-key="card_vision" rows="2">${meta.card_vision || ''}</textarea>
+                </div>
+                <div style="margin-bottom:8px;">
+                    <label style="font-size:0.78rem; font-weight:700;">Valores</label>
+                    <textarea class="cn-input meta-field" data-key="card_valores" rows="2">${meta.card_valores || ''}</textarea>
+                </div>
+            `;
+        } else if (pageName === 'terminos' || pageName === 'privacidad') {
+            html = `
+                <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Datos del Documento Legal</h5>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Título del Hero</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_title" value="${meta.hero_title || (pageName === 'terminos' ? 'Términos y Condiciones' : 'Aviso de Privacidad')}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Fecha de Última Actualización</label>
+                        <input type="text" class="cn-input meta-field" data-key="fecha_actualizacion" value="${meta.fecha_actualizacion || 'Julio 2025'}" placeholder="Ej: Julio 2025">
+                    </div>
+                </div>
+            `;
+        } else if (pageName === 'suscripcion') {
+            const ben = meta.beneficios || [
+                { icono: 'bi-lightning-charge-fill', titulo: 'Noticias antes que nadie', desc: 'Sé el primero en enterarte de anuncios...' },
+                { icono: 'bi-gift-fill', titulo: 'Contenido exclusivo', desc: 'Artículos y análisis especiales...' },
+                { icono: 'bi-slash-circle', titulo: 'Cero spam, siempre', desc: 'Solo lo mejor, una vez por semana.' },
+                { icono: 'bi-door-open-fill', titulo: '100% gratuito', desc: 'Sin planes premium, sin tarjetas.' }
+            ];
+            html = `
+                <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Configuración de la Página de Suscripción</h5>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Título</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_title" value="${meta.hero_title || 'Únete a la comunidad CatInk'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Subtítulo</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Título Formulario</label>
+                        <input type="text" class="cn-input meta-field" data-key="form_title" value="${meta.form_title || 'Suscríbete gratis'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Subtítulo Formulario</label>
+                        <input type="text" class="cn-input meta-field" data-key="form_sub" value="${meta.form_sub || ''}">
+                    </div>
+                </div>
+                <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">Beneficios (4 ítems)</div>
+            `;
+            ben.forEach((b, idx) => {
+                html += `
+                    <div style="border:1px solid var(--border); padding:10px; border-radius:8px; margin-bottom:8px;">
+                        <div style="font-size:0.78rem; font-weight:700; color:var(--accent);">Beneficio ${idx+1}</div>
+                        <div style="display:grid; grid-template-columns:140px 1fr; gap:8px; margin-top:4px;">
+                            <input type="text" class="cn-input meta-ben-icon" value="${b.icono || ''}" placeholder="Icono Class (bi-...)">
+                            <input type="text" class="cn-input meta-ben-title" value="${b.titulo || ''}" placeholder="Título">
+                        </div>
+                        <input type="text" class="cn-input meta-ben-desc" value="${b.desc || ''}" placeholder="Descripción corta" style="margin-top:4px;">
+                    </div>
+                `;
+            });
+        } else if (pageName === 'contacto') {
+            const hor = meta.horario || [
+                { dia: 'Lunes – Viernes', hora: '9:00 – 18:00 hrs' },
+                { dia: 'Sábado', hora: '10:00 – 14:00 hrs' },
+                { dia: 'Domingo', hora: 'Cerrado' }
+            ];
+            html = `
+                <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Configuración de la Página de Contacto</h5>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Título</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_title" value="${meta.hero_title || 'Contáctanos'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Hero Subtítulo</label>
+                        <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Email General</label>
+                        <input type="text" class="cn-input meta-field" data-key="email_general" value="${meta.email_general || 'contacto@catink.com.mx'}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700;">Email Publicidad</label>
+                        <input type="text" class="cn-input meta-field" data-key="email_publicidad" value="${meta.email_publicidad || 'contacto@catink.com.mx'}">
+                    </div>
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.8rem; font-weight:700;">Ubicación</label>
+                    <input type="text" class="cn-input meta-field" data-key="ubicacion" value="${meta.ubicacion || 'Toluca de Lerdo, Estado de México, México'}">
+                </div>
+                <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">Horario de Atención</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:6px;">
+                    <input type="text" class="cn-input meta-field" data-key="horario_lv_dia" value="${hor[0]?.dia || 'Lunes – Viernes'}">
+                    <input type="text" class="cn-input meta-field" data-key="horario_lv_hora" value="${hor[0]?.hora || '9:00 – 18:00 hrs'}">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:6px;">
+                    <input type="text" class="cn-input meta-field" data-key="horario_sab_dia" value="${hor[1]?.dia || 'Sábado'}">
+                    <input type="text" class="cn-input meta-field" data-key="horario_sab_hora" value="${hor[1]?.hora || '10:00 – 14:00 hrs'}">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <input type="text" class="cn-input meta-field" data-key="horario_dom_dia" value="${hor[2]?.dia || 'Domingo'}">
+                    <input type="text" class="cn-input meta-field" data-key="horario_dom_hora" value="${hor[2]?.hora || 'Cerrado'}">
+                </div>
+            `;
+        } else {
+            html = `<p style="font-size:0.85rem; color:var(--muted);">No hay opciones adicionales configurables para esta sección.</p>`;
+        }
+
+        container.innerHTML = html;
+        container.dataset.pageName = pageName;
+    }
+
+    function serializeMetaFields() {
+        const container = document.getElementById("metaFieldsContainer");
+        const rawInput = document.getElementById("meta_json_raw");
+        if (!container || !rawInput) return;
+
+        const pageName = container.dataset.pageName || '';
+        const metaObj = {};
+
+        container.querySelectorAll(".meta-field").forEach(inp => {
+            const key = inp.dataset.key;
+            if (key) {
+                metaObj[key] = inp.value;
+            }
+        });
+
+        if (pageName === 'contacto') {
+            metaObj.horario = [
+                { dia: metaObj.horario_lv_dia || 'Lunes – Viernes', hora: metaObj.horario_lv_hora || '9:00 – 18:00 hrs' },
+                { dia: metaObj.horario_sab_dia || 'Sábado', hora: metaObj.horario_sab_hora || '10:00 – 14:00 hrs' },
+                { dia: metaObj.horario_dom_dia || 'Domingo', hora: metaObj.horario_dom_hora || 'Cerrado' }
+            ];
+            delete metaObj.horario_lv_dia; delete metaObj.horario_lv_hora;
+            delete metaObj.horario_sab_dia; delete metaObj.horario_sab_hora;
+            delete metaObj.horario_dom_dia; delete metaObj.horario_dom_hora;
+        } else if (pageName === 'suscripcion') {
+            const benIcons = container.querySelectorAll(".meta-ben-icon");
+            const benTitles = container.querySelectorAll(".meta-ben-title");
+            const benDescs = container.querySelectorAll(".meta-ben-desc");
+            metaObj.beneficios = [];
+            benIcons.forEach((inp, i) => {
+                metaObj.beneficios.push({
+                    icono: inp.value,
+                    titulo: benTitles[i]?.value || '',
+                    desc: benDescs[i]?.value || ''
+                });
+            });
+        }
+
+        rawInput.value = JSON.stringify(metaObj);
+    }
+
     document.querySelectorAll(".btnEditar").forEach(btn => {
         btn.addEventListener("click", function(){
             document.getElementById("pagina_id").value = this.dataset.id;
 
-            // Asignar select option
             const selectNombre = document.getElementById("nombre");
             for(let i=0; i<selectNombre.options.length; i++){
                 if(selectNombre.options[i].value === this.dataset.nombre) {
@@ -804,7 +1010,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            let contenido = decodeURIComponent(escape(atob(this.dataset.contenido)));
+            let contenido = '';
+            try {
+                contenido = decodeURIComponent(escape(atob(this.dataset.contenido)));
+            } catch(e) {
+                contenido = this.dataset.contenido || '';
+            }
+
+            let metaData = {};
+            try {
+                metaData = JSON.parse(this.dataset.meta || '{}');
+            } catch(e) {}
+
+            renderMetaFields(this.dataset.nombre, metaData);
+
             modalPagina.style.display = "flex";
 
             setTimeout(() => {
@@ -817,10 +1036,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    document.getElementById("nombre").addEventListener("change", function(){
+        renderMetaFields(this.value, {});
+    });
+
     document.getElementById("formPagina").addEventListener("submit", function(){
         if (editorpag) {
             document.getElementById("contenido").value = editorpag.getData();
         }
+        serializeMetaFields();
     });
 
     modalClosePag.addEventListener('click', () => {
