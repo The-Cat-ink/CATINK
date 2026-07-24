@@ -96,13 +96,13 @@ $otros = $totalSuscripciones - $hombres - $mujeres;
                             <label style="display:block; font-size:0.82rem; font-weight:700; margin-bottom:6px; color:var(--text);">Hora de Envío Diario:</label>
                             <div style="position:relative;">
                                 <i class="bi bi-alarm" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:1rem;"></i>
-                                <input type="time" name="hora" value="<?php echo $prog['hora']; ?>" required class="cn-input" style="padding-left:40px; border-radius:12px; font-weight:700; width:100%;">
+                                <input type="time" name="hora" value="<?php echo $prog['hora']; ?>" required class="cn-input" style="padding-left:40px; border-radius:12px; font-weight:700; width:100%; height:44px;">
                             </div>
                         </div>
 
                         <div class="col-12 col-md-4">
                             <label style="display:block; font-size:0.82rem; font-weight:700; margin-bottom:6px; color:var(--text);">Estado del Programador:</label>
-                            <select name="estado" id="estado" required class="cn-input" style="border-radius:12px; font-weight:700; width:100%;">
+                            <select name="estado" id="estado" required class="cn-input" style="border-radius:12px; font-weight:700; width:100%; height:44px;">
                                 <option value="activo" <?php if($prog['estado'] == 'activo') echo 'selected'; ?>>● Activo (Ejecución diaria)</option>
                                 <option value="inactivo" <?php if($prog['estado'] == 'inactivo') echo 'selected'; ?>>○ Inactivo (Pausado)</option>
                             </select>
