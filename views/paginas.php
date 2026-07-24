@@ -881,6 +881,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 { icono: 'bi-gift-fill', titulo: 'Sorteos y beneficios', desc: 'Acceso a dinámicas exclusivas para miembros de nuestra comunidad.' },
                 { icono: 'bi-shield-check', titulo: 'Cero spam garantizado', desc: 'Solo contenido relevante. Puedes cancelar tu suscripción en un clic.' }
             ];
+
+            const availableIcons = [
+                { code: 'bi-lightning-charge-fill', label: '⚡ Rayo (Tiempo real)' },
+                { code: 'bi-star-fill',             label: '⭐ Estrella (Exclusivo)' },
+                { code: 'bi-gift-fill',             label: '🎁 Regalo (Sorteos / Beneficios)' },
+                { code: 'bi-shield-check',          label: '🛡️ Escudo (Cero Spam)' },
+                { code: 'bi-bell-fill',             label: '🔔 Campana (Alertas)' },
+                { code: 'bi-envelope-heart-fill',   label: '💌 Correo (Boletín)' },
+                { code: 'bi-fire',                  label: '🔥 Fuego (Tendencias)' },
+                { code: 'bi-controller',            label: '🎮 Control (Gaming)' },
+                { code: 'bi-tv-fill',               label: '📺 Tele (Anime / Cine)' },
+                { code: 'bi-book-fill',             label: '📖 Libro (Manga / Cómics)' },
+                { code: 'bi-gem',                   label: '💎 Gema (Premium)' },
+                { code: 'bi-trophy-fill',           label: '🏆 Trofeo (Premios)' },
+                { code: 'bi-chat-left-text-fill',   label: '💬 Chat (Comunidad)' },
+                { code: 'bi-heart-fill',            label: '❤️ Corazón (Pasión Geek)' },
+                { code: 'bi-award-fill',            label: '🎖️ Medalla (Reconocimientos)' },
+                { code: 'bi-clock-fill',            label: '⏰ Reloj (Instantáneo)' },
+                { code: 'bi-rocket-takeoff-fill',   label: '🚀 Cohete (Lanzamientos)' },
+                { code: 'bi-newspaper',            label: '📰 Periódico (Noticias)' },
+                { code: 'bi-tag-fill',              label: '🏷️ Etiqueta (Descuentos)' },
+                { code: 'bi-sparkles',              label: '✨ Destellos (Novedades)' }
+            ];
+
             html = `
                 <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Configuración de la Página de Suscripción</h5>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
@@ -893,17 +917,34 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
                     </div>
                 </div>
-                <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">4 Beneficios Destacados</div>
+                <div style="font-weight:700; font-size:0.85rem; margin-bottom:8px; color:var(--text);">4 Beneficios Destacados</div>
             `;
+
             ben.forEach((b, idx) => {
+                const currentIcon = b.icono || 'bi-star-fill';
+                let optionsHtml = '';
+                availableIcons.forEach(ic => {
+                    optionsHtml += `<option value="${ic.code}" ${currentIcon === ic.code ? 'selected' : ''}>${ic.label}</option>`;
+                });
+                if (!availableIcons.some(ic => ic.code === currentIcon) && currentIcon) {
+                    optionsHtml += `<option value="${currentIcon}" selected>✨ Custom (${currentIcon})</option>`;
+                }
+
                 html += `
-                    <div style="border:1px solid var(--border); padding:10px; border-radius:10px; margin-bottom:8px; background:var(--bg);">
-                        <div style="font-size:0.78rem; font-weight:800; color:var(--accent);">Beneficio ${idx+1}</div>
-                        <div style="display:grid; grid-template-columns:140px 1fr; gap:8px; margin-top:4px;">
-                            <input type="text" class="cn-input meta-ben-icon" value="${b.icono || ''}" placeholder="Icono (bi-...)">
-                            <input type="text" class="cn-input meta-ben-title" value="${b.titulo || ''}" placeholder="Título">
+                    <div style="border:1px solid var(--border); padding:12px; border-radius:12px; margin-bottom:10px; background:var(--bg);">
+                        <div style="font-size:0.78rem; font-weight:800; color:var(--accent); margin-bottom:6px;">Beneficio ${idx+1}</div>
+                        <div style="display:grid; grid-template-columns: 210px 1fr; gap:10px; margin-bottom:8px; align-items:center;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="width:36px; height:36px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid rgba(239,51,99,0.2);">
+                                    <i class="bi ${currentIcon}"></i>
+                                </div>
+                                <select class="cn-input meta-ben-icon" onchange="this.previousElementSibling.querySelector('i').className = 'bi ' + this.value;" style="font-weight:700; font-size:0.82rem; padding:8px 10px; cursor:pointer;">
+                                    ${optionsHtml}
+                                </select>
+                            </div>
+                            <input type="text" class="cn-input meta-ben-title" value="${b.titulo || ''}" placeholder="Título del Beneficio">
                         </div>
-                        <input type="text" class="cn-input meta-ben-desc" value="${b.desc || ''}" placeholder="Descripción corta" style="margin-top:4px;">
+                        <input type="text" class="cn-input meta-ben-desc" value="${b.desc || ''}" placeholder="Descripción corta explicativa">
                     </div>
                 `;
             });
