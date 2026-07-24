@@ -884,6 +884,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         container.innerHTML = html;
         container.dataset.pageName = pageName;
+
+        // Ocultar / Mostrar el editor de texto HTML según si la sección lo requiere
+        const editorGrp = document.getElementById("editorGroupContainer");
+        if (editorGrp) {
+            if (pageName === 'suscripcion' || pageName === 'contacto') {
+                editorGrp.style.display = 'none';
+            } else {
+                editorGrp.style.display = 'block';
+            }
+        }
     }
 
     function serializeMetaFields() {
