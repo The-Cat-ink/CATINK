@@ -253,6 +253,9 @@ CREATE TABLE IF NOT EXISTS `notificaciones` (
   `user_id` int(11) NOT NULL,
   `tipo` varchar(40) NOT NULL DEFAULT 'general',
   `titulo` varchar(255) NOT NULL,
+
+-- 20. Columna meta_json para campos configurables de páginas en CMS
+ALTER TABLE `paginas` ADD COLUMN IF NOT EXISTS `meta_json` JSON DEFAULT NULL;
   `mensaje` text NOT NULL,
   `leida` tinyint(1) NOT NULL DEFAULT 0,
   `creada` timestamp NOT NULL DEFAULT current_timestamp(),

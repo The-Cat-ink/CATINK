@@ -1,6 +1,12 @@
 <?php
 include("./../data/conexion.php");
 
+// Auto-migración defensiva: asegurar columna meta_json en paginas
+$checkCol = $con->query("SHOW COLUMNS FROM paginas LIKE 'meta_json'");
+if ($checkCol && $checkCol->num_rows === 0) {
+    @$con->query("ALTER TABLE paginas ADD meta_json JSON DEFAULT NULL");
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = intval($_POST['id'] ?? 0);
     $nombre = trim($_POST['nombre'] ?? '');
