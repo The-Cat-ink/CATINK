@@ -364,6 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  window.addEventListener('catink-offline-ready', renderLibrary);
   renderLibrary();
 });
 </script>

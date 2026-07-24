@@ -313,11 +313,15 @@ window.CatInkOffline = (function() {
     showStatusToast('Sin conexión a internet. Modo lectura offline activado.', true);
   });
 
-  // Ejecutar actualización de badges al cargar
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', updateBadgeCounters);
-  } else {
+  function triggerReady() {
     updateBadgeCounters();
+    window.dispatchEvent(new CustomEvent('catink-offline-ready'));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', triggerReady);
+  } else {
+    triggerReady();
   }
 
   return {
