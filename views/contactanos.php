@@ -448,7 +448,7 @@ $horario = $meta['horario'] ?? [
 
             const fd = new FormData(form);
             try {
-                const res = await fetch(BASE_PATH + '/controllers/contacto_enviar.php', { method: 'POST', body: fd });
+                const res = await fetch(basePath + '/controllers/contacto_enviar.php', { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.success) {
                     showToastMsg('✓ ' + data.message, 'success');
