@@ -90,7 +90,7 @@ try {
 
     require_once(__DIR__ . "/../views/helpers/emailhelper.php");
 
-    $mail->setFrom($fromEmail, $fromName . ' Careers');
+    $mail->setFrom($fromEmail, $fromName . ' Vacantes');
     $mail->addAddress('contacto@catink.com.mx', 'CatInk Equipo');
     $mail->addReplyTo($email, $nombre);
 
