@@ -83,30 +83,27 @@ try {
     $fromEmail = env('SMTP_AUTH_FROM_EMAIL', env('SMTP_FROM_EMAIL', 'no-reply@catink.com.mx'));
     $fromName = env('SMTP_AUTH_FROM_NAME', env('SMTP_FROM_NAME', 'CatInk'));
     $mail->setFrom($fromEmail, $fromName);
-    $mail->addAddress($email, $usuario['nombre']);
+    require_once(__DIR__ . "/../views/helpers/emailhelper.php");
 
     $resetUrl = "https://www.catink.com.mx/views/reset_contraseña.php?token=" . urlencode($token);
 
     $mail->isHTML(true);
     $mail->Subject = "Recuperar tu contraseña en CatInk";
 
-    $htmlBody = "
-    <div style='font-family: Arial, sans-serif; max-width:600px; margin:auto; background:#f9f9f9; padding:20px; border-radius:10px;'>
-        <h2 style='color:#EF3363;'>Recuperar Contraseña</h2>
-        <p>Hola <strong>{$usuario['nombre']}</strong>,</p>
-        <p>Recibimos una solicitud para recuperar tu contraseña. Haz clic en el botón de abajo para establecer una nueva contraseña.</p>
-        <p style='text-align:center; margin:30px 0;'>
-            <a href='{$resetUrl}' style='display:inline-block; padding:12px 30px; background:#EF3363; color:#fff; text-decoration:none; border-radius:5px; font-weight:bold;'>
-                Recuperar Contraseña
-            </a>
-        </p>
-        <p style='color:#666; font-size:12px;'>Este enlace expira en 1 hora.</p>
-        <p style='color:#666; font-size:12px;'>Si no solicitaste esta recuperación, ignora este correo.</p>
-        <hr style='border:none; border-top:1px solid #ddd; margin:20px 0;'>
-        <p style='color:#999; font-size:11px; text-align:center;'>© 2026 CatInk. Todos los derechos reservados.</p>
-    </div>";
+    $nombreUsuario = htmlspecialchars($usuario['nombre']);
+    $content = "
+        <p>Hola <strong style='color:#ffffff;'>{$nombreUsuario}</strong>,</p>
+        <p style='color:#cbd5e0; line-height:1.7;'>Recibimos una solicitud para restablecer la contraseña de tu cuenta en CatInk. Haz clic en el botón a continuación para definir una nueva contraseña:</p>
+        <p style='color:#718096; font-size:12px; margin-top:20px;'>* Este enlace de recuperación expira en 1 hora por razones de seguridad.<br>Si no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
+    ";
 
-    $mail->Body = $htmlBody;
+    $mail->Body = renderCatInkEmail([
+        'title'     => 'Recuperación de Contraseña',
+        'badge'     => 'Seguridad de Cuenta',
+        'content'   => $content,
+        'cta_url'   => $resetUrl,
+        'cta_text'  => 'Restablecer mi Contraseña'
+    ]);
     $mail->send();
 
     header("Location: ./../views/olvide_contraseña.php?mensaje=Se ha enviado un enlace de recuperación a tu correo");

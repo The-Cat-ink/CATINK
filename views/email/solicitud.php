@@ -42,17 +42,31 @@ try {
         );
     }
 
-    // Construir el contenido HTML
-    $html = "
-    <div style='font-family: Arial, sans-serif; max-width:600px; margin:auto; background:#f9f9f9; padding:20px; border-radius:10px;'>
-        <h2 style='color:#EF3363;'>Solicitud de unión a CatInk</h2>
-        <p style='color:#333;'><strong>Nombre:</strong> $nombre</p>
-        <p style='color:#333;'><strong>Correo:</strong> $email</p>
-        <p style='color:#333;'><strong>Motivo por el cual quiere unirse:</strong> $mensaje</p>
-    </div>
+    require_once(__DIR__ . "/../helpers/emailhelper.php");
+
+    $nomEsc = htmlspecialchars($nombre);
+    $emailEsc = htmlspecialchars($email);
+    $msgEsc = nl2br(htmlspecialchars($mensaje));
+
+    $content = "
+        <p style='color:#cbd5e0;'>Se ha recibido una nueva solicitud para unirse al equipo de CatInk.</p>
+        <table width='100%' cellpadding='0' cellspacing='0' style='background:#182234; border-radius:12px; padding:16px; margin:16px 0; border:1px solid rgba(255,255,255,0.06);'>
+            <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Nombre:</td><td style='padding:6px 0; color:#ffffff; font-weight:700;'>{$nomEsc}</td></tr>
+            <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Correo:</td><td style='padding:6px 0;'><a href='mailto:{$emailEsc}' style='color:#EF3363;'>{$emailEsc}</a></td></tr>
+        </table>
+        <div style='background:#162032; padding:16px; border-radius:12px; border-left:4px solid #EF3363; margin-top:14px;'>
+            <strong style='color:#EF3363; font-size:13px; text-transform:uppercase; letter-spacing:0.05em;'>Motivo / Presentación:</strong>
+            <p style='color:#e2e8f0; margin:8px 0 0; line-height:1.7;'>{$msgEsc}</p>
+        </div>
     ";
 
-    $mail->Body = $html;
+    $mail->Body = renderCatInkEmail([
+        'title'     => 'Solicitud de Unión',
+        'badge'     => 'Reclutamiento CatInk',
+        'content'   => $content,
+        'cta_url'   => 'mailto:' . $email,
+        'cta_text'  => 'Responder a ' . $nombre
+    ]);
 
     $mail->send();
 

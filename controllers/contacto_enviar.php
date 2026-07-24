@@ -38,26 +38,38 @@ try {
     $mail->addAddress('contacto@catink.com.mx', 'CatInk Contacto');
     $mail->addReplyTo($email, $nombre);
 
+    require_once(__DIR__ . "/../views/helpers/emailhelper.php");
+
     $mail->isHTML(true);
     $mail->Subject = "Nuevo mensaje de contacto: $asunto — $nombre";
 
-    $bodyHtml = "
-    <div style='font-family: Arial, sans-serif; max-width:600px; margin:auto; background:#121216; color:#ffffff; padding:24px; border-radius:12px; border:1px solid #222;'>
-        <h2 style='color:#EF3363; margin-top:0;'>Nuevo mensaje de contacto</h2>
-        <p style='color:#ddd;'>Se recibió un nuevo mensaje a través del formulario de contacto del sitio web.</p>
-        <hr style='border-color:#333; margin:16px 0;'>
-        <p style='color:#fff;'><strong>Nombre:</strong> " . htmlspecialchars($nombre) . "</p>
-        <p style='color:#fff;'><strong>Correo:</strong> <a href='mailto:$email' style='color:#EF3363;'>$email</a></p>
-        <p style='color:#fff;'><strong>Asunto:</strong> " . htmlspecialchars($asunto) . "</p>
-        <div style='background:#1a1a20; padding:16px; border-radius:8px; margin-top:14px; border-left:4px solid #EF3363;'>
-            <strong style='color:#EF3363;'>Mensaje:</strong><br>
-            <p style='color:#ddd; margin-top:8px; white-space:pre-wrap;'>" . nl2br(htmlspecialchars($mensaje)) . "</p>
+    $nomEsc = htmlspecialchars($nombre);
+    $emailEsc = htmlspecialchars($email);
+    $asuntoEsc = htmlspecialchars($asunto);
+    $msgEsc = nl2br(htmlspecialchars($mensaje));
+
+    $content = "
+        <p style='color:#cbd5e0; font-size:15px;'>Se ha recibido un nuevo mensaje a través del formulario de contacto del sitio web.</p>
+        
+        <table width='100%' cellpadding='0' cellspacing='0' style='background:#182234; border-radius:12px; padding:18px; margin:20px 0; border:1px solid rgba(255,255,255,0.06);'>
+            <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>De:</td><td style='padding:6px 0; color:#ffffff; font-weight:700;'>{$nomEsc}</td></tr>
+            <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Correo:</td><td style='padding:6px 0;'><a href='mailto:{$emailEsc}' style='color:#EF3363;'>{$emailEsc}</a></td></tr>
+            <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Asunto:</td><td style='padding:6px 0; color:#EF3363; font-weight:800;'>{$asuntoEsc}</td></tr>
+        </table>
+
+        <div style='background:#162032; padding:18px; border-radius:12px; border-left:4px solid #EF3363; margin-top:16px;'>
+            <strong style='color:#EF3363; font-size:13px; text-transform:uppercase; letter-spacing:0.05em;'>Mensaje:</strong>
+            <p style='color:#e2e8f0; margin:10px 0 0; line-height:1.7; white-space:pre-wrap;'>{$msgEsc}</p>
         </div>
-        <p style='color:#666; font-size:0.82rem; margin-top:20px;'>Enviado desde catink.com.mx</p>
-    </div>
     ";
 
-    $mail->Body = $bodyHtml;
+    $mail->Body = renderCatInkEmail([
+        'title'     => 'Nuevo Mensaje de Contacto',
+        'badge'     => 'Formulario de Contacto',
+        'content'   => $content,
+        'cta_url'   => 'mailto:' . $email,
+        'cta_text'  => 'Responder a ' . $nombre
+    ]);
     $mail->AltBody = "De: $nombre <$email>\nAsunto: $asunto\n\n$mensaje";
     $mail->send();
 

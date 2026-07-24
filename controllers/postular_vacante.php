@@ -88,6 +88,8 @@ try {
     $fromEmail = env('SMTP_FROM_EMAIL', 'no-reply@catink.com.mx');
     $fromName  = env('SMTP_FROM_NAME',  'CatInk');
 
+    require_once(__DIR__ . "/../views/helpers/emailhelper.php");
+
     $mail->setFrom($fromEmail, $fromName . ' Careers');
     $mail->addAddress('contacto@catink.com.mx', 'CatInk Equipo');
     $mail->addReplyTo($email, $nombre);
@@ -99,24 +101,39 @@ try {
         $mail->addAttachment($destPath, $fileName);
     }
 
-    $bodyHtml = "
-    <div style='font-family: Arial, sans-serif; max-width:600px; margin:auto; background:#121216; color:#ffffff; padding:24px; border-radius:12px; border:1px solid #222;'>
-        <h2 style='color:#EF3363; margin-top:0;'>Nueva Solicitud de Empleo en CatInk</h2>
-        <p style='color:#ddd; font-size:1.05rem;'>Se ha recibido una nueva candidatura a través del portal de reclutamiento.</p>
-        <hr style='border-color:#333; margin:16px 0;'>
-        <p style='color:#ffffff;'><strong>Puesto Solicitado:</strong> <span style='color:#EF3363; font-weight:bold;'>$tituloVacante</span></p>
-        <p style='color:#ffffff;'><strong>Nombre del Postulante:</strong> $nombre</p>
-        <p style='color:#ffffff;'><strong>Correo Electrónico:</strong> <a href='mailto:$email' style='color:#EF3363;'>$email</a></p>
-        <p style='color:#ffffff;'><strong>Teléfono:</strong> " . ($telefono ?: 'No especificado') . "</p>
-        <div style='background:#1a1a20; padding:14px; border-radius:8px; margin-top:14px; border-left:4px solid #EF3363;'>
-            <strong style='color:#EF3363;'>Motivación / Presentación:</strong><br>
-            <p style='color:#ddd; margin-top:6px; white-space:pre-wrap;'>" . nl2br(htmlspecialchars($razon)) . "</p>
+    $nomEsc = htmlspecialchars($nombre);
+    $emailEsc = htmlspecialchars($email);
+    $telEsc = htmlspecialchars($telefono ?: 'No especificado');
+    $puestoEsc = htmlspecialchars($tituloVacante);
+    $fileEsc = htmlspecialchars($fileName);
+    $razonEsc = nl2br(htmlspecialchars($razon));
+
+    $content = "
+        <p style='color:#cbd5e0; font-size:15px;'>Se ha recibido una nueva candidatura a través del portal de reclutamiento.</p>
+        
+        <table width='100%' cellpadding='0' cellspacing='0' style='background:#182234; border-radius:12px; padding:18px; margin:20px 0; border:1px solid rgba(255,255,255,0.06);'>
+            <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Puesto Solicitado:</td><td style='padding:6px 0; color:#EF3363; font-weight:800; font-size:15px;'>{$puestoEsc}</td></tr>
+            <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Postulante:</td><td style='padding:6px 0; color:#ffffff; font-weight:700;'>{$nomEsc}</td></tr>
+            <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Correo:</td><td style='padding:6px 0;'><a href='mailto:{$emailEsc}' style='color:#EF3363;'>{$emailEsc}</a></td></tr>
+            <tr><td style='padding:6px 0; color:#718096; font-size:13px; font-weight:700;'>Teléfono:</td><td style='padding:6px 0; color:#e2e8f0;'>{$telEsc}</td></tr>
+        </table>
+
+        <div style='background:#162032; padding:18px; border-radius:12px; border-left:4px solid #EF3363; margin-top:16px;'>
+            <strong style='color:#EF3363; font-size:13px; text-transform:uppercase; letter-spacing:0.05em;'>Motivación / Presentación:</strong>
+            <p style='color:#e2e8f0; margin:10px 0 0; line-height:1.7; white-space:pre-wrap;'>{$razonEsc}</p>
         </div>
-        <p style='color:#888; font-size:0.85rem; margin-top:20px;'>* Se adjunta a este correo el archivo CV recibido ($fileName).</p>
-    </div>
+
+        <p style='color:#718096; font-size:12px; margin-top:24px;'>* Se adjunta a este correo el archivo de CV/Portafolio recibido ({$fileEsc}).</p>
     ";
 
-    $mail->Body = $bodyHtml;
+    $mail->Body = renderCatInkEmail([
+        'title'     => 'Nueva Solicitud de Empleo',
+        'badge'     => 'Reclutamiento CatInk',
+        'content'   => $content,
+        'cta_url'   => 'mailto:' . $email,
+        'cta_text'  => 'Responder Candidato'
+    ]);
+
     $mail->send();
     $emailSent = true;
 } catch (Exception $e) {

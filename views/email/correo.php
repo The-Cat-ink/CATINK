@@ -115,20 +115,29 @@ $hoy = date("Y-m-d H:i:s");
             $imgSrc = 'https://www.catink.com.mx/serve-image.php?file=' . urlencode($noticia['crop3']);
         }
 
+        $tituloEsc = htmlspecialchars($noticia['titulo']);
+        $urlNoticia = "https://catink.com.mx/views/news.php?id={$noticia['id']}";
+
         $contenidoNoticias .= "
         <table width='100%' cellpadding='0' cellspacing='0' border='0' 
-            style='background:#ffffff;margin-bottom:15px;border-radius:10px;overflow:hidden;'>
-        <tr class='stack-column'>
-        <td width='240' valign='top' class='card-padding' style='padding:14px;'>
-            <img src='{$imgSrc}' width='220' class='stack-img' 
-                style='width:100%;max-width:220px;height:auto;display:block;border-radius:10px;border:0;margin:0;'>
-        </td>
-        <td valign='top' class='card-padding' style='padding:14px;font-family:Arial,sans-serif;'>
-            <a href='https://www.catink.com.mx/views/news.php?id={$noticia['id']}' 
-               style='display:block;margin:14px;text-decoration:none;color:#EF3363;'>
-                <h3 style='margin:0;font-family:Arial,sans-serif;color:#EF3363;'>{$noticia['titulo']}</h3>
+            style='background:#182234;margin-bottom:16px;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);'>
+        <tr>
+        <td width='180' valign='middle' class='stack-col' style='padding:12px;'>
+            <a href='{$urlNoticia}' target='_blank'>
+                <img src='{$imgSrc}' width='180' class='stack-img' 
+                    style='width:100%;max-width:180px;height:auto;display:block;border-radius:10px;border:0;margin:0;'>
             </a>
-            <p style='margin:14px;'>{$descripcion}</p>
+        </td>
+        <td valign='middle' class='stack-col' style='padding:14px 16px 14px 4px;font-family:Arial,sans-serif;'>
+            <a href='{$urlNoticia}' target='_blank' 
+               style='display:block;text-decoration:none;color:#ffffff;'>
+                <h3 style='margin:0 0 8px;font-family:Arial,sans-serif;color:#ffffff;font-size:16px;font-weight:800;line-height:1.3;'>{$tituloEsc}</h3>
+            </a>
+            <p style='margin:0 0 12px;color:#a0aec0;font-size:13px;line-height:1.5;'>{$descripcion}</p>
+            <a href='{$urlNoticia}' target='_blank' 
+               style='display:inline-block;color:#EF3363;font-size:12px;font-weight:800;text-decoration:none;text-transform:uppercase;letter-spacing:0.05em;'>
+                Leer noticia completa →
+            </a>
         </td>
         </tr>
         </table>";
