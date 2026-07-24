@@ -21,8 +21,8 @@ if (!function_exists('renderCatInkEmail')) {
         // Paleta de colores según tema
         $bgColor        = $isLight ? '#f1f5f9' : '#0b1220';
         $cardBg         = $isLight ? '#ffffff' : '#121927';
-        $headerBg       = $isLight ? '#0b1220' : '#162032'; // Cabecera oscura para resaltar logo CatInk
-        $headerBorder   = $isLight ? '#0b1220' : 'rgba(255,255,255,0.06)';
+        $headerBg       = 'linear-gradient(135deg, #EF3363 0%, #d81b4d 100%)'; // Cabecera rosa acento CatInk
+        $headerBorder   = '#EF3363';
         $cardBorder     = $isLight ? '#e2e8f0' : 'rgba(255,255,255,0.08)';
         $titleColor     = $isLight ? '#0f172a' : '#ffffff';
         $textColor      = $isLight ? '#334155' : '#e2e8f0';
