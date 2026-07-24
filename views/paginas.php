@@ -930,15 +930,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         container.innerHTML = html;
         container.dataset.pageName = pageName;
+    }
 
-        // Ocultar / Mostrar el editor de texto HTML según si la sección lo requiere
+    const pagesWithEditor = ['nosotros', 'terminos', 'privacidad', 'cookies'];
+
+    function updateEditorState(pageName, content = '') {
+        const needsEditor = pagesWithEditor.includes(pageName);
         const editorGrp = document.getElementById("editorGroupContainer");
         if (editorGrp) {
-            if (pageName === 'suscripcion' || pageName === 'contacto' || pageName === 'unete') {
-                editorGrp.style.display = 'none';
-            } else {
-                editorGrp.style.display = 'block';
-            }
+            editorGrp.style.display = needsEditor ? 'block' : 'none';
+        }
+        if (needsEditor) {
+            setTimeout(() => {
+                if (editorpag) {
+                    try { editorpag.setData(content); } catch(e) {}
+                } else {
+                    const el = document.getElementById('editorpag');
+                    if (el) el.innerHTML = content;
+                }
+                window.dispatchEvent(new Event('resize'));
+            }, 60);
         }
     }
 
@@ -1008,26 +1019,29 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch(e) {}
 
             renderMetaFields(this.dataset.nombre, metaData);
+            updateEditorState(this.dataset.nombre, contenido);
 
             modalPagina.style.display = "flex";
-
-            setTimeout(() => {
-                if (editorpag) {
-                    editorpag.setData(contenido);
-                } else {
-                    document.getElementById('editorpag').innerHTML = contenido;
-                }
-            }, 100);
+            setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 80);
         });
     });
 
     document.getElementById("nombre").addEventListener("change", function(){
         renderMetaFields(this.value, {});
+        updateEditorState(this.value, '');
     });
 
     document.getElementById("formPagina").addEventListener("submit", function(){
-        if (editorpag) {
-            document.getElementById("contenido").value = editorpag.getData();
+        const pageName = document.getElementById("nombre").value;
+        if (pagesWithEditor.includes(pageName)) {
+            if (editorpag) {
+                document.getElementById("contenido").value = editorpag.getData();
+            } else {
+                const el = document.getElementById('editorpag');
+                if (el) document.getElementById("contenido").value = el.innerHTML;
+            }
+        } else {
+            document.getElementById("contenido").value = '';
         }
         serializeMetaFields();
     });
