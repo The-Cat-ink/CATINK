@@ -798,11 +798,17 @@ document.addEventListener('DOMContentLoaded', () => {
         let html = '';
 
         if (pageName === 'nosotros') {
-            const rawStats = meta.estadisticas || [
-                { num: meta.stat1_num || '500K+', lbl: meta.stat1_lbl || 'Lectores Mensuales' },
-                { num: meta.stat2_num || '10K+',  lbl: meta.stat2_lbl || 'Artículos Publicados' },
-                { num: meta.stat3_num || '100%',  lbl: meta.stat3_lbl || 'Pasión Geek' }
-            ];
+            const rawStats = (Array.isArray(meta.estadisticas) && meta.estadisticas.length > 0) ? meta.estadisticas : (
+                (meta.stat1_num || meta.stat2_num || meta.stat3_num) ? [
+                    { num: meta.stat1_num || '', lbl: meta.stat1_lbl || '' },
+                    { num: meta.stat2_num || '', lbl: meta.stat2_lbl || '' },
+                    { num: meta.stat3_num || '', lbl: meta.stat3_lbl || '' }
+                ].filter(s => s.num || s.lbl) : [
+                    { num: '500K+', lbl: 'Lectores Mensuales' },
+                    { num: '10K+',  lbl: 'Artículos Publicados' },
+                    { num: '100%',  lbl: 'Pasión Geek' }
+                ]
+            );
 
             let statsHtml = '';
             rawStats.forEach(st => {

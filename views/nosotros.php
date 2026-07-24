@@ -297,8 +297,8 @@ foreach ($filas as $i => $fila_logos) {
         </p>
         <div class="nos-hero-stats">
             <?php 
-            $estadisticas = $meta['estadisticas'] ?? [];
-            if (empty($estadisticas)) {
+            $estadisticas = $meta['estadisticas'] ?? null;
+            if ($estadisticas === null) {
                 $estadisticas = [
                     ['num' => $meta['stat1_num'] ?? $meta['stat_1'] ?? '500K+', 'lbl' => $meta['stat1_lbl'] ?? $meta['stat_1_label'] ?? 'Lectores Mensuales'],
                     ['num' => $meta['stat2_num'] ?? $meta['stat_2'] ?? '10K+',  'lbl' => $meta['stat2_lbl'] ?? $meta['stat_2_label'] ?? 'Artículos Publicados'],
