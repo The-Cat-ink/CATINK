@@ -810,8 +810,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-row-item" style="display:grid; grid-template-columns:130px 1fr 38px; gap:8px; align-items:center; background:var(--bg); padding:6px 10px; border-radius:10px; border:1px solid var(--border);">
                         <input type="text" class="cn-input meta-stat-num" value="${st.num || ''}" placeholder="Número (500K+)">
                         <input type="text" class="cn-input meta-stat-lbl" value="${st.lbl || ''}" placeholder="Etiqueta (Lectores Mensuales)">
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-stat" title="Eliminar estadística" style="border-radius:8px; padding:4px 8px; font-size:0.85rem;">
-                            <i class="bi bi-trash"></i>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-stat" onclick="this.closest('.stat-row-item').remove()" title="Eliminar estadística" style="border-radius:8px; padding:4px 8px; font-size:0.85rem;">
+                            <i class="bi bi-trash" style="pointer-events:none;"></i>
                         </button>
                     </div>
                 `;
@@ -1006,8 +1006,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.innerHTML = `
                     <input type="text" class="cn-input meta-stat-num" value="" placeholder="Número (50+)"/>
                     <input type="text" class="cn-input meta-stat-lbl" value="" placeholder="Etiqueta (Premios Ganados)"/>
-                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-stat" title="Eliminar estadística" style="border-radius:8px; padding:4px 8px; font-size:0.85rem;">
-                        <i class="bi bi-trash"></i>
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-stat" onclick="this.closest('.stat-row-item').remove()" title="Eliminar estadística" style="border-radius:8px; padding:4px 8px; font-size:0.85rem;">
+                        <i class="bi bi-trash" style="pointer-events:none;"></i>
                     </button>
                 `;
                 statsListContainer.appendChild(row);
