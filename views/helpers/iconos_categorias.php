@@ -64,3 +64,33 @@ function sanearIconoCategoria(?string $icono): string {
         ? $icono
         : ICONO_CATEGORIA_DEFAULT;
 }
+
+/**
+ * Normaliza la ruta de una imagen subida como icono.
+ *
+ * Solo se acepta el formato exacto que produce controllers/categoria_icono_subir.php
+ * (uploads/iconos/<nombre>.png). Cualquier otra cosa devuelve null, que en la
+ * practica significa "sin imagen, usa el icono del catalogo". Esto evita que un
+ * POST manipulado apunte a un archivo arbitrario del servidor.
+ */
+function sanearIconoImgCategoria(?string $ruta): ?string {
+    $ruta = trim((string)$ruta);
+    if ($ruta === '') {
+        return null;
+    }
+    return preg_match('#^uploads/iconos/[A-Za-z0-9_.-]+\.png$#', $ruta) === 1 ? $ruta : null;
+}
+
+/**
+ * Ruta fisica del icono subido, o null si no aplica.
+ * Se usa para borrar la imagen anterior cuando se reemplaza o se quita.
+ */
+function rutaFisicaIconoCategoria(string $rutaRelativa): ?string {
+    if (sanearIconoImgCategoria($rutaRelativa) === null) {
+        return null;
+    }
+    $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false
+            || strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false;
+    $base = $isLocal ? dirname(__DIR__, 2) : dirname(__DIR__, 3);
+    return $base . '/' . $rutaRelativa;
+}

@@ -1665,3 +1665,21 @@ UPDATE `categorias` SET `icono` = 'bi-tv-fill'           WHERE `nombre` = 'serie
 UPDATE `categorias` SET `icono` = 'bi-cpu-fill'          WHERE `nombre` = 'tecnologia'  AND `icono` = 'bi-tag-fill';
 UPDATE `categorias` SET `icono` = 'bi-controller'        WHERE `nombre` = 'videojuegos' AND `icono` = 'bi-tag-fill';
 UPDATE `categorias` SET `icono` = 'bi-shuffle'           WHERE `nombre` = 'Random'      AND `icono` = 'bi-tag-fill';
+
+-- 71. Imagen propia como icono de categoría (subida desde views/cats.php)
+--     Si icono_img tiene valor, gana sobre icono (la clase de Bootstrap Icons).
+--     Vaciarla vuelve a usar el icono del catálogo, que nunca se pierde.
+ALTER TABLE `categorias` ADD COLUMN IF NOT EXISTS `icono_img` VARCHAR(255) NULL DEFAULT NULL AFTER `icono`;
+
+-- 72. Interruptores globales: dónde se muestran los iconos de categoría en el menú.
+--     Por defecto se ven en móvil (hamburguesa) y no en escritorio (barra horizontal),
+--     que es como quedó el diseño original.
+--     NOTA: secciones.nombre no tiene índice UNIQUE, así que INSERT IGNORE no sirve
+--     para evitar duplicados. Se usa un INSERT ... WHERE NOT EXISTS, que sí es idempotente.
+INSERT INTO `secciones` (`nombre`, `estado`)
+SELECT 'iconos_menu_movil', 1
+WHERE NOT EXISTS (SELECT 1 FROM `secciones` WHERE `nombre` = 'iconos_menu_movil');
+
+INSERT INTO `secciones` (`nombre`, `estado`)
+SELECT 'iconos_menu_escritorio', 0
+WHERE NOT EXISTS (SELECT 1 FROM `secciones` WHERE `nombre` = 'iconos_menu_escritorio');

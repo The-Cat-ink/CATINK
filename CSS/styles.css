@@ -499,11 +499,39 @@ h2 {
 .nav-mobile-extra {
   display: none;
 }
-/* Lo mismo para el icono de categoria: el <ul> de categorias es el mismo nodo
-   en ambos layouts, y en la barra horizontal de escritorio los iconos apretarian
-   los nombres. Solo se muestra dentro de la hamburguesa (<=1024px). */
+/* Icono de categoria en el menu. El <ul> de categorias es el mismo nodo en la
+   hamburguesa y en la barra horizontal de escritorio, asi que no se puede decidir
+   solo con el breakpoint: header.php le pone .cat-icons-movil y/o
+   .cat-icons-escritorio segun los interruptores del panel, y cada media query
+   activa el suyo. Sin clase, oculto. */
 .nav-cat-icon {
   display: none;
+}
+/* Imagen subida como icono: se encaja en el mismo cuadro que el glifo. */
+.nav-cat-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.dropdown-cat-icon.nav-cat-icon-img {
+  width: 18px;
+  height: 18px;
+  justify-self: center;
+}
+/* Escritorio (barra horizontal): solo si el panel lo activo. */
+@media (min-width: 1025px) {
+  .navbar-nav.cat-icons-escritorio .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .navbar-nav.cat-icons-escritorio .nav-cat-icon {
+    display: inline-block;
+    flex-shrink: 0;
+    color: var(--accent);
+    font-size: 0.95rem;
+  }
 }
 @media (max-width: 1024px) {
   .navbar-nav {
@@ -513,13 +541,14 @@ h2 {
     margin: 0;
   }
   /* Icono de la categoria (elegido desde el panel). Ancho fijo para que los
-     nombres queden alineados aunque los glifos midan distinto. */
-  .navbar-nav .nav-link {
+     nombres queden alineados aunque los glifos midan distinto. Solo si el
+     interruptor de movil esta activado. */
+  .navbar-nav.cat-icons-movil .nav-link {
     display: flex;
     align-items: center;
     gap: 10px;
   }
-  .nav-cat-icon {
+  .navbar-nav.cat-icons-movil .nav-cat-icon {
     display: inline-block;
     width: 20px;
     flex-shrink: 0;

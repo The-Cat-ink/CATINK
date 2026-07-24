@@ -14,6 +14,19 @@ $checkVisibleCol = @$con->query("SHOW COLUMNS FROM categorias LIKE 'visible_menu
 if ($checkVisibleCol && $checkVisibleCol->num_rows === 0) {
     @$con->query("ALTER TABLE categorias ADD visible_menu TINYINT(1) NOT NULL DEFAULT 1 AFTER icono");
 }
+$checkIconoImgCol = @$con->query("SHOW COLUMNS FROM categorias LIKE 'icono_img'");
+if ($checkIconoImgCol && $checkIconoImgCol->num_rows === 0) {
+    @$con->query("ALTER TABLE categorias ADD icono_img VARCHAR(255) NULL DEFAULT NULL AFTER icono");
+}
+
+// Interruptores globales de dónde se ven los iconos (filas de `secciones`).
+$cfgIconos = ['iconos_menu_movil' => 1, 'iconos_menu_escritorio' => 0];
+$resCfg = @$con->query("SELECT nombre, estado FROM secciones WHERE nombre IN ('iconos_menu_movil','iconos_menu_escritorio')");
+if ($resCfg) {
+    while ($f = $resCfg->fetch_assoc()) {
+        $cfgIconos[$f['nombre']] = intval($f['estado']);
+    }
+}
 
 // Obtener todas las categorías y conteo de noticias
 $q = trim($_GET['q'] ?? '');
@@ -82,6 +95,33 @@ $gruposIconos = iconosCategoriaPorGrupo();
         </div>
     </div>
 
+    <!-- Dónde se muestran los iconos de categoría en el menú público.
+         Ajuste global: aplica a todas las categorías por igual. -->
+    <div class="card shadow-sm" style="margin-bottom:18px;">
+        <div class="card-body" style="display:flex; flex-wrap:wrap; align-items:center; gap:18px 32px;">
+            <div style="flex:1; min-width:230px;">
+                <strong style="display:block; font-size:0.95rem;">Iconos en el menú</strong>
+                <span style="font-size:0.82rem; color:var(--muted);">
+                    Elige en qué versión del sitio se muestran los iconos junto al nombre de cada categoría.
+                </span>
+            </div>
+            <label class="icono-switch <?= $ACL['editar'] ? '' : 'is-disabled' ?>">
+                <input type="checkbox" class="chk-iconos-cfg" data-clave="iconos_menu_movil"
+                       <?= $cfgIconos['iconos_menu_movil'] ? 'checked' : '' ?>
+                       <?= $ACL['editar'] ? '' : 'disabled' ?>>
+                <span class="icono-switch-track"></span>
+                <span><i class="bi bi-phone"></i> Versión móvil</span>
+            </label>
+            <label class="icono-switch <?= $ACL['editar'] ? '' : 'is-disabled' ?>">
+                <input type="checkbox" class="chk-iconos-cfg" data-clave="iconos_menu_escritorio"
+                       <?= $cfgIconos['iconos_menu_escritorio'] ? 'checked' : '' ?>
+                       <?= $ACL['editar'] ? '' : 'disabled' ?>>
+                <span class="icono-switch-track"></span>
+                <span><i class="bi bi-display"></i> Versión escritorio</span>
+            </label>
+        </div>
+    </div>
+
     <!-- Toolbar -->
     <div class="contenidos-toolbar">
         <div class="contenidos-tabs">
@@ -115,13 +155,20 @@ $gruposIconos = iconosCategoriaPorGrupo();
                             <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron categorías.</td></tr>
                         <?php else: ?>
                             <?php foreach($categorias as $row):
-                                $icono  = sanearIconoCategoria($row['icono'] ?? null);
-                                $visible = intval($row['visible_menu']) === 1;
+                                $icono    = sanearIconoCategoria($row['icono'] ?? null);
+                                $iconoImg = sanearIconoImgCategoria($row['icono_img'] ?? null);
+                                $visible  = intval($row['visible_menu']) === 1;
                             ?>
                             <tr data-id="<?= $row['id_c'] ?>" class="categoria-row">
                                 <td style="cursor: grab; text-align: center; color:var(--muted);"><i class="bi bi-grip-vertical"></i></td>
                                 <td style="text-align:center;">
-                                    <span class="cat-icon-preview"><i class="bi <?= htmlspecialchars($icono) ?>"></i></span>
+                                    <span class="cat-icon-preview">
+                                        <?php if($iconoImg): ?>
+                                            <img src="<?= htmlspecialchars(imageUrl($iconoImg)) ?>" alt="">
+                                        <?php else: ?>
+                                            <i class="bi <?= htmlspecialchars($icono) ?>"></i>
+                                        <?php endif; ?>
+                                    </span>
                                 </td>
                                 <td><strong class="table-title"><?= htmlspecialchars($row['nombre']) ?></strong></td>
                                 <td><span class="estado-badge estado-publicado" style="background:rgba(16,185,129,0.1); color:#10b981;"><?= $row['total_noticias'] ?> noticias</span></td>
@@ -147,6 +194,8 @@ $gruposIconos = iconosCategoriaPorGrupo();
                                                 <button class="btn btn-edit btn-editar"
                                                     data-id="<?= $row['id_c'] ?>"
                                                     data-icono="<?= htmlspecialchars($icono) ?>"
+                                                    data-icono-img="<?= htmlspecialchars($iconoImg ? imageUrl($iconoImg) : '') ?>"
+                                                    data-icono-img-raw="<?= htmlspecialchars($iconoImg ?? '') ?>"
                                                     data-nombre="<?= htmlspecialchars($row['nombre']) ?>" title="Editar"><i class="bi bi-pencil-square"></i></button>
                                             <?php endif; ?>
                                             <?php if($ACL['eliminar']): ?>
@@ -187,7 +236,29 @@ $gruposIconos = iconosCategoriaPorGrupo();
                         Icono en el menú
                         <span id="modalIconoActual" class="cat-icon-preview" style="margin-left:6px; vertical-align:middle;"><i class="bi bi-tag-fill"></i></span>
                     </label>
+                    <!-- Valor real que viaja por POST. icono = glifo del catálogo;
+                         icono_img = ruta de la imagen subida (gana si tiene valor). -->
                     <input type="hidden" name="icono" id="modalIcono" value="<?= ICONO_CATEGORIA_DEFAULT ?>">
+                    <input type="hidden" name="icono_img" id="modalIconoImg" value="">
+
+                    <!-- Subir imagen propia -->
+                    <div class="icono-upload">
+                        <div class="icono-upload-preview" id="iconoUploadPreview" hidden>
+                            <img src="" alt="" id="iconoUploadImg">
+                        </div>
+                        <div class="icono-upload-controls">
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnSubirIcono">
+                                <i class="bi bi-upload"></i> Subir imagen
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnQuitarIcono" hidden>
+                                <i class="bi bi-x-lg"></i> Quitar imagen
+                            </button>
+                            <input type="file" id="iconoFile" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
+                        </div>
+                        <span class="icono-upload-hint">PNG, JPG, GIF o WEBP. Se recorta a un cuadro pequeño; ideal con fondo transparente.</span>
+                    </div>
+
+                    <div class="icon-picker-sep">o elige un icono</div>
                     <div class="icon-picker">
                         <?php foreach($gruposIconos as $grupo => $iconos): ?>
                             <div class="icon-picker-group"><?= htmlspecialchars($grupo) ?></div>
@@ -234,6 +305,88 @@ $gruposIconos = iconosCategoriaPorGrupo();
     background: rgba(239, 51, 99, 0.12);
     color: var(--accent);
     font-size: 1rem;
+    overflow: hidden;
+}
+.cat-icon-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+/* Interruptores globales de iconos (parte superior) */
+.icono-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+}
+.icono-switch.is-disabled { cursor: default; opacity: 0.6; }
+.icono-switch input { display: none; }
+.icono-switch-track {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    border-radius: 999px;
+    background: var(--border);
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+.icono-switch-track::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s ease;
+}
+.icono-switch input:checked + .icono-switch-track { background: var(--accent); }
+.icono-switch input:checked + .icono-switch-track::after { transform: translateX(18px); }
+/* Subida de imagen en el modal */
+.icono-upload {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    margin-bottom: 12px;
+}
+.icono-upload-preview {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.15);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.icono-upload-preview img { width: 100%; height: 100%; object-fit: contain; }
+.icono-upload-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.icono-upload-hint {
+    flex-basis: 100%;
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+.icon-picker-sep {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 6px 0 10px;
+}
+.icon-picker-sep::before,
+.icon-picker-sep::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
 }
 /* Badge de visibilidad en el menu */
 .badge-menu {
@@ -319,23 +472,85 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalNombreWrapper = document.getElementById('modalNombreWrapper');
     const modalIconoWrapper = document.getElementById('modalIconoWrapper');
     const modalIcono = document.getElementById('modalIcono');
+    const modalIconoImg = document.getElementById('modalIconoImg');
     const modalIconoActual = document.getElementById('modalIconoActual');
+    const iconoUploadPreview = document.getElementById('iconoUploadPreview');
+    const iconoUploadImg = document.getElementById('iconoUploadImg');
+    const btnSubirIcono = document.getElementById('btnSubirIcono');
+    const btnQuitarIcono = document.getElementById('btnQuitarIcono');
+    const iconoFile = document.getElementById('iconoFile');
     const btnCrear = document.getElementById('btnCrear');
     const ICONO_DEFAULT = <?= json_encode(ICONO_CATEGORIA_DEFAULT) ?>;
 
     // Marca el icono elegido en la cuadrícula, actualiza la vista previa de la
     // etiqueta y deja el valor listo en el input oculto que se envía por POST.
+    // Elegir un glifo del catálogo descarta cualquier imagen subida.
     function seleccionarIcono(icono) {
         const valido = document.querySelector(`.icon-option[data-icono="${icono}"]`) ? icono : ICONO_DEFAULT;
         modalIcono.value = valido;
+        quitarImagen();               // glifo e imagen son excluyentes
         modalIconoActual.innerHTML = `<i class="bi ${valido}"></i>`;
         document.querySelectorAll('.icon-option').forEach(opt => {
             opt.classList.toggle('selected', opt.dataset.icono === valido);
         });
     }
 
+    // Refleja en el modal que hay una imagen activa: preview, boton de quitar y
+    // la etiqueta superior. rawPath es la ruta que se guarda (uploads/iconos/..),
+    // displayUrl es la URL servible para el <img>.
+    function usarImagen(rawPath, displayUrl) {
+        modalIconoImg.value = rawPath;
+        iconoUploadImg.src = displayUrl;
+        iconoUploadPreview.hidden = false;
+        btnQuitarIcono.hidden = false;
+        modalIconoActual.innerHTML = `<img src="${displayUrl}" alt="" style="width:100%;height:100%;object-fit:contain;">`;
+        document.querySelectorAll('.icon-option').forEach(opt => opt.classList.remove('selected'));
+    }
+
+    function quitarImagen() {
+        modalIconoImg.value = '';
+        iconoUploadImg.src = '';
+        iconoUploadPreview.hidden = true;
+        btnQuitarIcono.hidden = true;
+        iconoFile.value = '';
+    }
+
     document.querySelectorAll('.icon-option').forEach(opt => {
         opt.addEventListener('click', () => seleccionarIcono(opt.dataset.icono));
+    });
+
+    btnSubirIcono.addEventListener('click', () => iconoFile.click());
+    btnQuitarIcono.addEventListener('click', () => {
+        quitarImagen();
+        // Al quitar la imagen vuelve a mandar el glifo que estuviera elegido.
+        seleccionarIcono(modalIcono.value || ICONO_DEFAULT);
+    });
+
+    iconoFile.addEventListener('change', async () => {
+        const file = iconoFile.files[0];
+        if (!file) return;
+        const fd = new FormData();
+        fd.append('imagen', file);
+        btnSubirIcono.disabled = true;
+        const original = btnSubirIcono.innerHTML;
+        btnSubirIcono.innerHTML = '<i class="bi bi-hourglass-split"></i> Subiendo...';
+        try {
+            const res = await fetch('./../controllers/categoria_icono_subir.php', { method: 'POST', body: fd });
+            const d = await res.json();
+            if (d.ok) {
+                usarImagen(d.imagen, `./../${d.imagen}`);
+                showToast('Imagen lista como icono', 'success');
+            } else {
+                showToast(d.error || 'No se pudo subir la imagen', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error al subir la imagen', 'error');
+        } finally {
+            btnSubirIcono.disabled = false;
+            btnSubirIcono.innerHTML = original;
+            iconoFile.value = '';
+        }
     });
 
     if(btnCrear && ACL.crear){
@@ -350,6 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modalConfirmText.style.display = "none";
             modalNombreWrapper.style.display = "block"; // reset
             modalIconoWrapper.style.display = "block";
+            quitarImagen();
             seleccionarIcono(ICONO_DEFAULT);
             modal.style.display = "flex";
         });
@@ -367,7 +583,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalConfirmText.style.display = "none";
                 modalNombreWrapper.style.display = "block"; // reset
                 modalIconoWrapper.style.display = "block";
+                // El glifo queda cargado como respaldo; si además había imagen,
+                // esta gana y se muestra en la preview.
                 seleccionarIcono(btn.dataset.icono || ICONO_DEFAULT);
+                if (btn.dataset.iconoImgRaw) {
+                    usarImagen(btn.dataset.iconoImgRaw, btn.dataset.iconoImg);
+                }
                 modal.style.display = "flex";
                 });
         });
@@ -475,6 +696,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.getElementById('statOcultas');
         if (card) card.textContent = document.querySelectorAll('.badge-menu.is-oculta').length;
     }
+
+    // Interruptores globales: iconos en móvil / escritorio. Optimista: se revierte
+    // el checkbox si el servidor falla.
+    document.querySelectorAll('.chk-iconos-cfg').forEach(chk => {
+        chk.addEventListener('change', async function() {
+            const clave = this.dataset.clave;
+            const deseado = this.checked;
+            try {
+                const res = await fetch('./../controllers/categorias_iconos_config.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `clave=${encodeURIComponent(clave)}`
+                });
+                const d = await res.json();
+                if (!d.ok) {
+                    this.checked = !deseado;
+                    showToast(d.error || 'No se pudo guardar el ajuste', 'error');
+                    return;
+                }
+                this.checked = d.estado === 1;
+                const donde = clave === 'iconos_menu_movil' ? 'móvil' : 'escritorio';
+                showToast(
+                    d.estado ? `Iconos activados en ${donde}` : `Iconos desactivados en ${donde}`,
+                    d.estado ? 'success' : 'info'
+                );
+            } catch (err) {
+                console.error(err);
+                this.checked = !deseado;
+                showToast('Error en la petición', 'error');
+            }
+        });
+    });
 
     // DRAG AND DROP PARA REORDENAR CATEGORÍAS (Usando SortableJS)
     const tbody = document.getElementById('categoriasBody');

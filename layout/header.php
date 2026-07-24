@@ -21,6 +21,10 @@ $checkVisibleCol = @$con->query("SHOW COLUMNS FROM categorias LIKE 'visible_menu
 if ($checkVisibleCol && $checkVisibleCol->num_rows === 0) {
     @$con->query("ALTER TABLE categorias ADD visible_menu TINYINT(1) NOT NULL DEFAULT 1 AFTER icono");
 }
+$checkIconoImgCol = @$con->query("SHOW COLUMNS FROM categorias LIKE 'icono_img'");
+if ($checkIconoImgCol && $checkIconoImgCol->num_rows === 0) {
+    @$con->query("ALTER TABLE categorias ADD icono_img VARCHAR(255) NULL DEFAULT NULL AFTER icono");
+}
 
 require_once(__DIR__ . "/../views/helpers/urlhelper.php");
 require_once(__DIR__ . "/../views/helpers/publicidadhelper.php");
@@ -30,7 +34,7 @@ require_once(__DIR__ . "/../views/helpers/publicidadhelper.php");
 // Solo las marcadas como visibles: el admin puede ocultar una categoría del menú
 // desde views/cats.php sin borrarla. Su página /categoria/x sigue accesible, solo
 // desaparece de la navegación (hamburguesa, desplegable de escritorio y JSON-LD).
-$stmtCats = $con->prepare("SELECT nombre, icono, visible_menu FROM categorias WHERE visible_menu = 1 ORDER BY orden ASC, nombre ASC");
+$stmtCats = $con->prepare("SELECT nombre, icono, icono_img, visible_menu FROM categorias WHERE visible_menu = 1 ORDER BY orden ASC, nombre ASC");
 $stmtCats->execute();
 $resultCats = $stmtCats->get_result();
 $categorias = $resultCats->fetch_all(MYSQLI_ASSOC);
@@ -47,6 +51,31 @@ while($row = $result->fetch_assoc()) {
 // Defaults para secciones no configuradas
 if(!isset($secciones['publicidad'])) $secciones['publicidad'] = ['estado' => 0];
 if(!isset($secciones['videos'])) $secciones['videos'] = ['estado' => 0];
+// Iconos de categoría en el menú: por defecto sí en móvil, no en escritorio.
+if(!isset($secciones['iconos_menu_movil'])) $secciones['iconos_menu_movil'] = ['estado' => 1];
+if(!isset($secciones['iconos_menu_escritorio'])) $secciones['iconos_menu_escritorio'] = ['estado' => 0];
+
+// Clases que activan el icono en cada layout. El <ul> de categorías es el mismo
+// nodo en la hamburguesa y en la barra horizontal, así que en vez de decidirlo
+// con un breakpoint fijo se marca aquí y el CSS lo aplica en su media query.
+$claseIconosMenu = trim(
+    (!empty($secciones['iconos_menu_movil']['estado'])      ? ' cat-icons-movil'      : '') .
+    (!empty($secciones['iconos_menu_escritorio']['estado']) ? ' cat-icons-escritorio' : '')
+);
+
+/**
+ * Pinta el icono de una categoría: la imagen subida si la hay, si no el icono
+ * del catálogo de Bootstrap Icons. Se usa en la hamburguesa, en la barra de
+ * escritorio y en el desplegable de usuario.
+ */
+function iconoCategoriaHtml(array $cat, string $clases = 'nav-cat-icon'): string {
+    if (!empty($cat['icono_img'])) {
+        return '<img src="' . htmlspecialchars(imageUrl($cat['icono_img'])) . '"'
+             . ' alt="" class="' . htmlspecialchars($clases) . ' nav-cat-icon-img" aria-hidden="true">';
+    }
+    $bi = !empty($cat['icono']) ? $cat['icono'] : 'bi-tag-fill';
+    return '<i class="bi ' . htmlspecialchars($bi) . ' ' . htmlspecialchars($clases) . '" aria-hidden="true"></i>';
+}
 
 // Auto-disparador pasivo de correos programados (fallback para tareas cron)
 if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time']) > 300) {
@@ -557,11 +586,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </button>
         </form>
       </div>
-      <ul class="navbar-nav align-items-center">
+      <ul class="navbar-nav align-items-center <?= $claseIconosMenu ?>">
         <?php foreach ($categorias as $cat): ?>
           <li class="nav-item">
             <a class="nav-link" href="<?= categoryUrl($cat['nombre']) ?>">
-              <i class="bi <?= htmlspecialchars($cat['icono'] ?: 'bi-tag-fill') ?> nav-cat-icon" aria-hidden="true"></i>
+              <?= iconoCategoriaHtml($cat) ?>
               <?= htmlspecialchars($cat['nombre']) ?>
             </a>
           </li>
@@ -662,7 +691,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div class="dropdown-label">Categorías</div>
             <?php foreach($categorias as $cat): ?>
               <a href="<?= basePath() ?>/categoria/<?= urlencode($cat['nombre']) ?>" class="dropdown-item">
-                <i class="bi <?= htmlspecialchars($cat['icono'] ?: 'bi-tag-fill') ?>"></i> <?= htmlspecialchars($cat['nombre']) ?>
+                <?= iconoCategoriaHtml($cat, 'dropdown-cat-icon') ?> <?= htmlspecialchars($cat['nombre']) ?>
               </a>
             <?php endforeach; ?>
             <div class="dropdown-divider"></div>
