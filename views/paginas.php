@@ -1244,8 +1244,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 beneficiosListContainer.appendChild(row);
             });
-                beneficiosListContainer.appendChild(row);
-            });
         }
     }
 
