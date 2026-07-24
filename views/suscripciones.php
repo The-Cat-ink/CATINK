@@ -92,24 +92,24 @@ $otros = $totalSuscripciones - $hombres - $mujeres;
                     </div>
 
                     <div class="row g-3 align-items-end">
-                        <div class="col-12 col-md-5">
+                        <div class="col-12 col-md-4">
                             <label style="display:block; font-size:0.82rem; font-weight:700; margin-bottom:6px; color:var(--text);">Hora de Envío Diario:</label>
                             <div style="position:relative;">
                                 <i class="bi bi-alarm" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:1rem;"></i>
-                                <input type="time" name="hora" value="<?php echo $prog['hora']; ?>" required class="cn-input" style="padding-left:40px; border-radius:12px; font-weight:700;">
+                                <input type="time" name="hora" value="<?php echo $prog['hora']; ?>" required class="cn-input" style="padding-left:40px; border-radius:12px; font-weight:700; width:100%;">
                             </div>
                         </div>
 
                         <div class="col-12 col-md-4">
                             <label style="display:block; font-size:0.82rem; font-weight:700; margin-bottom:6px; color:var(--text);">Estado del Programador:</label>
-                            <select name="estado" id="estado" required class="cn-input" style="border-radius:12px; font-weight:700;">
+                            <select name="estado" id="estado" required class="cn-input" style="border-radius:12px; font-weight:700; width:100%;">
                                 <option value="activo" <?php if($prog['estado'] == 'activo') echo 'selected'; ?>>● Activo (Ejecución diaria)</option>
                                 <option value="inactivo" <?php if($prog['estado'] == 'inactivo') echo 'selected'; ?>>○ Inactivo (Pausado)</option>
                             </select>
                         </div>
 
-                        <div class="col-12 col-md-3 text-end">
-                            <button type="submit" class="btn btn-accent px-4 py-2 w-100" name="actualizarProgramacion" style="border-radius:12px; font-weight:800; font-size:0.9rem; box-shadow:0 4px 15px rgba(239,51,99,0.3);">
+                        <div class="col-12 col-md-4">
+                            <button type="submit" class="btn btn-accent px-4 py-2 w-100" name="actualizarProgramacion" style="border-radius:12px; font-weight:800; font-size:0.9rem; height:44px; box-shadow:0 4px 15px rgba(239,51,99,0.3);">
                                 <i class="bi bi-save me-1"></i> Guardar Programación
                             </button>
                         </div>
@@ -121,7 +121,7 @@ $otros = $totalSuscripciones - $hombres - $mujeres;
 
     <!-- ── TARJETAS DE ESTADÍSTICAS RÁPIDAS ────────────────────── -->
     <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
                 <div class="d-flex align-items-center gap-3">
                     <div style="width:44px; height:44px; border-radius:12px; background:rgba(99,102,241,0.12); color:#6366f1; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
@@ -135,7 +135,7 @@ $otros = $totalSuscripciones - $hombres - $mujeres;
             </div>
         </div>
 
-        <div class="col-6 col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
                 <div class="d-flex align-items-center gap-3">
                     <div style="width:44px; height:44px; border-radius:12px; background:rgba(59,130,246,0.12); color:#3b82f6; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
@@ -149,7 +149,7 @@ $otros = $totalSuscripciones - $hombres - $mujeres;
             </div>
         </div>
 
-        <div class="col-6 col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
                 <div class="d-flex align-items-center gap-3">
                     <div style="width:44px; height:44px; border-radius:12px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
@@ -163,7 +163,7 @@ $otros = $totalSuscripciones - $hombres - $mujeres;
             </div>
         </div>
 
-        <div class="col-6 col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card border-0 shadow-sm p-3 h-100" style="background:var(--card-bg); border-radius:16px; border:1px solid var(--border)!important;">
                 <div class="d-flex align-items-center gap-3">
                     <div style="width:44px; height:44px; border-radius:12px; background:rgba(245,158,11,0.12); color:#f59e0b; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
@@ -251,7 +251,7 @@ $otros = $totalSuscripciones - $hombres - $mujeres;
                                     </span>
                                 </td>
                                 <td style="text-align:right;">
-                                    <div class="d-inline-flex gap-1">
+                                    <div class="d-inline-flex gap-1 flex-nowrap align-items-center justify-content-end" style="white-space:nowrap;">
                                         <form method="POST" action="./../controllers/enviarCorreoSuscriptor.php" class="d-inline m-0">
                                             <input type="hidden" name="id" value="<?php echo $suscripcion['id_sub']; ?>">
                                             <button type="submit" class="btn btn-sm btn-outline-secondary" style="border-radius:8px; width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:var(--bg);" title="Enviar correo a este suscriptor">
