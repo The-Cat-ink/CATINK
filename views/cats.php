@@ -28,27 +28,15 @@ if ($resCfg) {
     }
 }
 
-// Obtener todas las categorías y conteo de noticias
-$q = trim($_GET['q'] ?? '');
-if($q !== ''){
-    $like = $con->real_escape_string("%$q%");
-    $sql = "
-    SELECT c.id_c, c.nombre, c.icono, c.icono_img, c.visible_menu, c.orden, COUNT(DISTINCT nc.noticia_id) AS total_noticias
-    FROM categorias c
-    LEFT JOIN noticia_categoria nc ON c.id_c = nc.categoria_id
-    WHERE c.nombre LIKE '$like'
-    GROUP BY c.id_c, c.nombre, c.icono, c.icono_img, c.visible_menu, c.orden
-    ORDER BY c.orden ASC, c.nombre ASC
-    ";
-} else {
-    $sql = "
-    SELECT c.id_c, c.nombre, c.icono, c.icono_img, c.visible_menu, c.orden, COUNT(DISTINCT nc.noticia_id) AS total_noticias
-    FROM categorias c
-    LEFT JOIN noticia_categoria nc ON c.id_c = nc.categoria_id
-    GROUP BY c.id_c, c.nombre, c.icono, c.icono_img, c.visible_menu, c.orden
-    ORDER BY c.orden ASC, c.nombre ASC
-    ";
-}
+// Todas las categorías con su conteo de noticias. Se listan siempre completas:
+// son pocas y se reordenan a mano, así que no hay buscador ni paginación.
+$sql = "
+SELECT c.id_c, c.nombre, c.icono, c.icono_img, c.visible_menu, c.orden, COUNT(DISTINCT nc.noticia_id) AS total_noticias
+FROM categorias c
+LEFT JOIN noticia_categoria nc ON c.id_c = nc.categoria_id
+GROUP BY c.id_c, c.nombre, c.icono, c.icono_img, c.visible_menu, c.orden
+ORDER BY c.orden ASC, c.nombre ASC
+";
 $result = $con->query($sql);
 
 $categorias = [];
@@ -61,105 +49,83 @@ $totalOcultas = count(array_filter($categorias, fn($c) => intval($c['visible_men
 $gruposIconos = iconosCategoriaPorGrupo();
 ?>
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 12px;">
+    <div class="cats-header">
         <h1 style="margin:0;">Gestión de Categorías</h1>
-        <form method="GET" class="admin-search-form" style="display:flex; align-items:center; gap:8px;">
-            <i class="bi bi-search admin-search-icon"></i>
-            <input type="search" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Buscar categoría..." class="admin-search-input">
-            <?php if($q): ?><a href="./cats.php" class="admin-search-clear">&times;</a><?php endif; ?>
-        </form>
+        <?php if($ACL['crear']): ?>
+            <button id="btnCrear" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear categoría</button>
+        <?php endif; ?>
     </div>
 
-    <!-- Layout de dos columnas: tabla a la izquierda, panel lateral (stats +
-         config) a la derecha para no dejar la tabla sola con espacio muerto.
-         En pantallas angostas la barra lateral pasa arriba y todo se apila. -->
-    <div class="cats-layout">
-        <!-- Barra lateral. Va primera en el HTML para que al apilarse quede
-             arriba; en escritorio el `order` la manda a la derecha. -->
-        <aside class="cats-side">
-            <div class="cats-stats">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: rgba(99,102,241,0.1); color: #6366f1;"><i class="bi bi-grid-fill"></i></div>
-                    <div class="stat-info">
-                        <span class="stat-value"><?= $totalCategorias ?></span>
-                        <span class="stat-label">Categorías Existentes</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: #10b981;"><i class="bi bi-newspaper"></i></div>
-                    <div class="stat-info">
-                        <span class="stat-value"><?= $totalNoticiasAsignadas ?></span>
-                        <span class="stat-label">Noticias Asignadas</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: rgba(148,163,184,0.12); color: #94a3b8;"><i class="bi bi-eye-slash-fill"></i></div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="statOcultas"><?= $totalOcultas ?></span>
-                        <span class="stat-label">Ocultas del Menú</span>
-                    </div>
-                </div>
+    <!-- Franja superior: las tres cifras y el ajuste global de iconos en una
+         sola fila, para que la tabla de abajo se quede con todo el ancho. -->
+    <div class="cats-top">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(99,102,241,0.1); color: #6366f1;"><i class="bi bi-grid-fill"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $totalCategorias ?></span>
+                <span class="stat-label">Categorías Existentes</span>
             </div>
-
-            <!-- Dónde se muestran los iconos de categoría en el menú público.
-                 Ajuste global: aplica a todas las categorías por igual. -->
-            <div class="card shadow-sm cats-config">
-                <div class="card-body">
-                    <strong style="display:block; font-size:0.95rem; margin-bottom:4px;">Iconos en el menú</strong>
-                    <span style="display:block; font-size:0.82rem; color:var(--muted); margin-bottom:6px;">
-                        Elige en qué versión del sitio se muestran los iconos junto al nombre de cada categoría.
-                    </span>
-                    <label class="icono-switch <?= $ACL['editar'] ? '' : 'is-disabled' ?>">
-                        <input type="checkbox" class="chk-iconos-cfg" data-clave="iconos_menu_movil"
-                               <?= $cfgIconos['iconos_menu_movil'] ? 'checked' : '' ?>
-                               <?= $ACL['editar'] ? '' : 'disabled' ?>>
-                        <span class="icono-switch-track"></span>
-                        <span><i class="bi bi-phone"></i> Versión móvil</span>
-                    </label>
-                    <label class="icono-switch <?= $ACL['editar'] ? '' : 'is-disabled' ?>">
-                        <input type="checkbox" class="chk-iconos-cfg" data-clave="iconos_menu_escritorio"
-                               <?= $cfgIconos['iconos_menu_escritorio'] ? 'checked' : '' ?>
-                               <?= $ACL['editar'] ? '' : 'disabled' ?>>
-                        <span class="icono-switch-track"></span>
-                        <span><i class="bi bi-display"></i> Versión escritorio</span>
-                    </label>
-                </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: #10b981;"><i class="bi bi-newspaper"></i></div>
+            <div class="stat-info">
+                <span class="stat-value"><?= $totalNoticiasAsignadas ?></span>
+                <span class="stat-label">Noticias Asignadas</span>
             </div>
-        </aside>
-
-        <!-- Columna principal: toolbar + tabla -->
-        <div class="cats-main">
-            <div class="contenidos-toolbar" style="margin-top:0;">
-                <div class="contenidos-tabs">
-                    <span class="tab-btn active">Todas las categorías</span>
-                </div>
-                <div class="contenidos-actions">
-                    <?php if($ACL['crear']): ?>
-                        <button id="btnCrear" class="btn btn-accent"><i class="bi bi-plus-lg"></i> Crear categoría</button>
-                    <?php endif; ?>
-                </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(148,163,184,0.12); color: #94a3b8;"><i class="bi bi-eye-slash-fill"></i></div>
+            <div class="stat-info">
+                <span class="stat-value" id="statOcultas"><?= $totalOcultas ?></span>
+                <span class="stat-label">Ocultas del Menú</span>
             </div>
+        </div>
 
-            <div class="card shadow-sm">
-                <div class="card-body p-0">
+        <!-- Dónde se muestran los iconos de categoría en el menú público.
+             Ajuste global: aplica a todas las categorías por igual. -->
+        <div class="cats-config">
+            <div class="cats-config-head">
+                <strong>Iconos en el menú</strong>
+                <span>Elige en qué versión del sitio se ven junto al nombre.</span>
+            </div>
+            <div class="cats-config-switches">
+                <label class="icono-switch <?= $ACL['editar'] ? '' : 'is-disabled' ?>">
+                    <input type="checkbox" class="chk-iconos-cfg" data-clave="iconos_menu_movil"
+                           <?= $cfgIconos['iconos_menu_movil'] ? 'checked' : '' ?>
+                           <?= $ACL['editar'] ? '' : 'disabled' ?>>
+                    <span class="icono-switch-track"></span>
+                    <span><i class="bi bi-phone"></i> Móvil</span>
+                </label>
+                <label class="icono-switch <?= $ACL['editar'] ? '' : 'is-disabled' ?>">
+                    <input type="checkbox" class="chk-iconos-cfg" data-clave="iconos_menu_escritorio"
+                           <?= $cfgIconos['iconos_menu_escritorio'] ? 'checked' : '' ?>
+                           <?= $ACL['editar'] ? '' : 'disabled' ?>>
+                    <span class="icono-switch-track"></span>
+                    <span><i class="bi bi-display"></i> Escritorio</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="contenidos-table" id="categoriasTable">
                     <thead>
                         <tr>
-                            <th style="width: 40px; text-align:center;"><i class="bi bi-arrows-move"></i></th>
-                            <th style="width: 60px; text-align:center;">Icono</th>
-                            <th>Nombre</th>
-                            <th>Total Noticias</th>
-                            <th>Menú</th>
+                            <th class="col-drag"><i class="bi bi-arrows-move"></i></th>
+                            <th class="col-icono">Icono</th>
+                            <th class="col-nombre">Nombre</th>
+                            <th class="col-total">Total Noticias</th>
+                            <th class="col-menu">Menú</th>
                             <?php if($ACL['editar'] || $ACL['eliminar']): ?>
-                                <th>Acciones</th>
+                                <th class="col-accion">Acciones</th>
                             <?php endif; ?>
-                            <th class="col-fill" aria-hidden="true"></th>
                         </tr>
                     </thead>
                     <tbody id="categoriasBody">
                         <?php if(empty($categorias)): ?>
-                            <tr><td colspan="7" style="text-align:center; padding:30px; color:var(--muted);">No se encontraron categorías.</td></tr>
+                            <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--muted);">Todavía no hay categorías.</td></tr>
                         <?php else: ?>
                             <?php foreach($categorias as $row):
                                 $icono    = sanearIconoCategoria($row['icono'] ?? null);
@@ -167,8 +133,8 @@ $gruposIconos = iconosCategoriaPorGrupo();
                                 $visible  = intval($row['visible_menu']) === 1;
                             ?>
                             <tr data-id="<?= $row['id_c'] ?>" class="categoria-row">
-                                <td style="cursor: grab; text-align: center; color:var(--muted);"><i class="bi bi-grip-vertical"></i></td>
-                                <td style="text-align:center;">
+                                <td class="col-drag" style="cursor: grab; color:var(--muted);"><i class="bi bi-grip-vertical"></i></td>
+                                <td class="col-icono">
                                     <span class="cat-icon-preview">
                                         <?php if($iconoImg): ?>
                                             <img src="<?= htmlspecialchars(imageUrl($iconoImg)) ?>" alt="">
@@ -177,9 +143,9 @@ $gruposIconos = iconosCategoriaPorGrupo();
                                         <?php endif; ?>
                                     </span>
                                 </td>
-                                <td><strong class="table-title"><?= htmlspecialchars($row['nombre']) ?></strong></td>
-                                <td><span class="estado-badge estado-publicado" style="background:rgba(16,185,129,0.1); color:#10b981;"><?= $row['total_noticias'] ?> noticias</span></td>
-                                <td>
+                                <td class="col-nombre"><strong class="table-title"><?= htmlspecialchars($row['nombre']) ?></strong></td>
+                                <td class="col-total"><span class="estado-badge estado-publicado" style="background:rgba(16,185,129,0.1); color:#10b981;"><?= $row['total_noticias'] ?> noticias</span></td>
+                                <td class="col-menu">
                                     <?php if($ACL['editar']): ?>
                                         <button type="button" class="btn btn-link p-0 text-decoration-none btn-toggle-menu"
                                             data-id="<?= $row['id_c'] ?>"
@@ -195,7 +161,7 @@ $gruposIconos = iconosCategoriaPorGrupo();
                                     <?php endif; ?>
                                 </td>
                                 <?php if($ACL['editar'] || $ACL['eliminar']): ?>
-                                    <td>
+                                    <td class="col-accion">
                                         <div class="noticias-actions" style="border-top:none; padding:0; justify-content:center;">
                                             <?php if($ACL['editar']): ?>
                                                 <button class="btn btn-edit btn-editar"
@@ -213,17 +179,14 @@ $gruposIconos = iconosCategoriaPorGrupo();
                                         </div>
                                     </td>
                                 <?php endif; ?>
-                                <td class="col-fill"></td>
                             </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
                 </table>
-            </div>
-        </div>
-            </div><!-- /.card tabla -->
-        </div><!-- /.cats-main -->
-    </div><!-- /.cats-layout -->
+            </div><!-- /.table-responsive -->
+        </div><!-- /.card-body -->
+    </div><!-- /.card tabla -->
 </div>
 
 <!-- MODAL CROP/NATIVO -->
@@ -295,50 +258,85 @@ $gruposIconos = iconosCategoriaPorGrupo();
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
 <style>
-/* ── Layout de dos columnas ─────────────────────────────────────────
-   Debajo de 1100px todo se apila (barra lateral arriba por el orden del HTML).
-   Encima, tabla a la izquierda y panel lateral fijo a la derecha; el `order`
-   coloca la tabla primero aunque en el HTML vaya despues. */
-.cats-layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-    align-items: start;
+/* ── Cabecera: titulo a la izquierda, boton de crear a la derecha ── */
+.cats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
 }
-@media (min-width: 1100px) {
-    .cats-layout {
-        grid-template-columns: minmax(0, 1fr) 320px;
-    }
-    .cats-main { order: 1; }
-    .cats-side { order: 2; }
-}
-.cats-main { min-width: 0; }
-/* Stats: en la barra lateral van apiladas; al colapsar, en fila que se reparte. */
-.cats-stats {
+
+/* ── Franja superior ────────────────────────────────────────────────
+   Las tres cifras y el ajuste de iconos comparten una fila. La tarjeta de
+   config pide mas ancho que las cifras, de ahi el ultimo tramo mas grande.
+   Al estrecharse, auto-fit las va apilando sola. */
+.cats-top {
     display: grid;
     gap: 14px;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    margin-bottom: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    align-items: stretch;
+    margin-bottom: 18px;
 }
-@media (min-width: 1100px) {
-    .cats-stats { grid-template-columns: 1fr; }
+@media (min-width: 1250px) {
+    .cats-top { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(320px, 1.4fr); }
 }
-/* Config de iconos apilada dentro de la barra lateral. */
-.cats-config .card-body {
+.cats-top .stat-card { margin: 0; }
+/* Misma piel que .stat-card para que la fila se lea como un bloque unico. */
+.cats-config {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 10px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
-.cats-config .icono-switch { justify-content: flex-start; }
+.cats-config-head strong { display: block; font-size: 0.95rem; }
+.cats-config-head span { display: block; font-size: 0.78rem; color: var(--muted); }
+.cats-config-switches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+}
 
-/* ── Tabla: columnas juntas, sin huecos entre ellas ─────────────────
-   Las columnas con contenido se ajustan a su ancho natural y una ultima
-   columna vacia (.col-fill) absorbe todo el espacio sobrante. Asi no queda
-   un hueco muerto entre Nombre y Total: el sobrante se va al extremo derecho.
-   Las filas siguen ocupando el 100%, por lo que el hover cubre todo el ancho. */
+/* ── Tabla a ancho completo ─────────────────────────────────────────
+   El sobrante se reparte entre las columnas en vez de acumularse en un solo
+   hueco muerto: Nombre se lleva el tramo mas ancho y las tres columnas de la
+   derecha van centradas dentro del suyo. Los anchos suman 100% contando los
+   Salvo el tirador de arrastre (ancho fijo), las cinco columnas se reparten el
+   resto en partes iguales y su contenido va centrado, asi la separacion entre
+   Icono, Nombre, Total, Menu y Acciones es la misma de punta a punta. */
+#categoriasTable { width: 100%; table-layout: fixed; }
+#categoriasTable .col-drag { width: 48px; text-align: center; }
+#categoriasTable .col-icono,
+#categoriasTable .col-nombre,
+#categoriasTable .col-total,
+#categoriasTable .col-menu,
+#categoriasTable .col-accion {
+    width: calc((100% - 48px) / 5);
+    text-align: center;
+}
 #categoriasTable th,
 #categoriasTable td { white-space: nowrap; }
-#categoriasTable .col-fill { width: 100%; padding: 0; }
+#categoriasTable .col-nombre .table-title {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* En pantallas angostas los porcentajes aprietan demasiado: se vuelve al
+   ancho natural de cada columna y la tabla se desplaza en horizontal. */
+@media (max-width: 820px) {
+    #categoriasTable { table-layout: auto; min-width: 620px; }
+    #categoriasTable .col-icono,
+    #categoriasTable .col-nombre,
+    #categoriasTable .col-total,
+    #categoriasTable .col-menu,
+    #categoriasTable .col-accion { width: auto; }
+}
 
 .sortable-ghost {
     opacity: 0.4;
