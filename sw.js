@@ -1,4 +1,4 @@
-const CACHE_NAME = 'catink-offline-v3';
+const CACHE_NAME = 'catink-offline-v4';
 const STATIC_ASSETS = [
   '/',
   '/offline.html',
@@ -43,8 +43,8 @@ self.addEventListener('fetch', event => {
   // Ignorar peticiones que no sean GET (como POST de comentarios o likes)
   if (request.method !== 'GET') return;
 
-  // EXCLUIR RUTAS DEL PANEL DE ADMINISTRACIÓN Y CONTROLADORES INTERNOS
-  // Esto evita falsos positivos de "Modo Sin Conexión" causados por bloqueadores de anuncios (uBlock, Brave, etc.)
+  // EXCLUIR RUTAS DEL PANEL DE ADMINISTRACIÓN, PUBLICIDAD Y CONTROLADORES INTERNOS
+  // Esto evita falsos positivos de "Modo Sin Conexión" causados por bloqueadores de anuncios (uBlock, Brave, AdGuard)
   // o por errores de servidor en páginas de administración.
   if (
     url.pathname.includes('/views/') || 
@@ -52,6 +52,11 @@ self.addEventListener('fetch', event => {
     url.pathname.includes('/data/') ||
     url.pathname.includes('/layout/') ||
     url.pathname.includes('admin') ||
+    url.pathname.includes('publicidad') ||
+    url.pathname.includes('campanas') ||
+    url.pathname.includes('crearp') ||
+    url.pathname.includes('editarp') ||
+    url.pathname.includes('verp') ||
     url.pathname.includes('login')
   ) {
     return;

@@ -187,7 +187,7 @@ if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time
         <?php endif; ?>
         <?php if (($_SESSION['ACL']['publicidad']['leer']?? false)): ?>
             <li class="sidebar-menu-item">
-                <a href="./publicidad.php" class="sidebar-menu-link" data-tooltip="Publicidad">
+                <a href="./campanas.php" class="sidebar-menu-link" data-tooltip="Publicidad">
                     <i class="bi bi-megaphone"></i> <span class="sb-label">Publicidad</span>
                 </a>
             </li>

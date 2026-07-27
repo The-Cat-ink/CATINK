@@ -149,7 +149,7 @@ document.addEventListener('turbo:load', () => {
         let text = '';
         const path = window.location.pathname.toLowerCase();
         const isPage = path.includes('paginas.php');
-        const isPub = path.includes('publicidad.php') || path.includes('editarp.php') || path.includes('crearp.php');
+        const isPub = path.includes('publicidad.php') || path.includes('campanas.php') || path.includes('editarp.php') || path.includes('crearp.php');
         const isUser = path.includes('usuarios.php') || path.includes('editaru.php') || path.includes('crearu.php');
 
         if (msg === 'actualizado') {
