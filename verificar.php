@@ -8,13 +8,14 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $token = trim($_GET['token'] ?? '');
 $error_msg = null;
+$already_verified = false;
 $success = false;
 
 if (empty($token)) {
     $error_msg = "El token de verificación no ha sido proporcionado.";
 } else {
     // Buscar al lector con este token
-    $stmt = $con->prepare("SELECT id, nombre, verificado FROM lectores WHERE token_verificacion = ?");
+    $stmt = $con->prepare("SELECT id, nombre, usuario, verificado FROM lectores WHERE token_verificacion = ?");
     $stmt->bind_param("s", $token);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -33,15 +34,11 @@ if (empty($token)) {
             $_SESSION['nombre_completo'] = $lector['nombre'];
             $_SESSION['superadmin'] = false;
             $_SESSION['ACL'] = [];
-            
-            // Redirigir directamente a su perfil
-            header('Location: ' . basePath() . '/views/perfil.php?registro=verificado');
-            exit();
         } else {
             $error_msg = "Ocurrió un error al procesar la verificación. Por favor, intenta de nuevo.";
         }
     } else {
-        $error_msg = "El enlace de verificación no es válido o ya ha sido utilizado.";
+        $already_verified = true;
     }
 }
 ?>
@@ -53,38 +50,78 @@ if (empty($token)) {
     <title>Verificación de Cuenta - CatInk</title>
     <script>document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'light');</script>
     <link rel="stylesheet" href="<?= basePath() ?>/CSS/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Favicon -->
     <link rel="icon" href="<?= basePath() ?>/catink-icon.ico?v=2" type="image/x-icon">
     <link rel="icon" href="<?= basePath() ?>/img/catink-icon.png?v=2" type="image/png">
     <link rel="apple-touch-icon" href="<?= basePath() ?>/img/catink-icon.png?v=2">
 </head>
-<body style="display:flex; flex-direction:column; min-height:100vh; background: var(--bg);">
+<body style="display:flex; flex-direction:column; min-height:100vh; background: var(--bg); font-family: 'Inter', sans-serif;">
 <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
     
-    <div style="width: 100%; max-width: 480px; text-align: center; margin-bottom: 24px;">
+    <div style="width: 100%; max-width: 500px; text-align: center; margin-bottom: 24px;">
         <a href="<?= basePath() ?>/" style="text-decoration:none;">
-            <span style="font-family:'Outfit', sans-serif; font-size:2.8rem; font-weight:900; color:var(--text); letter-spacing:-1.5px; transition:color 0.3s ease;">
+            <span style="font-family:'Outfit', sans-serif; font-size:2.8rem; font-weight:900; color:var(--text); letter-spacing:-1.5px;">
                 Cat<span style="color:#EF3363;">Ink</span>
             </span>
         </a>
     </div>
 
-    <div class="auth-panel" style="width: 100%; max-width: 480px; padding: 30px; background: var(--surface); border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-lg);">
-        <h2 style="color:#EF3363; text-align:center; font-family:'Outfit', sans-serif; font-size:1.8rem; font-weight:800; margin-bottom:20px;">
-            Verificación de Cuenta
-        </h2>
+    <div class="auth-panel" style="width: 100%; max-width: 500px; padding: 36px 28px; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 16px 40px rgba(0,0,0,0.08); text-align:center;">
         
-        <?php if ($error_msg): ?>
-            <div style="color:#EF3363; background:rgba(239, 51, 99, 0.05); border: 1px solid rgba(239, 51, 99, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 24px; font-size: 0.95rem; line-height: 1.5; text-align: center;">
-                <span style="font-size: 1.5rem; display: block; margin-bottom: 8px;">⚠️</span>
-                <?= htmlspecialchars($error_msg) ?>
+        <?php if ($success): ?>
+            <div style="width:80px; height:80px; border-radius:50%; background:rgba(16,185,129,0.12); color:#10b981; display:flex; align-items:center; justify-content:center; font-size:2.5rem; margin:0 auto 20px;">
+                <i class="bi bi-check-circle-fill"></i>
             </div>
-            
-            <a href="<?= basePath() ?>/login" class="btn-perfil-save" style="display:block; text-align:center; text-decoration:none; margin-top:20px; line-height:38px; height:38px;">
-                Ir al Inicio de Sesión
-            </a>
+            <h2 style="color:var(--text); font-family:'Outfit', sans-serif; font-size:1.8rem; font-weight:800; margin-bottom:12px;">
+                ¡Cuenta Verificada con Éxito!
+            </h2>
+            <p style="color:var(--muted); font-size:0.95rem; line-height:1.6; margin-bottom:28px;">
+                Tu identidad ha sido confirmada correctamente. Ya estás identificado en CatInk. Puedes regresar a la página anterior para continuar navegando.
+            </p>
+        <?php elseif ($already_verified): ?>
+            <div style="width:80px; height:80px; border-radius:50%; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:2.5rem; margin:0 auto 20px;">
+                <i class="bi bi-patch-check-fill"></i>
+            </div>
+            <h2 style="color:var(--text); font-family:'Outfit', sans-serif; font-size:1.8rem; font-weight:800; margin-bottom:12px;">
+                ¡Tu Cuenta ya está Verificada!
+            </h2>
+            <p style="color:var(--muted); font-size:0.95rem; line-height:1.6; margin-bottom:28px;">
+                Este correo ya fue verificado exitosamente. Tu sesión se encuentra lista para continuar navegando.
+            </p>
+        <?php else: ?>
+            <div style="width:80px; height:80px; border-radius:50%; background:rgba(239,68,68,0.12); color:#ef4444; display:flex; align-items:center; justify-content:center; font-size:2.5rem; margin:0 auto 20px;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h2 style="color:var(--text); font-family:'Outfit', sans-serif; font-size:1.8rem; font-weight:800; margin-bottom:12px;">
+                Aviso de Verificación
+            </h2>
+            <p style="color:var(--muted); font-size:0.95rem; line-height:1.6; margin-bottom:28px;">
+                <?= htmlspecialchars($error_msg) ?>
+            </p>
         <?php endif; ?>
+
+        <!-- Acciones principales -->
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <button type="button" onclick="regresarPaginaAnterior()" class="btn-perfil-save" style="width:100%; border:none; height:46px; border-radius:12px; font-weight:800; font-size:0.95rem; background:var(--accent); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(239,51,99,0.3);">
+                <i class="bi bi-arrow-left-circle-fill" style="font-size:1.1rem;"></i> Regresar a la página anterior
+            </button>
+
+            <a href="<?= basePath() ?>/" style="color:var(--muted); font-size:0.88rem; font-weight:600; text-decoration:none; display:inline-block; padding:6px;">
+                <i class="bi bi-house-door me-1"></i> Ir al Inicio de CatInk
+            </a>
+        </div>
     </div>
 </div>
+
+<script>
+function regresarPaginaAnterior() {
+    if (window.history.length > 1 && document.referrer && !document.referrer.includes('verificar.php')) {
+        window.history.back();
+    } else {
+        window.location.href = '<?= basePath() ?>/';
+    }
+}
+</script>
 </body>
 </html>
