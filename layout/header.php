@@ -620,11 +620,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </a>
         <div class="nav-mobile-label">Síguenos</div>
         <div class="nav-mobile-social">
-          <a href="https://www.facebook.com/TheCatink?locale=es_LA" aria-label="Facebook" target="_blank" rel="noopener"><i class="bi bi-facebook"></i></a>
-          <a href="https://x.com/The_Catink/" aria-label="Twitter / X" target="_blank" rel="noopener"><i class="bi bi-twitter-x"></i></a>
-          <a href="https://www.instagram.com/the.catink/" aria-label="Instagram" target="_blank" rel="noopener"><i class="bi bi-instagram"></i></a>
-          <a href="https://www.youtube.com/@thecatink" aria-label="YouTube" target="_blank" rel="noopener"><i class="bi bi-youtube"></i></a>
-          <a href="https://www.tiktok.com/@thecatink" aria-label="TikTok" target="_blank" rel="noopener"><i class="bi bi-tiktok"></i></a>
+          <?php 
+          require_once(__DIR__ . '/../views/helpers/socialhelper.php');
+          $headerSocials = getCatInkSocials(true);
+          foreach ($headerSocials as $soc): 
+              $ic = $soc['icono'];
+              $isImg = !empty($soc['icono_img']) || (strpos($ic, 'http') === 0 || strpos($ic, 'data:image') === 0 || strpos($ic, '/') === 0);
+          ?>
+              <a href="<?= htmlspecialchars($soc['url']) ?>" aria-label="<?= htmlspecialchars($soc['nombre']) ?>" target="_blank" rel="noopener" title="<?= htmlspecialchars($soc['nombre']) ?>">
+                  <?php if ($isImg): ?>
+                      <img src="<?= htmlspecialchars($soc['icono_img'] ?: $ic) ?>" alt="" style="width:16px; height:16px; object-fit:contain;">
+                  <?php else: ?>
+                      <i class="bi <?= htmlspecialchars($ic) ?>"></i>
+                  <?php endif; ?>
+              </a>
+          <?php endforeach; ?>
         </div>
       </div>
       <?php if(isset($_SESSION['usuario'])): ?>
@@ -717,11 +727,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div class="dropdown-divider"></div>
             <div class="dropdown-label">Síguenos</div>
             <div class="dropdown-social-links">
-              <a href="https://www.facebook.com/TheCatink?locale=es_LA" aria-label="Facebook" target="_blank"><i class="bi bi-facebook"></i></a>
-              <a href="https://x.com/The_Catink/" aria-label="Twitter / X" target="_blank"><i class="bi bi-twitter-x"></i></a>
-              <a href="https://www.instagram.com/the.catink/" aria-label="Instagram" target="_blank"><i class="bi bi-instagram"></i></a>
-              <a href="https://www.youtube.com/@thecatink" aria-label="YouTube" target="_blank"><i class="bi bi-youtube"></i></a>
-              <a href="https://www.tiktok.com/@thecatink" aria-label="TikTok" target="_blank"><i class="bi bi-tiktok"></i></a>
+              <?php foreach ($headerSocials as $soc): 
+                  $ic = $soc['icono'];
+                  $isImg = !empty($soc['icono_img']) || (strpos($ic, 'http') === 0 || strpos($ic, 'data:image') === 0 || strpos($ic, '/') === 0);
+              ?>
+                  <a href="<?= htmlspecialchars($soc['url']) ?>" aria-label="<?= htmlspecialchars($soc['nombre']) ?>" target="_blank" rel="noopener" title="<?= htmlspecialchars($soc['nombre']) ?>">
+                      <?php if ($isImg): ?>
+                          <img src="<?= htmlspecialchars($soc['icono_img'] ?: $ic) ?>" alt="" style="width:16px; height:16px; object-fit:contain;">
+                      <?php else: ?>
+                          <i class="bi <?= htmlspecialchars($ic) ?>"></i>
+                      <?php endif; ?>
+                  </a>
+              <?php endforeach; ?>
             </div>
             <div class="dropdown-divider"></div>
             <a href="<?= basePath() ?>/controllers/logoutcontroller.php" class="dropdown-item dropdown-logout" data-turbo="false">

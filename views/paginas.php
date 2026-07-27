@@ -297,9 +297,163 @@
                 <?php endforeach; ?>
             </div>
         </div>
+    <!-- ── Gestión de Redes Sociales Oficiales ──────────── -->
+    <?php
+    require_once(__DIR__ . '/helpers/socialhelper.php');
+    $allRedes = getCatInkSocials(false);
+    ?>
+    <div class="card border-0 shadow-sm mt-4 mb-4" style="background:var(--card-bg); border-radius:18px; border:1px solid var(--border)!important;">
+        <div class="card-header bg-transparent border-bottom p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <div style="width:36px; height:36px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">
+                    <i class="bi bi-share-fill"></i>
+                </div>
+                <div>
+                    <h5 class="m-0 font-weight-bold" style="font-weight:800; font-size:1.05rem; color:var(--text);">
+                        Redes Sociales Oficiales CatInk
+                    </h5>
+                    <span style="font-size:0.78rem; color:var(--muted);">Administra los enlaces de redes sociales visibles en el pie de página, cabecera y contacto.</span>
+                </div>
+            </div>
+            <button type="button" class="btn btn-accent" id="btnAgregarRed" style="border-radius:12px; font-weight:700; padding:8px 16px; font-size:0.88rem;">
+                <i class="bi bi-plus-circle-fill me-1"></i> Agregar Red Social
+            </button>
+        </div>
+        <div class="card-body p-3">
+            <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+                <?php if (empty($allRedes)): ?>
+                    <p style="color:var(--muted); font-size:0.88rem; margin:0; grid-column:1/-1; text-align:center; padding:20px;">No hay redes sociales registradas aún.</p>
+                <?php endif; ?>
+                <?php foreach ($allRedes as $red): 
+                    $isImg = !empty($red['icono_img']) || (strpos($red['icono'], 'http') === 0 || strpos($red['icono'], 'data:image') === 0 || strpos($red['icono'], '/') === 0);
+                    $colorBg = $red['color'] ?: '#EF3363';
+                ?>
+                    <div class="red-card" style="border:1px solid var(--border); border-radius:14px; padding:14px; background:var(--bg); display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                        <div style="display:flex; align-items:center; gap:12px; overflow:hidden;">
+                            <div style="width:42px; height:42px; border-radius:12px; background:<?= $colorBg ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                                <?php if ($isImg): ?>
+                                    <img src="<?= htmlspecialchars($red['icono_img'] ?: $red['icono']) ?>" alt="" style="width:24px; height:24px; object-fit:contain;">
+                                <?php else: ?>
+                                    <i class="bi <?= htmlspecialchars($red['icono']) ?>"></i>
+                                <?php endif; ?>
+                            </div>
+                            <div style="overflow:hidden;">
+                                <div style="font-weight:800; font-size:0.92rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                    <?= htmlspecialchars($red['nombre']) ?>
+                                </div>
+                                <a href="<?= htmlspecialchars($red['url']) ?>" target="_blank" rel="noopener" style="font-size:0.75rem; color:var(--muted); text-decoration:none; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                    <?= htmlspecialchars($red['url']) ?>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0;">
+                            <button type="button" class="btn btn-sm btn-toggle-red <?= intval($red['activo']) === 1 ? 'btn-success' : 'btn-secondary' ?>" 
+                                    data-id="<?= $red['id_red'] ?>" 
+                                    style="border-radius:20px; font-size:0.72rem; font-weight:800; padding:2px 8px;">
+                                <?= intval($red['activo']) === 1 ? '● Activa' : '○ Inactiva' ?>
+                            </button>
+                            <div style="display:flex; gap:4px;">
+                                <button type="button" class="btn btn-sm btn-outline-primary btn-edit-red" 
+                                        data-id="<?= $red['id_red'] ?>"
+                                        data-nombre="<?= htmlspecialchars($red['nombre']) ?>"
+                                        data-url="<?= htmlspecialchars($red['url']) ?>"
+                                        data-icono="<?= htmlspecialchars($red['icono']) ?>"
+                                        data-iconoimg="<?= htmlspecialchars($red['icono_img'] ?? '') ?>"
+                                        data-color="<?= htmlspecialchars($red['color'] ?? '#EF3363') ?>"
+                                        data-orden="<?= intval($red['orden']) ?>"
+                                        data-activo="<?= intval($red['activo']) ?>"
+                                        title="Editar" style="border-radius:8px; padding:2px 6px;">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-delete-red" 
+                                        data-id="<?= $red['id_red'] ?>" 
+                                        data-nombre="<?= htmlspecialchars($red['nombre']) ?>" 
+                                        title="Eliminar" style="border-radius:8px; padding:2px 6px;">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
     </div>
 
 </div><!-- /.container-fluid -->
+
+<!-- ══ Modal Agregar/Editar Red Social ════════════════════════════ -->
+<div id="modalRedSocial" class="crop-modal" style="display: none;">
+    <div class="crop-modal-content" style="max-width: 580px; width:95%; border-radius:18px;">
+        <h3 id="titleModalRed" style="font-weight:800; margin-top:0;"><i class="bi bi-share-fill text-accent"></i> Agregar Red Social</h3>
+
+        <form id="formRedSocial" action="./../controllers/redes_guardar.php" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="id_red" id="red_id_red" value="0">
+
+            <div style="margin-bottom:12px;">
+                <label style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:4px; color:var(--text);">Nombre de la Red Social *</label>
+                <input type="text" name="nombre" id="red_nombre" class="cn-input" required placeholder="Ej: Discord, Twitch, Threads, Spotify, WhatsApp...">
+            </div>
+
+            <div style="margin-bottom:12px;">
+                <label style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:4px; color:var(--text);">Enlace URL Completo *</label>
+                <input type="url" name="url" id="red_url" class="cn-input" required placeholder="Ej: https://discord.gg/catink">
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 120px; gap:12px; margin-bottom:12px;">
+                <div>
+                    <label style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:4px; color:var(--text);">Ícono Bootstrap</label>
+                    <select name="icono" id="red_icono" class="cn-input" style="font-weight:700;">
+                        <option value="bi-facebook">Facebook (bi-facebook)</option>
+                        <option value="bi-instagram">Instagram (bi-instagram)</option>
+                        <option value="bi-tiktok">TikTok (bi-tiktok)</option>
+                        <option value="bi-youtube">YouTube (bi-youtube)</option>
+                        <option value="bi-twitter-x">X / Twitter (bi-twitter-x)</option>
+                        <option value="bi-discord">Discord (bi-discord)</option>
+                        <option value="bi-twitch">Twitch (bi-twitch)</option>
+                        <option value="bi-spotify">Spotify (bi-spotify)</option>
+                        <option value="bi-whatsapp">WhatsApp (bi-whatsapp)</option>
+                        <option value="bi-telegram">Telegram (bi-telegram)</option>
+                        <option value="bi-threads">Threads (bi-threads)</option>
+                        <option value="bi-linkedin">LinkedIn (bi-linkedin)</option>
+                        <option value="bi-reddit">Reddit (bi-reddit)</option>
+                        <option value="bi-snapchat">Snapchat (bi-snapchat)</option>
+                        <option value="bi-pinterest">Pinterest (bi-pinterest)</option>
+                        <option value="bi-globe">Sitio Web / Globo (bi-globe)</option>
+                        <option value="bi-link-45deg">Enlace Genérico (bi-link-45deg)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:4px; color:var(--text);">Color Marca</label>
+                    <input type="color" name="color" id="red_color" value="#EF3363" class="cn-input" style="height:38px; padding:2px; cursor:pointer;">
+                </div>
+            </div>
+
+            <div style="margin-bottom:12px; background:rgba(239,51,99,0.05); padding:10px; border-radius:10px; border:1px dashed rgba(239,51,99,0.2);">
+                <label style="font-size:0.78rem; font-weight:800; color:var(--accent); display:block; margin-bottom:4px;">
+                    <i class="bi bi-image me-1"></i> Opcional: Subir Ícono o Logo Personalizado (PNG, SVG, WebP)
+                </label>
+                <input type="file" name="icono_archivo" accept="image/*" class="cn-input" style="font-size:0.82rem;">
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                <label style="font-size:0.85rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; margin:0; color:var(--text);">
+                    <input type="checkbox" name="activo" id="red_activo" value="1" checked style="width:18px; height:18px;">
+                    <span>Mostrar en el sitio web (Público)</span>
+                </label>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:0.78rem; font-weight:700; color:var(--muted);">Orden:</span>
+                    <input type="number" name="orden" id="red_orden" value="1" style="width:60px;" class="cn-input">
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" id="modalCloseRed" class="btn btn-secondary" style="border-radius:10px; font-weight:700;">Cancelar</button>
+                <button type="submit" class="btn btn-accent" style="border-radius:10px; font-weight:700;">Guardar Red Social</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- ══ Modal editar página ════════════════════════════════════════ -->
 <div id="modalPagina" class="crop-modal" style="display: none;">
@@ -1399,13 +1553,102 @@ document.addEventListener('DOMContentLoaded', () => {
         serializeMetaFields();
     });
 
-    modalClosePag.addEventListener('click', () => {
-        modalPagina.style.display = "none";
+    // ── Lógica del Modal y Acciones de Redes Sociales ──
+    const modalRedSocial = document.getElementById("modalRedSocial");
+    const btnAgregarRed = document.getElementById("btnAgregarRed");
+    const modalCloseRed = document.getElementById("modalCloseRed");
+
+    if (btnAgregarRed && modalRedSocial) {
+        btnAgregarRed.addEventListener("click", () => {
+            document.getElementById("titleModalRed").innerHTML = '<i class="bi bi-share-fill text-accent"></i> Agregar Red Social';
+            document.getElementById("red_id_red").value = "0";
+            document.getElementById("red_nombre").value = "";
+            document.getElementById("red_url").value = "";
+            document.getElementById("red_icono").value = "bi-facebook";
+            document.getElementById("red_color").value = "#EF3363";
+            document.getElementById("red_orden").value = "1";
+            document.getElementById("red_activo").checked = true;
+            modalRedSocial.style.display = "flex";
+        });
+
+        if (modalCloseRed) {
+            modalCloseRed.addEventListener("click", () => {
+                modalRedSocial.style.display = "none";
+            });
+        }
+    }
+
+    // Editar Red Social
+    document.querySelectorAll(".btn-edit-red").forEach(btn => {
+        btn.addEventListener("click", function() {
+            document.getElementById("titleModalRed").innerHTML = '<i class="bi bi-pencil-square text-accent"></i> Editar Red Social';
+            document.getElementById("red_id_red").value = this.dataset.id;
+            document.getElementById("red_nombre").value = this.dataset.nombre || "";
+            document.getElementById("red_url").value = this.dataset.url || "";
+            document.getElementById("red_icono").value = this.dataset.icono || "bi-facebook";
+            document.getElementById("red_color").value = this.dataset.color || "#EF3363";
+            document.getElementById("red_orden").value = this.dataset.orden || "1";
+            document.getElementById("red_activo").checked = (this.dataset.activo === "1");
+            if (modalRedSocial) modalRedSocial.style.display = "flex";
+        });
     });
 
-    window.addEventListener('click', (e) => {
-        if(e.target === modalPagina) {
+    // Conmutar Activa/Inactiva vía AJAX
+    document.querySelectorAll(".btn-toggle-red").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const id = this.dataset.id;
+            const self = this;
+            const formData = new FormData();
+            formData.append("id_red", id);
+
+            fetch("./../controllers/redes_toggle.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    self.textContent = data.label;
+                    if (data.activo === 1) {
+                        self.classList.remove("btn-secondary");
+                        self.classList.add("btn-success");
+                    } else {
+                        self.classList.remove("btn-success");
+                        self.classList.add("btn-secondary");
+                    }
+                } else {
+                    alert(data.message || "Error al actualizar estado");
+                }
+            })
+            .catch(err => console.error(err));
+        });
+    });
+
+    // Eliminar Red Social
+    document.querySelectorAll(".btn-delete-red").forEach(btn => {
+        btn.addEventListener("click", async function() {
+            const id = this.dataset.id;
+            const nombre = this.dataset.nombre || "esta red social";
+            const confirmFn = window.cnConfirm || (msg => Promise.resolve(confirm(msg)));
+            const confirmOk = await confirmFn(`¿Estás seguro de eliminar la red social "${nombre}"?`);
+            if (confirmOk) {
+                window.location.href = `./../controllers/redes_eliminar.php?id=${id}`;
+            }
+        });
+    });
+
+    if (modalClosePag && modalPagina) {
+        modalClosePag.addEventListener('click', () => {
             modalPagina.style.display = "none";
+        });
+    }
+
+    window.addEventListener('click', (e) => {
+        if (e.target === modalPagina) {
+            modalPagina.style.display = "none";
+        }
+        if (e.target === modalRedSocial) {
+            modalRedSocial.style.display = "none";
         }
     });
 });
