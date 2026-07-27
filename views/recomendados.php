@@ -18,7 +18,11 @@ const ACL = <?= json_encode($ACL) ?>;
 include(__DIR__ . "/../data/conexion.php");
 require_once(__DIR__ . "/helpers/urlhelper.php");
 
+// Auto-migración: Asegurar que la columna 'url' exista en producción
+@$con->query("ALTER TABLE recomendados ADD COLUMN url VARCHAR(500) NULL AFTER imagen");
+
 // Obtener las recomendaciones actuales ordenadas
+$recomendados = [];
 $stmt = $con->prepare("
     SELECT r.id, r.noticia_id, r.orden, r.url,
            COALESCE(r.titulo, n.titulo) AS titulo,
@@ -28,8 +32,13 @@ $stmt = $con->prepare("
     LEFT JOIN noticias n ON r.noticia_id = n.id
     ORDER BY r.orden ASC
 ");
-$stmt->execute();
-$recomendados = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+if ($stmt) {
+    $stmt->execute();
+    $res = $stmt->get_result();
+    if ($res) {
+        $recomendados = $res->fetch_all(MYSQLI_ASSOC);
+    }
+}
 $totalRecomendados = count($recomendados);
 ?>
 <div class="container-fluid">

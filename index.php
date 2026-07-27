@@ -107,6 +107,8 @@ $stmtReviews->execute();
 $reviews = $stmtReviews->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // 4. Lo que más te Recomendamos (Curados manualmente por el administrador)
+@$con->query("ALTER TABLE recomendados ADD COLUMN url VARCHAR(500) NULL AFTER imagen");
+$recomendamos = [];
 $stmtRec = $con->prepare("
     SELECT r.id AS recomendado_id, r.noticia_id, r.url AS custom_url,
            COALESCE(r.titulo, n.titulo) AS titulo,
@@ -128,8 +130,13 @@ $stmtRec = $con->prepare("
     ORDER BY r.orden ASC
     LIMIT 10;
 ");
-$stmtRec->execute();
-$recomendamos = $stmtRec->get_result()->fetch_all(MYSQLI_ASSOC);
+if ($stmtRec) {
+    $stmtRec->execute();
+    $resRec = $stmtRec->get_result();
+    if ($resRec) {
+        $recomendamos = $resRec->fetch_all(MYSQLI_ASSOC);
+    }
+}
 
 // 5. Próximos Estrenos
 $estrenosPelis = null;
