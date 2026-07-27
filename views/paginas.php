@@ -503,6 +503,62 @@
     </div>
 </div>
 
+<!-- ══ Modal Visual Selector de Ícono para Beneficios (Idéntico al de Categorías) ════ -->
+<div id="modalPickerBeneficioIcono" class="crop-modal" style="display: none; z-index: 1065;">
+    <div class="crop-modal-content" style="max-width: 540px; width:95%; border-radius:18px; padding:24px;">
+        <!-- Cabecera -->
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+            <h4 style="font-weight:800; margin:0; font-size:1.15rem; color:var(--text);">Ícono en el menú</h4>
+            <div id="benPickerSelectedPreview" class="cat-icon-preview" style="width:38px; height:38px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:inline-flex; align-items:center; justify-content:center; font-size:1.2rem; border:1px solid rgba(239,51,99,0.2); overflow:hidden;">
+                <i class="bi bi-star-fill"></i>
+            </div>
+        </div>
+
+        <!-- Botones de Subir / Quitar Imagen -->
+        <div class="icono-upload-controls" style="display:flex; gap:10px; margin-bottom:8px;">
+            <input type="file" id="benPickerFileInput" accept="image/*" style="display:none;" onchange="handleBenPickerFileSelect(this)">
+            <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('benPickerFileInput').click()" style="border-radius:10px; font-weight:700; font-size:0.88rem; padding:8px 16px; border:1px solid var(--border); background:var(--card-bg); color:var(--text); display:inline-flex; align-items:center; gap:6px;">
+                <i class="bi bi-upload"></i> Subir imagen
+            </button>
+            <button type="button" id="btnQuitarBenImagen" class="btn btn-outline-secondary" onclick="quitarBenImagen()" style="border-radius:10px; font-weight:700; font-size:0.88rem; padding:8px 16px; border:1px solid var(--border); background:var(--card-bg); color:var(--text); display:inline-flex; align-items:center; gap:6px;">
+                <i class="bi bi-x-lg"></i> Quitar imagen
+            </button>
+        </div>
+        <p class="icono-upload-hint" style="font-size:0.75rem; color:var(--muted); margin-bottom:16px;">
+            PNG, JPG, GIF o WEBP. Se recorta a un cuadro pequeño; ideal con fondo transparente.
+        </p>
+
+        <!-- Separador -->
+        <div class="icon-picker-sep" style="display:flex; align-items:center; gap:10px; font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin:16px 0 12px;">
+            <span style="flex:1; height:1px; background:var(--border);"></span>
+            <span>O ELIGE UN ICONO</span>
+            <span style="flex:1; height:1px; background:var(--border);"></span>
+        </div>
+
+        <!-- Cuadrícula de Íconos agrupados por Categorías -->
+        <div class="icon-picker mb-3" style="max-height:260px; overflow-y:auto; border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--card-bg); scrollbar-width:thin;">
+            <?php foreach ($gruposIconosCat as $grupo => $iconos): ?>
+                <div class="icon-picker-group" style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin:10px 0 6px;">
+                    <?= htmlspecialchars(mb_strtoupper($grupo, 'UTF-8')) ?>
+                </div>
+                <div class="icon-picker-grid" style="display:grid; grid-template-columns:repeat(8, 1fr); gap:6px;">
+                    <?php foreach ($iconos as $ic): ?>
+                        <button type="button" class="ben-icon-tile icon-option" data-icono="<?= $ic ?>" title="<?= $ic ?>" onclick="selectBenTileIcon(this, '<?= $ic ?>')">
+                            <i class="bi <?= $ic ?>"></i>
+                        </button>
+                    <?php endforeach; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- Acciones del Modal -->
+        <div class="crop-actions" style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+            <button type="button" id="closeBenPickerModal" class="btn btn-secondary" style="border-radius:10px; font-weight:700; padding:10px 20px;">Cancelar</button>
+            <button type="button" id="applyBenPickerModal" class="btn btn-accent" style="border-radius:10px; font-weight:800; padding:10px 24px;">Actualizar</button>
+        </div>
+    </div>
+</div>
+
 <!-- ══ Modal editar logo ══════════════════════════════════════════ -->
 <div id="modalEditLogo" class="crop-modal" style="display:none;">
   <div class="crop-modal-content" style="max-width:440px; width:95%; border-radius:18px;">
@@ -947,49 +1003,90 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalPagina = document.getElementById("modalPagina");
     const modalClosePag = document.getElementById("modalClosePag");
 
-    function updateBenefitIconPreview(row) {
-        if (!row) return;
-        const sel = row.querySelector('.meta-ben-icon');
-        const customWrap = row.querySelector('.meta-ben-custom-wrap');
-        const imgWrap = row.querySelector('.meta-ben-img-wrap');
-        const previewBox = row.querySelector('.icon-preview-box');
-        if (!sel || !previewBox) return;
+    let activeBenTargetRow = null;
+    let selectedBenPickerVal = 'bi-star-fill';
 
-        if (sel.value === '__image__') {
-            if (customWrap) customWrap.style.display = 'none';
-            if (imgWrap) imgWrap.style.display = 'block';
-            const imgVal = imgWrap ? imgWrap.querySelector('.meta-ben-img-url').value.trim() : '';
-            if (imgVal) {
-                previewBox.innerHTML = `<img src="${imgVal}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;">`;
-            } else {
-                previewBox.innerHTML = `<i class="bi bi-image" style="font-size:1.2rem;"></i>`;
-            }
-        } else if (sel.value === '__custom__') {
-            if (customWrap) customWrap.style.display = 'block';
-            if (imgWrap) imgWrap.style.display = 'none';
-            const customVal = customWrap ? customWrap.querySelector('input').value.trim() || 'bi-star-fill' : 'bi-star-fill';
-            previewBox.innerHTML = `<i class="bi ${customVal}" style="font-size:1.2rem;"></i>`;
-        } else {
-            if (customWrap) customWrap.style.display = 'none';
-            if (imgWrap) imgWrap.style.display = 'none';
-            previewBox.innerHTML = `<i class="bi ${sel.value}" style="font-size:1.2rem;"></i>`;
-        }
+    function openBenefitIconPickerModal(triggerBtn) {
+        activeBenTargetRow = triggerBtn.closest('.ben-row-item');
+        if (!activeBenTargetRow) return;
+
+        const currentVal = activeBenTargetRow.querySelector('.meta-ben-icon')?.value || 'bi-star-fill';
+        selectedBenPickerVal = currentVal;
+
+        const isImg = (currentVal.startsWith('http://') || currentVal.startsWith('https://') || currentVal.startsWith('data:image') || currentVal.startsWith('/') || currentVal.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(currentVal));
+
+        const tiles = document.querySelectorAll('.ben-icon-tile');
+        tiles.forEach(t => {
+            t.classList.toggle('selected', !isImg && t.dataset.icono === currentVal);
+        });
+
+        updateBenPickerModalPreview(currentVal);
+        document.getElementById('modalPickerBeneficioIcono').style.display = 'flex';
     }
 
-    function handleBenFileSelect(input) {
+    function selectBenTileIcon(btn, code) {
+        selectedBenPickerVal = code;
+        document.querySelectorAll('.ben-icon-tile').forEach(t => t.classList.remove('selected'));
+        if (btn) btn.classList.add('selected');
+        updateBenPickerModalPreview(code);
+    }
+
+    function handleBenPickerFileSelect(input) {
         if (!input || !input.files || !input.files[0]) return;
         const file = input.files[0];
         const reader = new FileReader();
         reader.onload = function(e) {
-            const row = input.closest('.ben-row-item');
-            const urlInput = row ? row.querySelector('.meta-ben-img-url') : null;
-            if (urlInput) {
-                urlInput.value = e.target.result;
-                updateBenefitIconPreview(row);
-            }
+            selectedBenPickerVal = e.target.result;
+            document.querySelectorAll('.ben-icon-tile').forEach(t => t.classList.remove('selected'));
+            updateBenPickerModalPreview(e.target.result);
         };
         reader.readAsDataURL(file);
     }
+
+    function quitarBenImagen() {
+        selectedBenPickerVal = 'bi-star-fill';
+        const fileInp = document.getElementById('benPickerFileInput');
+        if (fileInp) fileInp.value = '';
+        const tiles = document.querySelectorAll('.ben-icon-tile');
+        tiles.forEach(t => {
+            t.classList.toggle('selected', t.dataset.icono === 'bi-star-fill');
+        });
+        updateBenPickerModalPreview('bi-star-fill');
+    }
+
+    function updateBenPickerModalPreview(val) {
+        const previewBox = document.getElementById('benPickerSelectedPreview');
+        if (!previewBox) return;
+        const isImg = (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:image') || val.startsWith('/') || val.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(val));
+        if (isImg) {
+            previewBox.innerHTML = `<img src="${val}" style="width:100%; height:100%; object-fit:contain;">`;
+        } else {
+            previewBox.innerHTML = `<i class="bi ${val || 'bi-star-fill'}"></i>`;
+        }
+    }
+
+    document.getElementById('closeBenPickerModal')?.addEventListener('click', () => {
+        document.getElementById('modalPickerBeneficioIcono').style.display = 'none';
+    });
+
+    document.getElementById('applyBenPickerModal')?.addEventListener('click', () => {
+        if (activeBenTargetRow) {
+            const hiddenInp = activeBenTargetRow.querySelector('.meta-ben-icon');
+            if (hiddenInp) hiddenInp.value = selectedBenPickerVal;
+
+            const previewBox = activeBenTargetRow.querySelector('.icon-preview-box');
+            const isImg = (selectedBenPickerVal.startsWith('http://') || selectedBenPickerVal.startsWith('https://') || selectedBenPickerVal.startsWith('data:image') || selectedBenPickerVal.startsWith('/') || selectedBenPickerVal.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(selectedBenPickerVal));
+
+            if (previewBox) {
+                if (isImg) {
+                    previewBox.innerHTML = `<img src="${selectedBenPickerVal}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;">`;
+                } else {
+                    previewBox.innerHTML = `<i class="bi ${selectedBenPickerVal}"></i>`;
+                }
+            }
+        }
+        document.getElementById('modalPickerBeneficioIcono').style.display = 'none';
+    });
 
     const gruposIconosCat = <?= json_encode($gruposIconosCat) ?>;
 
@@ -1118,12 +1215,8 @@ document.addEventListener('DOMContentLoaded', () => {
             let benHtml = '';
             ben.forEach((b, idx) => {
                 const currentIcon = String(b.icono || 'bi-star-fill');
-                const iconMeta = buildIconOptionsHtml(currentIcon);
-
-                const customIconValue = (!iconMeta.isPreset && !iconMeta.isImg) ? currentIcon : '';
-                const customImgValue = iconMeta.isImg ? currentIcon : '';
-
-                const previewContent = iconMeta.isImg 
+                const isImg = (currentIcon.startsWith('http://') || currentIcon.startsWith('https://') || currentIcon.startsWith('data:image') || currentIcon.startsWith('/') || currentIcon.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(currentIcon));
+                const previewContent = isImg 
                     ? `<img src="${currentIcon}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;">`
                     : `<i class="bi ${currentIcon}"></i>`;
 
@@ -1137,36 +1230,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div style="display:grid; grid-template-columns: 210px 1fr; gap:10px; margin-bottom:8px; align-items:center;">
                             <div style="display:flex; align-items:center; gap:8px;">
+                                <input type="hidden" class="meta-ben-icon" value="${currentIcon}">
                                 <div class="icon-preview-box" style="width:36px; height:36px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid rgba(239,51,99,0.2); overflow:hidden;">
                                     ${previewContent}
                                 </div>
-                                <select class="cn-input meta-ben-icon" onchange="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-weight:700; font-size:0.82rem; padding:8px 10px; cursor:pointer;">
-                                    ${iconMeta.optionsHtml}
-                                </select>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="openBenefitIconPickerModal(this)" style="border-radius:10px; font-weight:700; font-size:0.8rem; padding:6px 12px; white-space:nowrap;">
+                                    <i class="bi bi-palette-fill me-1" style="color:var(--accent);"></i> Cambiar Ícono
+                                </button>
                             </div>
                             <input type="text" class="cn-input meta-ben-title" value="${b.titulo || ''}" placeholder="Título del Beneficio">
                         </div>
-
-                        <!-- Selector de Imagen -->
-                        <div class="meta-ben-img-wrap" style="margin-bottom:8px; display:${iconMeta.optionMode === '__image__' ? 'block' : 'none'}; background:rgba(239,51,99,0.05); padding:10px; border-radius:10px; border:1px dashed rgba(239,51,99,0.2);">
-                            <label style="font-size:0.75rem; font-weight:800; color:var(--accent); display:block; margin-bottom:6px;">
-                                <i class="bi bi-image me-1"></i> Imagen del Ícono (SVG, PNG, WebP)
-                            </label>
-                            <div style="display:flex; gap:8px; align-items:center;">
-                                <input type="text" class="cn-input meta-ben-img-url" value="${customImgValue}" placeholder="URL o sube archivo (https://... o /img/icono.svg)" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-size:0.82rem;">
-                                <input type="file" class="meta-ben-file-input" accept="image/*" style="display:none;" onchange="handleBenFileSelect(this)">
-                                <button type="button" class="btn btn-sm btn-outline-accent" onclick="this.previousElementSibling.click()" style="border-radius:8px; font-weight:700; font-size:0.78rem; white-space:nowrap;">
-                                    <i class="bi bi-upload me-1"></i> Subir Imagen
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Selector de Clase Custom -->
-                        <div class="meta-ben-custom-wrap" style="margin-bottom:8px; display:${iconMeta.optionMode === '__custom__' ? 'block' : 'none'};">
-                            <label style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:2px;">Clase de ícono Bootstrap (ej: bi-discord, bi-twitch):</label>
-                            <input type="text" class="cn-input meta-ben-custom-icon" value="${customIconValue}" placeholder="Ej: bi-discord" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))">
-                        </div>
-
                         <input type="text" class="cn-input meta-ben-desc" value="${b.desc || ''}" placeholder="Descripción corta explicativa">
                     </div>
                 `;
@@ -1320,8 +1393,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.className = 'ben-row-item';
                 row.style.cssText = 'border:1px solid var(--border); padding:12px; border-radius:12px; background:var(--bg); margin-bottom:10px;';
                 
-                const iconMeta = buildIconOptionsHtml('bi-star-fill');
-
                 row.innerHTML = `
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
                         <span style="font-size:0.78rem; font-weight:800; color:var(--accent);">Nuevo Beneficio #${count}</span>
@@ -1331,36 +1402,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div style="display:grid; grid-template-columns: 210px 1fr; gap:10px; margin-bottom:8px; align-items:center;">
                         <div style="display:flex; align-items:center; gap:8px;">
+                            <input type="hidden" class="meta-ben-icon" value="bi-star-fill">
                             <div class="icon-preview-box" style="width:36px; height:36px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid rgba(239,51,99,0.2); overflow:hidden;">
                                 <i class="bi bi-star-fill"></i>
                             </div>
-                            <select class="cn-input meta-ben-icon" onchange="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-weight:700; font-size:0.82rem; padding:8px 10px; cursor:pointer;">
-                                ${iconMeta.optionsHtml}
-                            </select>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="openBenefitIconPickerModal(this)" style="border-radius:10px; font-weight:700; font-size:0.8rem; padding:6px 12px; white-space:nowrap;">
+                                <i class="bi bi-palette-fill me-1" style="color:var(--accent);"></i> Cambiar Ícono
+                            </button>
                         </div>
                         <input type="text" class="cn-input meta-ben-title" value="" placeholder="Título del Beneficio">
                     </div>
-
-                    <!-- Selector de Imagen -->
-                    <div class="meta-ben-img-wrap" style="margin-bottom:8px; display:none; background:rgba(239,51,99,0.05); padding:10px; border-radius:10px; border:1px dashed rgba(239,51,99,0.2);">
-                        <label style="font-size:0.75rem; font-weight:800; color:var(--accent); display:block; margin-bottom:6px;">
-                            <i class="bi bi-image me-1"></i> Imagen del Ícono (SVG, PNG, WebP)
-                        </label>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <input type="text" class="cn-input meta-ben-img-url" value="" placeholder="URL o sube archivo (https://... o /img/icono.svg)" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-size:0.82rem;">
-                            <input type="file" class="meta-ben-file-input" accept="image/*" style="display:none;" onchange="handleBenFileSelect(this)">
-                            <button type="button" class="btn btn-sm btn-outline-accent" onclick="this.previousElementSibling.click()" style="border-radius:8px; font-weight:700; font-size:0.78rem; white-space:nowrap;">
-                                <i class="bi bi-upload me-1"></i> Subir Imagen
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Selector de Clase Custom -->
-                    <div class="meta-ben-custom-wrap" style="margin-bottom:8px; display:none;">
-                        <label style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:2px;">Clase de ícono Bootstrap (ej: bi-discord, bi-twitch):</label>
-                        <input type="text" class="cn-input meta-ben-custom-icon" value="" placeholder="Ej: bi-discord" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))">
-                    </div>
-
                     <input type="text" class="cn-input meta-ben-desc" value="" placeholder="Descripción corta explicativa">
                 `;
                 beneficiosListContainer.appendChild(row);
