@@ -132,10 +132,16 @@
             <i class="bi bi-chevron-down cn-section-toggle"></i>
           </div>
           <div class="cn-section-body">
+            <div class="mb-2">
+              <label class="cn-cat-check-item chk-select-all-label" style="font-weight:800; background:rgba(239,51,99,0.06); border:1.5px solid rgba(239,51,99,0.25); border-radius:12px; padding:8px 14px; display:inline-flex; align-items:center; gap:8px; cursor:pointer; color:var(--accent); margin-bottom:10px;">
+                <input type="checkbox" class="chk-marcar-todas-cats" style="width:18px; height:18px; accent-color:var(--accent); cursor:pointer;">
+                <span>Marcar todas las categorías</span>
+              </label>
+            </div>
             <div class="cn-cat-grid">
               <?php foreach($categorias as $c): $checked = in_array($c['id_c'], $categoriasSeleccionadas) ? 'checked' : ''; ?>
               <label class="cn-cat-check-item">
-                <input type="checkbox" name="Categorias[]" value="<?= $c['id_c'] ?>" <?= $checked ?>>
+                <input type="checkbox" name="Categorias[]" value="<?= $c['id_c'] ?>" class="chk-cat-item" <?= $checked ?>>
                 <?= htmlspecialchars($c['nombre']) ?>
               </label>
               <?php endforeach; ?>
@@ -157,10 +163,16 @@
             <?php $posGrupos = posicionesPublicidad(); ?>
             <?php foreach($posGrupos as $forma => $posiciones): ?>
               <div class="cn-pos-group" data-forma="<?= $forma ?>"<?= $forma === 'cuadrado' ? ' style="display:none;"' : '' ?>>
+                <div class="mb-2">
+                  <label class="cn-cat-check-item chk-select-all-label" style="font-weight:800; background:rgba(239,51,99,0.06); border:1.5px solid rgba(239,51,99,0.25); border-radius:12px; padding:8px 14px; display:inline-flex; align-items:center; gap:8px; cursor:pointer; color:var(--accent); margin-bottom:10px;">
+                    <input type="checkbox" class="chk-marcar-todas-pos" style="width:18px; height:18px; accent-color:var(--accent); cursor:pointer;">
+                    <span>Marcar todas las secciones</span>
+                  </label>
+                </div>
                 <div class="cn-cat-grid">
                   <?php foreach($posiciones as $key => $label): $cp = in_array($key, $posicionesSeleccionadas) ? 'checked' : ''; ?>
                   <label class="cn-cat-check-item">
-                    <input type="checkbox" name="posiciones[]" value="<?= $key ?>" <?= $cp ?>>
+                    <input type="checkbox" name="posiciones[]" value="<?= $key ?>" class="chk-pos-item" <?= $cp ?>>
                     <?= htmlspecialchars($label) ?>
                   </label>
                   <?php endforeach; ?>
@@ -508,8 +520,50 @@ function initDateTimeDropdowns(prefix, initialValue) {
   }
 }
 
+// Lógica Marcar Todas las Posiciones y Categorías
+function initMarcarTodas() {
+  document.querySelectorAll('.chk-marcar-todas-pos').forEach(masterChk => {
+    masterChk.addEventListener('change', function() {
+      const group = this.closest('.cn-pos-group');
+      if (!group) return;
+      group.querySelectorAll('.chk-pos-item').forEach(chk => chk.checked = this.checked);
+    });
+  });
+
+  document.querySelectorAll('.cn-pos-group').forEach(group => {
+    const masterChk = group.querySelector('.chk-marcar-todas-pos');
+    const items = group.querySelectorAll('.chk-pos-item');
+    if (!masterChk || !items.length) return;
+
+    const updateMaster = () => {
+      const checkedCount = group.querySelectorAll('.chk-pos-item:checked').length;
+      masterChk.checked = (checkedCount === items.length && items.length > 0);
+    };
+
+    items.forEach(chk => chk.addEventListener('change', updateMaster));
+    updateMaster();
+  });
+
+  const masterCats = document.querySelector('.chk-marcar-todas-cats');
+  if (masterCats) {
+    const catItems = document.querySelectorAll('.chk-cat-item');
+    masterCats.addEventListener('change', function() {
+      catItems.forEach(chk => chk.checked = this.checked);
+    });
+
+    const updateCatMaster = () => {
+      const checkedCount = document.querySelectorAll('.chk-cat-item:checked').length;
+      masterCats.checked = (checkedCount === catItems.length && catItems.length > 0);
+    };
+
+    catItems.forEach(chk => chk.addEventListener('change', updateCatMaster));
+    updateCatMaster();
+  }
+}
+
 // Inicializar dropdowns con las fechas guardadas
 function initEditarpFechas() {
+  initMarcarTodas();
   const initInicio = '<?= $publicidad['fecha_inicio'] ?>';
   const initFin = '<?= $publicidad['fecha_fin'] ?>';
   initDateTimeDropdowns('fechaInicio', initInicio);
