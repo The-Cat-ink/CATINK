@@ -137,7 +137,6 @@ if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time
         </a>
     </div>
     <ul class="sidebar-menu">
-        <li class="sidebar-menu-item"></li>
         <li class="sidebar-menu-item">
             <a href="./admin.php" class="sidebar-menu-link" data-tooltip="Inicio">
                 <i class="bi bi-house"></i> <span class="sb-label">Inicio</span>
