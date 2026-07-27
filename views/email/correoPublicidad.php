@@ -43,6 +43,16 @@ echo "Correos publicitarios pendientes encontrados: " . count($correosPendientes
 
 foreach ($correosPendientes as $correo) {
     $idCorreo   = $correo['id_correo'];
+
+    // Bloqueo optimista atómico: marcar INMEDIATAMENTE enviado = 1 para evitar ejecuciones concurrentes
+    $stmtUp = $con->prepare("UPDATE correos_publicitarios SET enviado = 1, fecha_enviado = NOW() WHERE id_correo = ? AND (enviado = 0 OR enviado IS NULL)");
+    $stmtUp->bind_param("i", $idCorreo);
+    $stmtUp->execute();
+    if ($stmtUp->affected_rows === 0) {
+        // Otro proceso paralelo ya tomó la campaña
+        continue;
+    }
+
     $titulo     = $correo['titulo'];
     $contenido  = $correo['contenido'];
     $webpPath   = $correo['imagen'];
@@ -122,11 +132,6 @@ foreach ($correosPendientes as $correo) {
             ]);
             $mail->send();
         }
-
-        // Marcar correo como enviado en la BD
-        $stmtUp = $con->prepare("UPDATE correos_publicitarios SET enviado = 1, fecha_enviado = NOW() WHERE id_correo = ?");
-        $stmtUp->bind_param("i", $idCorreo);
-        $stmtUp->execute();
 
         echo "Correo publicitario ID {$idCorreo} ('{$titulo}') enviado correctamente.\n";
 

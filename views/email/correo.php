@@ -46,6 +46,13 @@ if ($horaActual < $horaProgramada) {
     return;
 }
 
+// Bloquear de inmediato la ejecución de hoy para evitar carreras de procesos concurrentes
+$idProg = $rowProg['id_programacion'];
+$sqlUltima = "UPDATE programacion_correos SET ultima_ejecucion = NOW() WHERE id_programacion = ?";
+$stmtUltima = $con->prepare($sqlUltima);
+$stmtUltima->bind_param("i", $idProg);
+$stmtUltima->execute();
+
 $hoy = date("Y-m-d H:i:s");
     $ayerMismoHorario = date("Y-m-d H:i:s", strtotime("-24 hours"));
 
@@ -182,13 +189,6 @@ $hoy = date("Y-m-d H:i:s");
             $mail->Body = $body;
             $mail->send();
         }
-
-        // Registrar última ejecución exitosa
-        $idProg = $rowProg['id_programacion'];
-        $sqlUltima = "UPDATE programacion_correos SET ultima_ejecucion = NOW() WHERE id_programacion = ?";
-        $stmtUltima = $con->prepare($sqlUltima);
-        $stmtUltima->bind_param("i", $idProg);
-        $stmtUltima->execute();
 
         echo "Correo enviado correctamente a todos los usuarios suscritos.\n";
 
