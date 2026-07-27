@@ -20,7 +20,7 @@ require_once(__DIR__ . "/helpers/urlhelper.php");
 
 // Obtener las recomendaciones actuales ordenadas
 $stmt = $con->prepare("
-    SELECT r.id, r.noticia_id, r.orden,
+    SELECT r.id, r.noticia_id, r.orden, r.url,
            COALESCE(r.titulo, n.titulo) AS titulo,
            COALESCE(r.imagen, n.crop3) AS crop3,
            n.fecha_publicacion
@@ -85,7 +85,7 @@ $totalRecomendados = count($recomendados);
                                             <?php if (!empty($rec['fecha_publicacion'])): ?>
                                                 Publicado: <?= date('d/m/Y H:i', strtotime($rec['fecha_publicacion'])) ?>
                                             <?php else: ?>
-                                                Personalizado
+                                                Personalizado <?= !empty($rec['url']) ? '<span style="color:var(--accent); font-weight:700;">• <i class="bi bi-link-45deg"></i> ' . htmlspecialchars($rec['url']) . '</span>' : '' ?>
                                             <?php endif; ?>
                                         </span>
                                     </div>
@@ -136,8 +136,15 @@ $totalRecomendados = count($recomendados);
                     <form id="customItemForm" enctype="multipart/form-data" class="d-flex flex-column gap-3">
                         <input type="hidden" name="imagenCrop" id="customImageCrop" value="">
                         <div>
-                            <label for="customTitle" class="form-label" style="font-size: 0.88rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 6px;">Título</label>
+                            <label for="customTitle" class="form-label" style="font-size: 0.88rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 6px;">Título *</label>
                             <input type="text" id="customTitle" name="titulo" class="form-control" placeholder="Escribe el título..." style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 0.9rem;" required>
+                        </div>
+                        <div>
+                            <label for="customUrl" class="form-label" style="font-size: 0.88rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 6px;">Enlace URL de Redirección (Opcional)</label>
+                            <div style="position: relative;">
+                                <input type="url" id="customUrl" name="url" class="form-control" placeholder="Ej: https://catink.com.mx/evento" style="width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 0.9rem;">
+                                <i class="bi bi-link-45deg" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1.1rem;"></i>
+                            </div>
                         </div>
                         <div>
                             <label class="form-label" style="font-size: 0.88rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 6px;">Imagen (JPG, PNG, WEBP)</label>
@@ -637,7 +644,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             <h4 style="margin: 0 0 4px; font-size: 0.92rem; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                 ${escapeHtml(d.titulo)}
                             </h4>
-                            <span style="font-size: 0.75rem; color: var(--muted);">Personalizado</span>
+                            <span style="font-size: 0.75rem; color: var(--muted);">
+                                Personalizado ${d.url ? `<span style="color:var(--accent); font-weight:700;">• <i class="bi bi-link-45deg"></i> ${escapeHtml(d.url)}</span>` : ''}
+                            </span>
                         </div>
                         <button class="btn btn-delete btn-quitar" data-id="${d.id}" style="padding: 6px 10px; font-size: 0.82rem; border-radius: 6px; border: 1px solid #e53e3e; background: transparent; color: #e53e3e;" title="Quitar de recomendados">
                             <i class="bi bi-trash"></i>

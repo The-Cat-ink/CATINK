@@ -53,9 +53,14 @@ function guardarBase64Image($base64, $prefix = 'rec_custom') {
     return null;
 }
 
+$url = isset($_POST['url']) ? trim($_POST['url']) : '';
+
 include("./../data/conexion.php");
 
 try {
+    // Asegurar que exista la columna url en la tabla recomendados
+    @$con->query("ALTER TABLE recomendados ADD COLUMN url VARCHAR(500) NULL AFTER imagen");
+
     // Verificar límite de 10
     $countRes = $con->query("SELECT COUNT(*) AS total FROM recomendados");
     $countRow = $countRes->fetch_assoc();
@@ -77,8 +82,8 @@ try {
     $nuevoOrden = intval($ordenRow['max_orden']) + 1;
 
     // Insertar
-    $stmtInsert = $con->prepare("INSERT INTO recomendados (noticia_id, titulo, imagen, orden) VALUES (NULL, ?, ?, ?)");
-    $stmtInsert->bind_param("ssi", $titulo, $rutaRelativa, $nuevoOrden);
+    $stmtInsert = $con->prepare("INSERT INTO recomendados (noticia_id, titulo, imagen, url, orden) VALUES (NULL, ?, ?, ?, ?)");
+    $stmtInsert->bind_param("sssi", $titulo, $rutaRelativa, $url, $nuevoOrden);
     
     if ($stmtInsert->execute()) {
         require_once(__DIR__ . "/../views/helpers/activity_log.php");
@@ -87,7 +92,8 @@ try {
             'success' => true,
             'id' => $con->insert_id,
             'titulo' => $titulo,
-            'imagen' => $rutaRelativa
+            'imagen' => $rutaRelativa,
+            'url' => $url
         ]);
     } else {
         echo json_encode(['success' => false, 'error' => 'Error al guardar en la base de datos']);

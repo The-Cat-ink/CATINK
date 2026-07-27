@@ -108,7 +108,7 @@ $reviews = $stmtReviews->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // 4. Lo que más te Recomendamos (Curados manualmente por el administrador)
 $stmtRec = $con->prepare("
-    SELECT r.id AS recomendado_id, r.noticia_id,
+    SELECT r.id AS recomendado_id, r.noticia_id, r.url AS custom_url,
            COALESCE(r.titulo, n.titulo) AS titulo,
            n.slug, n.descripcion,
            COALESCE(r.imagen, n.crop1) AS crop1,
@@ -548,7 +548,7 @@ function tiempoRelativo($fecha) {
                 <div class="sidebar-ranking-list-container">
                     <div class="sidebar-ranking-list">
                         <?php foreach ($recomendamos as $index => $r): 
-                            $url = empty($r['noticia_id']) ? '#' : newsUrlFromRow($r);
+                            $url = !empty($r['custom_url']) ? $r['custom_url'] : (empty($r['noticia_id']) ? '#' : newsUrlFromRow($r));
                             $score = (!empty($r['calificacion']) && floatval($r['calificacion']) > 0) ? floatval($r['calificacion']) : null;
                         ?>
                             <?php if ($index === 0): ?>
