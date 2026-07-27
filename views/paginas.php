@@ -7,6 +7,8 @@
         exit();
     }
     require_once("./../views/helpers/urlhelper.php");
+    require_once(__DIR__ . "/helpers/iconos_categorias.php");
+    $gruposIconosCat = iconosCategoriaPorGrupo();
 
     // Asegurar que existan las 6 páginas obligatorias en la BD
     $seccionesObligatorias = ['nosotros', 'terminos', 'privacidad', 'cookies', 'contacto', 'suscripcion'];
@@ -989,6 +991,39 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(file);
     }
 
+    const gruposIconosCat = <?= json_encode($gruposIconosCat) ?>;
+
+    function buildIconOptionsHtml(selectedVal) {
+        let optionsHtml = '';
+        const allAllowed = [];
+        selectedVal = String(selectedVal || 'bi-star-fill');
+
+        for (const [grupo, lista] of Object.entries(gruposIconosCat)) {
+            optionsHtml += `<optgroup label="📂 ${grupo}">`;
+            lista.forEach(code => {
+                allAllowed.push(code);
+                const isSelected = (selectedVal === code);
+                optionsHtml += `<option value="${code}" ${isSelected ? 'selected' : ''}>${code}</option>`;
+            });
+            optionsHtml += `</optgroup>`;
+        }
+
+        const isImg = (selectedVal.startsWith('http://') || selectedVal.startsWith('https://') || selectedVal.startsWith('data:image') || selectedVal.startsWith('/') || selectedVal.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(selectedVal));
+        const isPreset = allAllowed.includes(selectedVal);
+
+        let optionMode = 'bi-star-fill';
+        if (isImg) optionMode = '__image__';
+        else if (isPreset) optionMode = selectedVal;
+        else optionMode = '__custom__';
+
+        optionsHtml += `<optgroup label="⚙️ Personalizado">`;
+        optionsHtml += `<option value="__image__" ${optionMode === '__image__' ? 'selected' : ''}>🖼️ Subir / Usar Imagen (PNG, SVG, WebP)...</option>`;
+        optionsHtml += `<option value="__custom__" ${optionMode === '__custom__' ? 'selected' : ''}>✍️ Escribir clase Bootstrap personalizada...</option>`;
+        optionsHtml += `</optgroup>`;
+
+        return { optionsHtml, optionMode, isImg, isPreset };
+    }
+
     function renderMetaFields(pageName, meta = {}) {
         const container = document.getElementById("metaFieldsContainer");
         if (!container) return;
@@ -1080,55 +1115,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 { icono: 'bi-shield-check', titulo: 'Cero spam garantizado', desc: 'Solo contenido relevante. Puedes cancelar tu suscripción en un clic.' }
             ];
 
-            const availableIcons = [
-                { code: 'bi-lightning-charge-fill', label: '⚡ Rayo (Tiempo real)' },
-                { code: 'bi-star-fill',             label: '⭐ Estrella (Exclusivo)' },
-                { code: 'bi-gift-fill',             label: '🎁 Regalo (Sorteos / Beneficios)' },
-                { code: 'bi-shield-check',          label: '🛡️ Escudo (Cero Spam)' },
-                { code: 'bi-bell-fill',             label: '🔔 Campana (Alertas)' },
-                { code: 'bi-envelope-heart-fill',   label: '💌 Correo (Boletín)' },
-                { code: 'bi-fire',                  label: '🔥 Fuego (Tendencias)' },
-                { code: 'bi-controller',            label: '🎮 Control (Gaming)' },
-                { code: 'bi-tv-fill',               label: '📺 Tele (Anime / Cine)' },
-                { code: 'bi-book-fill',             label: '📖 Libro (Manga / Cómics)' },
-                { code: 'bi-gem',                   label: '💎 Gema (Premium)' },
-                { code: 'bi-trophy-fill',           label: '🏆 Trofeo (Premios)' },
-                { code: 'bi-chat-left-text-fill',   label: '💬 Chat (Comunidad)' },
-                { code: 'bi-heart-fill',            label: '❤️ Corazón (Pasión Geek)' },
-                { code: 'bi-award-fill',            label: '🎖️ Medalla (Reconocimientos)' },
-                { code: 'bi-clock-fill',            label: '⏰ Reloj (Instantáneo)' },
-                { code: 'bi-rocket-takeoff-fill',   label: '🚀 Cohete (Lanzamientos)' },
-                { code: 'bi-newspaper',            label: '📰 Periódico (Noticias)' },
-                { code: 'bi-tag-fill',              label: '🏷️ Etiqueta (Descuentos)' },
-                { code: 'bi-sparkles',              label: '✨ Destellos (Novedades)' }
-            ];
-
             let benHtml = '';
             ben.forEach((b, idx) => {
                 const currentIcon = String(b.icono || 'bi-star-fill');
-                const isImg = (currentIcon.startsWith('http://') || currentIcon.startsWith('https://') || currentIcon.startsWith('data:image') || currentIcon.startsWith('/') || currentIcon.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(currentIcon));
-                const isPreset = availableIcons.some(ic => ic.code === currentIcon);
+                const iconMeta = buildIconOptionsHtml(currentIcon);
 
-                let selectedOptionValue = 'bi-star-fill';
-                if (isImg) {
-                    selectedOptionValue = '__image__';
-                } else if (isPreset) {
-                    selectedOptionValue = currentIcon;
-                } else {
-                    selectedOptionValue = '__custom__';
-                }
+                const customIconValue = (!iconMeta.isPreset && !iconMeta.isImg) ? currentIcon : '';
+                const customImgValue = iconMeta.isImg ? currentIcon : '';
 
-                const customIconValue = (!isPreset && !isImg) ? currentIcon : '';
-                const customImgValue = isImg ? currentIcon : '';
-
-                let optionsHtml = '';
-                availableIcons.forEach(ic => {
-                    optionsHtml += `<option value="${ic.code}" ${selectedOptionValue === ic.code ? 'selected' : ''}>${ic.label}</option>`;
-                });
-                optionsHtml += `<option value="__image__" ${selectedOptionValue === '__image__' ? 'selected' : ''}>🖼️ Subir / Usar Imagen (PNG, SVG, WebP)...</option>`;
-                optionsHtml += `<option value="__custom__" ${selectedOptionValue === '__custom__' ? 'selected' : ''}>✍️ Escribir clase Bootstrap personalizada...</option>`;
-
-                const previewContent = isImg 
+                const previewContent = iconMeta.isImg 
                     ? `<img src="${currentIcon}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;">`
                     : `<i class="bi ${currentIcon}"></i>`;
 
@@ -1146,14 +1141,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                     ${previewContent}
                                 </div>
                                 <select class="cn-input meta-ben-icon" onchange="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-weight:700; font-size:0.82rem; padding:8px 10px; cursor:pointer;">
-                                    ${optionsHtml}
+                                    ${iconMeta.optionsHtml}
                                 </select>
                             </div>
                             <input type="text" class="cn-input meta-ben-title" value="${b.titulo || ''}" placeholder="Título del Beneficio">
                         </div>
 
                         <!-- Selector de Imagen -->
-                        <div class="meta-ben-img-wrap" style="margin-bottom:8px; display:${selectedOptionValue === '__image__' ? 'block' : 'none'}; background:rgba(239,51,99,0.05); padding:10px; border-radius:10px; border:1px dashed rgba(239,51,99,0.2);">
+                        <div class="meta-ben-img-wrap" style="margin-bottom:8px; display:${iconMeta.optionMode === '__image__' ? 'block' : 'none'}; background:rgba(239,51,99,0.05); padding:10px; border-radius:10px; border:1px dashed rgba(239,51,99,0.2);">
                             <label style="font-size:0.75rem; font-weight:800; color:var(--accent); display:block; margin-bottom:6px;">
                                 <i class="bi bi-image me-1"></i> Imagen del Ícono (SVG, PNG, WebP)
                             </label>
@@ -1167,7 +1162,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
 
                         <!-- Selector de Clase Custom -->
-                        <div class="meta-ben-custom-wrap" style="margin-bottom:8px; display:${selectedOptionValue === '__custom__' ? 'block' : 'none'};">
+                        <div class="meta-ben-custom-wrap" style="margin-bottom:8px; display:${iconMeta.optionMode === '__custom__' ? 'block' : 'none'};">
                             <label style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:2px;">Clase de ícono Bootstrap (ej: bi-discord, bi-twitch):</label>
                             <input type="text" class="cn-input meta-ben-custom-icon" value="${customIconValue}" placeholder="Ej: bi-discord" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))">
                         </div>
@@ -1319,41 +1314,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnAddBen = container.querySelector('#btnAddBeneficio');
         const beneficiosListContainer = container.querySelector('#beneficiosListContainer');
         if (btnAddBen && beneficiosListContainer) {
-            const availableIcons = [
-                { code: 'bi-lightning-charge-fill', label: '⚡ Rayo (Tiempo real)' },
-                { code: 'bi-star-fill',             label: '⭐ Estrella (Exclusivo)' },
-                { code: 'bi-gift-fill',             label: '🎁 Regalo (Sorteos / Beneficios)' },
-                { code: 'bi-shield-check',          label: '🛡️ Escudo (Cero Spam)' },
-                { code: 'bi-bell-fill',             label: '🔔 Campana (Alertas)' },
-                { code: 'bi-envelope-heart-fill',   label: '💌 Correo (Boletín)' },
-                { code: 'bi-fire',                  label: '🔥 Fuego (Tendencias)' },
-                { code: 'bi-controller',            label: '🎮 Control (Gaming)' },
-                { code: 'bi-tv-fill',               label: '📺 Tele (Anime / Cine)' },
-                { code: 'bi-book-fill',             label: '📖 Libro (Manga / Cómics)' },
-                { code: 'bi-gem',                   label: '💎 Gema (Premium)' },
-                { code: 'bi-trophy-fill',           label: '🏆 Trofeo (Premios)' },
-                { code: 'bi-chat-left-text-fill',   label: '💬 Chat (Comunidad)' },
-                { code: 'bi-heart-fill',            label: '❤️ Corazón (Pasión Geek)' },
-                { code: 'bi-award-fill',            label: '🎖️ Medalla (Reconocimientos)' },
-                { code: 'bi-clock-fill',            label: '⏰ Reloj (Instantáneo)' },
-                { code: 'bi-rocket-takeoff-fill',   label: '🚀 Cohete (Lanzamientos)' },
-                { code: 'bi-newspaper',            label: '📰 Periódico (Noticias)' },
-                { code: 'bi-tag-fill',              label: '🏷️ Etiqueta (Descuentos)' },
-                { code: 'bi-sparkles',              label: '✨ Destellos (Novedades)' }
-            ];
-
             btnAddBen.addEventListener('click', () => {
                 const count = beneficiosListContainer.children.length + 1;
                 const row = document.createElement('div');
                 row.className = 'ben-row-item';
                 row.style.cssText = 'border:1px solid var(--border); padding:12px; border-radius:12px; background:var(--bg); margin-bottom:10px;';
                 
-                let optionsHtml = '';
-                availableIcons.forEach(ic => {
-                    optionsHtml += `<option value="${ic.code}" ${ic.code === 'bi-star-fill' ? 'selected' : ''}>${ic.label}</option>`;
-                });
-                optionsHtml += `<option value="__image__">🖼️ Subir / Usar Imagen (PNG, SVG, WebP)...</option>`;
-                optionsHtml += `<option value="__custom__">✍️ Escribir clase Bootstrap personalizada...</option>`;
+                const iconMeta = buildIconOptionsHtml('bi-star-fill');
 
                 row.innerHTML = `
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
@@ -1368,7 +1335,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <i class="bi bi-star-fill"></i>
                             </div>
                             <select class="cn-input meta-ben-icon" onchange="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-weight:700; font-size:0.82rem; padding:8px 10px; cursor:pointer;">
-                                ${optionsHtml}
+                                ${iconMeta.optionsHtml}
                             </select>
                         </div>
                         <input type="text" class="cn-input meta-ben-title" value="" placeholder="Título del Beneficio">
