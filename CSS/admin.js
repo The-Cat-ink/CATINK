@@ -474,6 +474,21 @@
         console.error('Error inicializando CKEditor 5:', error);
       });
 
+    /* Cuantas imagenes del contenido siguen subiendo.
+       Mientras una imagen no termina de subir, CKEditor la muestra en pantalla
+       con una vista previa local, pero en getData() la saca como un <img> SIN
+       src: el archivo todavia no tiene URL. Si se guarda en ese momento, la
+       nota se graba con imagenes vacias que ya no se recuperan. De ahi que las
+       notas con muchas imagenes "pierdan" las del final. */
+    window.subidasPendientes = function () {
+      if (!window.editor) return 0;
+      try {
+        return window.editor.plugins.get('FileRepository').loaders.length;
+      } catch (e) {
+        return 0;
+      }
+    };
+
     const form = document.getElementById('formPublicacion') || document.getElementById('formEdicion');
     const contenidoInput = document.getElementById('contenido');
     if (form && contenidoInput) {

@@ -21,6 +21,14 @@ if (!$autorizado) {
     exit;
 }
 
+// Soltar el candado de la sesión en cuanto sabemos que hay permiso. PHP guarda
+// la sesión en un archivo con bloqueo exclusivo, así que mientras esta petición
+// no lo suelte, CUALQUIER otra del mismo usuario se queda esperando. CKEditor
+// dispara una subida por imagen en paralelo: al arrastrar 100 imágenes, las 100
+// se formaban en fila de una en una y las últimas caducaban por timeout. Ya no
+// escribimos nada en $_SESSION de aquí en adelante, así que cerrarla es seguro.
+session_write_close();
+
 // ── Validar archivo recibido ──
 if (!isset($_FILES['imagen']) || $_FILES['imagen']['error'] !== UPLOAD_ERR_OK) {
     http_response_code(400);

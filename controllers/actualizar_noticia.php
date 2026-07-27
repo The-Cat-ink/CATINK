@@ -135,6 +135,15 @@ if ($id <= 0 || empty($titulo) || empty($descripcion) || empty($contenido)) {
   header("Location: ./../views/contenidos.php");
   exit;
 }
+// Red de seguridad: un <img> sin src es una imagen que no alcanzó a subir. Si
+// la guardamos, queda un hueco en la nota que ya no se puede recuperar, porque
+// el archivo original solo existía en el navegador. Mejor no tocar la versión
+// buena que hay en la base y devolver al editor con el aviso.
+$imgsSinSrc = preg_match_all('/<img\b(?![^>]*\bsrc\s*=)[^>]*>/i', $contenido);
+if ($imgsSinSrc > 0) {
+  header("Location: ./../views/editar.php?id=" . $id . "&error=subidas_incompletas&pendientes=" . $imgsSinSrc);
+  exit;
+}
 // ============================
 // ACTUALIZAR NOTICIA (SIN CATEGORIA)
 // ============================

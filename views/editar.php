@@ -1246,8 +1246,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const emptyEditor = !editorHtml || editorHtml === '<p><br></p>' || editorHtml === '<p></p>' || editorHtml === '';
     if (emptyEditor) errors.push('Contenido del artículo');
+    // Guardar con imagenes a medio subir las graba sin src y se pierden.
+    const pendientes = window.subidasPendientes ? window.subidasPendientes() : 0;
+    if (pendientes > 0) {
+      errors.push(`Espera: ${pendientes} imagen(es) del contenido siguen subiendo`);
+    }
     return errors;
   }
+  /* Si el servidor rechazó el guardado porque venían imágenes sin subir, se
+     vuelve aquí con el aviso en la URL. Se muestra la versión guardada (la
+     buena) para que se puedan reponer las imágenes que faltaron. */
+  (function avisoSubidasIncompletas() {
+    const params = new URLSearchParams(location.search);
+    if (params.get('error') !== 'subidas_incompletas') return;
+    const n = parseInt(params.get('pendientes') || '0', 10);
+    setTimeout(() => showToast([
+      `No se guardó: ${n || 'algunas'} imagen(es) del contenido no terminaron de subir.`,
+      'Vuelve a insertarlas y espera a que carguen antes de guardar.'
+    ]), 400);
+  })();
+
   function showToast(errors) {
     const toast = document.getElementById('cnToast');
     const list  = document.getElementById('cnToastList');

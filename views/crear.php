@@ -1238,6 +1238,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const emptyEditor = !editorHtml || editorHtml === '<p><br></p>' || editorHtml === '<p></p>' || editorHtml === '';
     if (emptyEditor) errors.push('Contenido del artículo');
+    // Guardar con imagenes a medio subir las graba sin src y se pierden.
+    const pendientes = window.subidasPendientes ? window.subidasPendientes() : 0;
+    if (pendientes > 0) {
+      errors.push(`Espera: ${pendientes} imagen(es) del contenido siguen subiendo`);
+    }
     return errors;
   }
 

@@ -159,6 +159,18 @@ if ($esBorrador) {
   echo json_encode(['success' => false, 'error' => 'Datos incompletos. Revisa título, descripción y contenido.']);
   exit;
 }
+// Red de seguridad: un <img> sin src es una imagen que no alcanzó a subir. Si
+// la guardamos, queda un hueco en la nota que ya no se puede recuperar, porque
+// el archivo original solo existía en el navegador. Un borrador sí puede
+// guardarse a medias, pero una publicación no.
+if (!$esBorrador) {
+  $imgsSinSrc = preg_match_all('/<img\b(?![^>]*\bsrc\s*=)[^>]*>/i', $contenido);
+  if ($imgsSinSrc > 0) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'error' => "Hay $imgsSinSrc imagen(es) del contenido que no terminaron de subir. Espera a que carguen y vuelve a publicar."]);
+    exit;
+  }
+}
 // ============================
 // INSERTAR NOTICIA (YA SIN CATEGORIA)
 // ============================
