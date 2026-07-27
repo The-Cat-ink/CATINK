@@ -46,7 +46,7 @@ foreach ($period as $day) {
 $allNews = [];
 if ($busquedaGlobal && $q !== '') {
     $like = "%$q%";
-    $sql = "SELECT n.id, n.titulo, n.descripcion, n.fecha_publicacion, n.vistas, n.likes, n.crop3, 
+    $sql = "SELECT n.id, n.slug, n.titulo, n.descripcion, n.fecha_publicacion, n.vistas, n.likes, n.crop3, 
             u.nombre as autor_nombre, u.foto_personal as autor_foto, u.id_u as autor_id
             FROM noticias n
             LEFT JOIN usuarios u ON n.autor = u.id_u
@@ -57,7 +57,7 @@ if ($busquedaGlobal && $q !== '') {
     $stmt->bind_param("s", $like);
 } elseif ($q !== '') {
     $like = "%$q%";
-    $sql = "SELECT n.id, n.titulo, n.descripcion, n.fecha_publicacion, n.vistas, n.likes, n.crop3,
+    $sql = "SELECT n.id, n.slug, n.titulo, n.descripcion, n.fecha_publicacion, n.vistas, n.likes, n.crop3,
             u.nombre as autor_nombre, u.foto_personal as autor_foto, u.id_u as autor_id
             FROM noticias n
             LEFT JOIN usuarios u ON n.autor = u.id_u
@@ -66,7 +66,7 @@ if ($busquedaGlobal && $q !== '') {
     $stmt = $con->prepare($sql);
     $stmt->bind_param("sss", $fechaInicio, $fechaFin, $like);
 } else {
-    $sql = "SELECT n.id, n.titulo, n.descripcion, n.fecha_publicacion, n.vistas, n.likes, n.crop3,
+    $sql = "SELECT n.id, n.slug, n.titulo, n.descripcion, n.fecha_publicacion, n.vistas, n.likes, n.crop3,
             u.nombre as autor_nombre, u.foto_personal as autor_foto, u.id_u as autor_id
             FROM noticias n
             LEFT JOIN usuarios u ON n.autor = u.id_u
@@ -88,6 +88,7 @@ while ($row = $result->fetch_assoc()) {
     } else {
         $row['_estado'] = 'programado';
     }
+    $row['url'] = newsUrlFromRow($row);
     $allNews[] = $row;
     if (!$busquedaGlobal) {
         $newsByDate[date('Y-m-d', strtotime($row['fecha_publicacion']))][] = $row;
@@ -875,15 +876,16 @@ document.querySelectorAll('.day-column[data-authors]').forEach(dayColumn => {
                 const newsTooltip = document.createElement('div');
                 newsTooltip.className = 'news-tooltip';
 
-                let html = `<div class="tooltip-header">Noticias de ${autorData.nombre}</div><div class="tooltip-news">`;
+                let html = `<div class="tooltip-header">Noticias de ${escapeHtml(autorData.nombre)}</div><div class="tooltip-news">`;
                 autorData.news.forEach(news => {
                     const img = news.crop3
                         ? `<?= basePath() ?>/serve-image.php?file=${encodeURIComponent(news.crop3)}`
                         : '<?= basePath() ?>/img/placeholder.svg';
-                    html += `<div class="tooltip-news-item">
-                                <img src="${img}" alt="${news.titulo}" class="news-thumb">
-                                <span class="news-title">${news.titulo}</span>
-                             </div>`;
+                    const targetUrl = news.url || (`<?= basePath() ?>/n/` + (news.slug || news.id));
+                    html += `<a href="${targetUrl}" target="_blank" class="tooltip-news-item" title="Ver «${escapeHtml(news.titulo)}»">
+                                <img src="${img}" alt="${escapeHtml(news.titulo)}" class="news-thumb">
+                                <span class="news-title">${escapeHtml(news.titulo)}</span>
+                             </a>`;
                 });
                 html += '</div>';
                 newsTooltip.innerHTML = html;
