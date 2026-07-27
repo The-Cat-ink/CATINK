@@ -76,8 +76,8 @@ if (empty($token)) {
             <h2 style="color:var(--text); font-family:'Outfit', sans-serif; font-size:1.8rem; font-weight:800; margin-bottom:12px;">
                 ¡Cuenta Verificada con Éxito!
             </h2>
-            <p style="color:var(--muted); font-size:0.95rem; line-height:1.6; margin-bottom:28px;">
-                Tu identidad ha sido confirmada correctamente. Ya estás identificado en CatInk. Puedes regresar a la página anterior para continuar navegando.
+            <p style="color:var(--muted); font-size:0.95rem; line-height:1.6; margin-bottom:24px;">
+                Tu identidad ha sido confirmada correctamente. Redirigiendo a la personalización de tu perfil...
             </p>
         <?php elseif ($already_verified): ?>
             <div style="width:80px; height:80px; border-radius:50%; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:2.5rem; margin:0 auto 20px;">
@@ -86,8 +86,8 @@ if (empty($token)) {
             <h2 style="color:var(--text); font-family:'Outfit', sans-serif; font-size:1.8rem; font-weight:800; margin-bottom:12px;">
                 ¡Tu Cuenta ya está Verificada!
             </h2>
-            <p style="color:var(--muted); font-size:0.95rem; line-height:1.6; margin-bottom:28px;">
-                Este correo ya fue verificado exitosamente. Tu sesión se encuentra lista para continuar navegando.
+            <p style="color:var(--muted); font-size:0.95rem; line-height:1.6; margin-bottom:24px;">
+                Tu cuenta ya fue confirmada previamente. Puedes ingresar directamente a personalizar tu perfil o continuar navegando.
             </p>
         <?php else: ?>
             <div style="width:80px; height:80px; border-radius:50%; background:rgba(239,68,68,0.12); color:#ef4444; display:flex; align-items:center; justify-content:center; font-size:2.5rem; margin:0 auto 20px;">
@@ -96,18 +96,22 @@ if (empty($token)) {
             <h2 style="color:var(--text); font-family:'Outfit', sans-serif; font-size:1.8rem; font-weight:800; margin-bottom:12px;">
                 Aviso de Verificación
             </h2>
-            <p style="color:var(--muted); font-size:0.95rem; line-height:1.6; margin-bottom:28px;">
+            <p style="color:var(--muted); font-size:0.95rem; line-height:1.6; margin-bottom:24px;">
                 <?= htmlspecialchars($error_msg) ?>
             </p>
         <?php endif; ?>
 
         <!-- Acciones principales -->
         <div style="display:flex; flex-direction:column; gap:12px;">
-            <button type="button" onclick="regresarPaginaAnterior()" class="btn-perfil-save" style="width:100%; border:none; height:46px; border-radius:12px; font-weight:800; font-size:0.95rem; background:var(--accent); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(239,51,99,0.3);">
-                <i class="bi bi-arrow-left-circle-fill" style="font-size:1.1rem;"></i> Regresar a la página anterior
+            <a href="<?= basePath() ?>/views/perfil.php?registro=verificado" class="btn-perfil-save" style="width:100%; border:none; height:48px; border-radius:12px; font-weight:800; font-size:0.95rem; background:var(--accent); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(239,51,99,0.35); text-decoration:none;">
+                <i class="bi bi-person-circle" style="font-size:1.2rem;"></i> Personalizar mi Perfil
+            </a>
+
+            <button type="button" onclick="regresarPaginaAnterior()" style="width:100%; border:1px solid var(--border); height:44px; border-radius:12px; font-weight:700; font-size:0.88rem; background:transparent; color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <i class="bi bi-arrow-left-circle" style="font-size:1.05rem;"></i> Regresar a la página anterior
             </button>
 
-            <a href="<?= basePath() ?>/" style="color:var(--muted); font-size:0.88rem; font-weight:600; text-decoration:none; display:inline-block; padding:6px;">
+            <a href="<?= basePath() ?>/" style="color:var(--muted); font-size:0.85rem; font-weight:600; text-decoration:none; display:inline-block; padding:4px;">
                 <i class="bi bi-house-door me-1"></i> Ir al Inicio de CatInk
             </a>
         </div>
@@ -122,6 +126,12 @@ function regresarPaginaAnterior() {
         window.location.href = '<?= basePath() ?>/';
     }
 }
+
+<?php if ($success): ?>
+setTimeout(() => {
+    window.location.href = '<?= basePath() ?>/views/perfil.php?registro=verificado';
+}, 1500);
+<?php endif; ?>
 </script>
 </body>
 </html>
