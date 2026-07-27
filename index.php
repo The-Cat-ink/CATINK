@@ -157,8 +157,10 @@ foreach ($noticiasGlobales as $n) {
 }
 
 // 6. Lo que más esperamos (Curados manualmente por el administrador)
+@$con->query("ALTER TABLE esperamos ADD COLUMN url VARCHAR(500) NULL AFTER imagen");
+$esperamos = [];
 $stmtEsp = $con->prepare("
-    SELECT e.id AS esperado_id, e.noticia_id,
+    SELECT e.id AS esperado_id, e.noticia_id, e.url AS custom_url,
            COALESCE(e.titulo, n.titulo) AS titulo,
            n.slug, n.descripcion,
            COALESCE(e.imagen, n.crop1) AS crop1,
@@ -177,8 +179,13 @@ $stmtEsp = $con->prepare("
     ORDER BY e.orden ASC
     LIMIT 10;
 ");
-$stmtEsp->execute();
-$esperamos = $stmtEsp->get_result()->fetch_all(MYSQLI_ASSOC);
+if ($stmtEsp) {
+    $stmtEsp->execute();
+    $resEsp = $stmtEsp->get_result();
+    if ($resEsp) {
+        $esperamos = $resEsp->fetch_all(MYSQLI_ASSOC);
+    }
+}
 
 // 7. Lo más debatido
 $stmtCom = $con->prepare("
@@ -713,7 +720,7 @@ function tiempoRelativo($fecha) {
                 <div class="sidebar-ranking-list-container">
                     <div class="sidebar-ranking-list">
                         <?php foreach ($esperamos as $index => $r):
-                            $url = empty($r['noticia_id']) ? '#' : newsUrlFromRow($r);
+                            $url = !empty($r['custom_url']) ? $r['custom_url'] : (empty($r['noticia_id']) ? '#' : newsUrlFromRow($r));
                             $score = (!empty($r['calificacion']) && floatval($r['calificacion']) > 0) ? floatval($r['calificacion']) : null;
                         ?>
                             <?php if ($index === 0): ?>

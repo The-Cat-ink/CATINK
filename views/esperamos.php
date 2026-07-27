@@ -18,9 +18,13 @@ const ACL = <?= json_encode($ACL) ?>;
 include(__DIR__ . "/../data/conexion.php");
 require_once(__DIR__ . "/helpers/urlhelper.php");
 
+// Auto-migración: Asegurar que la columna 'url' exista en producción
+@$con->query("ALTER TABLE esperamos ADD COLUMN url VARCHAR(500) NULL AFTER imagen");
+
 // Obtener los esperados actuales ordenados
+$esperados = [];
 $stmt = $con->prepare("
-    SELECT e.id, e.noticia_id, e.orden,
+    SELECT e.id, e.noticia_id, e.orden, e.url,
            COALESCE(e.titulo, n.titulo) AS titulo,
            COALESCE(e.imagen, n.crop3) AS crop3,
            n.fecha_publicacion
@@ -28,8 +32,13 @@ $stmt = $con->prepare("
     LEFT JOIN noticias n ON e.noticia_id = n.id
     ORDER BY e.orden ASC
 ");
-$stmt->execute();
-$esperados = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+if ($stmt) {
+    $stmt->execute();
+    $res = $stmt->get_result();
+    if ($res) {
+        $esperados = $res->fetch_all(MYSQLI_ASSOC);
+    }
+}
 $totalEsperados = count($esperados);
 ?>
 <div class="container-fluid">
@@ -85,7 +94,7 @@ $totalEsperados = count($esperados);
                                             <?php if (!empty($esp['fecha_publicacion'])): ?>
                                                 Publicado: <?= date('d/m/Y H:i', strtotime($esp['fecha_publicacion'])) ?>
                                             <?php else: ?>
-                                                Personalizado
+                                                Personalizado <?= !empty($esp['url']) ? '<span style="color:var(--accent); font-weight:700;">• <i class="bi bi-link-45deg"></i> ' . htmlspecialchars($esp['url']) . '</span>' : '' ?>
                                             <?php endif; ?>
                                         </span>
                                     </div>
@@ -136,8 +145,15 @@ $totalEsperados = count($esperados);
                     <form id="customItemForm" enctype="multipart/form-data" class="d-flex flex-column gap-3">
                         <input type="hidden" name="imagenCrop" id="customImageCrop" value="">
                         <div>
-                            <label for="customTitle" class="form-label" style="font-size: 0.88rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 6px;">Título</label>
+                            <label for="customTitle" class="form-label" style="font-size: 0.88rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 6px;">Título *</label>
                             <input type="text" id="customTitle" name="titulo" class="form-control" placeholder="Escribe el título..." style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 0.9rem;" required>
+                        </div>
+                        <div>
+                            <label for="customUrl" class="form-label" style="font-size: 0.88rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 6px;">Enlace URL de Redirección (Opcional)</label>
+                            <div style="position: relative;">
+                                <input type="url" id="customUrl" name="url" class="form-control" placeholder="Ej: https://catink.com.mx/estreno" style="width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 0.9rem;">
+                                <i class="bi bi-link-45deg" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1.1rem;"></i>
+                            </div>
                         </div>
                         <div>
                             <label class="form-label" style="font-size: 0.88rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 6px;">Imagen (JPG, PNG, WEBP)</label>
@@ -637,7 +653,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             <h4 style="margin: 0 0 4px; font-size: 0.92rem; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                 ${escapeHtml(d.titulo)}
                             </h4>
-                            <span style="font-size: 0.75rem; color: var(--muted);">Personalizado</span>
+                            <span style="font-size: 0.75rem; color: var(--muted);">
+                                Personalizado ${d.url ? `<span style="color:var(--accent); font-weight:700;">• <i class="bi bi-link-45deg"></i> ${escapeHtml(d.url)}</span>` : ''}
+                            </span>
                         </div>
                         <button class="btn btn-delete btn-quitar" data-id="${d.id}" style="padding: 6px 10px; font-size: 0.82rem; border-radius: 6px; border: 1px solid #e53e3e; background: transparent; color: #e53e3e;" title="Quitar de la lista">
                             <i class="bi bi-trash"></i>
