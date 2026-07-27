@@ -19,7 +19,9 @@ include(__DIR__ . "/../data/conexion.php");
 require_once(__DIR__ . "/helpers/urlhelper.php");
 
 // Auto-migración: Asegurar que la columna 'url' exista en producción
-@$con->query("ALTER TABLE recomendados ADD COLUMN url VARCHAR(500) NULL AFTER imagen");
+try {
+    $con->query("ALTER TABLE recomendados ADD COLUMN url VARCHAR(500) NULL AFTER imagen");
+} catch (\Throwable $e) {}
 
 // Obtener las recomendaciones actuales ordenadas
 $recomendados = [];
