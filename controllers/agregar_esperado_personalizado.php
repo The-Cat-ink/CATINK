@@ -58,10 +58,6 @@ $url = isset($_POST['url']) ? trim($_POST['url']) : '';
 include("./../data/conexion.php");
 
 try {
-    // Asegurar que exista la columna url en la tabla esperamos
-    try {
-        $con->query("ALTER TABLE esperamos ADD COLUMN url VARCHAR(500) NULL AFTER imagen");
-    } catch (\Throwable $e) {}
 
     // Verificar límite de 10
     $countRes = $con->query("SELECT COUNT(*) AS total FROM esperamos");

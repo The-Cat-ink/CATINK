@@ -107,9 +107,6 @@ $stmtReviews->execute();
 $reviews = $stmtReviews->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // 4. Lo que más te Recomendamos (Curados manualmente por el administrador)
-try {
-    $con->query("ALTER TABLE recomendados ADD COLUMN url VARCHAR(500) NULL AFTER imagen");
-} catch (\Throwable $e) {}
 $recomendamos = [];
 $stmtRec = $con->prepare("
     SELECT r.id AS recomendado_id, r.noticia_id, r.url AS custom_url,
@@ -159,9 +156,6 @@ foreach ($noticiasGlobales as $n) {
 }
 
 // 6. Lo que más esperamos (Curados manualmente por el administrador)
-try {
-    $con->query("ALTER TABLE esperamos ADD COLUMN url VARCHAR(500) NULL AFTER imagen");
-} catch (\Throwable $e) {}
 $esperamos = [];
 $stmtEsp = $con->prepare("
     SELECT e.id AS esperado_id, e.noticia_id, e.url AS custom_url,

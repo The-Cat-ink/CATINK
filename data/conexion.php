@@ -20,4 +20,19 @@
         $stmtTz->execute();
         $stmtTz->close();
     }
+
+    // Helper para auto-migración segura de columnas si no existen
+    if (!function_exists('asegurarColumna')) {
+        function asegurarColumna($con, $tabla, $columna, $definicion) {
+            try {
+                $res = $con->query("SHOW COLUMNS FROM `$tabla` LIKE '$columna'");
+                if ($res && $res->num_rows === 0) {
+                    $con->query("ALTER TABLE `$tabla` ADD COLUMN `$columna` $definicion");
+                }
+            } catch (\Throwable $e) {}
+        }
+    }
+
+    asegurarColumna($con, 'recomendados', 'url', 'VARCHAR(500) NULL AFTER imagen');
+    asegurarColumna($con, 'esperamos', 'url', 'VARCHAR(500) NULL AFTER imagen');
 ?>
