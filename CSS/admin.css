@@ -3618,6 +3618,68 @@ img.umod-avatar { display: block; }
   flex-shrink: 0;
 }
 
+/* ─── Flexible Grid System for Admin Panel (.row, .col-*) ───────────── */
+.row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  margin-right: -0.5rem;
+  margin-left: -0.5rem;
+}
+.row.g-3 {
+  margin-right: -0.75rem;
+  margin-left: -0.75rem;
+}
+.row > [class*="col-"] {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+  box-sizing: border-box;
+}
+.row.g-3 > [class*="col-"] {
+  padding-right: 0.75rem;
+  padding-left: 0.75rem;
+}
+
+.align-items-end { align-items: flex-end !important; }
+.align-items-center { align-items: center !important; }
+.justify-content-between { justify-content: space-between !important; }
+
+.col-12 { flex: 0 0 100% !important; width: 100% !important; }
+
+@media (min-width: 576px) {
+  .col-sm-6 { flex: 0 0 50% !important; width: 50% !important; }
+}
+
+@media (min-width: 768px) {
+  .col-md-4 { flex: 0 0 33.333333% !important; width: 33.333333% !important; }
+  .col-md-6 { flex: 0 0 50% !important; width: 50% !important; }
+}
+
+@media (min-width: 992px) {
+  .col-lg-3 { flex: 0 0 25% !important; width: 25% !important; }
+  .col-lg-4 { flex: 0 0 33.333333% !important; width: 33.333333% !important; }
+}
+
+/* ─── Standard 4-Card Stats Grid ───────────────────────────────── */
+.cn-stats-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 16px !important;
+  margin-bottom: 24px !important;
+}
+@media (max-width: 1100px) {
+  .cn-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 576px) {
+  .cn-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 .kpi-card__body { flex: 1; min-width: 0; }
 .kpi-card__value {
   font-size: 1.45rem;

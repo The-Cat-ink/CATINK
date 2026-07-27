@@ -750,7 +750,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── CMS Edit Page Modal ──────────────────────
     let editorpag;
-    if (typeof ClassicEditor !== 'undefined') {
+    if (typeof DecoupledEditor !== 'undefined') {
+        DecoupledEditor
+            .create(document.querySelector('#editorpag'), {
+                placeholder: 'Escribe el contenido de esta sección aquí...',
+                language: 'es',
+                toolbar: {
+                    items: [
+                        'heading', '|', 'bold', 'italic', 'underline', 'strikethrough', '|',
+                        'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+                        'alignment', '|', 'numberedList', 'bulletedList', '|',
+                        'outdent', 'indent', '|', 'link', 'blockQuote', 'insertTable', '|',
+                        'undo', 'redo'
+                    ]
+                }
+            })
+            .then(ed => {
+                editorpag = ed;
+                const toolbarContainer = document.querySelector('#toolbarpag');
+                if (toolbarContainer) {
+                    toolbarContainer.appendChild(ed.ui.view.toolbar.element);
+                }
+            })
+            .catch(error => {
+                console.error('Error inicializando DecoupledEditor en paginas.php:', error);
+            });
+    } else if (typeof ClassicEditor !== 'undefined') {
         ClassicEditor
             .create(document.querySelector('#editorpag'), {
                 toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', 'undo', 'redo' ]
@@ -766,6 +791,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalPagina = document.getElementById("modalPagina");
     const modalClosePag = document.getElementById("modalClosePag");
 
+    function updateBenefitIconPreview(row) {
+        if (!row) return;
+        const sel = row.querySelector('.meta-ben-icon');
+        const customWrap = row.querySelector('.meta-ben-custom-wrap');
+        const imgWrap = row.querySelector('.meta-ben-img-wrap');
+        const previewBox = row.querySelector('.icon-preview-box');
+        if (!sel || !previewBox) return;
+
+        if (sel.value === '__image__') {
+            if (customWrap) customWrap.style.display = 'none';
+            if (imgWrap) imgWrap.style.display = 'block';
+            const imgVal = imgWrap ? imgWrap.querySelector('.meta-ben-img-url').value.trim() : '';
+            if (imgVal) {
+                previewBox.innerHTML = `<img src="${imgVal}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;">`;
+            } else {
+                previewBox.innerHTML = `<i class="bi bi-image" style="font-size:1.2rem;"></i>`;
+            }
+        } else if (sel.value === '__custom__') {
+            if (customWrap) customWrap.style.display = 'block';
+            if (imgWrap) imgWrap.style.display = 'none';
+            const customVal = customWrap ? customWrap.querySelector('input').value.trim() || 'bi-star-fill' : 'bi-star-fill';
+            previewBox.innerHTML = `<i class="bi ${customVal}" style="font-size:1.2rem;"></i>`;
+        } else {
+            if (customWrap) customWrap.style.display = 'none';
+            if (imgWrap) imgWrap.style.display = 'none';
+            previewBox.innerHTML = `<i class="bi ${sel.value}" style="font-size:1.2rem;"></i>`;
+        }
+    }
+
+    function handleBenFileSelect(input) {
+        if (!input || !input.files || !input.files[0]) return;
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const row = input.closest('.ben-row-item');
+            const urlInput = row ? row.querySelector('.meta-ben-img-url') : null;
+            if (urlInput) {
+                urlInput.value = e.target.result;
+                updateBenefitIconPreview(row);
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
     function renderMetaFields(pageName, meta = {}) {
         const container = document.getElementById("metaFieldsContainer");
         if (!container) return;
@@ -773,9 +842,34 @@ document.addEventListener('DOMContentLoaded', () => {
         let html = '';
 
         if (pageName === 'nosotros') {
+            const rawStats = (Array.isArray(meta.estadisticas) && meta.estadisticas.length > 0) ? meta.estadisticas : (
+                (meta.stat1_num || meta.stat2_num || meta.stat3_num) ? [
+                    { num: meta.stat1_num || '', lbl: meta.stat1_lbl || '' },
+                    { num: meta.stat2_num || '', lbl: meta.stat2_lbl || '' },
+                    { num: meta.stat3_num || '', lbl: meta.stat3_lbl || '' }
+                ].filter(s => s.num || s.lbl) : [
+                    { num: '500K+', lbl: 'Lectores Mensuales' },
+                    { num: '10K+',  lbl: 'Artículos Publicados' },
+                    { num: '100%',  lbl: 'Pasión Geek' }
+                ]
+            );
+
+            let statsHtml = '';
+            rawStats.forEach(st => {
+                statsHtml += `
+                    <div class="stat-row-item" style="display:grid; grid-template-columns:130px 1fr 38px; gap:8px; align-items:center; background:var(--bg); padding:6px 10px; border-radius:10px; border:1px solid var(--border);">
+                        <input type="text" class="cn-input meta-stat-num" value="${st.num || ''}" placeholder="Número (500K+)">
+                        <input type="text" class="cn-input meta-stat-lbl" value="${st.lbl || ''}" placeholder="Etiqueta (Lectores Mensuales)">
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-stat" onclick="this.closest('.stat-row-item').remove()" title="Eliminar estadística" style="border-radius:8px; padding:4px 8px; font-size:0.85rem;">
+                            <i class="bi bi-trash" style="pointer-events:none;"></i>
+                        </button>
+                    </div>
+                `;
+            });
+
             html = `
                 <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Campos Exclusivos de "Nosotros"</h5>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
                     <div>
                         <label style="font-size:0.8rem; font-weight:700;">Hero Título</label>
                         <input type="text" class="cn-input meta-field" data-key="hero_title" value="${meta.hero_title || 'SOBRE NOSOTROS'}">
@@ -785,21 +879,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
                     </div>
                 </div>
-                <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">Estadísticas Principales</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px;">
-                    <div>
-                        <input type="text" class="cn-input meta-field" data-key="stat1_num" value="${meta.stat1_num || '500K+'}" placeholder="Número (ej: 500K+)">
-                        <input type="text" class="cn-input meta-field" data-key="stat1_lbl" value="${meta.stat1_lbl || 'Lectores Mensuales'}" placeholder="Etiqueta" style="margin-top:4px;">
-                    </div>
-                    <div>
-                        <input type="text" class="cn-input meta-field" data-key="stat2_num" value="${meta.stat2_num || '10K+'}" placeholder="Número (ej: 10K+)">
-                        <input type="text" class="cn-input meta-field" data-key="stat2_lbl" value="${meta.stat2_lbl || 'Artículos Publicados'}" placeholder="Etiqueta" style="margin-top:4px;">
-                    </div>
-                    <div>
-                        <input type="text" class="cn-input meta-field" data-key="stat3_num" value="${meta.stat3_num || '100%'}" placeholder="Número (ej: 100%)">
-                        <input type="text" class="cn-input meta-field" data-key="stat3_lbl" value="${meta.stat3_lbl || 'Pasión Geek'}" placeholder="Etiqueta" style="margin-top:4px;">
-                    </div>
+
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <label style="font-weight:800; font-size:0.85rem; color:var(--text); margin:0;">
+                        <i class="bi bi-bar-chart-line text-accent me-1"></i> Estadísticas Principales (Dinámicas)
+                    </label>
+                    <button type="button" class="btn btn-sm btn-outline-accent" id="btnAddStat" style="font-weight:700; font-size:0.78rem; border-radius:8px; padding:4px 10px;">
+                        <i class="bi bi-plus-circle me-1"></i> Agregar Estadística
+                    </button>
                 </div>
+
+                <div id="statsListContainer" style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+                    ${statsHtml}
+                </div>
+
                 <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">Misión / Visión / Valores</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
                     <textarea class="cn-input meta-field" data-key="mision" rows="3" placeholder="Misión">${meta.mision || ''}</textarea>
@@ -832,6 +925,104 @@ document.addEventListener('DOMContentLoaded', () => {
                 { icono: 'bi-gift-fill', titulo: 'Sorteos y beneficios', desc: 'Acceso a dinámicas exclusivas para miembros de nuestra comunidad.' },
                 { icono: 'bi-shield-check', titulo: 'Cero spam garantizado', desc: 'Solo contenido relevante. Puedes cancelar tu suscripción en un clic.' }
             ];
+
+            const availableIcons = [
+                { code: 'bi-lightning-charge-fill', label: '⚡ Rayo (Tiempo real)' },
+                { code: 'bi-star-fill',             label: '⭐ Estrella (Exclusivo)' },
+                { code: 'bi-gift-fill',             label: '🎁 Regalo (Sorteos / Beneficios)' },
+                { code: 'bi-shield-check',          label: '🛡️ Escudo (Cero Spam)' },
+                { code: 'bi-bell-fill',             label: '🔔 Campana (Alertas)' },
+                { code: 'bi-envelope-heart-fill',   label: '💌 Correo (Boletín)' },
+                { code: 'bi-fire',                  label: '🔥 Fuego (Tendencias)' },
+                { code: 'bi-controller',            label: '🎮 Control (Gaming)' },
+                { code: 'bi-tv-fill',               label: '📺 Tele (Anime / Cine)' },
+                { code: 'bi-book-fill',             label: '📖 Libro (Manga / Cómics)' },
+                { code: 'bi-gem',                   label: '💎 Gema (Premium)' },
+                { code: 'bi-trophy-fill',           label: '🏆 Trofeo (Premios)' },
+                { code: 'bi-chat-left-text-fill',   label: '💬 Chat (Comunidad)' },
+                { code: 'bi-heart-fill',            label: '❤️ Corazón (Pasión Geek)' },
+                { code: 'bi-award-fill',            label: '🎖️ Medalla (Reconocimientos)' },
+                { code: 'bi-clock-fill',            label: '⏰ Reloj (Instantáneo)' },
+                { code: 'bi-rocket-takeoff-fill',   label: '🚀 Cohete (Lanzamientos)' },
+                { code: 'bi-newspaper',            label: '📰 Periódico (Noticias)' },
+                { code: 'bi-tag-fill',              label: '🏷️ Etiqueta (Descuentos)' },
+                { code: 'bi-sparkles',              label: '✨ Destellos (Novedades)' }
+            ];
+
+            let benHtml = '';
+            ben.forEach((b, idx) => {
+                const currentIcon = String(b.icono || 'bi-star-fill');
+                const isImg = (currentIcon.startsWith('http://') || currentIcon.startsWith('https://') || currentIcon.startsWith('data:image') || currentIcon.startsWith('/') || currentIcon.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(currentIcon));
+                const isPreset = availableIcons.some(ic => ic.code === currentIcon);
+
+                let selectedOptionValue = 'bi-star-fill';
+                if (isImg) {
+                    selectedOptionValue = '__image__';
+                } else if (isPreset) {
+                    selectedOptionValue = currentIcon;
+                } else {
+                    selectedOptionValue = '__custom__';
+                }
+
+                const customIconValue = (!isPreset && !isImg) ? currentIcon : '';
+                const customImgValue = isImg ? currentIcon : '';
+
+                let optionsHtml = '';
+                availableIcons.forEach(ic => {
+                    optionsHtml += `<option value="${ic.code}" ${selectedOptionValue === ic.code ? 'selected' : ''}>${ic.label}</option>`;
+                });
+                optionsHtml += `<option value="__image__" ${selectedOptionValue === '__image__' ? 'selected' : ''}>🖼️ Subir / Usar Imagen (PNG, SVG, WebP)...</option>`;
+                optionsHtml += `<option value="__custom__" ${selectedOptionValue === '__custom__' ? 'selected' : ''}>✍️ Escribir clase Bootstrap personalizada...</option>`;
+
+                const previewContent = isImg 
+                    ? `<img src="${currentIcon}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;">`
+                    : `<i class="bi ${currentIcon}"></i>`;
+
+                benHtml += `
+                    <div class="ben-row-item" style="border:1px solid var(--border); padding:12px; border-radius:12px; margin-bottom:10px; background:var(--bg);">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <span style="font-size:0.78rem; font-weight:800; color:var(--accent);">Beneficio #${idx+1}</span>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.ben-row-item').remove()" title="Eliminar beneficio" style="border-radius:8px; padding:2px 8px; font-size:0.78rem;">
+                                <i class="bi bi-trash" style="pointer-events:none;"></i> Eliminar
+                            </button>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 210px 1fr; gap:10px; margin-bottom:8px; align-items:center;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div class="icon-preview-box" style="width:36px; height:36px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid rgba(239,51,99,0.2); overflow:hidden;">
+                                    ${previewContent}
+                                </div>
+                                <select class="cn-input meta-ben-icon" onchange="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-weight:700; font-size:0.82rem; padding:8px 10px; cursor:pointer;">
+                                    ${optionsHtml}
+                                </select>
+                            </div>
+                            <input type="text" class="cn-input meta-ben-title" value="${b.titulo || ''}" placeholder="Título del Beneficio">
+                        </div>
+
+                        <!-- Selector de Imagen -->
+                        <div class="meta-ben-img-wrap" style="margin-bottom:8px; display:${selectedOptionValue === '__image__' ? 'block' : 'none'}; background:rgba(239,51,99,0.05); padding:10px; border-radius:10px; border:1px dashed rgba(239,51,99,0.2);">
+                            <label style="font-size:0.75rem; font-weight:800; color:var(--accent); display:block; margin-bottom:6px;">
+                                <i class="bi bi-image me-1"></i> Imagen del Ícono (SVG, PNG, WebP)
+                            </label>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <input type="text" class="cn-input meta-ben-img-url" value="${customImgValue}" placeholder="URL o sube archivo (https://... o /img/icono.svg)" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-size:0.82rem;">
+                                <input type="file" class="meta-ben-file-input" accept="image/*" style="display:none;" onchange="handleBenFileSelect(this)">
+                                <button type="button" class="btn btn-sm btn-outline-accent" onclick="this.previousElementSibling.click()" style="border-radius:8px; font-weight:700; font-size:0.78rem; white-space:nowrap;">
+                                    <i class="bi bi-upload me-1"></i> Subir Imagen
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Selector de Clase Custom -->
+                        <div class="meta-ben-custom-wrap" style="margin-bottom:8px; display:${selectedOptionValue === '__custom__' ? 'block' : 'none'};">
+                            <label style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:2px;">Clase de ícono Bootstrap (ej: bi-discord, bi-twitch):</label>
+                            <input type="text" class="cn-input meta-ben-custom-icon" value="${customIconValue}" placeholder="Ej: bi-discord" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))">
+                        </div>
+
+                        <input type="text" class="cn-input meta-ben-desc" value="${b.desc || ''}" placeholder="Descripción corta explicativa">
+                    </div>
+                `;
+            });
+
             html = `
                 <h5 style="margin:0 0 12px; font-weight:800; color:var(--accent);"><i class="bi bi-sliders"></i> Configuración de la Página de Suscripción</h5>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
@@ -844,20 +1035,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="text" class="cn-input meta-field" data-key="hero_sub" value="${meta.hero_sub || ''}">
                     </div>
                 </div>
-                <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:var(--text);">4 Beneficios Destacados</div>
+
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <label style="font-weight:800; font-size:0.85rem; color:var(--text); margin:0;">
+                        <i class="bi bi-star text-accent me-1"></i> Beneficios Destacados (Dinámicos)
+                    </label>
+                    <button type="button" class="btn btn-sm btn-outline-accent" id="btnAddBeneficio" style="font-weight:700; font-size:0.78rem; border-radius:8px; padding:4px 10px;">
+                        <i class="bi bi-plus-circle me-1"></i> Agregar Beneficio
+                    </button>
+                </div>
+
+                <div id="beneficiosListContainer" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
+                    ${benHtml}
+                </div>
             `;
-            ben.forEach((b, idx) => {
-                html += `
-                    <div style="border:1px solid var(--border); padding:10px; border-radius:10px; margin-bottom:8px; background:var(--bg);">
-                        <div style="font-size:0.78rem; font-weight:800; color:var(--accent);">Beneficio ${idx+1}</div>
-                        <div style="display:grid; grid-template-columns:140px 1fr; gap:8px; margin-top:4px;">
-                            <input type="text" class="cn-input meta-ben-icon" value="${b.icono || ''}" placeholder="Icono (bi-...)">
-                            <input type="text" class="cn-input meta-ben-title" value="${b.titulo || ''}" placeholder="Título">
-                        </div>
-                        <input type="text" class="cn-input meta-ben-desc" value="${b.desc || ''}" placeholder="Descripción corta" style="margin-top:4px;">
-                    </div>
-                `;
-            });
         } else if (pageName === 'contacto') {
             const hor = meta.horario || [
                 { dia: 'Lunes – Viernes', hora: '9:00 – 18:00 hrs' },
@@ -952,7 +1143,118 @@ document.addEventListener('DOMContentLoaded', () => {
 
         container.innerHTML = html;
         container.dataset.pageName = pageName;
+
+        const btnAddStat = container.querySelector('#btnAddStat');
+        const statsListContainer = container.querySelector('#statsListContainer');
+        if (btnAddStat && statsListContainer) {
+            btnAddStat.addEventListener('click', () => {
+                const row = document.createElement('div');
+                row.className = 'stat-row-item';
+                row.style.cssText = 'display:grid; grid-template-columns:130px 1fr 38px; gap:8px; align-items:center; background:var(--bg); padding:6px 10px; border-radius:10px; border:1px solid var(--border);';
+                row.innerHTML = `
+                    <input type="text" class="cn-input meta-stat-num" value="" placeholder="Número (50+)"/>
+                    <input type="text" class="cn-input meta-stat-lbl" value="" placeholder="Etiqueta (Premios Ganados)"/>
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-stat" onclick="this.closest('.stat-row-item').remove()" title="Eliminar estadística" style="border-radius:8px; padding:4px 8px; font-size:0.85rem;">
+                        <i class="bi bi-trash" style="pointer-events:none;"></i>
+                    </button>
+                `;
+                statsListContainer.appendChild(row);
+            });
+        }
+
+        const btnAddBen = container.querySelector('#btnAddBeneficio');
+        const beneficiosListContainer = container.querySelector('#beneficiosListContainer');
+        if (btnAddBen && beneficiosListContainer) {
+            const availableIcons = [
+                { code: 'bi-lightning-charge-fill', label: '⚡ Rayo (Tiempo real)' },
+                { code: 'bi-star-fill',             label: '⭐ Estrella (Exclusivo)' },
+                { code: 'bi-gift-fill',             label: '🎁 Regalo (Sorteos / Beneficios)' },
+                { code: 'bi-shield-check',          label: '🛡️ Escudo (Cero Spam)' },
+                { code: 'bi-bell-fill',             label: '🔔 Campana (Alertas)' },
+                { code: 'bi-envelope-heart-fill',   label: '💌 Correo (Boletín)' },
+                { code: 'bi-fire',                  label: '🔥 Fuego (Tendencias)' },
+                { code: 'bi-controller',            label: '🎮 Control (Gaming)' },
+                { code: 'bi-tv-fill',               label: '📺 Tele (Anime / Cine)' },
+                { code: 'bi-book-fill',             label: '📖 Libro (Manga / Cómics)' },
+                { code: 'bi-gem',                   label: '💎 Gema (Premium)' },
+                { code: 'bi-trophy-fill',           label: '🏆 Trofeo (Premios)' },
+                { code: 'bi-chat-left-text-fill',   label: '💬 Chat (Comunidad)' },
+                { code: 'bi-heart-fill',            label: '❤️ Corazón (Pasión Geek)' },
+                { code: 'bi-award-fill',            label: '🎖️ Medalla (Reconocimientos)' },
+                { code: 'bi-clock-fill',            label: '⏰ Reloj (Instantáneo)' },
+                { code: 'bi-rocket-takeoff-fill',   label: '🚀 Cohete (Lanzamientos)' },
+                { code: 'bi-newspaper',            label: '📰 Periódico (Noticias)' },
+                { code: 'bi-tag-fill',              label: '🏷️ Etiqueta (Descuentos)' },
+                { code: 'bi-sparkles',              label: '✨ Destellos (Novedades)' }
+            ];
+
+            btnAddBen.addEventListener('click', () => {
+                const count = beneficiosListContainer.children.length + 1;
+                const row = document.createElement('div');
+                row.className = 'ben-row-item';
+                row.style.cssText = 'border:1px solid var(--border); padding:12px; border-radius:12px; background:var(--bg); margin-bottom:10px;';
+                
+                let optionsHtml = '';
+                availableIcons.forEach(ic => {
+                    optionsHtml += `<option value="${ic.code}" ${ic.code === 'bi-star-fill' ? 'selected' : ''}>${ic.label}</option>`;
+                });
+                optionsHtml += `<option value="__image__">🖼️ Subir / Usar Imagen (PNG, SVG, WebP)...</option>`;
+                optionsHtml += `<option value="__custom__">✍️ Escribir clase Bootstrap personalizada...</option>`;
+
+                row.innerHTML = `
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                        <span style="font-size:0.78rem; font-weight:800; color:var(--accent);">Nuevo Beneficio #${count}</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.ben-row-item').remove()" title="Eliminar beneficio" style="border-radius:8px; padding:2px 8px; font-size:0.78rem;">
+                            <i class="bi bi-trash" style="pointer-events:none;"></i> Eliminar
+                        </button>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 210px 1fr; gap:10px; margin-bottom:8px; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div class="icon-preview-box" style="width:36px; height:36px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid rgba(239,51,99,0.2); overflow:hidden;">
+                                <i class="bi bi-star-fill"></i>
+                            </div>
+                            <select class="cn-input meta-ben-icon" onchange="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-weight:700; font-size:0.82rem; padding:8px 10px; cursor:pointer;">
+                                ${optionsHtml}
+                            </select>
+                        </div>
+                        <input type="text" class="cn-input meta-ben-title" value="" placeholder="Título del Beneficio">
+                    </div>
+
+                    <!-- Selector de Imagen -->
+                    <div class="meta-ben-img-wrap" style="margin-bottom:8px; display:none; background:rgba(239,51,99,0.05); padding:10px; border-radius:10px; border:1px dashed rgba(239,51,99,0.2);">
+                        <label style="font-size:0.75rem; font-weight:800; color:var(--accent); display:block; margin-bottom:6px;">
+                            <i class="bi bi-image me-1"></i> Imagen del Ícono (SVG, PNG, WebP)
+                        </label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="text" class="cn-input meta-ben-img-url" value="" placeholder="URL o sube archivo (https://... o /img/icono.svg)" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-size:0.82rem;">
+                            <input type="file" class="meta-ben-file-input" accept="image/*" style="display:none;" onchange="handleBenFileSelect(this)">
+                            <button type="button" class="btn btn-sm btn-outline-accent" onclick="this.previousElementSibling.click()" style="border-radius:8px; font-weight:700; font-size:0.78rem; white-space:nowrap;">
+                                <i class="bi bi-upload me-1"></i> Subir Imagen
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Selector de Clase Custom -->
+                    <div class="meta-ben-custom-wrap" style="margin-bottom:8px; display:none;">
+                        <label style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:2px;">Clase de ícono Bootstrap (ej: bi-discord, bi-twitch):</label>
+                        <input type="text" class="cn-input meta-ben-custom-icon" value="" placeholder="Ej: bi-discord" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))">
+                    </div>
+
+                    <input type="text" class="cn-input meta-ben-desc" value="" placeholder="Descripción corta explicativa">
+                `;
+                beneficiosListContainer.appendChild(row);
+            });
+        }
     }
+
+    // Delegación de eventos para eliminar estadísticas
+    document.addEventListener('click', e => {
+        const btnDel = e.target.closest('.btn-remove-stat');
+        if (btnDel) {
+            const row = btnDel.closest('.stat-row-item');
+            if (row) row.remove();
+        }
+    });
 
     const pagesWithEditor = ['nosotros', 'terminos', 'privacidad', 'cookies'];
 
@@ -990,7 +1292,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        if (pageName === 'contacto') {
+        if (pageName === 'nosotros') {
+            const statNums = container.querySelectorAll('.meta-stat-num');
+            const statLbls = container.querySelectorAll('.meta-stat-lbl');
+            metaObj.estadisticas = [];
+            statNums.forEach((inp, idx) => {
+                const numVal = inp.value.trim();
+                const lblVal = statLbls[idx]?.value.trim() || '';
+                if (numVal || lblVal) {
+                    metaObj.estadisticas.push({ num: numVal, lbl: lblVal });
+                }
+            });
+            // Fallback compatibilidad legacy
+            metaObj.stat1_num = metaObj.estadisticas[0]?.num || '';
+            metaObj.stat1_lbl = metaObj.estadisticas[0]?.lbl || '';
+            metaObj.stat2_num = metaObj.estadisticas[1]?.num || '';
+            metaObj.stat2_lbl = metaObj.estadisticas[1]?.lbl || '';
+            metaObj.stat3_num = metaObj.estadisticas[2]?.num || '';
+            metaObj.stat3_lbl = metaObj.estadisticas[2]?.lbl || '';
+        } else if (pageName === 'contacto') {
             metaObj.horario = [
                 { dia: metaObj.horario_lv_dia || 'Lunes – Viernes', hora: metaObj.horario_lv_hora || '9:00 – 18:00 hrs' },
                 { dia: metaObj.horario_sab_dia || 'Sábado', hora: metaObj.horario_sab_hora || '10:00 – 14:00 hrs' },
@@ -1000,16 +1320,27 @@ document.addEventListener('DOMContentLoaded', () => {
             delete metaObj.horario_sab_dia; delete metaObj.horario_sab_hora;
             delete metaObj.horario_dom_dia; delete metaObj.horario_dom_hora;
         } else if (pageName === 'suscripcion') {
-            const benIcons = container.querySelectorAll(".meta-ben-icon");
-            const benTitles = container.querySelectorAll(".meta-ben-title");
-            const benDescs = container.querySelectorAll(".meta-ben-desc");
+            const benRows = container.querySelectorAll(".ben-row-item");
             metaObj.beneficios = [];
-            benIcons.forEach((inp, i) => {
-                metaObj.beneficios.push({
-                    icono: inp.value,
-                    titulo: benTitles[i]?.value || '',
-                    desc: benDescs[i]?.value || ''
-                });
+            benRows.forEach(row => {
+                const sel = row.querySelector(".meta-ben-icon");
+                const customInp = row.querySelector(".meta-ben-custom-icon");
+                const imgInp = row.querySelector(".meta-ben-img-url");
+                const titleInp = row.querySelector(".meta-ben-title");
+                const descInp = row.querySelector(".meta-ben-desc");
+
+                let iconVal = sel ? sel.value : 'bi-star-fill';
+                if (iconVal === '__image__' && imgInp) {
+                    iconVal = imgInp.value.trim() || 'bi-image';
+                } else if (iconVal === '__custom__' && customInp) {
+                    iconVal = customInp.value.trim() || 'bi-star-fill';
+                }
+                const titleVal = titleInp ? titleInp.value.trim() : '';
+                const descVal = descInp ? descInp.value.trim() : '';
+
+                if (titleVal || descVal || iconVal) {
+                    metaObj.beneficios.push({ icono: iconVal, titulo: titleVal, desc: descVal });
+                }
             });
         }
 

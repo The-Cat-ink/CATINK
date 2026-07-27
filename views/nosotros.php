@@ -296,18 +296,23 @@ foreach ($filas as $i => $fila_logos) {
             <?= htmlspecialchars($meta['hero_sub'] ?? 'Somos CatInk, un medio de comunicación digital y agencia creativa enfocada en el entretenimiento geek: Anime, Manga, Cine, Videojuegos y Cultura Pop.') ?>
         </p>
         <div class="nos-hero-stats">
-            <div class="nos-stat-item">
-                <span class="nos-stat-num"><?= htmlspecialchars($meta['stat1_num'] ?? $meta['stat_1'] ?? '500K+') ?></span>
-                <span class="nos-stat-label"><?= htmlspecialchars($meta['stat1_lbl'] ?? $meta['stat_1_label'] ?? 'Lectores Mensuales') ?></span>
-            </div>
-            <div class="nos-stat-item">
-                <span class="nos-stat-num"><?= htmlspecialchars($meta['stat2_num'] ?? $meta['stat_2'] ?? '10K+') ?></span>
-                <span class="nos-stat-label"><?= htmlspecialchars($meta['stat2_lbl'] ?? $meta['stat_2_label'] ?? 'Artículos Publicados') ?></span>
-            </div>
-            <div class="nos-stat-item">
-                <span class="nos-stat-num"><?= htmlspecialchars($meta['stat3_num'] ?? $meta['stat_3'] ?? '100%') ?></span>
-                <span class="nos-stat-label"><?= htmlspecialchars($meta['stat3_lbl'] ?? $meta['stat_3_label'] ?? 'Pasión Geek') ?></span>
-            </div>
+            <?php 
+            $estadisticas = $meta['estadisticas'] ?? null;
+            if ($estadisticas === null) {
+                $estadisticas = [
+                    ['num' => $meta['stat1_num'] ?? $meta['stat_1'] ?? '500K+', 'lbl' => $meta['stat1_lbl'] ?? $meta['stat_1_label'] ?? 'Lectores Mensuales'],
+                    ['num' => $meta['stat2_num'] ?? $meta['stat_2'] ?? '10K+',  'lbl' => $meta['stat2_lbl'] ?? $meta['stat_2_label'] ?? 'Artículos Publicados'],
+                    ['num' => $meta['stat3_num'] ?? $meta['stat_3'] ?? '100%',  'lbl' => $meta['stat3_lbl'] ?? $meta['stat_3_label'] ?? 'Pasión Geek']
+                ];
+            }
+            foreach ($estadisticas as $st):
+                if (empty($st['num']) && empty($st['lbl'])) continue;
+            ?>
+                <div class="nos-stat-item">
+                    <span class="nos-stat-num"><?= htmlspecialchars($st['num']) ?></span>
+                    <span class="nos-stat-label"><?= htmlspecialchars($st['lbl']) ?></span>
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>

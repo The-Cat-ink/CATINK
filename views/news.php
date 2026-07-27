@@ -10,6 +10,7 @@ if (isset($_SESSION['usuario'])) {
 
 require_once("./../data/conexion.php");
 require_once("./helpers/urlhelper.php");
+require_once("./helpers/sidebarhelper.php");
 require_once("./helpers/moderacion.php");
 
 // Soportar múltiples formas de acceso a noticias
@@ -890,69 +891,8 @@ $lastEdit = $stmtLastEdit->get_result()->fetch_assoc();
         </div>
         <!-- SIDEBAR -->
         <div class="col-md-3">
-          <div class="sidebar-wrapper">
-            <div class="card sidebar-card">
-              <?php if($pubActiva && !empty($pubLateralTop)): ?>
-                <div class="showcase-box">
-                  <a href="<?= htmlspecialchars($pubLateralTop['url']) ?>" class="promo-link" data-pub="<?= (int)$pubLateralTop['id_pub'] ?>" target="_blank" rel="noopener noreferrer" data-turbo="false">
-                    <img src="<?= htmlspecialchars(imageUrl($pubLateralTop['imagen'])) ?>" class="promo-card-media" loading="lazy">
-                  </a>
-                  <span class="partner-tag">ADS</span>
-                </div>
-              <?php endif; ?>
-              <div class="card-body">
-                <h3>
-                  <a href="<?= recientesUrl() ?>" style="text-decoration: none; color: inherit;">
-                    <i class="bi bi-alarm"></i> Lo más nuevo
-                  </a>
-                </h3>
-                <br>
-                <ul class="list-group list-group-flush mb-3">
-                  <?php while ($row = $ultimas->fetch_assoc()): ?>
-                    <div class="cardSpecial row row-no-gap" data-article-id="<?= $row['id'] ?>">
-                        <div class="col-md-4">
-                            <img src="<?= htmlspecialchars(imageUrl($row['crop3'] ?? $row['crop2'] ?? $row['crop1'])) ?>" class="imgCard card-img-left-rounded" loading="lazy">
-                        </div>
-                        <div class="col-md-8">
-                          <div class="card-body">
-                            <a href="<?= newsUrlFromRow($row) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
-                          </div>
-                        </div>
-                    </div>
-                    <br>
-                  <?php endwhile; ?>
-                </ul>
-                <h3>
-                  <a href="<?= popularUrl() ?>" style="text-decoration: none; color: inherit;">
-                    Lo más popular
-                  </a>
-                </h3>
-                <br>
-                <ul class="list-group list-group-flush">
-                  <?php while ($row = $populares->fetch_assoc()): ?>
-                    <div class="cardSpecial row row-no-gap" data-article-id="<?= $row['id'] ?>">
-                        <div class="col-md-4">
-                            <img src="<?= htmlspecialchars(imageUrl($row['crop3'] ?? $row['crop2'] ?? $row['crop1'])) ?>" class="imgCard card-img-left-rounded" loading="lazy">
-                        </div>
-                        <div class="col-md-8">
-                          <div class="card-body">
-                            <a href="<?= newsUrlFromRow($row) ?>" class="linkCard news-link title-limit-2"><?= htmlspecialchars($row['titulo']) ?></a>
-                          </div>
-                        </div>
-                    </div>
-                    <br>
-                  <?php endwhile; ?>
-                </ul>
-                <!-- BANNER PUBLICITARIO (lateral inferior) -->
-                <?php if($pubActiva && !empty($pubLateralBottom)): ?>
-                  <div class="showcase-box mt-3">
-                    <a href="<?= htmlspecialchars($pubLateralBottom['url']) ?>" class="promo-link" data-pub="<?= (int)$pubLateralBottom['id_pub'] ?>" target="_blank" rel="noopener noreferrer" data-turbo="false">
-                      <img src="<?= htmlspecialchars(imageUrl($pubLateralBottom['imagen'])) ?>" class="promo-card-media" loading="lazy">
-                    </a>
-                    <span class="partner-tag">ADS</span>
-                  </div>
-                <?php endif; ?>
-              </div>
+          <?php renderSidebarNewsWidget($ultimas, $populares, $pubLateralTop ?? null, ['publicidad' => ['estado' => $pubActiva ?? false]]); ?>
+        </div>
               <div class="card-footer">
                   <h3>Siguenos</h3>
                   <br>

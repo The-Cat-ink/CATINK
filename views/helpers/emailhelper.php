@@ -13,7 +13,7 @@ if (!function_exists('renderCatInkEmail')) {
         $ctaUrl         = htmlspecialchars($options['cta_url'] ?? '');
         $ctaText        = htmlspecialchars($options['cta_text'] ?? '');
         $unsubscribeUrl = htmlspecialchars($options['unsubscribe_url'] ?? '');
-        $theme          = strtolower($options['theme'] ?? 'dark');
+        $theme          = strtolower($options['theme'] ?? 'light');
         $year           = date('Y');
 
         $isLight = ($theme === 'light');
