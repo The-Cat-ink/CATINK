@@ -1006,7 +1006,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeBenTargetRow = null;
     let selectedBenPickerVal = 'bi-star-fill';
 
-    function openBenefitIconPickerModal(triggerBtn) {
+    window.openBenefitIconPickerModal = function(triggerBtn) {
         activeBenTargetRow = triggerBtn.closest('.ben-row-item');
         if (!activeBenTargetRow) return;
 
@@ -1022,16 +1022,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateBenPickerModalPreview(currentVal);
         document.getElementById('modalPickerBeneficioIcono').style.display = 'flex';
-    }
+    };
 
-    function selectBenTileIcon(btn, code) {
+    window.selectBenTileIcon = function(btn, code) {
         selectedBenPickerVal = code;
         document.querySelectorAll('.ben-icon-tile').forEach(t => t.classList.remove('selected'));
         if (btn) btn.classList.add('selected');
         updateBenPickerModalPreview(code);
-    }
+    };
 
-    function handleBenPickerFileSelect(input) {
+    window.handleBenPickerFileSelect = function(input) {
         if (!input || !input.files || !input.files[0]) return;
         const file = input.files[0];
         const reader = new FileReader();
@@ -1041,9 +1041,9 @@ document.addEventListener('DOMContentLoaded', () => {
             updateBenPickerModalPreview(e.target.result);
         };
         reader.readAsDataURL(file);
-    }
+    };
 
-    function quitarBenImagen() {
+    window.quitarBenImagen = function() {
         selectedBenPickerVal = 'bi-star-fill';
         const fileInp = document.getElementById('benPickerFileInput');
         if (fileInp) fileInp.value = '';
@@ -1052,9 +1052,9 @@ document.addEventListener('DOMContentLoaded', () => {
             t.classList.toggle('selected', t.dataset.icono === 'bi-star-fill');
         });
         updateBenPickerModalPreview('bi-star-fill');
-    }
+    };
 
-    function updateBenPickerModalPreview(val) {
+    window.updateBenPickerModalPreview = function(val) {
         const previewBox = document.getElementById('benPickerSelectedPreview');
         if (!previewBox) return;
         const isImg = (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:image') || val.startsWith('/') || val.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(val));
@@ -1063,7 +1063,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             previewBox.innerHTML = `<i class="bi ${val || 'bi-star-fill'}"></i>`;
         }
-    }
+    };
 
     document.getElementById('closeBenPickerModal')?.addEventListener('click', () => {
         document.getElementById('modalPickerBeneficioIcono').style.display = 'none';
@@ -1495,18 +1495,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const benRows = container.querySelectorAll(".ben-row-item");
             metaObj.beneficios = [];
             benRows.forEach(row => {
-                const sel = row.querySelector(".meta-ben-icon");
-                const customInp = row.querySelector(".meta-ben-custom-icon");
-                const imgInp = row.querySelector(".meta-ben-img-url");
+                const iconInp = row.querySelector(".meta-ben-icon");
                 const titleInp = row.querySelector(".meta-ben-title");
                 const descInp = row.querySelector(".meta-ben-desc");
 
-                let iconVal = sel ? sel.value : 'bi-star-fill';
-                if (iconVal === '__image__' && imgInp) {
-                    iconVal = imgInp.value.trim() || 'bi-image';
-                } else if (iconVal === '__custom__' && customInp) {
-                    iconVal = customInp.value.trim() || 'bi-star-fill';
-                }
+                const iconVal = iconInp ? iconInp.value.trim() : 'bi-star-fill';
                 const titleVal = titleInp ? titleInp.value.trim() : '';
                 const descVal = descInp ? descInp.value.trim() : '';
 
