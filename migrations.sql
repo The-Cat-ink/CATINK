@@ -1683,3 +1683,28 @@ WHERE NOT EXISTS (SELECT 1 FROM `secciones` WHERE `nombre` = 'iconos_menu_movil'
 INSERT INTO `secciones` (`nombre`, `estado`)
 SELECT 'iconos_menu_escritorio', 0
 WHERE NOT EXISTS (SELECT 1 FROM `secciones` WHERE `nombre` = 'iconos_menu_escritorio');
+
+-- 73. Tabla de Redes Sociales Oficiales CatInk
+CREATE TABLE IF NOT EXISTS `redes_sociales` (
+  `id_red` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) NOT NULL,
+  `url` varchar(255) NOT NULL,
+  `icono` varchar(100) NOT NULL DEFAULT 'bi-link-45deg',
+  `icono_img` varchar(255) DEFAULT NULL,
+  `color` varchar(30) DEFAULT '#EF3363',
+  `orden` int(11) NOT NULL DEFAULT 0,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  `creado` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_red`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `redes_sociales` (`nombre`, `url`, `icono`, `color`, `orden`, `activo`)
+SELECT * FROM (
+    SELECT 'Facebook' AS nombre, 'https://www.facebook.com/TheCatink?locale=es_LA' AS url, 'bi-facebook' AS icono, '#1877F2' AS color, 1 AS orden, 1 AS activo
+    UNION ALL SELECT 'X / Twitter', 'https://x.com/The_Catink/', 'bi-twitter-x', '#ffffff', 2, 1
+    UNION ALL SELECT 'Instagram', 'https://www.instagram.com/the.catink/', 'bi-instagram', '#E1306C', 3, 1
+    UNION ALL SELECT 'YouTube', 'https://www.youtube.com/@thecatink', 'bi-youtube', '#FF0000', 4, 1
+    UNION ALL SELECT 'TikTok', 'https://www.tiktok.com/@thecatink', 'bi-tiktok', '#00f2ea', 5, 1
+) AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM `redes_sociales`);
+

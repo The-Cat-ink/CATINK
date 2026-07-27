@@ -329,11 +329,27 @@
           Noticias, anime, videojuegos y cultura digital. Todo lo que te apasiona en un solo lugar.
         </p>
         <div class="social-links">
-          <a href="https://www.facebook.com/TheCatink?locale=es_LA" aria-label="Facebook" target="_blank" rel="noopener" class="social-btn facebook" title="Facebook"><i class="bi bi-facebook"></i></a>
-          <a href="https://x.com/The_Catink/" aria-label="Twitter / X" target="_blank" rel="noopener" class="social-btn twitter" title="X (Twitter)"><i class="bi bi-twitter-x"></i></a>
-          <a href="https://www.instagram.com/the.catink/" aria-label="Instagram" target="_blank" rel="noopener" class="social-btn instagram" title="Instagram"><i class="bi bi-instagram"></i></a>
-          <a href="https://www.youtube.com/@thecatink" aria-label="YouTube" target="_blank" rel="noopener" class="social-btn youtube" title="YouTube"><i class="bi bi-youtube"></i></a>
-          <a href="https://www.tiktok.com/@thecatink" aria-label="TikTok" target="_blank" rel="noopener" class="social-btn tiktok" title="TikTok"><i class="bi bi-tiktok"></i></a>
+          <?php 
+          require_once(__DIR__ . '/../views/helpers/socialhelper.php');
+          $catInkSocials = getCatInkSocials(true);
+          foreach ($catInkSocials as $soc): 
+              $ic = $soc['icono'];
+              $isImg = !empty($soc['icono_img']) || (strpos($ic, 'http') === 0 || strpos($ic, 'data:image') === 0 || strpos($ic, '/') === 0);
+          ?>
+              <a href="<?= htmlspecialchars($soc['url']) ?>" 
+                 target="_blank" 
+                 rel="noopener" 
+                 aria-label="<?= htmlspecialchars($soc['nombre']) ?>" 
+                 class="social-btn" 
+                 title="<?= htmlspecialchars($soc['nombre']) ?>"
+                 style="--soc-color: <?= htmlspecialchars($soc['color'] ?: '#EF3363') ?>;">
+                  <?php if ($isImg): ?>
+                      <img src="<?= htmlspecialchars($soc['icono_img'] ?: $ic) ?>" alt="" style="width:18px; height:18px; object-fit:contain;">
+                  <?php else: ?>
+                      <i class="bi <?= htmlspecialchars($ic) ?>"></i>
+                  <?php endif; ?>
+              </a>
+          <?php endforeach; ?>
         </div>
       </div>
 

@@ -517,7 +517,7 @@ function formatNumberShort($num){
                                 <p style="font-weight:800; color:#ef4444; margin-bottom: 12px;">¡Atención! Esta acción borrará permanentemente los datos indicados.</p>
                                 <p class="small mb-3" style="color: var(--text);">Se eliminarán los registros seleccionados desde el <strong id="lblFechaIni" style="color: var(--text);"></strong> hasta el <strong id="lblFechaFin" style="color: var(--text);"></strong>.</p>
                                 <p class="small mb-3" style="font-weight: 700; color: var(--text);">Escribe la palabra <strong style="color:#ef4444;">RESTABLECER</strong> en mayúsculas para proceder:</p>
-                                <input type="text" id="confirmTextRest" autocomplete="off" class="cn-input mb-3" placeholder="Escribe RESTABLECER aquí..." style="border:1.5px solid #ef4444; border-radius:10px;">
+                                <input type="text" id="confirmTextRest" name="confirmacion" autocomplete="off" class="cn-input mb-3" placeholder="Escribe RESTABLECER aquí..." style="border:1.5px solid #ef4444; border-radius:10px;">
                                 <div class="d-flex justify-content-end gap-2">
                                     <button type="button" id="cancelRestModal" class="btn btn-secondary px-3" style="border-radius:10px; font-weight:700;">Cancelar</button>
                                     <button type="submit" id="submitRestBtn" class="btn btn-danger px-4" disabled style="border-radius:10px; font-weight:800; opacity: 0.5; cursor: not-allowed;">Confirmar y Eliminar</button>

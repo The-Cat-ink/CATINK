@@ -7,6 +7,8 @@
         exit();
     }
     require_once("./../views/helpers/urlhelper.php");
+    require_once(__DIR__ . "/helpers/iconos_categorias.php");
+    $gruposIconosCat = iconosCategoriaPorGrupo();
 
     // Asegurar que existan las 6 páginas obligatorias en la BD
     $seccionesObligatorias = ['nosotros', 'terminos', 'privacidad', 'cookies', 'contacto', 'suscripcion'];
@@ -297,9 +299,163 @@
                 <?php endforeach; ?>
             </div>
         </div>
+    <!-- ── Gestión de Redes Sociales Oficiales ──────────── -->
+    <?php
+    require_once(__DIR__ . '/helpers/socialhelper.php');
+    $allRedes = getCatInkSocials(false);
+    ?>
+    <div class="card border-0 shadow-sm mt-4 mb-4" style="background:var(--card-bg); border-radius:18px; border:1px solid var(--border)!important;">
+        <div class="card-header bg-transparent border-bottom p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <div style="width:36px; height:36px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">
+                    <i class="bi bi-share-fill"></i>
+                </div>
+                <div>
+                    <h5 class="m-0 font-weight-bold" style="font-weight:800; font-size:1.05rem; color:var(--text);">
+                        Redes Sociales Oficiales CatInk
+                    </h5>
+                    <span style="font-size:0.78rem; color:var(--muted);">Administra los enlaces de redes sociales visibles en el pie de página, cabecera y contacto.</span>
+                </div>
+            </div>
+            <button type="button" class="btn btn-accent" id="btnAgregarRed" style="border-radius:12px; font-weight:700; padding:8px 16px; font-size:0.88rem;">
+                <i class="bi bi-plus-circle-fill me-1"></i> Agregar Red Social
+            </button>
+        </div>
+        <div class="card-body p-3">
+            <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+                <?php if (empty($allRedes)): ?>
+                    <p style="color:var(--muted); font-size:0.88rem; margin:0; grid-column:1/-1; text-align:center; padding:20px;">No hay redes sociales registradas aún.</p>
+                <?php endif; ?>
+                <?php foreach ($allRedes as $red): 
+                    $isImg = !empty($red['icono_img']) || (strpos($red['icono'], 'http') === 0 || strpos($red['icono'], 'data:image') === 0 || strpos($red['icono'], '/') === 0);
+                    $colorBg = $red['color'] ?: '#EF3363';
+                ?>
+                    <div class="red-card" style="border:1px solid var(--border); border-radius:14px; padding:14px; background:var(--bg); display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                        <div style="display:flex; align-items:center; gap:12px; overflow:hidden;">
+                            <div style="width:42px; height:42px; border-radius:12px; background:<?= $colorBg ?>; color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                                <?php if ($isImg): ?>
+                                    <img src="<?= htmlspecialchars($red['icono_img'] ?: $red['icono']) ?>" alt="" style="width:24px; height:24px; object-fit:contain;">
+                                <?php else: ?>
+                                    <i class="bi <?= htmlspecialchars($red['icono']) ?>"></i>
+                                <?php endif; ?>
+                            </div>
+                            <div style="overflow:hidden;">
+                                <div style="font-weight:800; font-size:0.92rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                    <?= htmlspecialchars($red['nombre']) ?>
+                                </div>
+                                <a href="<?= htmlspecialchars($red['url']) ?>" target="_blank" rel="noopener" style="font-size:0.75rem; color:var(--muted); text-decoration:none; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                    <?= htmlspecialchars($red['url']) ?>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0;">
+                            <button type="button" class="btn btn-sm btn-toggle-red <?= intval($red['activo']) === 1 ? 'btn-success' : 'btn-secondary' ?>" 
+                                    data-id="<?= $red['id_red'] ?>" 
+                                    style="border-radius:20px; font-size:0.72rem; font-weight:800; padding:2px 8px;">
+                                <?= intval($red['activo']) === 1 ? '● Activa' : '○ Inactiva' ?>
+                            </button>
+                            <div style="display:flex; gap:4px;">
+                                <button type="button" class="btn btn-sm btn-outline-primary btn-edit-red" 
+                                        data-id="<?= $red['id_red'] ?>"
+                                        data-nombre="<?= htmlspecialchars($red['nombre']) ?>"
+                                        data-url="<?= htmlspecialchars($red['url']) ?>"
+                                        data-icono="<?= htmlspecialchars($red['icono']) ?>"
+                                        data-iconoimg="<?= htmlspecialchars($red['icono_img'] ?? '') ?>"
+                                        data-color="<?= htmlspecialchars($red['color'] ?? '#EF3363') ?>"
+                                        data-orden="<?= intval($red['orden']) ?>"
+                                        data-activo="<?= intval($red['activo']) ?>"
+                                        title="Editar" style="border-radius:8px; padding:2px 6px;">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-delete-red" 
+                                        data-id="<?= $red['id_red'] ?>" 
+                                        data-nombre="<?= htmlspecialchars($red['nombre']) ?>" 
+                                        title="Eliminar" style="border-radius:8px; padding:2px 6px;">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
     </div>
 
 </div><!-- /.container-fluid -->
+
+<!-- ══ Modal Agregar/Editar Red Social ════════════════════════════ -->
+<div id="modalRedSocial" class="crop-modal" style="display: none;">
+    <div class="crop-modal-content" style="max-width: 580px; width:95%; border-radius:18px;">
+        <h3 id="titleModalRed" style="font-weight:800; margin-top:0;"><i class="bi bi-share-fill text-accent"></i> Agregar Red Social</h3>
+
+        <form id="formRedSocial" action="./../controllers/redes_guardar.php" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="id_red" id="red_id_red" value="0">
+
+            <div style="margin-bottom:12px;">
+                <label style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:4px; color:var(--text);">Nombre de la Red Social *</label>
+                <input type="text" name="nombre" id="red_nombre" class="cn-input" required placeholder="Ej: Discord, Twitch, Threads, Spotify, WhatsApp...">
+            </div>
+
+            <div style="margin-bottom:12px;">
+                <label style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:4px; color:var(--text);">Enlace URL Completo *</label>
+                <input type="url" name="url" id="red_url" class="cn-input" required placeholder="Ej: https://discord.gg/catink">
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 120px; gap:12px; margin-bottom:12px;">
+                <div>
+                    <label style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:4px; color:var(--text);">Ícono Bootstrap</label>
+                    <select name="icono" id="red_icono" class="cn-input" style="font-weight:700;">
+                        <option value="bi-facebook">Facebook (bi-facebook)</option>
+                        <option value="bi-instagram">Instagram (bi-instagram)</option>
+                        <option value="bi-tiktok">TikTok (bi-tiktok)</option>
+                        <option value="bi-youtube">YouTube (bi-youtube)</option>
+                        <option value="bi-twitter-x">X / Twitter (bi-twitter-x)</option>
+                        <option value="bi-discord">Discord (bi-discord)</option>
+                        <option value="bi-twitch">Twitch (bi-twitch)</option>
+                        <option value="bi-spotify">Spotify (bi-spotify)</option>
+                        <option value="bi-whatsapp">WhatsApp (bi-whatsapp)</option>
+                        <option value="bi-telegram">Telegram (bi-telegram)</option>
+                        <option value="bi-threads">Threads (bi-threads)</option>
+                        <option value="bi-linkedin">LinkedIn (bi-linkedin)</option>
+                        <option value="bi-reddit">Reddit (bi-reddit)</option>
+                        <option value="bi-snapchat">Snapchat (bi-snapchat)</option>
+                        <option value="bi-pinterest">Pinterest (bi-pinterest)</option>
+                        <option value="bi-globe">Sitio Web / Globo (bi-globe)</option>
+                        <option value="bi-link-45deg">Enlace Genérico (bi-link-45deg)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:4px; color:var(--text);">Color Marca</label>
+                    <input type="color" name="color" id="red_color" value="#EF3363" class="cn-input" style="height:38px; padding:2px; cursor:pointer;">
+                </div>
+            </div>
+
+            <div style="margin-bottom:12px; background:rgba(239,51,99,0.05); padding:10px; border-radius:10px; border:1px dashed rgba(239,51,99,0.2);">
+                <label style="font-size:0.78rem; font-weight:800; color:var(--accent); display:block; margin-bottom:4px;">
+                    <i class="bi bi-image me-1"></i> Opcional: Subir Ícono o Logo Personalizado (PNG, SVG, WebP)
+                </label>
+                <input type="file" name="icono_archivo" accept="image/*" class="cn-input" style="font-size:0.82rem;">
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                <label style="font-size:0.85rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; margin:0; color:var(--text);">
+                    <input type="checkbox" name="activo" id="red_activo" value="1" checked style="width:18px; height:18px;">
+                    <span>Mostrar en el sitio web (Público)</span>
+                </label>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:0.78rem; font-weight:700; color:var(--muted);">Orden:</span>
+                    <input type="number" name="orden" id="red_orden" value="1" style="width:60px;" class="cn-input">
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" id="modalCloseRed" class="btn btn-secondary" style="border-radius:10px; font-weight:700;">Cancelar</button>
+                <button type="submit" class="btn btn-accent" style="border-radius:10px; font-weight:700;">Guardar Red Social</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- ══ Modal editar página ════════════════════════════════════════ -->
 <div id="modalPagina" class="crop-modal" style="display: none;">
@@ -344,6 +500,62 @@
                 <button type="submit" class="btn btn-accent px-4 py-2" style="border-radius:10px; font-weight:800;"><i class="bi bi-save me-1"></i> Guardar Cambios</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- ══ Modal Visual Selector de Ícono para Beneficios (Idéntico al de Categorías) ════ -->
+<div id="modalPickerBeneficioIcono" class="crop-modal" style="display: none; z-index: 99999 !important;">
+    <div class="crop-modal-content" style="max-width: 540px; width:95%; border-radius:18px; padding:24px;">
+        <!-- Cabecera -->
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+            <h4 style="font-weight:800; margin:0; font-size:1.15rem; color:var(--text);">Ícono en el menú</h4>
+            <div id="benPickerSelectedPreview" class="cat-icon-preview" style="width:38px; height:38px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:inline-flex; align-items:center; justify-content:center; font-size:1.2rem; border:1px solid rgba(239,51,99,0.2); overflow:hidden;">
+                <i class="bi bi-star-fill"></i>
+            </div>
+        </div>
+
+        <!-- Botones de Subir / Quitar Imagen -->
+        <div class="icono-upload-controls" style="display:flex; gap:10px; margin-bottom:8px;">
+            <input type="file" id="benPickerFileInput" accept="image/*" style="display:none;" onchange="handleBenPickerFileSelect(this)">
+            <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('benPickerFileInput').click()" style="border-radius:10px; font-weight:700; font-size:0.88rem; padding:8px 16px; border:1px solid var(--border); background:var(--card-bg); color:var(--text); display:inline-flex; align-items:center; gap:6px;">
+                <i class="bi bi-upload"></i> Subir imagen
+            </button>
+            <button type="button" id="btnQuitarBenImagen" class="btn btn-outline-secondary" onclick="quitarBenImagen()" style="border-radius:10px; font-weight:700; font-size:0.88rem; padding:8px 16px; border:1px solid var(--border); background:var(--card-bg); color:var(--text); display:inline-flex; align-items:center; gap:6px;">
+                <i class="bi bi-x-lg"></i> Quitar imagen
+            </button>
+        </div>
+        <p class="icono-upload-hint" style="font-size:0.75rem; color:var(--muted); margin-bottom:16px;">
+            PNG, JPG, GIF o WEBP. Se recorta a un cuadro pequeño; ideal con fondo transparente.
+        </p>
+
+        <!-- Separador -->
+        <div class="icon-picker-sep" style="display:flex; align-items:center; gap:10px; font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin:16px 0 12px;">
+            <span style="flex:1; height:1px; background:var(--border);"></span>
+            <span>O ELIGE UN ICONO</span>
+            <span style="flex:1; height:1px; background:var(--border);"></span>
+        </div>
+
+        <!-- Cuadrícula de Íconos agrupados por Categorías -->
+        <div class="icon-picker mb-3" style="max-height:260px; overflow-y:auto; border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--card-bg); scrollbar-width:thin;">
+            <?php foreach ($gruposIconosCat as $grupo => $iconos): ?>
+                <div class="icon-picker-group" style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin:10px 0 6px;">
+                    <?= htmlspecialchars(mb_strtoupper($grupo, 'UTF-8')) ?>
+                </div>
+                <div class="icon-picker-grid" style="display:grid; grid-template-columns:repeat(8, 1fr); gap:6px;">
+                    <?php foreach ($iconos as $ic): ?>
+                        <button type="button" class="ben-icon-tile icon-option" data-icono="<?= $ic ?>" title="<?= $ic ?>" onclick="selectBenTileIcon(this, '<?= $ic ?>')">
+                            <i class="bi <?= $ic ?>"></i>
+                        </button>
+                    <?php endforeach; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- Acciones del Modal -->
+        <div class="crop-actions" style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+            <button type="button" id="closeBenPickerModal" class="btn btn-secondary" style="border-radius:10px; font-weight:700; padding:10px 20px;">Cancelar</button>
+            <button type="button" id="applyBenPickerModal" class="btn btn-accent" style="border-radius:10px; font-weight:800; padding:10px 24px;">Actualizar</button>
+        </div>
     </div>
 </div>
 
@@ -791,48 +1003,122 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalPagina = document.getElementById("modalPagina");
     const modalClosePag = document.getElementById("modalClosePag");
 
-    function updateBenefitIconPreview(row) {
-        if (!row) return;
-        const sel = row.querySelector('.meta-ben-icon');
-        const customWrap = row.querySelector('.meta-ben-custom-wrap');
-        const imgWrap = row.querySelector('.meta-ben-img-wrap');
-        const previewBox = row.querySelector('.icon-preview-box');
-        if (!sel || !previewBox) return;
+    let activeBenTargetRow = null;
+    let selectedBenPickerVal = 'bi-star-fill';
 
-        if (sel.value === '__image__') {
-            if (customWrap) customWrap.style.display = 'none';
-            if (imgWrap) imgWrap.style.display = 'block';
-            const imgVal = imgWrap ? imgWrap.querySelector('.meta-ben-img-url').value.trim() : '';
-            if (imgVal) {
-                previewBox.innerHTML = `<img src="${imgVal}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;">`;
-            } else {
-                previewBox.innerHTML = `<i class="bi bi-image" style="font-size:1.2rem;"></i>`;
-            }
-        } else if (sel.value === '__custom__') {
-            if (customWrap) customWrap.style.display = 'block';
-            if (imgWrap) imgWrap.style.display = 'none';
-            const customVal = customWrap ? customWrap.querySelector('input').value.trim() || 'bi-star-fill' : 'bi-star-fill';
-            previewBox.innerHTML = `<i class="bi ${customVal}" style="font-size:1.2rem;"></i>`;
-        } else {
-            if (customWrap) customWrap.style.display = 'none';
-            if (imgWrap) imgWrap.style.display = 'none';
-            previewBox.innerHTML = `<i class="bi ${sel.value}" style="font-size:1.2rem;"></i>`;
-        }
-    }
+    window.openBenefitIconPickerModal = function(triggerBtn) {
+        activeBenTargetRow = triggerBtn.closest('.ben-row-item');
+        if (!activeBenTargetRow) return;
 
-    function handleBenFileSelect(input) {
+        const currentVal = activeBenTargetRow.querySelector('.meta-ben-icon')?.value || 'bi-star-fill';
+        selectedBenPickerVal = currentVal;
+
+        const isImg = (currentVal.startsWith('http://') || currentVal.startsWith('https://') || currentVal.startsWith('data:image') || currentVal.startsWith('/') || currentVal.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(currentVal));
+
+        const tiles = document.querySelectorAll('.ben-icon-tile');
+        tiles.forEach(t => {
+            t.classList.toggle('selected', !isImg && t.dataset.icono === currentVal);
+        });
+
+        updateBenPickerModalPreview(currentVal);
+        document.getElementById('modalPickerBeneficioIcono').style.display = 'flex';
+    };
+
+    window.selectBenTileIcon = function(btn, code) {
+        selectedBenPickerVal = code;
+        document.querySelectorAll('.ben-icon-tile').forEach(t => t.classList.remove('selected'));
+        if (btn) btn.classList.add('selected');
+        updateBenPickerModalPreview(code);
+    };
+
+    window.handleBenPickerFileSelect = function(input) {
         if (!input || !input.files || !input.files[0]) return;
         const file = input.files[0];
         const reader = new FileReader();
         reader.onload = function(e) {
-            const row = input.closest('.ben-row-item');
-            const urlInput = row ? row.querySelector('.meta-ben-img-url') : null;
-            if (urlInput) {
-                urlInput.value = e.target.result;
-                updateBenefitIconPreview(row);
-            }
+            selectedBenPickerVal = e.target.result;
+            document.querySelectorAll('.ben-icon-tile').forEach(t => t.classList.remove('selected'));
+            updateBenPickerModalPreview(e.target.result);
         };
         reader.readAsDataURL(file);
+    };
+
+    window.quitarBenImagen = function() {
+        selectedBenPickerVal = 'bi-star-fill';
+        const fileInp = document.getElementById('benPickerFileInput');
+        if (fileInp) fileInp.value = '';
+        const tiles = document.querySelectorAll('.ben-icon-tile');
+        tiles.forEach(t => {
+            t.classList.toggle('selected', t.dataset.icono === 'bi-star-fill');
+        });
+        updateBenPickerModalPreview('bi-star-fill');
+    };
+
+    window.updateBenPickerModalPreview = function(val) {
+        const previewBox = document.getElementById('benPickerSelectedPreview');
+        if (!previewBox) return;
+        const isImg = (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:image') || val.startsWith('/') || val.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(val));
+        if (isImg) {
+            previewBox.innerHTML = `<img src="${val}" style="width:100%; height:100%; object-fit:contain;">`;
+        } else {
+            previewBox.innerHTML = `<i class="bi ${val || 'bi-star-fill'}"></i>`;
+        }
+    };
+
+    document.getElementById('closeBenPickerModal')?.addEventListener('click', () => {
+        document.getElementById('modalPickerBeneficioIcono').style.display = 'none';
+    });
+
+    document.getElementById('applyBenPickerModal')?.addEventListener('click', () => {
+        if (activeBenTargetRow) {
+            const hiddenInp = activeBenTargetRow.querySelector('.meta-ben-icon');
+            if (hiddenInp) hiddenInp.value = selectedBenPickerVal;
+
+            const previewBox = activeBenTargetRow.querySelector('.icon-preview-box');
+            const isImg = (selectedBenPickerVal.startsWith('http://') || selectedBenPickerVal.startsWith('https://') || selectedBenPickerVal.startsWith('data:image') || selectedBenPickerVal.startsWith('/') || selectedBenPickerVal.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(selectedBenPickerVal));
+
+            if (previewBox) {
+                if (isImg) {
+                    previewBox.innerHTML = `<img src="${selectedBenPickerVal}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;">`;
+                } else {
+                    previewBox.innerHTML = `<i class="bi ${selectedBenPickerVal}"></i>`;
+                }
+            }
+        }
+        document.getElementById('modalPickerBeneficioIcono').style.display = 'none';
+    });
+
+    const gruposIconosCat = <?= json_encode($gruposIconosCat) ?>;
+
+    function buildIconOptionsHtml(selectedVal) {
+        let optionsHtml = '';
+        const allAllowed = [];
+        selectedVal = String(selectedVal || 'bi-star-fill');
+
+        for (const [grupo, lista] of Object.entries(gruposIconosCat)) {
+            optionsHtml += `<optgroup label="📂 ${grupo}">`;
+            lista.forEach(code => {
+                allAllowed.push(code);
+                const isSelected = (selectedVal === code);
+                optionsHtml += `<option value="${code}" ${isSelected ? 'selected' : ''}>${code}</option>`;
+            });
+            optionsHtml += `</optgroup>`;
+        }
+
+        const isImg = (selectedVal.startsWith('http://') || selectedVal.startsWith('https://') || selectedVal.startsWith('data:image') || selectedVal.startsWith('/') || selectedVal.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(selectedVal));
+        const isPreset = allAllowed.includes(selectedVal);
+
+        let optionMode = 'bi-star-fill';
+        if (isImg) optionMode = '__image__';
+        else if (isPreset) optionMode = selectedVal;
+        else optionMode = '__custom__';
+
+        optionsHtml += `<optgroup label="⚙️ Personalizado">`;
+        optionsHtml += `<option value="__image__" ${optionMode === '__image__' ? 'selected' : ''}>🖼️ Subir / Usar Imagen (PNG, SVG, WebP)...</option>`;
+        optionsHtml += `<option value="__custom__" ${optionMode === '__custom__' ? 'selected' : ''}>✍️ Escribir clase Bootstrap personalizada...</option>`;
+        optionsHtml += `</optgroup>`;
+
+        return { optionsHtml, optionMode, isImg, isPreset };
     }
 
     function renderMetaFields(pageName, meta = {}) {
@@ -926,54 +1212,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 { icono: 'bi-shield-check', titulo: 'Cero spam garantizado', desc: 'Solo contenido relevante. Puedes cancelar tu suscripción en un clic.' }
             ];
 
-            const availableIcons = [
-                { code: 'bi-lightning-charge-fill', label: '⚡ Rayo (Tiempo real)' },
-                { code: 'bi-star-fill',             label: '⭐ Estrella (Exclusivo)' },
-                { code: 'bi-gift-fill',             label: '🎁 Regalo (Sorteos / Beneficios)' },
-                { code: 'bi-shield-check',          label: '🛡️ Escudo (Cero Spam)' },
-                { code: 'bi-bell-fill',             label: '🔔 Campana (Alertas)' },
-                { code: 'bi-envelope-heart-fill',   label: '💌 Correo (Boletín)' },
-                { code: 'bi-fire',                  label: '🔥 Fuego (Tendencias)' },
-                { code: 'bi-controller',            label: '🎮 Control (Gaming)' },
-                { code: 'bi-tv-fill',               label: '📺 Tele (Anime / Cine)' },
-                { code: 'bi-book-fill',             label: '📖 Libro (Manga / Cómics)' },
-                { code: 'bi-gem',                   label: '💎 Gema (Premium)' },
-                { code: 'bi-trophy-fill',           label: '🏆 Trofeo (Premios)' },
-                { code: 'bi-chat-left-text-fill',   label: '💬 Chat (Comunidad)' },
-                { code: 'bi-heart-fill',            label: '❤️ Corazón (Pasión Geek)' },
-                { code: 'bi-award-fill',            label: '🎖️ Medalla (Reconocimientos)' },
-                { code: 'bi-clock-fill',            label: '⏰ Reloj (Instantáneo)' },
-                { code: 'bi-rocket-takeoff-fill',   label: '🚀 Cohete (Lanzamientos)' },
-                { code: 'bi-newspaper',            label: '📰 Periódico (Noticias)' },
-                { code: 'bi-tag-fill',              label: '🏷️ Etiqueta (Descuentos)' },
-                { code: 'bi-sparkles',              label: '✨ Destellos (Novedades)' }
-            ];
-
             let benHtml = '';
             ben.forEach((b, idx) => {
                 const currentIcon = String(b.icono || 'bi-star-fill');
                 const isImg = (currentIcon.startsWith('http://') || currentIcon.startsWith('https://') || currentIcon.startsWith('data:image') || currentIcon.startsWith('/') || currentIcon.startsWith('img/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(currentIcon));
-                const isPreset = availableIcons.some(ic => ic.code === currentIcon);
-
-                let selectedOptionValue = 'bi-star-fill';
-                if (isImg) {
-                    selectedOptionValue = '__image__';
-                } else if (isPreset) {
-                    selectedOptionValue = currentIcon;
-                } else {
-                    selectedOptionValue = '__custom__';
-                }
-
-                const customIconValue = (!isPreset && !isImg) ? currentIcon : '';
-                const customImgValue = isImg ? currentIcon : '';
-
-                let optionsHtml = '';
-                availableIcons.forEach(ic => {
-                    optionsHtml += `<option value="${ic.code}" ${selectedOptionValue === ic.code ? 'selected' : ''}>${ic.label}</option>`;
-                });
-                optionsHtml += `<option value="__image__" ${selectedOptionValue === '__image__' ? 'selected' : ''}>🖼️ Subir / Usar Imagen (PNG, SVG, WebP)...</option>`;
-                optionsHtml += `<option value="__custom__" ${selectedOptionValue === '__custom__' ? 'selected' : ''}>✍️ Escribir clase Bootstrap personalizada...</option>`;
-
                 const previewContent = isImg 
                     ? `<img src="${currentIcon}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;">`
                     : `<i class="bi ${currentIcon}"></i>`;
@@ -988,36 +1230,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div style="display:grid; grid-template-columns: 210px 1fr; gap:10px; margin-bottom:8px; align-items:center;">
                             <div style="display:flex; align-items:center; gap:8px;">
+                                <input type="hidden" class="meta-ben-icon" value="${currentIcon}">
                                 <div class="icon-preview-box" style="width:36px; height:36px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid rgba(239,51,99,0.2); overflow:hidden;">
                                     ${previewContent}
                                 </div>
-                                <select class="cn-input meta-ben-icon" onchange="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-weight:700; font-size:0.82rem; padding:8px 10px; cursor:pointer;">
-                                    ${optionsHtml}
-                                </select>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="openBenefitIconPickerModal(this)" style="border-radius:10px; font-weight:700; font-size:0.8rem; padding:6px 12px; white-space:nowrap;">
+                                    <i class="bi bi-palette-fill me-1" style="color:var(--accent);"></i> Cambiar Ícono
+                                </button>
                             </div>
                             <input type="text" class="cn-input meta-ben-title" value="${b.titulo || ''}" placeholder="Título del Beneficio">
                         </div>
-
-                        <!-- Selector de Imagen -->
-                        <div class="meta-ben-img-wrap" style="margin-bottom:8px; display:${selectedOptionValue === '__image__' ? 'block' : 'none'}; background:rgba(239,51,99,0.05); padding:10px; border-radius:10px; border:1px dashed rgba(239,51,99,0.2);">
-                            <label style="font-size:0.75rem; font-weight:800; color:var(--accent); display:block; margin-bottom:6px;">
-                                <i class="bi bi-image me-1"></i> Imagen del Ícono (SVG, PNG, WebP)
-                            </label>
-                            <div style="display:flex; gap:8px; align-items:center;">
-                                <input type="text" class="cn-input meta-ben-img-url" value="${customImgValue}" placeholder="URL o sube archivo (https://... o /img/icono.svg)" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-size:0.82rem;">
-                                <input type="file" class="meta-ben-file-input" accept="image/*" style="display:none;" onchange="handleBenFileSelect(this)">
-                                <button type="button" class="btn btn-sm btn-outline-accent" onclick="this.previousElementSibling.click()" style="border-radius:8px; font-weight:700; font-size:0.78rem; white-space:nowrap;">
-                                    <i class="bi bi-upload me-1"></i> Subir Imagen
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Selector de Clase Custom -->
-                        <div class="meta-ben-custom-wrap" style="margin-bottom:8px; display:${selectedOptionValue === '__custom__' ? 'block' : 'none'};">
-                            <label style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:2px;">Clase de ícono Bootstrap (ej: bi-discord, bi-twitch):</label>
-                            <input type="text" class="cn-input meta-ben-custom-icon" value="${customIconValue}" placeholder="Ej: bi-discord" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))">
-                        </div>
-
                         <input type="text" class="cn-input meta-ben-desc" value="${b.desc || ''}" placeholder="Descripción corta explicativa">
                     </div>
                 `;
@@ -1165,42 +1387,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnAddBen = container.querySelector('#btnAddBeneficio');
         const beneficiosListContainer = container.querySelector('#beneficiosListContainer');
         if (btnAddBen && beneficiosListContainer) {
-            const availableIcons = [
-                { code: 'bi-lightning-charge-fill', label: '⚡ Rayo (Tiempo real)' },
-                { code: 'bi-star-fill',             label: '⭐ Estrella (Exclusivo)' },
-                { code: 'bi-gift-fill',             label: '🎁 Regalo (Sorteos / Beneficios)' },
-                { code: 'bi-shield-check',          label: '🛡️ Escudo (Cero Spam)' },
-                { code: 'bi-bell-fill',             label: '🔔 Campana (Alertas)' },
-                { code: 'bi-envelope-heart-fill',   label: '💌 Correo (Boletín)' },
-                { code: 'bi-fire',                  label: '🔥 Fuego (Tendencias)' },
-                { code: 'bi-controller',            label: '🎮 Control (Gaming)' },
-                { code: 'bi-tv-fill',               label: '📺 Tele (Anime / Cine)' },
-                { code: 'bi-book-fill',             label: '📖 Libro (Manga / Cómics)' },
-                { code: 'bi-gem',                   label: '💎 Gema (Premium)' },
-                { code: 'bi-trophy-fill',           label: '🏆 Trofeo (Premios)' },
-                { code: 'bi-chat-left-text-fill',   label: '💬 Chat (Comunidad)' },
-                { code: 'bi-heart-fill',            label: '❤️ Corazón (Pasión Geek)' },
-                { code: 'bi-award-fill',            label: '🎖️ Medalla (Reconocimientos)' },
-                { code: 'bi-clock-fill',            label: '⏰ Reloj (Instantáneo)' },
-                { code: 'bi-rocket-takeoff-fill',   label: '🚀 Cohete (Lanzamientos)' },
-                { code: 'bi-newspaper',            label: '📰 Periódico (Noticias)' },
-                { code: 'bi-tag-fill',              label: '🏷️ Etiqueta (Descuentos)' },
-                { code: 'bi-sparkles',              label: '✨ Destellos (Novedades)' }
-            ];
-
             btnAddBen.addEventListener('click', () => {
                 const count = beneficiosListContainer.children.length + 1;
                 const row = document.createElement('div');
                 row.className = 'ben-row-item';
                 row.style.cssText = 'border:1px solid var(--border); padding:12px; border-radius:12px; background:var(--bg); margin-bottom:10px;';
                 
-                let optionsHtml = '';
-                availableIcons.forEach(ic => {
-                    optionsHtml += `<option value="${ic.code}" ${ic.code === 'bi-star-fill' ? 'selected' : ''}>${ic.label}</option>`;
-                });
-                optionsHtml += `<option value="__image__">🖼️ Subir / Usar Imagen (PNG, SVG, WebP)...</option>`;
-                optionsHtml += `<option value="__custom__">✍️ Escribir clase Bootstrap personalizada...</option>`;
-
                 row.innerHTML = `
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
                         <span style="font-size:0.78rem; font-weight:800; color:var(--accent);">Nuevo Beneficio #${count}</span>
@@ -1210,36 +1402,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div style="display:grid; grid-template-columns: 210px 1fr; gap:10px; margin-bottom:8px; align-items:center;">
                         <div style="display:flex; align-items:center; gap:8px;">
+                            <input type="hidden" class="meta-ben-icon" value="bi-star-fill">
                             <div class="icon-preview-box" style="width:36px; height:36px; border-radius:10px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid rgba(239,51,99,0.2); overflow:hidden;">
                                 <i class="bi bi-star-fill"></i>
                             </div>
-                            <select class="cn-input meta-ben-icon" onchange="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-weight:700; font-size:0.82rem; padding:8px 10px; cursor:pointer;">
-                                ${optionsHtml}
-                            </select>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="openBenefitIconPickerModal(this)" style="border-radius:10px; font-weight:700; font-size:0.8rem; padding:6px 12px; white-space:nowrap;">
+                                <i class="bi bi-palette-fill me-1" style="color:var(--accent);"></i> Cambiar Ícono
+                            </button>
                         </div>
                         <input type="text" class="cn-input meta-ben-title" value="" placeholder="Título del Beneficio">
                     </div>
-
-                    <!-- Selector de Imagen -->
-                    <div class="meta-ben-img-wrap" style="margin-bottom:8px; display:none; background:rgba(239,51,99,0.05); padding:10px; border-radius:10px; border:1px dashed rgba(239,51,99,0.2);">
-                        <label style="font-size:0.75rem; font-weight:800; color:var(--accent); display:block; margin-bottom:6px;">
-                            <i class="bi bi-image me-1"></i> Imagen del Ícono (SVG, PNG, WebP)
-                        </label>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <input type="text" class="cn-input meta-ben-img-url" value="" placeholder="URL o sube archivo (https://... o /img/icono.svg)" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))" style="font-size:0.82rem;">
-                            <input type="file" class="meta-ben-file-input" accept="image/*" style="display:none;" onchange="handleBenFileSelect(this)">
-                            <button type="button" class="btn btn-sm btn-outline-accent" onclick="this.previousElementSibling.click()" style="border-radius:8px; font-weight:700; font-size:0.78rem; white-space:nowrap;">
-                                <i class="bi bi-upload me-1"></i> Subir Imagen
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Selector de Clase Custom -->
-                    <div class="meta-ben-custom-wrap" style="margin-bottom:8px; display:none;">
-                        <label style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:2px;">Clase de ícono Bootstrap (ej: bi-discord, bi-twitch):</label>
-                        <input type="text" class="cn-input meta-ben-custom-icon" value="" placeholder="Ej: bi-discord" oninput="updateBenefitIconPreview(this.closest('.ben-row-item'))">
-                    </div>
-
                     <input type="text" class="cn-input meta-ben-desc" value="" placeholder="Descripción corta explicativa">
                 `;
                 beneficiosListContainer.appendChild(row);
@@ -1323,18 +1495,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const benRows = container.querySelectorAll(".ben-row-item");
             metaObj.beneficios = [];
             benRows.forEach(row => {
-                const sel = row.querySelector(".meta-ben-icon");
-                const customInp = row.querySelector(".meta-ben-custom-icon");
-                const imgInp = row.querySelector(".meta-ben-img-url");
+                const iconInp = row.querySelector(".meta-ben-icon");
                 const titleInp = row.querySelector(".meta-ben-title");
                 const descInp = row.querySelector(".meta-ben-desc");
 
-                let iconVal = sel ? sel.value : 'bi-star-fill';
-                if (iconVal === '__image__' && imgInp) {
-                    iconVal = imgInp.value.trim() || 'bi-image';
-                } else if (iconVal === '__custom__' && customInp) {
-                    iconVal = customInp.value.trim() || 'bi-star-fill';
-                }
+                const iconVal = iconInp ? iconInp.value.trim() : 'bi-star-fill';
                 const titleVal = titleInp ? titleInp.value.trim() : '';
                 const descVal = descInp ? descInp.value.trim() : '';
 
@@ -1399,13 +1564,102 @@ document.addEventListener('DOMContentLoaded', () => {
         serializeMetaFields();
     });
 
-    modalClosePag.addEventListener('click', () => {
-        modalPagina.style.display = "none";
+    // ── Lógica del Modal y Acciones de Redes Sociales ──
+    const modalRedSocial = document.getElementById("modalRedSocial");
+    const btnAgregarRed = document.getElementById("btnAgregarRed");
+    const modalCloseRed = document.getElementById("modalCloseRed");
+
+    if (btnAgregarRed && modalRedSocial) {
+        btnAgregarRed.addEventListener("click", () => {
+            document.getElementById("titleModalRed").innerHTML = '<i class="bi bi-share-fill text-accent"></i> Agregar Red Social';
+            document.getElementById("red_id_red").value = "0";
+            document.getElementById("red_nombre").value = "";
+            document.getElementById("red_url").value = "";
+            document.getElementById("red_icono").value = "bi-facebook";
+            document.getElementById("red_color").value = "#EF3363";
+            document.getElementById("red_orden").value = "1";
+            document.getElementById("red_activo").checked = true;
+            modalRedSocial.style.display = "flex";
+        });
+
+        if (modalCloseRed) {
+            modalCloseRed.addEventListener("click", () => {
+                modalRedSocial.style.display = "none";
+            });
+        }
+    }
+
+    // Editar Red Social
+    document.querySelectorAll(".btn-edit-red").forEach(btn => {
+        btn.addEventListener("click", function() {
+            document.getElementById("titleModalRed").innerHTML = '<i class="bi bi-pencil-square text-accent"></i> Editar Red Social';
+            document.getElementById("red_id_red").value = this.dataset.id;
+            document.getElementById("red_nombre").value = this.dataset.nombre || "";
+            document.getElementById("red_url").value = this.dataset.url || "";
+            document.getElementById("red_icono").value = this.dataset.icono || "bi-facebook";
+            document.getElementById("red_color").value = this.dataset.color || "#EF3363";
+            document.getElementById("red_orden").value = this.dataset.orden || "1";
+            document.getElementById("red_activo").checked = (this.dataset.activo === "1");
+            if (modalRedSocial) modalRedSocial.style.display = "flex";
+        });
     });
 
-    window.addEventListener('click', (e) => {
-        if(e.target === modalPagina) {
+    // Conmutar Activa/Inactiva vía AJAX
+    document.querySelectorAll(".btn-toggle-red").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const id = this.dataset.id;
+            const self = this;
+            const formData = new FormData();
+            formData.append("id_red", id);
+
+            fetch("./../controllers/redes_toggle.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    self.textContent = data.label;
+                    if (data.activo === 1) {
+                        self.classList.remove("btn-secondary");
+                        self.classList.add("btn-success");
+                    } else {
+                        self.classList.remove("btn-success");
+                        self.classList.add("btn-secondary");
+                    }
+                } else {
+                    alert(data.message || "Error al actualizar estado");
+                }
+            })
+            .catch(err => console.error(err));
+        });
+    });
+
+    // Eliminar Red Social
+    document.querySelectorAll(".btn-delete-red").forEach(btn => {
+        btn.addEventListener("click", async function() {
+            const id = this.dataset.id;
+            const nombre = this.dataset.nombre || "esta red social";
+            const confirmFn = window.cnConfirm || (msg => Promise.resolve(confirm(msg)));
+            const confirmOk = await confirmFn(`¿Estás seguro de eliminar la red social "${nombre}"?`);
+            if (confirmOk) {
+                window.location.href = `./../controllers/redes_eliminar.php?id=${id}`;
+            }
+        });
+    });
+
+    if (modalClosePag && modalPagina) {
+        modalClosePag.addEventListener('click', () => {
             modalPagina.style.display = "none";
+        });
+    }
+
+    window.addEventListener('click', (e) => {
+        if (e.target === modalPagina) {
+            modalPagina.style.display = "none";
+        }
+        if (e.target === modalRedSocial) {
+            modalRedSocial.style.display = "none";
         }
     });
 });

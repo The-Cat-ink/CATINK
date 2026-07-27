@@ -190,10 +190,23 @@ $beneficios = $meta['beneficios'] ?? [
             <div class="sus-divider"></div>
             <p class="sus-social-label">Síguenos también en</p>
             <div class="sus-social-links">
-                <a href="https://www.facebook.com/catink.mx" target="_blank" rel="noopener" class="sus-social-btn fb"><i class="bi bi-facebook"></i> Facebook</a>
-                <a href="https://www.instagram.com/catink.mx" target="_blank" rel="noopener" class="sus-social-btn ig"><i class="bi bi-instagram"></i> Instagram</a>
-                <a href="https://www.tiktok.com/@catink.mx" target="_blank" rel="noopener" class="sus-social-btn tt"><i class="bi bi-tiktok"></i> TikTok</a>
-                <a href="https://www.youtube.com/@catink" target="_blank" rel="noopener" class="sus-social-btn yt"><i class="bi bi-youtube"></i> YouTube</a>
+                <?php 
+                require_once(__DIR__ . '/helpers/socialhelper.php');
+                $susSocials = getCatInkSocials(true);
+                foreach ($susSocials as $soc): 
+                    $ic = $soc['icono'];
+                    $isImg = !empty($soc['icono_img']) || (strpos($ic, 'http') === 0 || strpos($ic, 'data:image') === 0 || strpos($ic, '/') === 0);
+                    $color = $soc['color'] ?: '#EF3363';
+                ?>
+                    <a href="<?= htmlspecialchars($soc['url']) ?>" target="_blank" rel="noopener" class="sus-social-btn" style="border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:8px 12px; display:inline-flex; align-items:center; gap:8px; text-decoration:none; color:var(--text); font-weight:700; font-size:0.85rem; background:rgba(255,255,255,0.03); transition:all 0.2s;">
+                        <?php if ($isImg): ?>
+                            <img src="<?= htmlspecialchars($soc['icono_img'] ?: $ic) ?>" alt="" style="width:18px; height:18px; object-fit:contain;">
+                        <?php else: ?>
+                            <i class="bi <?= htmlspecialchars($ic) ?>" style="color:<?= htmlspecialchars($color) ?>;"></i>
+                        <?php endif; ?>
+                        <span><?= htmlspecialchars($soc['nombre']) ?></span>
+                    </a>
+                <?php endforeach; ?>
             </div>
         </div>
 

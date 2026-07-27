@@ -84,8 +84,8 @@ try {
     $mail->SMTPSecure = env('SMTP_SECURE', 'ssl');
     $mail->Port = env('SMTP_PORT', 465);
 
-    $fromEmail = env('SMTP_AUTH_FROM_EMAIL', env('SMTP_FROM_EMAIL', 'no-reply@catink.com.mx'));
-    $fromName = env('SMTP_AUTH_FROM_NAME', env('SMTP_FROM_NAME', 'CatInk'));
+    $fromEmail = env('SMTP_AUTH_FROM_EMAIL', 'no-reply@catink.com.mx');
+    $fromName = env('SMTP_AUTH_FROM_NAME', 'CatInk');
     $mail->setFrom($fromEmail, $fromName);
     require_once(__DIR__ . "/../views/helpers/emailhelper.php");
 
