@@ -385,73 +385,144 @@
 </div><!-- /.container-fluid -->
 
 <!-- ══ Modal Agregar/Editar Red Social ════════════════════════════ -->
-<div id="modalRedSocial" class="crop-modal" style="display: none;">
-    <div class="crop-modal-content" style="max-width: 580px; width:95%; border-radius:18px;">
-        <h3 id="titleModalRed" style="font-weight:800; margin-top:0;"><i class="bi bi-share-fill text-accent"></i> Agregar Red Social</h3>
+<div id="modalRedSocial" class="crop-modal" style="display: none; position:fixed; z-index:99999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.65); backdrop-filter:blur(6px); justify-content:center; align-items:center;">
+    <div class="crop-modal-content" style="max-width: 600px; width:95%; border-radius:24px; background:var(--card-bg); border:1px solid var(--border); box-shadow:0 24px 60px rgba(0,0,0,0.35); overflow:hidden; padding:0;">
+        
+        <!-- Header del Modal -->
+        <div style="padding:20px 24px; border-bottom:1px solid var(--border); background:rgba(239,51,99,0.03); display:flex; align-items:center; justify-content:space-between;">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width:42px; height:42px; border-radius:14px; background:rgba(239,51,99,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.3rem;">
+                    <i class="bi bi-share-fill"></i>
+                </div>
+                <div>
+                    <h4 id="titleModalRed" style="font-weight:900; margin:0; font-size:1.15rem; color:var(--text);">
+                        Agregar Red Social
+                    </h4>
+                    <span style="font-size:0.78rem; color:var(--muted); font-weight:600;">Configura los enlaces oficiales y la imagen de tu plataforma.</span>
+                </div>
+            </div>
+            
+            <!-- Vista Previa de la Red Social -->
+            <div id="red_preview_badge" style="display:flex; align-items:center; gap:8px; padding:6px 14px; border-radius:30px; background:#1877F2; color:#fff; font-size:0.85rem; font-weight:800; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition:all 0.3s ease;">
+                <i id="red_preview_icon" class="bi bi-facebook" style="font-size:1.05rem;"></i>
+                <span id="red_preview_name">Preview</span>
+            </div>
+        </div>
 
-        <form id="formRedSocial" action="./../controllers/redes_guardar.php" method="POST" enctype="multipart/form-data">
+        <form id="formRedSocial" action="./../controllers/redes_guardar.php" method="POST" enctype="multipart/form-data" style="padding:24px;">
             <input type="hidden" name="id_red" id="red_id_red" value="0">
 
-            <div style="margin-bottom:12px;">
-                <label style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:4px; color:var(--text);">Nombre de la Red Social *</label>
-                <input type="text" name="nombre" id="red_nombre" class="cn-input" required placeholder="Ej: Discord, Twitch, Threads, Spotify, WhatsApp...">
+            <div class="row g-3 mb-3">
+                <!-- Nombre -->
+                <div class="col-md-6 col-12">
+                    <label style="font-size:0.82rem; font-weight:800; display:block; margin-bottom:6px; color:var(--text);">
+                        Nombre de la Red *
+                    </label>
+                    <div style="position:relative;">
+                        <input type="text" name="nombre" id="red_nombre" class="cn-input" required placeholder="Ej: TikTok, Discord, YouTube" style="border-radius:12px; font-weight:700; padding-left:38px;">
+                        <i class="bi bi-tag-fill" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:0.95rem;"></i>
+                    </div>
+                </div>
+
+                <!-- URL -->
+                <div class="col-md-6 col-12">
+                    <label style="font-size:0.82rem; font-weight:800; display:block; margin-bottom:6px; color:var(--text);">
+                        Enlace URL Completo *
+                    </label>
+                    <div style="position:relative;">
+                        <input type="url" name="url" id="red_url" class="cn-input" required placeholder="https://..." style="border-radius:12px; font-weight:700; padding-left:38px;">
+                        <i class="bi bi-link-45deg" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:1.1rem;"></i>
+                    </div>
+                </div>
             </div>
 
-            <div style="margin-bottom:12px;">
-                <label style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:4px; color:var(--text);">Enlace URL Completo *</label>
-                <input type="url" name="url" id="red_url" class="cn-input" required placeholder="Ej: https://discord.gg/catink">
-            </div>
-
-            <div style="display:grid; grid-template-columns:1fr 120px; gap:12px; margin-bottom:12px;">
-                <div>
-                    <label style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:4px; color:var(--text);">Ícono Bootstrap</label>
-                    <select name="icono" id="red_icono" class="cn-input" style="font-weight:700;">
-                        <option value="bi-facebook">Facebook (bi-facebook)</option>
-                        <option value="bi-instagram">Instagram (bi-instagram)</option>
-                        <option value="bi-tiktok">TikTok (bi-tiktok)</option>
-                        <option value="bi-youtube">YouTube (bi-youtube)</option>
-                        <option value="bi-twitter-x">X / Twitter (bi-twitter-x)</option>
-                        <option value="bi-discord">Discord (bi-discord)</option>
-                        <option value="bi-twitch">Twitch (bi-twitch)</option>
-                        <option value="bi-spotify">Spotify (bi-spotify)</option>
-                        <option value="bi-whatsapp">WhatsApp (bi-whatsapp)</option>
-                        <option value="bi-telegram">Telegram (bi-telegram)</option>
-                        <option value="bi-threads">Threads (bi-threads)</option>
-                        <option value="bi-linkedin">LinkedIn (bi-linkedin)</option>
-                        <option value="bi-reddit">Reddit (bi-reddit)</option>
-                        <option value="bi-snapchat">Snapchat (bi-snapchat)</option>
-                        <option value="bi-pinterest">Pinterest (bi-pinterest)</option>
-                        <option value="bi-globe">Sitio Web / Globo (bi-globe)</option>
-                        <option value="bi-link-45deg">Enlace Genérico (bi-link-45deg)</option>
+            <!-- Selección de Ícono Bootstrap & Color -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-7 col-12">
+                    <label style="font-size:0.82rem; font-weight:800; display:block; margin-bottom:6px; color:var(--text);">
+                        Ícono Vectorial (Bootstrap Icons)
+                    </label>
+                    <select name="icono" id="red_icono" class="cn-input" style="border-radius:12px; font-weight:700;">
+                        <option value="bi-facebook" data-color="#1877F2">Facebook (bi-facebook)</option>
+                        <option value="bi-instagram" data-color="#E4405F">Instagram (bi-instagram)</option>
+                        <option value="bi-tiktok" data-color="#000000">TikTok (bi-tiktok)</option>
+                        <option value="bi-youtube" data-color="#FF0000">YouTube (bi-youtube)</option>
+                        <option value="bi-twitter-x" data-color="#000000">X / Twitter (bi-twitter-x)</option>
+                        <option value="bi-discord" data-color="#5865F2">Discord (bi-discord)</option>
+                        <option value="bi-twitch" data-color="#9146FF">Twitch (bi-twitch)</option>
+                        <option value="bi-spotify" data-color="#1DB954">Spotify (bi-spotify)</option>
+                        <option value="bi-whatsapp" data-color="#25D366">WhatsApp (bi-whatsapp)</option>
+                        <option value="bi-telegram" data-color="#229ED9">Telegram (bi-telegram)</option>
+                        <option value="bi-threads" data-color="#000000">Threads (bi-threads)</option>
+                        <option value="bi-linkedin" data-color="#0A66C2">LinkedIn (bi-linkedin)</option>
+                        <option value="bi-reddit" data-color="#FF4500">Reddit (bi-reddit)</option>
+                        <option value="bi-snapchat" data-color="#FFFC00">Snapchat (bi-snapchat)</option>
+                        <option value="bi-pinterest" data-color="#BD081C">Pinterest (bi-pinterest)</option>
+                        <option value="bi-globe" data-color="#EF3363">Sitio Web / Globo (bi-globe)</option>
+                        <option value="bi-link-45deg" data-color="#EF3363">Enlace Genérico (bi-link-45deg)</option>
                     </select>
                 </div>
-                <div>
-                    <label style="font-size:0.82rem; font-weight:700; display:block; margin-bottom:4px; color:var(--text);">Color Marca</label>
-                    <input type="color" name="color" id="red_color" value="#EF3363" class="cn-input" style="height:38px; padding:2px; cursor:pointer;">
+
+                <div class="col-md-5 col-12">
+                    <label style="font-size:0.82rem; font-weight:800; display:block; margin-bottom:6px; color:var(--text);">
+                        Color de Marca
+                    </label>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="color" name="color" id="red_color" value="#EF3363" class="cn-input" style="width:48px; height:42px; padding:3px; border-radius:10px; cursor:pointer;">
+                        <input type="text" id="red_color_hex" value="#EF3363" class="cn-input" style="border-radius:10px; font-weight:700; text-transform:uppercase; font-size:0.85rem;" readonly>
+                    </div>
                 </div>
             </div>
 
-            <div style="margin-bottom:12px; background:rgba(239,51,99,0.05); padding:10px; border-radius:10px; border:1px dashed rgba(239,51,99,0.2);">
-                <label style="font-size:0.78rem; font-weight:800; color:var(--accent); display:block; margin-bottom:4px;">
-                    <i class="bi bi-image me-1"></i> Opcional: Subir Ícono o Logo Personalizado (PNG, SVG, WebP)
-                </label>
-                <input type="file" name="icono_archivo" accept="image/*" class="cn-input" style="font-size:0.82rem;">
+            <!-- Paleta de Colores Rápidos -->
+            <div class="mb-3">
+                <span style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:6px;">Colores recomendados de marca:</span>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button type="button" class="btn-preset-color" data-color="#1877F2" style="width:24px; height:24px; border-radius:50%; background:#1877F2; border:none; cursor:pointer; box-shadow:0 2px 6px rgba(24,119,242,0.4);" title="Facebook"></button>
+                    <button type="button" class="btn-preset-color" data-color="#E4405F" style="width:24px; height:24px; border-radius:50%; background:#E4405F; border:none; cursor:pointer; box-shadow:0 2px 6px rgba(228,64,95,0.4);" title="Instagram"></button>
+                    <button type="button" class="btn-preset-color" data-color="#000000" style="width:24px; height:24px; border-radius:50%; background:#000000; border:none; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.4);" title="TikTok / X"></button>
+                    <button type="button" class="btn-preset-color" data-color="#FF0000" style="width:24px; height:24px; border-radius:50%; background:#FF0000; border:none; cursor:pointer; box-shadow:0 2px 6px rgba(255,0,0,0.4);" title="YouTube"></button>
+                    <button type="button" class="btn-preset-color" data-color="#5865F2" style="width:24px; height:24px; border-radius:50%; background:#5865F2; border:none; cursor:pointer; box-shadow:0 2px 6px rgba(88,101,242,0.4);" title="Discord"></button>
+                    <button type="button" class="btn-preset-color" data-color="#9146FF" style="width:24px; height:24px; border-radius:50%; background:#9146FF; border:none; cursor:pointer; box-shadow:0 2px 6px rgba(145,70,255,0.4);" title="Twitch"></button>
+                    <button type="button" class="btn-preset-color" data-color="#1DB954" style="width:24px; height:24px; border-radius:50%; background:#1DB954; border:none; cursor:pointer; box-shadow:0 2px 6px rgba(29,185,84,0.4);" title="Spotify"></button>
+                    <button type="button" class="btn-preset-color" data-color="#25D366" style="width:24px; height:24px; border-radius:50%; background:#25D366; border:none; cursor:pointer; box-shadow:0 2px 6px rgba(37,211,102,0.4);" title="WhatsApp"></button>
+                    <button type="button" class="btn-preset-color" data-color="#EF3363" style="width:24px; height:24px; border-radius:50%; background:#EF3363; border:none; cursor:pointer; box-shadow:0 2px 6px rgba(239,51,99,0.4);" title="CatInk Pink"></button>
+                </div>
             </div>
 
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-                <label style="font-size:0.85rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; margin:0; color:var(--text);">
-                    <input type="checkbox" name="activo" id="red_activo" value="1" checked style="width:18px; height:18px;">
+            <!-- Subir Ícono Personalizado (Drag & Drop Styled) -->
+            <div class="mb-4" style="background:var(--bg-subtle, rgba(239,51,99,0.03)); border:1.5px dashed rgba(239,51,99,0.3); border-radius:16px; padding:16px; text-align:center; position:relative; transition:all 0.2s ease;">
+                <i class="bi bi-cloud-arrow-up-fill text-accent" style="font-size:1.8rem; display:block; margin-bottom:4px;"></i>
+                <span style="font-size:0.85rem; font-weight:800; color:var(--text); display:block; margin-bottom:2px;">
+                    Opcional: Subir Ícono o Logotipo Propio
+                </span>
+                <span style="font-size:0.75rem; color:var(--muted); display:block; margin-bottom:10px;">Formatos aceptados: PNG, SVG, WebP (Se usará sobre el ícono predeterminado)</span>
+                
+                <label for="icono_archivo_input" class="btn btn-outline-secondary btn-sm" style="border-radius:10px; font-weight:700; font-size:0.8rem; cursor:pointer;">
+                    <i class="bi bi-folder2-open me-1"></i> Seleccionar archivo...
+                </label>
+                <input type="file" name="icono_archivo" id="icono_archivo_input" accept="image/*" style="display:none;">
+                <span id="file_selected_label" style="font-size:0.78rem; font-weight:700; color:var(--accent); display:block; margin-top:8px;"></span>
+            </div>
+
+            <!-- Visibilidad y Orden -->
+            <div class="d-flex align-items-center justify-content-between mb-4 p-3" style="background:var(--bg); border:1px solid var(--border); border-radius:14px;">
+                <label style="font-size:0.88rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:10px; margin:0; color:var(--text);">
+                    <input type="checkbox" name="activo" id="red_activo" value="1" checked style="width:20px; height:20px; accent-color:var(--accent); cursor:pointer;">
                     <span>Mostrar en el sitio web (Público)</span>
                 </label>
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="font-size:0.78rem; font-weight:700; color:var(--muted);">Orden:</span>
-                    <input type="number" name="orden" id="red_orden" value="1" style="width:60px;" class="cn-input">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:0.8rem; font-weight:800; color:var(--muted);">Orden:</span>
+                    <input type="number" name="orden" id="red_orden" value="1" style="width:65px; border-radius:10px; text-align:center; font-weight:800;" class="cn-input">
                 </div>
             </div>
 
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button type="button" id="modalCloseRed" class="btn btn-secondary" style="border-radius:10px; font-weight:700;">Cancelar</button>
-                <button type="submit" class="btn btn-accent" style="border-radius:10px; font-weight:700;">Guardar Red Social</button>
+            <!-- Footer Acciones -->
+            <div style="display:flex; justify-content:flex-end; gap:12px;">
+                <button type="button" id="modalCloseRed" class="btn btn-secondary px-4 py-2" style="border-radius:12px; font-weight:700; font-size:0.9rem;">Cancelar</button>
+                <button type="submit" class="btn btn-accent px-4 py-2" style="border-radius:12px; font-weight:800; font-size:0.9rem; box-shadow:0 4px 16px rgba(239,51,99,0.35);">
+                    <i class="bi bi-check-circle-fill me-1"></i> Guardar Red Social
+                </button>
             </div>
         </form>
     </div>
@@ -1569,16 +1640,75 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAgregarRed = document.getElementById("btnAgregarRed");
     const modalCloseRed = document.getElementById("modalCloseRed");
 
+    const redNombreInput = document.getElementById("red_nombre");
+    const redIconoSelect = document.getElementById("red_icono");
+    const redColorInput = document.getElementById("red_color");
+    const redColorHex = document.getElementById("red_color_hex");
+    const redPreviewBadge = document.getElementById("red_preview_badge");
+    const redPreviewIcon = document.getElementById("red_preview_icon");
+    const redPreviewName = document.getElementById("red_preview_name");
+    const fileInputRed = document.getElementById("icono_archivo_input");
+    const fileLabelRed = document.getElementById("file_selected_label");
+
+    function updateRedPreview() {
+        if (!redPreviewBadge || !redPreviewIcon || !redPreviewName) return;
+        const nombre = redNombreInput ? redNombreInput.value.trim() : "";
+        const icono = redIconoSelect ? redIconoSelect.value : "bi-facebook";
+        const color = redColorInput ? redColorInput.value : "#1877F2";
+
+        if (redColorHex) redColorHex.value = color.toUpperCase();
+        redPreviewBadge.style.background = color;
+        redPreviewIcon.className = 'bi ' + icono;
+        redPreviewName.textContent = nombre ? nombre : 'Preview';
+    }
+
+    if (redNombreInput) redNombreInput.addEventListener("input", updateRedPreview);
+    if (redColorInput) redColorInput.addEventListener("input", updateRedPreview);
+    if (redIconoSelect) {
+        redIconoSelect.addEventListener("change", () => {
+            const opt = redIconoSelect.options[redIconoSelect.selectedIndex];
+            if (opt && opt.dataset.color && (!redColorInput.value || redColorInput.value === '#EF3363' || redColorInput.value === '#1877F2')) {
+                redColorInput.value = opt.dataset.color;
+            }
+            updateRedPreview();
+        });
+    }
+
+    // Botones de colores preestablecidos
+    document.querySelectorAll(".btn-preset-color").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const c = this.dataset.color;
+            if (c && redColorInput) {
+                redColorInput.value = c;
+                updateRedPreview();
+            }
+        });
+    });
+
+    // Etiqueta de archivo seleccionado
+    if (fileInputRed && fileLabelRed) {
+        fileInputRed.addEventListener("change", function() {
+            if (this.files && this.files[0]) {
+                fileLabelRed.textContent = '📄 Archivo seleccionado: ' + this.files[0].name;
+            } else {
+                fileLabelRed.textContent = '';
+            }
+        });
+    }
+
     if (btnAgregarRed && modalRedSocial) {
         btnAgregarRed.addEventListener("click", () => {
-            document.getElementById("titleModalRed").innerHTML = '<i class="bi bi-share-fill text-accent"></i> Agregar Red Social';
+            document.getElementById("titleModalRed").innerHTML = 'Agregar Red Social';
             document.getElementById("red_id_red").value = "0";
-            document.getElementById("red_nombre").value = "";
+            if (redNombreInput) redNombreInput.value = "";
             document.getElementById("red_url").value = "";
-            document.getElementById("red_icono").value = "bi-facebook";
-            document.getElementById("red_color").value = "#EF3363";
+            if (redIconoSelect) redIconoSelect.value = "bi-facebook";
+            if (redColorInput) redColorInput.value = "#1877F2";
             document.getElementById("red_orden").value = "1";
             document.getElementById("red_activo").checked = true;
+            if (fileInputRed) fileInputRed.value = "";
+            if (fileLabelRed) fileLabelRed.textContent = "";
+            updateRedPreview();
             modalRedSocial.style.display = "flex";
         });
 
@@ -1592,14 +1722,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Editar Red Social
     document.querySelectorAll(".btn-edit-red").forEach(btn => {
         btn.addEventListener("click", function() {
-            document.getElementById("titleModalRed").innerHTML = '<i class="bi bi-pencil-square text-accent"></i> Editar Red Social';
+            document.getElementById("titleModalRed").innerHTML = 'Editar Red Social';
             document.getElementById("red_id_red").value = this.dataset.id;
-            document.getElementById("red_nombre").value = this.dataset.nombre || "";
+            if (redNombreInput) redNombreInput.value = this.dataset.nombre || "";
             document.getElementById("red_url").value = this.dataset.url || "";
-            document.getElementById("red_icono").value = this.dataset.icono || "bi-facebook";
-            document.getElementById("red_color").value = this.dataset.color || "#EF3363";
+            if (redIconoSelect) redIconoSelect.value = this.dataset.icono || "bi-facebook";
+            if (redColorInput) redColorInput.value = this.dataset.color || "#EF3363";
             document.getElementById("red_orden").value = this.dataset.orden || "1";
             document.getElementById("red_activo").checked = (this.dataset.activo === "1");
+            if (fileInputRed) fileInputRed.value = "";
+            if (fileLabelRed) fileLabelRed.textContent = "";
+            updateRedPreview();
             if (modalRedSocial) modalRedSocial.style.display = "flex";
         });
     });

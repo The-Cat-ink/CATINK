@@ -194,8 +194,8 @@ if ($ejecutado) {
             $mail->SMTPKeepAlive = false;
             $mail->Host = $smtpHost;
             $mail->SMTPAuth = true;
-            $mail->Username = env('SMTP_USERNAME');
-            $mail->Password = env('SMTP_PASSWORD');
+            $mail->Username = env('SMTP_AUTH_USERNAME', env('SMTP_USERNAME'));
+            $mail->Password = env('SMTP_AUTH_PASSWORD', env('SMTP_PASSWORD'));
             $mail->SMTPSecure = env('SMTP_SECURE', 'tls');
             $mail->Port = (int) env('SMTP_PORT', 587);
 

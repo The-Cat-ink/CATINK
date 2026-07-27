@@ -33,6 +33,8 @@ RewriteRule ^registro/?$ views/registro.php [L,QSA]
 RewriteRule ^perfil/?$ views/perfil.php [L,QSA]
 RewriteRule ^olvide_contrasena/?$ views/olvide_contrasena.php [L,QSA]
 RewriteRule ^reset_contrasena/?$ views/reset_contrasena.php [L,QSA]
+RewriteRule ^campanas/?$ views/campanas.php [L,QSA]
+RewriteRule ^views/campanas/?$ views/campanas.php [L,QSA]
 
 # =========================
 # NO REESCRIBIR ARCHIVOS REALES
