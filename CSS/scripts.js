@@ -135,11 +135,12 @@
     }
   });
 
-  // Escuchar evento turbo:load en lugar de DOMContentLoaded
-  document.addEventListener('turbo:load', function() {
+  // Init de la página. Se vuelve a ejecutar en cada navegación de Turbo,
+  // porque Turbo reemplaza el <body> sin recargar el documento.
+  function initPagina() {
+    window.__catinkPaginaLista = true;
     document.body.style.overflow = '';
     document.documentElement.style.overflow = '';
-    console.log('Turbo: Página cargada e inicializando scripts.js');
 
     // Configurar retardo de la barra de progreso de Turbo a 100ms
     if (window.Turbo) {
@@ -339,5 +340,48 @@
         window.updateReadingProgress = null;
       }
     }
-  });
+  }
+
+  /* ── Cuándo arrancar initPagina ──────────────────────────────────────
+     La vía normal es turbo:load. El problema aparece al volver del panel de
+     administración: el panel usa footerAdmin.php, que NO carga este archivo,
+     así que en esa página no hay ningún listener de turbo:load registrado.
+     Al navegar a una página pública, Turbo reemplaza el <body> —que trae este
+     <script>— y dispara turbo:load enseguida, pero el script todavía se está
+     descargando. Cuando por fin corre y se suscribe, el evento ya pasó y no
+     vuelve: la portada queda servida pero muerta (carrusel sin animación,
+     indicadores que no responden) hasta recargar a mano.
+
+     El respaldo cubre ese caso. La marca va en `window` y no en una variable
+     de este closure porque en cada navegación Turbo re-ejecuta el archivo
+     entero: con una variable local, la copia nueva no se enteraría de que el
+     listener de la copia anterior ya inicializó esta misma página y todo
+     correría dos veces.
+
+     Los listeners se registran una sola vez por documento. Este archivo vive
+     en el <body>, y Turbo re-ejecuta los <script> del body en cada navegación:
+     sin esta guarda se acumulaba un listener de turbo:load por cada página
+     visitada, así que en la quinta navegación initPagina corría cinco veces
+     seguidas —cinco temporizadores de carrusel, cinco juegos de listeners— y
+     la página se iba poniendo cada vez más pesada. */
+  if (!window.__catinkTurboBound) {
+    window.__catinkTurboBound = true;
+
+    document.addEventListener('turbo:before-render', () => {
+      window.__catinkPaginaLista = false;
+    });
+
+    document.addEventListener('turbo:load', initPagina);
+  }
+
+  if (document.readyState === 'loading') {
+    // Carga normal: se le da su turno a turbo:load y solo se arranca a mano
+    // si no llegó (por ejemplo si Turbo no cargó).
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { if (!window.__catinkPaginaLista) initPagina(); }, 0);
+    });
+  } else {
+    // El script entró tarde, con el DOM ya listo: turbo:load ya pasó.
+    setTimeout(() => { if (!window.__catinkPaginaLista) initPagina(); }, 0);
+  }
 })();
