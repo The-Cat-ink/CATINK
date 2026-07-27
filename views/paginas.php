@@ -504,7 +504,7 @@
 </div>
 
 <!-- ══ Modal Visual Selector de Ícono para Beneficios (Idéntico al de Categorías) ════ -->
-<div id="modalPickerBeneficioIcono" class="crop-modal" style="display: none; z-index: 1065;">
+<div id="modalPickerBeneficioIcono" class="crop-modal" style="display: none; z-index: 99999 !important;">
     <div class="crop-modal-content" style="max-width: 540px; width:95%; border-radius:18px; padding:24px;">
         <!-- Cabecera -->
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
