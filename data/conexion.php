@@ -35,4 +35,8 @@
 
     asegurarColumna($con, 'recomendados', 'url', 'VARCHAR(500) NULL AFTER imagen');
     asegurarColumna($con, 'esperamos', 'url', 'VARCHAR(500) NULL AFTER imagen');
+    asegurarColumna($con, 'correos_publicitarios', 'badge', "VARCHAR(100) NULL DEFAULT 'Anuncio / Promoción' AFTER titulo");
+    asegurarColumna($con, 'correos_publicitarios', 'preheader', "VARCHAR(255) NULL DEFAULT NULL AFTER badge");
+    asegurarColumna($con, 'correos_publicitarios', 'theme', "VARCHAR(20) NULL DEFAULT 'light' AFTER preheader");
+    asegurarColumna($con, 'correos_publicitarios', 'cta_text', "VARCHAR(100) NULL DEFAULT 'Ver promoción' AFTER url_c");
 ?>

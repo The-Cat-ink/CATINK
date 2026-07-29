@@ -241,7 +241,7 @@ if (isset($_GET['raw']) && $_GET['raw'] === '1') {
 <body>
 
     <header class="toolbar">
-        <a href="<?= basePath() ?>/views/paginas.php" class="toolbar-brand">
+        <a href="<?= basePath() ?>/views/correos.php" class="toolbar-brand">
             <i class="bi bi-envelope-paper-heart-fill"></i>
             <span>CatInk Email Previewer</span>
         </a>
@@ -282,8 +282,8 @@ if (isset($_GET['raw']) && $_GET['raw'] === '1') {
 
             <!-- Botón Volver -->
             <div style="align-self:flex-end;">
-                <a href="<?= basePath() ?>/views/paginas.php" class="toolbar-btn toolbar-btn-accent" style="text-decoration:none;">
-                    <i class="bi bi-arrow-left me-1"></i> Volver a CMS
+                <a href="<?= basePath() ?>/views/correos.php" class="toolbar-btn toolbar-btn-accent" style="text-decoration:none;">
+                    <i class="bi bi-arrow-left me-1"></i> Volver a Correos
                 </a>
             </div>
         </div>

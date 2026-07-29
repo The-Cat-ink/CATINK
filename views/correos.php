@@ -111,11 +111,16 @@
             Listado de Correos Registrados
         </h5>
 
-        <?php if ($ACL['crear']): ?>
-            <a href="correo_pub.php" class="btn btn-accent px-4 py-2" style="border-radius:12px; font-weight:800; font-size:0.9rem; box-shadow:0 4px 15px rgba(239,51,99,0.3);">
-                <i class="bi bi-plus-lg me-1"></i> Nuevo Correo Publicitario
+        <div class="d-flex gap-2">
+            <a href="preview_email.php" class="btn btn-outline-secondary px-3 py-2" style="border-radius:12px; font-weight:800; font-size:0.88rem; background:var(--card-bg); color:var(--text); border:1px solid var(--border);">
+                <i class="bi bi-eye-fill me-1" style="color:var(--accent);"></i> Previsualizador de Correos
             </a>
-        <?php endif; ?>
+            <?php if ($ACL['crear']): ?>
+                <a href="correo_pub.php" class="btn btn-accent px-4 py-2" style="border-radius:12px; font-weight:800; font-size:0.9rem; box-shadow:0 4px 15px rgba(239,51,99,0.3);">
+                    <i class="bi bi-plus-lg me-1"></i> Nuevo Correo Publicitario
+                </a>
+            <?php endif; ?>
+        </div>
     </div>
 
     <!-- ── TABLA DE CORREOS ────────────────────────────────────── -->

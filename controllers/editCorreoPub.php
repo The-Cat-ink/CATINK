@@ -4,23 +4,30 @@ include("./aclcontroller.php");
 proteger('correos','editar', false);
 include("../data/conexion.php");
 include("../views/helpers/img.php");
-$id= $_POST['id'] ?? 0;
+
+$id         = $_POST['id'] ?? 0;
 $titulo     = $_POST['titulo'] ?? '';
+$badge      = $_POST['badge'] ?? 'Anuncio / Promoción';
+$preheader  = $_POST['preheader'] ?? '';
+$theme      = $_POST['theme'] ?? 'light';
 $contenido  = $_POST['contenido'] ?? '';
 $url        = $_POST['url'] ?? '';
-$envio = !empty($_POST['envio'])
+$cta_text   = $_POST['cta_text'] ?? 'Ver promoción';
+$envio      = !empty($_POST['envio'])
     ? str_replace('T', ' ', $_POST['envio'])
     : null;
+
 $carpetaDestino = __DIR__ . "/../img/correo";
 $sql = $con->prepare("SELECT imagen FROM correos_publicitarios WHERE id_correo = ?");
 $sql->bind_param("i", $id);
 $sql->execute();
 $result = $sql->get_result();
 $correoActual = $result->fetch_assoc();
-$imagenNombre = $correoActual['imagen'];
+$imagenNombre = $correoActual['imagen'] ?? '';
+
 $huboNuevaImagen = isset($_FILES['imagenCorreo']) && $_FILES['imagenCorreo']['error'] !== 4;
-if($huboNuevaImagen){
-    if($_FILES['imagenCorreo']['error'] !== 0){
+if ($huboNuevaImagen) {
+    if ($_FILES['imagenCorreo']['error'] !== 0) {
         die("Error al subir la nueva imagen");
     }
     $img = $_FILES['imagenCorreo'];
@@ -30,30 +37,37 @@ if($huboNuevaImagen){
         1200,
         80
     );
-    if(!$nuevaImagen){
-        die("Error al procesar imagen");
+    if ($nuevaImagen) {
+        if (!empty($imagenNombre)) {
+            $rutaVieja = $carpetaDestino . "/" . $imagenNombre;
+            if (file_exists($rutaVieja)) {
+                @unlink($rutaVieja);
+            }
+        }
+        $imagenNombre = $nuevaImagen;
     }
-    $rutaVieja = $carpetaDestino . "/" . $imagenNombre;
-    if(file_exists($rutaVieja)){
-        unlink($rutaVieja);
-    }
-    $imagenNombre = $nuevaImagen;
 }
+
 $stmt = $con->prepare("
     UPDATE correos_publicitarios 
-    SET titulo = ?, contenido = ?, imagen = ?, url_c = ?, envio = ?, enviado = 0
+    SET titulo = ?, badge = ?, preheader = ?, theme = ?, contenido = ?, imagen = ?, url_c = ?, cta_text = ?, envio = ?, enviado = 0
     WHERE id_correo = ?
 ");
 $stmt->bind_param(
-    "sssssi",
+    "sssssssssi",
     $titulo,
+    $badge,
+    $preheader,
+    $theme,
     $contenido,
     $imagenNombre,
     $url,
+    $cta_text,
     $envio,
     $id
 );
-if($stmt->execute()){
+
+if ($stmt->execute()) {
     require_once("../views/helpers/activity_log.php");
     logActivity($con, 'editar', 'correos', 'Actualizó correo publicitario ID ' . $id . ' («' . mb_substr($titulo, 0, 80) . '»)');
     header("Location: ../views/correos.php?success=Correo actualizado correctamente");
