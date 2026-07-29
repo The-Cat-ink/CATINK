@@ -448,13 +448,12 @@ function triggerLivePreview() {
         .then(res => res.text())
         .then(html => {
             const iframe = document.getElementById('livePreviewIframe');
-            const doc = iframe.contentDocument || iframe.contentWindow.document;
-            doc.open();
-            doc.write(html);
-            doc.close();
+            if (iframe) {
+                iframe.srcdoc = html;
+            }
         })
         .catch(err => console.error("Error al actualizar la vista previa:", err));
-    }, 150);
+    }, 50);
 }
 
 // Escuchar cambios en todos los inputs del formulario
@@ -463,8 +462,11 @@ document.querySelectorAll('#correoForm input, #correoForm textarea, #correoForm 
     elem.addEventListener('change', triggerLivePreview);
 });
 
-// Disparar renderizado inicial
+// Disparar renderizado inicial inmediato de forma garantizada
+triggerLivePreview();
 document.addEventListener('DOMContentLoaded', triggerLivePreview);
+document.addEventListener('turbo:load', triggerLivePreview);
+window.addEventListener('load', triggerLivePreview);
 </script>
 
 <?php include('./../layout/footerAdmin.php'); ?>
