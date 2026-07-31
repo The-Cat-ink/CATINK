@@ -278,10 +278,14 @@ proteger('correos','crear', false);
           </div>
         </div>
 
-        <!-- BOTÓN DE GUARDADO -->
-        <div class="mb-4">
-          <button type="submit" class="cn-publish-btn">
-            <i class="bi bi-send-check-fill"></i> Guardar y Programar Correo
+        <!-- BOTONES DE ENVÍO -->
+        <input type="hidden" name="enviar_ahora" id="enviarAhoraInput" value="0">
+        <div class="d-flex align-items-center gap-2 mb-4">
+          <button type="submit" onclick="document.getElementById('enviarAhoraInput').value='1'" class="cn-publish-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); flex:1;">
+            <i class="bi bi-lightning-charge-fill me-1"></i> ⚡ Enviar Ahora
+          </button>
+          <button type="submit" onclick="document.getElementById('enviarAhoraInput').value='0'" class="cn-publish-btn" style="flex:1;">
+            <i class="bi bi-clock-history me-1"></i> Programar Envío
           </button>
         </div>
 

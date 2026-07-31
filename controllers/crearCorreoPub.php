@@ -50,8 +50,18 @@ $stmt->bind_param(
 );
 
 if ($stmt->execute()) {
+    $insertedId = $stmt->insert_id;
     require_once("../views/helpers/activity_log.php");
     logActivity($con, 'crear', 'correos', 'Creó correo publicitario «' . mb_substr($titulo, 0, 80) . '»');
+
+    if (isset($_POST['enviar_ahora']) && $_POST['enviar_ahora'] === '1') {
+        // Forzar fecha de envío a la hora actual y ejecutar el procesador de correo
+        $con->query("UPDATE correos_publicitarios SET envio = NOW(), enviado = 0 WHERE id_correo = {$insertedId}");
+        @ob_start();
+        require_once(__DIR__ . "/../views/email/correoPublicidad.php");
+        @ob_end_clean();
+    }
+
     header("Location: ../views/correos.php?success=1");
     exit();
 } else {

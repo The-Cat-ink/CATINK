@@ -178,7 +178,12 @@
                                     </td>
                                     <?php if(!empty($ACL['editar']) || !empty($ACL['eliminar'])): ?>
                                         <td style="text-align:right;">
-                                            <div class="d-inline-flex gap-1">
+                                            <div class="d-inline-flex gap-1 align-items-center">
+                                                <?php if(!empty($ACL['editar']) && ($correo['enviado'] ?? 0) == 0): ?>
+                                                    <button type="button" class="btn btn-sm btn-success btnEnviarAhora px-2 py-1" data-id="<?= $correo['id_correo'] ?>" style="border-radius:8px; font-weight:800; font-size:0.75rem; background:linear-gradient(135deg, #10b981 0%, #059669 100%); border:none;" title="Enviar inmediatamente a todos los suscriptores">
+                                                        <i class="bi bi-lightning-charge-fill me-1"></i> Enviar Ahora
+                                                    </button>
+                                                <?php endif; ?>
                                                 <?php if(!empty($ACL['editar'])): ?>
                                                     <a href="correo_pub_edit.php?id=<?= $correo['id_correo'] ?>" class="btn btn-sm btn-outline-secondary" style="border-radius:8px; width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:var(--bg);" title="Editar">
                                                         <i class="bi bi-pencil-square"></i>
@@ -282,6 +287,40 @@ document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => toast.remove(), 300);
         }, 3200);
     }
+
+    document.querySelectorAll('.btnEnviarAhora').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const self = this;
+            self.disabled = true;
+            self.innerHTML = 'Enviando...';
+
+            const formData = new FormData();
+            formData.append('id', id);
+
+            fetch('<?= basePath() ?>/controllers/enviar_correo_ahora.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.ok) {
+                    showToast(res.msg, 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast(res.msg || 'Error al enviar el correo', 'error');
+                    self.disabled = false;
+                    self.innerHTML = '<i class="bi bi-lightning-charge-fill me-1"></i> Enviar Ahora';
+                }
+            })
+            .catch(err => {
+                showToast('Error al conectar con el servidor', 'error');
+                self.disabled = false;
+                self.innerHTML = '<i class="bi bi-lightning-charge-fill me-1"></i> Enviar Ahora';
+            });
+        });
+    });
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('success')) {
