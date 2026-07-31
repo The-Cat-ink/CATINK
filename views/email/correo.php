@@ -46,14 +46,7 @@ if ($horaActual < $horaProgramada) {
     return;
 }
 
-// Bloquear de inmediato la ejecución de hoy para evitar carreras de procesos concurrentes
-$idProg = $rowProg['id_programacion'];
-$sqlUltima = "UPDATE programacion_correos SET ultima_ejecucion = NOW() WHERE id_programacion = ?";
-$stmtUltima = $con->prepare($sqlUltima);
-$stmtUltima->bind_param("i", $idProg);
-$stmtUltima->execute();
-
-$hoy = date("Y-m-d H:i:s");
+    $hoy = date("Y-m-d H:i:s");
     $ayerMismoHorario = date("Y-m-d H:i:s", strtotime("-24 hours"));
 
     // Seleccionamos solo noticias del último día
@@ -74,6 +67,13 @@ $hoy = date("Y-m-d H:i:s");
     } else {
         echo "Noticias encontradas: " . count($noticias) . "\n";
     }
+
+    // Actualizar marca de última ejecución sólo cuando SÍ hay noticias para enviar hoy
+    $idProg = $rowProg['id_programacion'];
+    $sqlUltima = "UPDATE programacion_correos SET ultima_ejecucion = NOW() WHERE id_programacion = ?";
+    $stmtUltima = $con->prepare($sqlUltima);
+    $stmtUltima->bind_param("i", $idProg);
+    $stmtUltima->execute();
 
     // Preparar PHPMailer
     $mail = new PHPMailer(true);

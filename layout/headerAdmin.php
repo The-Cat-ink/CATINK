@@ -120,11 +120,15 @@ if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time
     <?php endif; ?>
     <?php if (!empty($cronTriggerScript)): ?>
         <script>
-            if (navigator.sendBeacon) {
-                navigator.sendBeacon('<?= basePath() ?>/views/email/cron.php');
-            } else {
-                fetch('<?= basePath() ?>/views/email/cron.php', { cache: 'no-store' });
-            }
+            (function() {
+                const cronKey = '<?= urlencode(getenv('CRON_KEY') ?: 'catink_cron_secret') ?>';
+                const cronUrl = '<?= basePath() ?>/views/email/cron.php?key=' + cronKey;
+                if (navigator.sendBeacon) {
+                    navigator.sendBeacon(cronUrl);
+                } else {
+                    fetch(cronUrl, { cache: 'no-store' });
+                }
+            })();
         </script>
     <?php endif; ?>
 </head>
@@ -183,6 +187,16 @@ if (!isset($_SESSION['cron_check_time']) || (time() - $_SESSION['cron_check_time
                     <i class="bi bi-hourglass-split"></i> <span class="sb-label">Lo más Esperado</span>
                 </a>
             </li>
+            <?php 
+              $isLocalDev = strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false || ($_SERVER['SERVER_NAME'] ?? '') === 'localhost';
+              if ($isLocalDev): 
+            ?>
+                <li class="sidebar-menu-item">
+                    <a href="./fichas_admin.php" class="sidebar-menu-link" data-tooltip="Catálogo y Fichas">
+                        <i class="bi bi-collection-play"></i> <span class="sb-label">Catálogo & Fichas</span>
+                    </a>
+                </li>
+            <?php endif; ?>
         <?php endif; ?>
         <?php if (($_SESSION['ACL']['publicidad']['leer']?? false)): ?>
             <li class="sidebar-menu-item">

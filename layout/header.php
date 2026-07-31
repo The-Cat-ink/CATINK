@@ -292,11 +292,15 @@ $menuJson = [
   }
   <?php if (!empty($cronTriggerScript)): ?>
     <script>
-        if (navigator.sendBeacon) {
-            navigator.sendBeacon('<?= basePath() ?>/views/email/cron.php');
-        } else {
-            fetch('<?= basePath() ?>/views/email/cron.php', { cache: 'no-store' });
-        }
+        (function() {
+            const cronKey = '<?= urlencode(getenv('CRON_KEY') ?: 'catink_cron_secret') ?>';
+            const cronUrl = '<?= basePath() ?>/views/email/cron.php?key=' + cronKey;
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon(cronUrl);
+            } else {
+                fetch(cronUrl, { cache: 'no-store' });
+            }
+        })();
     </script>
   <?php endif; ?>
   </style>
@@ -587,6 +591,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </form>
       </div>
       <ul class="navbar-nav align-items-center <?= $claseIconosMenu ?>">
+        <?php 
+          $isLocalDev = strpos($_SERVER['HTTP_HOST'] ?? '', 'catink.test') !== false || ($_SERVER['SERVER_NAME'] ?? '') === 'localhost';
+          if ($isLocalDev): 
+        ?>
+          <li class="nav-item">
+            <a class="nav-link" href="<?= basePath() ?>/views/catalogo.php" style="color:var(--accent); font-weight:800;">
+              <i class="bi bi-collection-play me-1"></i> Catálogo
+            </a>
+          </li>
+        <?php endif; ?>
         <?php foreach ($categorias as $cat): ?>
           <li class="nav-item">
             <a class="nav-link" href="<?= categoryUrl($cat['nombre']) ?>">

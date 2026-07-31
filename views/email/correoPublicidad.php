@@ -137,6 +137,10 @@ foreach ($correosPendientes as $correo) {
 
     } catch (Exception $e) {
         echo "Error al enviar correo publicitario ID {$idCorreo}: {$mail->ErrorInfo}\n";
+        // Revertir estado si falló para permitir reintento automático en la siguiente ejecución del cron
+        $stmtRev = $con->prepare("UPDATE correos_publicitarios SET enviado = 0, fecha_enviado = NULL WHERE id_correo = ?");
+        $stmtRev->bind_param("i", $idCorreo);
+        $stmtRev->execute();
     } finally {
         if (file_exists($tmpPng)) {
             @unlink($tmpPng);
