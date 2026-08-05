@@ -641,7 +641,12 @@ $lastEdit = $stmtLastEdit->get_result()->fetch_assoc();
                             if ($myId && $myId['id_u'] == $com['usuario_id']) $esMiComentario = true;
                         }
                     }
-                    $autorResp = $com['usuario'] ?? $com['nombre'];
+                    // La tabla comentarios no tiene FK hacia lectores/usuarios: si la cuenta
+                    // se elimina, el COALESCE de la consulta devuelve null y el comentario
+                    // queda huérfano. Sin este respaldo, mb_substr() y htmlspecialchars()
+                    // reciben null (deprecado en PHP 8.1).
+                    $nombreCom = $com['nombre'] ?? 'Usuario eliminado';
+                    $autorResp = $com['usuario'] ?? $com['nombre'] ?? 'Usuario eliminado';
                     ?>
                     <div class="comentario-item<?= $esRespuesta ? ' comentario-respuesta' : '' ?>" data-id="<?= $com['id_comentario'] ?>">
                       <div class="comentario-avatar-col">
@@ -649,16 +654,16 @@ $lastEdit = $stmtLastEdit->get_result()->fetch_assoc();
                         <?php if (!empty($com['avatar_img'])): ?>
                           <img src="<?= imageUrl($com['avatar_img']) ?>" alt="" class="comentario-avatar" loading="lazy" decoding="async">
                         <?php else: ?>
-                          <div class="comentario-avatar-placeholder"><?= strtoupper(mb_substr($com['nombre'], 0, 1)) ?></div>
+                          <div class="comentario-avatar-placeholder"><?= strtoupper(mb_substr($nombreCom, 0, 1)) ?></div>
                         <?php endif; ?>
                         <?php if ($perfilUrl): ?></a><?php endif; ?>
                       </div>
                       <div class="comentario-body">
                         <div class="comentario-header">
                           <?php if ($perfilUrl): ?>
-                            <a href="<?= $perfilUrl ?>" class="comentario-autor comentario-perfil-link"><?= htmlspecialchars($com['nombre']) ?></a>
+                            <a href="<?= $perfilUrl ?>" class="comentario-autor comentario-perfil-link"><?= htmlspecialchars($nombreCom) ?></a>
                           <?php else: ?>
-                            <strong class="comentario-autor"><?= htmlspecialchars($com['nombre']) ?></strong>
+                            <strong class="comentario-autor"><?= htmlspecialchars($nombreCom) ?></strong>
                           <?php endif; ?>
                           <?php if ($com['es_editor']): ?>
                             <span class="badge-editor">Editor</span>
@@ -684,7 +689,7 @@ $lastEdit = $stmtLastEdit->get_result()->fetch_assoc();
                             <?php if (!empty($_SESSION['superadmin'])):
                                 $modTipoCom    = $com['usuario_id'] ? 'admin' : 'lector';
                                 $modUserIdCom  = (int)($com['usuario_id'] ?: $com['lector_id']);
-                                $modNombreCom  = htmlspecialchars($com['nombre'], ENT_QUOTES);
+                                $modNombreCom  = htmlspecialchars($nombreCom, ENT_QUOTES);
                                 $modBaneadoCom = $modUserIdCom > 0 ? estaBaneado(obtenerBaneo($con, $modTipoCom, $modUserIdCom)) : false;
                             ?>
                               <div class="com-kebab">

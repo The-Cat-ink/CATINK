@@ -97,20 +97,21 @@ function newsUrlAlt($slugOrId){
 // URLs para categorías - soporta múltiples formatos
 function categoryUrl($nombre){
     // Formato: /categoria/{nombre}
-    return basePath() . "/categoria/" . urlencode($nombre);
+    // (string) evita el deprecado de urlencode(null) en PHP 8.1
+    return basePath() . "/categoria/" . urlencode((string)$nombre);
 }
 function categoryUrlLong($nombre){
     // Formato largo: /noticias/categoria/{nombre}
-    return basePath() . "/noticias/categoria/" . urlencode($nombre);
+    return basePath() . "/noticias/categoria/" . urlencode((string)$nombre);
 }
 // URLs para búsqueda - soporta múltiples formatos
 function searchUrl($termino){
     // Formato: /buscar/{termino}
-    return basePath() . "/buscar/" . urlencode($termino);
+    return basePath() . "/buscar/" . urlencode((string)$termino);
 }
 function searchUrlLong($termino){
     // Formato largo: /noticias/buscar/{termino}
-    return basePath() . "/noticias/buscar/" . urlencode($termino);
+    return basePath() . "/noticias/buscar/" . urlencode((string)$termino);
 }
 function authorUrl($id){
     return basePath() . "/autor/" . intval($id);

@@ -86,15 +86,23 @@ $total = count($eliminadas);
                         <?php else: ?>
                             <?php foreach ($eliminadas as $row):
                                 $img = imageUrl($row['crop3'] ?? 'img/placeholder.svg');
-                                $fechaPub = new DateTime($row['fecha_publicacion']);
-                                $fechaElim = new DateTime($row['eliminado_en']);
+                                // Las publicaciones que se eliminaron siendo borrador nunca tuvieron
+                                // fecha_publicacion: sin este guardado DateTime recibe null (deprecado en PHP 8.1).
+                                $fechaPub  = !empty($row['fecha_publicacion']) ? new DateTime($row['fecha_publicacion']) : null;
+                                $fechaElim = !empty($row['eliminado_en'])      ? new DateTime($row['eliminado_en'])      : null;
                             ?>
                             <tr>
                                 <td><input type="checkbox" class="papelera-check" value="<?= $row['id'] ?>"></td>
                                 <td><img src="<?= $img ?>" alt="" class="table-thumb" loading="lazy" decoding="async"></td>
                                 <td><strong class="table-title"><?= htmlspecialchars($row['titulo']) ?></strong></td>
                                 <td><?= htmlspecialchars($row['autor_nombre'] ?? 'Desconocido') ?></td>
-                                <td class="table-date"><?= $fechaPub->format('d/m/Y H:i') ?></td>
+                                <td class="table-date">
+                                    <?php if ($fechaPub): ?>
+                                        <?= $fechaPub->format('d/m/Y H:i') ?>
+                                    <?php else: ?>
+                                        <span style="color:var(--muted);" title="Se eliminó siendo borrador">Sin publicar</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <span class="papelera-user">
                                         <i class="bi bi-person-fill"></i>
@@ -103,7 +111,7 @@ $total = count($eliminadas);
                                 </td>
                                 <td class="table-date">
                                     <i class="bi bi-clock-history"></i>
-                                    <?= $fechaElim->format('d/m/Y H:i') ?>
+                                    <?= $fechaElim ? $fechaElim->format('d/m/Y H:i') : '—' ?>
                                 </td>
                                 <td>
                                     <div class="noticias-actions papelera-actions">

@@ -130,6 +130,7 @@ $resultNoticias = $con->query("
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
     WHERE n.eliminado_en IS NULL
+      AND n.fecha_publicacion IS NOT NULL
     GROUP BY n.id
     ORDER BY n.fecha_publicacion DESC
     LIMIT 5
@@ -284,7 +285,7 @@ function formatNumberShort($num){
                                 <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($n['titulo']) ?>" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s ease;">
                             </a>
                             <span class="badge" style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); color:#fff; font-size:0.68rem; font-weight:700; border-radius:6px;">
-                                <?= date('d/m H:i', strtotime($n['fecha_publicacion'])) ?>
+                                <?= !empty($n['fecha_publicacion']) ? date('d/m H:i', strtotime($n['fecha_publicacion'])) : 'Sin fecha' ?>
                             </span>
                             <?php if($ACLNoticias['editar']): ?>
                                 <a href="<?= basePath() ?>/views/editar.php?id=<?= $n['id'] ?>" class="btn btn-sm btn-accent" style="position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; padding:0; display:flex; align-items:center; justify-content:center; font-size:0.75rem;" title="Editar">

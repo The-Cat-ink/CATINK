@@ -4,6 +4,14 @@ require_once("./helpers/urlhelper.php");
 require_once("./helpers/sidebarhelper.php");
 
 // ==============================
+// FILTROS (no aplican en esta vista)
+// ==============================
+// Este ranking es fijo: no filtra por categoría ni por búsqueda. Se declaran
+// vacías porque el marcado compartido con categoria.php las consulta.
+$categoria = '';
+$q         = '';
+
+// ==============================
 // PAGINACIÓN
 // ==============================
 $porPagina = 10;
