@@ -1,0 +1,130 @@
+@startuml CatInk_Secuencia_Lectura_Offline
+title Diagrama de Secuencia - Guardar y leer una noticia sin conexion (PWA)
+
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #475569
+  LifeLineBorderColor #94A3B8
+  ParticipantBorderColor #EF3363
+  ParticipantBackgroundColor #FFFFFF
+  ActorBorderColor #EF3363
+}
+autonumber "<b>[0]"
+
+actor "Lector" as U
+participant "views/news.php" as VIEW
+participant "offline-manager.js\n(window.CatInkOffline)" as OFF
+participant "sw.js\n(Service Worker)" as SW
+database "Cache Storage\ncatink-offline-v4" as CACHE
+database "IndexedDB\ncatink-offline" as IDB
+participant "Apache + PHP" as SRV
+database "MariaDB" as DB
+participant "views/guardados.php" as GUARD
+
+== Instalacion del Service Worker ==
+
+U -> VIEW : primera visita al sitio
+activate VIEW
+VIEW -> SW : navigator.serviceWorker.register('/sw.js')
+activate SW
+SW -> SW : evento install
+SW -> CACHE : caches.open('catink-offline-v4')
+SW -> CACHE : cache.addAll(STATIC_ASSETS)
+note right of CACHE
+  Precarga: /, /offline.html,
+  styles.css, scripts.js,
+  offline-manager.js, logo.png,
+  Bootstrap Icons y Google Fonts
+end note
+CACHE --> SW : shell precargado
+SW -> SW : skipWaiting()
+SW -> SW : evento activate
+SW -> CACHE : borrar caches de versiones anteriores
+SW -> SW : clients.claim()
+deactivate SW
+deactivate VIEW
+
+== Guardado explicito de una noticia ==
+
+U -> VIEW : clic en "Guardar sin conexion"
+activate VIEW
+VIEW -> OFF : delegacion global de clic\n(compatible con Turbo)
+activate OFF
+OFF -> SRV : fetch de la noticia completa
+activate SRV
+SRV -> DB : SELECT noticia, categorias, autor
+DB --> SRV : filas
+SRV --> OFF : HTML + metadatos
+deactivate SRV
+
+OFF -> IDB : put({id, titulo, contenido,\nimagen, guardada_en})
+activate IDB
+IDB --> OFF : ok
+deactivate IDB
+
+OFF -> CACHE : cachear imagenes de la noticia
+OFF --> VIEW : resolve
+deactivate OFF
+VIEW --> U : Toast "Guardada para leer sin conexion"
+deactivate VIEW
+
+== Navegacion sin conexion ==
+
+U -> SW : abre /guardados estando sin red
+activate SW
+SW -> SW : evento fetch
+
+alt ruta administrativa (/views/, /controllers/)
+  SW -> SRV : pasar de largo (no interceptar)
+  note right of SW
+    Excluir estas rutas evita falsos
+    "Estas sin conexion" provocados
+    por bloqueadores de anuncios
+  end note
+else ruta publica
+  SW -> SRV : intentar fetch de red
+  activate SRV
+  SRV --> SW : error de red
+  deactivate SRV
+  SW -> CACHE : match(request)
+  activate CACHE
+  CACHE --> SW : respuesta cacheada
+  deactivate CACHE
+  alt hay respuesta en cache
+    SW --> U : contenido cacheado
+  else no hay
+    SW -> CACHE : match('/offline.html')
+    SW --> U : pantalla offline
+  end
+end
+deactivate SW
+
+U -> GUARD : la vista /guardados se renderiza
+activate GUARD
+GUARD -> GUARD : espera evento catink-offline-ready
+note right of GUARD
+  El evento + callback asincrono evitan
+  el bucle infinito de carga que ocurria
+  cuando la consulta salia antes de que
+  IndexedDB estuviera lista
+end note
+GUARD -> IDB : getAll('noticias')
+activate IDB
+alt hay noticias guardadas
+  IDB --> GUARD : lista de noticias
+  GUARD --> U : tarjetas de lecturas guardadas
+else store vacio o error
+  IDB --> GUARD : []
+  GUARD --> U : estado vacio con fallback
+end
+deactivate IDB
+deactivate GUARD
+
+U -> GUARD : abrir una noticia guardada
+activate GUARD
+GUARD -> IDB : get(id)
+IDB --> GUARD : contenido completo
+GUARD --> U : lectura sin conexion
+deactivate GUARD
+
+@enduml

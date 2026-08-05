@@ -1,0 +1,145 @@
+@startuml CatInk_Clases_Servicios
+title Diagrama de Clases - CatInk (Capa de Servicios / views/helpers)
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam shadowing false
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #38BDF8
+  ArrowColor #334155
+}
+hide empty members
+
+class ConexionBD <<singleton>> {
+  - server : string
+  - user : string
+  - pass : string
+  - dbname : string
+  + con : mysqli
+  --
+  + conectar() : mysqli
+  + asegurarColumna(tabla, col, def) : void
+  + alinearZonaHoraria() : void
+}
+
+class Env <<service>> {
+  + env(clave, default) : mixed
+  + cargarDotEnv() : void
+}
+
+class ACL <<service>> {
+  + cargarACL(id_usuario) : array
+  + tienePermiso(modulo, nivel) : bool
+  + esSuperAdmin(id) : bool
+  + esSuperAdminActual() : bool
+  + getModulosACL() : array
+  + mapearPermisos(fila) : array
+  + primerModuloLectura() : string
+}
+
+class ModeracionHelper <<service>> {
+  + estaBaneado(id, tipo) : bool
+  + obtenerBaneo(id) : array
+  + baneoLectorActual() : array
+  + duracionesBaneo() : array
+  + textoBaneo(baneo) : string
+  + esContenidoInapropiado(texto) : bool
+  + palabrasOfensivasDetectadas(t) : array
+  + insultosDurosDetectados(t) : array
+  + normalizarTextoModeracion(t) : string
+}
+
+class FiltroHelper <<service>> {
+  + cargarDiccionario() : array
+  + filtrarPalabras(texto) : string
+  + palabrasBaneadasEncontradas(t) : array
+  + construirPatronPalabra(p) : string
+  + normalizarParaDifuso(t) : string
+}
+
+class EmailHelper <<service>> {
+  + renderCatInkEmail(options) : string
+  - aplicarTema(theme) : array
+}
+
+class UrlHelper <<service>> {
+  + basePath() : string
+  + siteUrl(ruta) : string
+  + newsUrl(slug) : string
+  + categoryUrl(cat) : string
+  + authorUrl(id) : string
+  + readerUrl(id) : string
+  + searchUrl(q) : string
+  + generateSlug(texto) : string
+  + encodeId(id) : string
+  + decodeId(hash) : int
+}
+
+class ImgHelper <<service>> {
+  + imageUrl(ruta) : string
+  + convertirImagenAWebp(src) : string
+}
+
+class PublicidadHelper <<service>> {
+  + obtenerPublicidad(posicion) : array
+  + posicionesPublicidad() : array
+  + formaPublicidad(tipo) : string
+}
+
+class SidebarHelper <<service>> {
+  + renderSidebarNewsWidget(u, p, pub, sec) : void
+}
+
+class SocialHelper <<service>> {
+  + getCatInkSocials(soloActivas) : array
+}
+
+class EmbedHelper <<service>> {
+  + obtenerEmbedVideo(url) : array
+  + obtenerEmbedSocial(url) : array
+  + renderizarVideo(url) : string
+  + renderizarEmbedSocial(url) : string
+  + procesarEmbedsSociales(html) : string
+  + bloquearEmbeds(html) : string
+}
+
+class ActivityLogger <<service>> {
+  + logActivity(usuario, accion, detalle) : void
+}
+
+class NotificacionHelper <<service>> {
+  + crearNotificacion(dest, tipo, msg) : bool
+}
+
+class IconosCategoria <<service>> {
+  + iconosCategoriaPermitidos() : array
+  + iconosCategoriaPorGrupo() : array
+  + sanearIconoCategoria(v) : string
+  + rutaFisicaIconoCategoria(v) : string
+}
+
+class PHPMailer <<library>> {
+  + isSMTP() : void
+  + setFrom(mail, nombre) : void
+  + addAddress(mail) : void
+  + addAttachment(ruta) : void
+  + send() : bool
+}
+
+ConexionBD ..> Env : lee credenciales
+ACL ..> ConexionBD : consulta
+ModeracionHelper ..> ConexionBD : consulta
+SocialHelper ..> ConexionBD : consulta
+PublicidadHelper ..> ConexionBD : consulta
+NotificacionHelper ..> ConexionBD : escribe
+ActivityLogger ..> ConexionBD : escribe
+ModeracionHelper ..> FiltroHelper : delega filtrado
+PHPMailer ..> EmailHelper : usa cuerpo HTML
+PHPMailer ..> Env : credenciales SMTP
+SidebarHelper ..> UrlHelper
+SidebarHelper ..> ImgHelper
+SidebarHelper ..> PublicidadHelper
+EmbedHelper ..> ImgHelper
+
+@enduml

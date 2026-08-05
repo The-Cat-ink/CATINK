@@ -1,0 +1,90 @@
+@startuml CatInk_Despliegue
+title Diagrama de Despliegue - CatInk (Produccion en Hostinger)
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 45
+skinparam ranksep 55
+skinparam node {
+  BackgroundColor #FFFFFF
+  BorderColor #EF3363
+}
+skinparam database {
+  BackgroundColor #FFFFFF
+  BorderColor #38BDF8
+}
+skinparam cloud {
+  BackgroundColor #FFFDF5
+  BorderColor #F59E0B
+}
+
+node "Dispositivo del Usuario" <<device>> as CLI {
+  node "Navegador Web\n(Chrome / Safari / Firefox)" <<execution environment>> as BROWSER {
+    artifact "index.html\nstyles.css"                 as A1
+    artifact "scripts.js\noffline-manager.js"         as A2
+    artifact "sw.js"          <<service worker>>      as SW
+    artifact "manifest.json"  <<PWA>>                 as MANIF
+    database "IndexedDB\ncatink-offline"              as IDB
+    database "Cache Storage\ncatink-offline-v4"       as CACHE
+  }
+}
+
+node "Servidor Hostinger\n(Shared Hosting - Linux)" <<device>> as SRV {
+
+  node "Apache 2.4 + mod_rewrite" <<execution environment>> as APACHE {
+    artifact ".htaccess\n(rewrite, HTTPS/WWW, ErrorDocument)" as HTAC
+
+    node "PHP 8.1" <<execution environment>> as PHP {
+      artifact "CatInk App\n(index.php, views/, controllers/,\nlayout/, views/helpers/)" as APP
+      artifact "PHPMailer"                                   as MAILER
+      artifact ".env\n(DB_*, SMTP_*, YOUTUBE_API_KEY,\nCRON_KEY)" <<configuracion>> as ENVF
+    }
+  }
+
+  folder "Almacenamiento local" as FSN {
+    artifact "uploads/\n(noticias, avatares, logos,\niconos, cv, publicidad)" as UPL
+    artifact "img/"  as IMGF
+    artifact "logs/" as LOGF
+  }
+
+  artifact "Cron Job\n(boletin diario, notas programadas)" as CRON
+}
+
+node "Servidor de Base de Datos\n(Hostinger)" <<device>> as DBSRV {
+  database "MariaDB 11.8\nu780114275_cat_ink\nInnoDB - utf8mb4 - 36 tablas" as DB
+}
+
+node "Servidor de Correo\n(Hostinger)" <<device>> as MAILSRV {
+  component "smtp.hostinger.com : 587\nnews@ / no-reply@catink.com.mx" as SMTP
+}
+
+cloud "YouTube Data API v3"                                as YT
+cloud "CDN jsDelivr\n(Bootstrap Icons, CKEditor,\nSortableJS, CropperJS)" as CDN
+cloud "Google Fonts\n(Baloo 2)"                            as GF
+cloud "API de Geolocalizacion IP"                          as GEO
+
+node "GitHub\nThe-Cat-ink/CATINK (rama main)" <<device>> as GH
+
+BROWSER --> APACHE : HTTPS / TLS 1.3 - puerto 443
+SW      ..> CACHE  : Cache API (offline first)
+SW      ..> IDB
+A2      ..> IDB    : lecturas offline
+MANIF   ..> SW     : registra
+
+HTAC   --> APP
+APP    --> ENVF
+APP    --> DB      : mysqli - TCP 3306
+APP    --> UPL     : file I/O
+APP    --> IMGF
+APP    --> LOGF
+APP    --> MAILER
+MAILER --> SMTP    : SMTP + STARTTLS - puerto 587
+SMTP   --> CLI     : correo saliente
+CRON   --> APP     : HTTP local + CRON_KEY
+APP    --> YT      : HTTPS / REST
+APP    --> GEO     : HTTPS
+BROWSER --> CDN    : HTTPS - assets
+BROWSER --> GF     : HTTPS - assets
+GH     ..> APACHE  : deploy (git pull)
+
+@enduml

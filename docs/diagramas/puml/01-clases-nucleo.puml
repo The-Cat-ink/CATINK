@@ -1,0 +1,221 @@
+@startuml CatInk_Clases_Nucleo
+title Diagrama de Clases - CatInk (Nucleo del Dominio)
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam shadowing false
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #EF3363
+  ArrowColor #334155
+  FontColor #0F172A
+}
+hide empty members
+
+abstract class Persona {
+  # id : int
+  # nombre : string
+  # usuario : string
+  # correo : string
+  # sexo : enum
+  # fecha_nacimiento : date
+  # entidad : string
+  # avatar_id : int
+  # creado : datetime
+  --
+  + autenticar(pass) : bool
+  + actualizarPerfil() : bool
+}
+
+class Usuario {
+  + id_u : int
+  + pass : string
+  + perm_categorias : tinyint
+  + perm_noticias : tinyint
+  + perm_publicidad : tinyint
+  + perm_suscripciones : tinyint
+  + perm_usuarios : tinyint
+  + perm_correos : tinyint
+  + perm_videos : tinyint
+  + registro : timestamp
+  --
+  + esSuperAdmin() : bool
+  + tienePermiso(modulo, nivel) : bool
+  + crearNoticia() : Noticia
+}
+
+class Lector {
+  + password_hash : string
+  + apelado : bool
+  + baneado_hasta : datetime
+  + baneo_permanente : bool
+  + motivo_baneo : string
+  --
+  + registrarse() : bool
+  + verificarCuenta(token) : bool
+  + comentar(noticia, texto) : Comentario
+  + estaBaneado() : bool
+  + apelarBaneo(motivo) : bool
+}
+
+class Noticia {
+  + id : int
+  + titulo : string
+  + descripcion : text
+  + contenido : longtext
+  + autor : int
+  + crop1 : string
+  + crop2 : string
+  + crop3 : string
+  + fecha_publicacion : datetime
+  + fecha_programada : datetime
+  + fecha_creacion : timestamp
+  + vistas : int
+  + likes : int
+  + borrador : bool
+  + papelera : bool
+  --
+  + publicar() : bool
+  + programar(fecha) : bool
+  + enviarAPapelera() : bool
+  + restaurar() : bool
+  + generarSlug() : string
+  + registrarVista() : void
+}
+
+class Categoria {
+  + id_c : int
+  + nombre : string
+  + icono : string
+  + icono_img : string
+  + visible_menu : bool
+  + orden : int
+  --
+  + listarNoticias() : Noticia[]
+}
+
+class Comentario {
+  + id_comentario : int
+  + noticia_id : int
+  + lector_id : int
+  + parent_id : int
+  + contenido : text
+  + fecha_publicacion : timestamp
+  + estado : enum
+  --
+  + publicar() : bool
+  + ocultar() : bool
+  + editar(texto) : bool
+  + reportar(motivo) : bool
+}
+
+class ConfigComentarios {
+  + id_config : int
+  + noticia_id : int
+  + permitir_comentarios : bool
+  + moderacion_previa : bool
+}
+
+class LikeComentario {
+  + id : int
+  + comentario_id : int
+  + lector_id : int
+  + fecha : timestamp
+}
+
+class ReporteComentario {
+  + id : int
+  + comentario_id : int
+  + lector_id : int
+  + motivo : string
+  + estado : enum
+  + fecha : timestamp
+}
+
+class NoticiaLike {
+  + id_l : int
+  + noticia_id : int
+  + ip : string
+  + pais : string
+  + estado : string
+  + fecha : timestamp
+}
+
+class NoticiaStats {
+  + id_s : int
+  + noticia_id : int
+  + tiempo_segundos : int
+  + fecha : timestamp
+  --
+  + tiempoPromedioLectura() : float
+}
+
+class HistorialEdicionNoticia {
+  + id : int
+  + noticia_id : int
+  + usuario_id : int
+  + titulo : string
+  + descripcion : text
+  + contenido : longtext
+  + motivo_cambio : string
+  + fecha_edicion : datetime
+  --
+  + compararVersiones(a, b) : Diff
+  + restaurarVersion() : bool
+}
+
+class HistorialEdicionComentario {
+  + id_edicion : int
+  + comentario_id : int
+  + contenido_anterior : text
+  + fecha_edicion : timestamp
+}
+
+class Notificacion {
+  + id : int
+  + destinatario_id : int
+  + tipo : string
+  + mensaje : string
+  + leida : bool
+  + fecha : timestamp
+}
+
+class AvatarPerfil {
+  + id_avatar : int
+  + imagen : string
+  + activo : bool
+}
+
+Persona <|-- Usuario
+Persona <|-- Lector
+
+Usuario "1" --> "0..*" Noticia : escribe
+Usuario "1" --> "0..*" HistorialEdicionNoticia : edita
+
+Noticia "1" *-- "0..*" NoticiaLike : recibe
+Noticia "1" *-- "0..*" NoticiaStats : mide
+Noticia "1" *-- "0..*" HistorialEdicionNoticia : versiona
+Noticia "1" *-- "0..1" ConfigComentarios : configura
+Noticia "1" *-- "0..*" Comentario : contiene
+Noticia "0..*" -- "0..*" Categoria : noticia_categoria
+
+Lector "1" --> "0..*" Comentario : redacta
+Lector "1" --> "0..*" LikeComentario : otorga
+Lector "1" --> "0..*" ReporteComentario : reporta
+Lector "1" --> "0..*" Notificacion : recibe
+Persona "0..*" --> "0..1" AvatarPerfil : usa
+
+Comentario "1" o-- "0..*" Comentario : responde a
+Comentario "1" *-- "0..*" LikeComentario
+Comentario "1" *-- "0..*" ReporteComentario
+Comentario "1" *-- "0..*" HistorialEdicionComentario
+
+note bottom of Persona
+  CatInk es PHP procedural: no existen
+  clases PHP reales. Este es el modelo
+  de dominio conceptual derivado de las
+  tablas y de los controladores de
+  controllers/ que operan sobre ellas.
+end note
+
+@enduml

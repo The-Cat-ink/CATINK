@@ -1,0 +1,110 @@
+@startuml CatInk_Actividad_Comentario
+title  - Publicar un Diagrama de Actividadescomentario con moderacion (CatInk)
+
+skinparam shadowing false
+skinparam activity {
+  BackgroundColor #FFFFFF
+  BorderColor #EF3363
+  DiamondBackgroundColor #FFF7FA
+  DiamondBorderColor #EF3363
+  ArrowColor #475569
+}
+
+|#F8FAFC|Lector|
+start
+:Escribir comentario en la noticia;
+:Enviar por AJAX a\ncontrollers/comentarios.php;
+
+|Sistema - Autenticacion|
+if (Hay sesion de lector o admin?) then (no)
+  :Responder "Debes iniciar sesion";
+  |Lector|
+  :Ver toast e ir a /login;
+  stop
+else (si)
+endif
+
+|Sistema - Bloqueos globales|
+:Consultar secciones\nWHERE nombre = 'comentarios';
+if (estado = 0? (boton de panico)) then (si)
+  :Responder "Comentarios desactivados\ntemporalmente en todo el sitio";
+  stop
+else (no)
+endif
+
+:Consultar config_comentarios\nde la noticia;
+if (permitir_comentarios = 0?) then (si)
+  :Responder "Comentarios cerrados\nen esta publicacion";
+  stop
+else (no)
+endif
+
+|Sistema - Moderacion de usuario|
+:obtenerBaneo(con, tipo, id);
+if (estaBaneado(banRow)?) then (si)
+  :Componer mensaje con textoBaneo();
+  :Responder con persist = true;
+  |Lector|
+  :Ver aviso de suspension;
+  if (Desea apelar?) then (si)
+    :Enviar apelacion\n(apelar_lector.php);
+    |Super Admin|
+    :Revisar apelacion;
+    :Levantar o mantener la suspension;
+  else (no)
+  endif
+  stop
+else (no)
+endif
+
+|Sistema - Filtro de contenido|
+:normalizarTextoModeracion(texto);
+
+fork
+  :palabrasOfensivasDetectadas();
+fork again
+  :insultosDurosDetectados();
+fork again
+  :palabrasBaneadasEncontradas()\ncontra filtro_diccionario;
+end fork
+
+if (Insulto duro detectado?) then (si)
+  :Rechazar y registrar incidencia;
+  :Responder con motivo del rechazo;
+  stop
+elseif (Palabra ofensiva leve?) then (si)
+  :filtrarPalabras() censura el texto;
+else (limpio)
+endif
+
+|Sistema - Persistencia|
+if (moderacion_previa = 1?) then (si)
+  :INSERT en comentarios\ncon estado = 'oculto';
+  |Editor|
+  :Revisar en el panel de moderacion;
+  if (Aprobar?) then (si)
+    :UPDATE estado = 'activo';
+  else (no)
+    :UPDATE estado = 'eliminado';
+    stop
+  endif
+else (no)
+  |Sistema - Persistencia|
+  :INSERT en comentarios\ncon estado = 'activo';
+endif
+
+fork
+  if (Es respuesta (parent_id)?) then (si)
+    :Vincular al comentario padre;
+    :crearNotificacion() al autor\ndel comentario original;
+  else (no)
+  endif
+fork again
+  :Devolver JSON ok = true\ncon el comentario renderizado;
+end fork
+
+|Lector|
+:Ver el comentario en el hilo\nsin recargar la pagina;
+stop
+
+@enduml

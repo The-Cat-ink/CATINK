@@ -1,0 +1,142 @@
+@startuml CatInk_Casos_Uso_Admin
+title Diagrama de Casos de Uso - CatInk (Panel de administracion)
+
+left to right direction
+skinparam shadowing false
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #EF3363
+  ArrowColor #475569
+}
+skinparam package {
+  BackgroundColor #F8FAFC
+  BorderColor #94A3B8
+  FontStyle bold
+}
+
+actor "Redactor"    as RED
+actor "Editor"      as EDI
+actor "Super Admin" as ADM
+
+actor "SMTP Hostinger"   as SMTP <<system>>
+actor "YouTube Data API" as YT   <<system>>
+actor "Cron del hosting" as CRON <<system>>
+
+RED <|-- EDI
+EDI <|-- ADM
+
+rectangle "Sistema CatInk - Panel de administracion" {
+
+  usecase "Validar permisos ACL" as UC57
+
+  package "Redaccion de contenido" {
+    usecase "Crear noticia"              as UC26
+    usecase "Editar noticia"             as UC27
+    usecase "Guardar borrador"           as UC28
+    usecase "Programar publicacion"      as UC29
+    usecase "Subir imagenes\n(recorte y WebP)" as UC30
+    usecase "Registrar version\nen historial" as UC31
+    usecase "Comparar y restaurar\nversiones" as UC32
+    usecase "Enviar a papelera\ny restaurar" as UC33
+  }
+
+  package "Curaduria y CMS" {
+    usecase "Gestionar categorias"       as UC34
+    usecase "Curar Recomendados\ny Lo mas esperado" as UC35
+    usecase "Gestionar paginas\ny secciones (meta_json)" as UC36
+    usecase "Gestionar logos\nde marcas" as UC37
+    usecase "Gestionar redes\nsociales"  as UC38
+    usecase "Gestionar videos\nde YouTube" as UC39
+  }
+
+  package "Publicidad" {
+    usecase "Gestionar campanas"         as UC40
+    usecase "Activar o desactivar\ncampana" as UC41
+    usecase "Consultar estadisticas\nde campana" as UC42
+  }
+
+  package "Mailing" {
+    usecase "Gestionar suscriptores"     as UC44
+    usecase "Crear correo publicitario"  as UC45
+    usecase "Enviar correo masivo"       as UC46
+    usecase "Programar boletin diario"   as UC47
+  }
+
+  package "Bolsa de trabajo" {
+    usecase "Gestionar vacantes"         as UC48
+    usecase "Revisar solicitudes"        as UC50
+  }
+
+  package "Moderacion y administracion" {
+    usecase "Moderar comentarios"        as UC51
+    usecase "Suspender o banear\nusuario" as UC52
+    usecase "Resolver apelaciones"       as UC53
+    usecase "Gestionar usuarios\ny permisos" as UC54
+    usecase "Consultar dashboard\ny metricas" as UC55
+    usecase "Consultar bitacora\nde actividad" as UC56
+  }
+}
+
+RED --> UC26
+RED --> UC27
+RED --> UC28
+RED --> UC29
+RED --> UC33
+RED --> UC55
+
+EDI --> UC32
+EDI --> UC34
+EDI --> UC35
+EDI --> UC36
+EDI --> UC37
+EDI --> UC38
+EDI --> UC39
+EDI --> UC40
+EDI --> UC42
+EDI --> UC44
+EDI --> UC45
+EDI --> UC46
+EDI --> UC48
+EDI --> UC50
+EDI --> UC51
+
+ADM --> UC47
+ADM --> UC52
+ADM --> UC53
+ADM --> UC54
+ADM --> UC56
+
+UC46 --> SMTP
+UC47 --> SMTP
+UC50 --> SMTP
+UC39 --> YT
+UC47 <-- CRON
+UC29 <-- CRON
+
+UC26 ..> UC57 : <<include>>
+UC27 ..> UC57 : <<include>>
+UC40 ..> UC57 : <<include>>
+UC46 ..> UC57 : <<include>>
+UC54 ..> UC57 : <<include>>
+UC52 ..> UC57 : <<include>>
+
+UC26 ..> UC30 : <<include>>
+UC27 ..> UC30 : <<include>>
+UC27 ..> UC31 : <<include>>
+
+UC28 ..> UC26 : <<extend>>
+UC29 ..> UC26 : <<extend>>
+UC32 ..> UC31 : <<extend>>
+UC41 ..> UC40 : <<extend>>
+UC53 ..> UC52 : <<extend>>
+UC51 ..> UC52 : <<extend>>
+
+note bottom
+  UC57 (Validar permisos ACL) se ejecuta en cada
+  endpoint mediante proteger($modulo, $accion) de
+  controllers/aclcontroller.php, que consulta
+  $_SESSION['ACL'] construido por mapearPermisos().
+end note
+
+@enduml

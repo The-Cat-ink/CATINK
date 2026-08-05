@@ -1,0 +1,199 @@
+@startuml CatInk_Objetos
+title Diagrama de Objetos - CatInk (instantanea 2026-07-31 19:42:10)
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam object {
+  BackgroundColor #FFFFFF
+  BorderColor #EF3363
+  ArrowColor #334155
+}
+
+object "jpablo : Usuario" as U7 {
+  id_u = 7
+  nombre = "Juan Pablo Ruiz"
+  usuario = "jpablo"
+  correo = "jpablo@catink.com.mx"
+  perm_noticias = 3
+  perm_categorias = 3
+  perm_publicidad = 2
+  perm_usuarios = 0
+  registro = 2025-11-02 10:15:00
+}
+
+object "noticiaChainsaw : Noticia" as N142 {
+  id = 142
+  titulo = "Chainsaw Man - Arco Reze confirma fecha"
+  autor = 7
+  crop1 = "uploads/noticias/142_hero.webp"
+  fecha_publicacion = 2026-07-31 09:00:00
+  fecha_programada = NULL
+  vistas = 4821
+  likes = 336
+  borrador = 0
+  papelera = 0
+}
+
+object "catAnime : Categoria" as C3 {
+  id_c = 3
+  nombre = "Anime"
+  icono = "bi-tv"
+  visible_menu = 1
+}
+
+object "catEstrenos : Categoria" as C9 {
+  id_c = 9
+  nombre = "Estrenos"
+  icono = "bi-calendar-event"
+  visible_menu = 1
+}
+
+object "mikasa : Lector" as L58 {
+  id = 58
+  nombre = "Ana Ramirez"
+  usuario = "mikasa_r"
+  correo = "ana.rmz@gmail.com"
+  avatar_id = 4
+  entidad = "PUE"
+  baneado_hasta = NULL
+  baneo_permanente = 0
+  apelado = 0
+}
+
+object "kenji : Lector" as L91 {
+  id = 91
+  usuario = "kenji_88"
+  correo = "kenji88@outlook.com"
+  avatar_id = 12
+  baneado_hasta = NULL
+}
+
+object "comentarioRaiz : Comentario" as CM2210 {
+  id_comentario = 2210
+  noticia_id = 142
+  lector_id = 91
+  parent_id = NULL
+  contenido = "Alguien sabe si sale doblado?"
+  estado = "activo"
+  fecha_publicacion = 2026-07-31 19:30:44
+}
+
+object "comentarioRespuesta : Comentario" as CM2214 {
+  id_comentario = 2214
+  noticia_id = 142
+  lector_id = 58
+  parent_id = 2210
+  contenido = "Si, el doblaje llega 2 semanas despues"
+  estado = "activo"
+  fecha_publicacion = 2026-07-31 19:42:10
+}
+
+object "likeComentario : LikeComentario" as LC77 {
+  id = 77
+  comentario_id = 2210
+  lector_id = 58
+  fecha = 2026-07-31 19:42:01
+}
+
+object "likeMikasa : NoticiaLike" as LK903 {
+  id_l = 903
+  noticia_id = 142
+  ip = "189.203.44.17"
+  pais = "Mexico"
+  estado = "Puebla"
+  fecha = 2026-07-31 19:41:52
+}
+
+object "lecturaActual : NoticiaStats" as ST5541 {
+  id_s = 5541
+  noticia_id = 142
+  tiempo_segundos = 214
+  fecha = 2026-07-31 19:42:08
+}
+
+object "configComentarios142 : ConfigComentarios" as CF88 {
+  id_config = 88
+  noticia_id = 142
+  permitir_comentarios = 1
+  moderacion_previa = 0
+}
+
+object "v2Noticia142 : HistorialEdicionNoticia" as H410 {
+  id = 410
+  noticia_id = 142
+  usuario_id = 7
+  titulo = "Chainsaw Man - Arco Reze confirma fecha"
+  motivo_cambio = "Se corrigio la fecha de estreno"
+  fecha_edicion = 2026-07-31 18:05:33
+}
+
+object "anuncioLateral : Publicidad" as P21 {
+  id_pub = 21
+  titulo = "Crunchyroll Verano 2026"
+  imagen = "uploads/publicidad/21_cuadro.webp"
+  tipo = 2
+  url = "https://crunchyroll.com/es"
+  activo = 1
+  fecha_inicio = 2026-07-01 00:00:00
+  fecha_fin = 2026-08-31 23:59:59
+}
+
+object "impresion : PublicidadView" as V14872 {
+  id_view = 14872
+  publicidad_id = 21
+  ip = "189.203.44.17"
+  tiempo_segundos = 6
+  pais = "Mexico"
+  fecha = 2026-07-31 19:42:09
+}
+
+object "avatarNeko : AvatarPerfil" as AV4 {
+  id_avatar = 4
+  imagen = "uploads/avatares/neko_rosa.webp"
+  activo = 1
+}
+
+object "sesionActual : SesionPHP" as SES {
+  lector_id = 58
+  lector_usuario = "mikasa_r"
+  usuario_id = NULL
+  acl = NULL
+  iniciada = 2026-07-31 19:10:02
+}
+
+object "con : ConexionBD" as CONX {
+  server = "localhost"
+  dbname = "u780114275_cat_ink"
+  charset = "utf8mb4"
+  time_zone = "-06:00"
+  connect_error = NULL
+}
+
+U7   --> N142   : escribio
+U7   --> H410   : registro
+N142 --> H410   : version v2
+N142 --> C3     : noticia_categoria
+N142 --> C9     : noticia_categoria
+N142 --> CF88
+N142 --> CM2210
+N142 --> CM2214
+N142 --> LK903
+N142 --> ST5541
+L91  --> CM2210 : autor
+L58  --> CM2214 : autor
+CM2210 --> CM2214 : respuesta
+L58  --> LC77   : otorgo
+CM2210 --> LC77 : recibio
+L58  --> AV4    : usa
+P21  --> V14872 : impresion
+SES  --> L58    : sesion de
+CONX ..> N142   : materializa
+
+note bottom of CONX
+  En este instante la noticia 142 NO tiene
+  instancias de Recomendado ni de Esperado:
+  un diagrama de objetos solo muestra los
+  objetos que existen en ese momento.
+end note
+
+@enduml

@@ -1,0 +1,117 @@
+@startuml CatInk_Actividad_Publicar_Noticia
+title Diagrama de Actividades - Crear y publicar una noticia (CatInk)
+
+skinparam shadowing false
+skinparam activity {
+  BackgroundColor #FFFFFF
+  BorderColor #EF3363
+  DiamondBackgroundColor #FFF7FA
+  DiamondBorderColor #EF3363
+  ArrowColor #475569
+}
+
+|#F8FAFC|Redactor|
+start
+:Iniciar sesion en el panel;
+
+|Sistema (ACL)|
+:Cargar permisos con mapearPermisos();
+if (tienePermiso('noticias', 'crear')?) then (no)
+  :Redirigir al primer modulo\ncon permiso de lectura;
+  stop
+else (si)
+endif
+
+|Redactor|
+:Abrir views/crear.php;
+:Capturar titulo, descripcion\ny contenido en CKEditor;
+
+fork
+  :Recortar imagen crop1\n(portada);
+fork again
+  :Recortar imagen crop2\n(miniatura);
+fork again
+  :Recortar imagen crop3\n(destacado);
+fork again
+  :Asignar categorias;
+end fork
+
+:Elegir modo de guardado;
+
+switch (Modo de guardado)
+case (Borrador)
+  |Sistema (controllers)|
+  :autoguardar_borrador.php\nINSERT con borrador = 1;
+  :Mostrar toast "Borrador guardado";
+  stop
+
+case (Programada)
+  |Redactor|
+  :Seleccionar fecha y hora futura;
+  |Sistema (controllers)|
+  :INSERT con fecha_programada;
+  note right
+    conexion.php alinea la zona horaria
+    de MySQL con la de PHP para que
+    NOW() coincida con fecha_programada
+  end note
+  :Marcar como no visible;
+
+case (Publicar ahora)
+  |Sistema (controllers)|
+  :Validar campos obligatorios;
+  if (Datos completos?) then (no)
+    :Devolver errores al formulario;
+    |Redactor|
+    :Corregir datos;
+    detach
+  else (si)
+  endif
+endswitch
+
+|Sistema (controllers)|
+:INSERT en noticias;
+:Obtener id autogenerado;
+
+fork
+  :Decodificar base64 de cada crop;
+  :Convertir a WebP\ny guardar en img/noticias/;
+  :UPDATE noticias SET crop1, crop2, crop3;
+fork again
+  :INSERT en noticia_categoria\npor cada categoria;
+fork again
+  :Generar slug con generateSlug();
+fork again
+  :logActivity(usuario, 'crear_noticia');
+end fork
+
+|Sistema (publicacion)|
+if (Es programada?) then (si)
+  :Esperar al cron del hosting;
+  |Cron|
+  :Consultar noticias con\nfecha_programada <= NOW();
+  :Marcar como publicadas;
+else (no)
+endif
+
+|Sistema (publicacion)|
+:Invalidar cache del Service Worker\n(bump de version en sw.js);
+
+fork
+  :Publicar en portada (index.php);
+fork again
+  :Incluir en feeds\n(recientes, top, categoria);
+fork again
+  if (Hay programacion de boletin activa?) then (si)
+    |Cron|
+    :Componer boletin con\nrenderCatInkEmail();
+    :Enviar por SMTP a suscriptores;
+  else (no)
+  endif
+end fork
+
+|Redactor|
+:Ver la noticia publicada;
+stop
+
+@enduml

@@ -1,0 +1,127 @@
+@startuml CatInk_Secuencia_Registro
+title Diagrama de Secuencia - Registro y verificacion de un lector (CatInk)
+
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #475569
+  LifeLineBorderColor #94A3B8
+  ParticipantBorderColor #EF3363
+  ParticipantBackgroundColor #FFFFFF
+  ActorBorderColor #EF3363
+}
+autonumber "<b>[0]"
+
+actor "Visitante" as U
+participant "views/registro.php" as VIEW
+participant "registrocontroller.php" as CTRL
+participant "data/conexion.php\n($con)" as CONEX
+database "MariaDB" as DB
+participant "emailhelper.php" as MAILH
+participant "PHPMailer" as PM
+boundary "SMTP Hostinger" as SMTP
+participant "verificar.php" as VERIF
+
+U -> VIEW : abre /registro
+activate VIEW
+VIEW -> VIEW : genera $_SESSION['reg_form_token']
+VIEW --> U : formulario con form_token
+deactivate VIEW
+
+U -> CTRL : POST nombre, usuario, correo,\npass, fecha_nacimiento, sexo, entidad
+activate CTRL
+
+group Proteccion contra doble envio
+  CTRL -> CTRL : compara form_token con\n$_SESSION['reg_form_token']
+  alt token invalido o ya usado
+    alt existe last_reg_email
+      CTRL --> U : redirect /login?registro=verificar
+    else
+      CTRL --> U : redirect /login?modo=registro
+    end
+    note right of CTRL
+      Evita que un doble submit
+      cree dos cuentas iguales
+    end note
+  else token valido
+    CTRL -> CTRL : unset(reg_form_token)
+  end
+end
+
+CTRL -> CTRL : guarda $_SESSION['temp_registro']\npara repoblar el formulario
+
+group Validaciones
+  CTRL -> CTRL : valida campos, formato de correo,\ncoincidencia de contrasenas y terminos
+  CTRL -> CONEX : prepare(SELECT ... FROM lectores\nWHERE usuario = ? OR correo = ?)
+  activate CONEX
+  CONEX -> DB : execute
+  DB --> CONEX : filas encontradas
+  CONEX --> CTRL : resultado
+  deactivate CONEX
+
+  alt usuario o correo ya existen
+    CTRL --> U : redirect con error=duplicado
+  end
+end
+
+CTRL -> CTRL : password_hash(pass, PASSWORD_DEFAULT)
+CTRL -> CTRL : genera token de verificacion
+
+CTRL -> CONEX : prepare(INSERT INTO lectores ...)
+activate CONEX
+CONEX -> DB : execute
+DB --> CONEX : id_lector nuevo
+CONEX --> CTRL : ok
+deactivate CONEX
+
+group Envio del correo de verificacion
+  CTRL -> MAILH : renderCatInkEmail(title, content,\ncta_url, theme='light')
+  activate MAILH
+  MAILH --> CTRL : HTML del correo
+  deactivate MAILH
+
+  CTRL -> PM : isSMTP(), setFrom(SMTP_AUTH_FROM_EMAIL),\naddAddress(correo), Body = HTML
+  activate PM
+  PM -> SMTP : SMTP + STARTTLS puerto 587
+  activate SMTP
+  SMTP --> PM : 250 OK
+  deactivate SMTP
+  PM --> CTRL : send() = true
+  deactivate PM
+
+  note right of PM
+    Usa las credenciales SMTP_AUTH_*
+    (no-reply@) separadas de las de
+    boletin (news@) para evitar
+    el filtro antispam de Hostinger
+  end note
+end
+
+CTRL -> CTRL : guarda $_SESSION['last_reg_email']
+CTRL --> U : redirect /login?registro=verificar&email=...
+deactivate CTRL
+
+...  el visitante abre su bandeja de entrada  ...
+
+SMTP -> U : correo "Verifica tu cuenta"
+U -> VERIF : GET /verificar.php?token=...
+activate VERIF
+VERIF -> CONEX : SELECT lector WHERE token = ?
+activate CONEX
+CONEX -> DB : execute
+DB --> CONEX : lector
+CONEX --> VERIF : fila
+deactivate CONEX
+
+alt token valido y no expirado
+  VERIF -> CONEX : UPDATE lectores SET verificado = 1
+  activate CONEX
+  CONEX -> DB : execute
+  DB --> CONEX : ok
+  deactivate CONEX
+  VERIF --> U : pantalla de exito +\nboton a /views/perfil.php
+else token invalido
+  VERIF --> U : pantalla informativa con\n"Regresar a la pagina anterior"
+end
+deactivate VERIF
+
+@enduml

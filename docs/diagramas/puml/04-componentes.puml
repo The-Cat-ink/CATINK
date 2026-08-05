@@ -1,0 +1,158 @@
+@startuml CatInk_Componentes
+title Diagrama de Componentes - CatInk
+
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam nodesep 25
+skinparam ranksep 45
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #EF3363
+  ArrowColor #475569
+}
+skinparam package {
+  BackgroundColor #F8FAFC
+  BorderColor #94A3B8
+  FontStyle bold
+}
+skinparam interface {
+  BackgroundColor #FFFFFF
+  BorderColor #38BDF8
+}
+
+package "1. Capa Cliente (Navegador)" as P1 {
+  component "UI Publica\n(CSS/styles.css)"     as UI
+  component "Logica Cliente\n(CSS/scripts.js)" as JS
+  component "Logica Admin\n(CSS/admin.js)"     as JSADM
+  component "Hotwire Turbo\n(navegacion SPA)"  as TURBO
+
+  package "Subsistema PWA / Offline" as PWA {
+    component "Service Worker\n(sw.js v4)"                as SW
+    component "Offline Manager\n(offline-manager.js)"     as OFFMGR
+    database  "IndexedDB +\nCache Storage"                as IDB
+    artifact  "manifest.json"                             as MANIF
+  }
+
+  UI    --> TURBO
+  JS    --> TURBO
+  JSADM --> TURBO
+  JS    --> OFFMGR
+  OFFMGR --> IDB
+  SW     --> IDB
+  MANIF ..> SW : registra
+}
+
+package "2. Enrutamiento" as P2 {
+  component "mod_rewrite\n(.htaccess)" as HTAC
+}
+
+package "3. Capa de Presentacion (views/ + layout/)" as P3 {
+  component "Vistas Publicas\n(index, news, categoria, top,\npopular, unete, nosotros,\ncontactanos, guardados)" as VPUB
+  component "Vistas Admin - CMS\n(admin, contenidos, publicidad,\npaginas, vacantes, lectores,\nsuscripciones, correos)" as VADM
+  component "Layouts\n(header/footer +\nheaderAdmin/footerAdmin)" as LAY
+  component "Plantillas de Correo\n(views/email/)"                as VMAIL
+  component "api/search.php\n(busqueda JSON)"                     as APISRCH
+
+  VPUB --> LAY
+  VADM --> LAY
+}
+
+package "4. Capa de Negocio (controllers/ - ~110 endpoints)" as P4 {
+  component "Autenticacion\n(login, registro, logout,\nreset_contrasena)" as CAUTH
+  component "Contenidos\n(noticiascontroller,\nactualizar_noticia,\nrestaurar_version)" as CNOT
+  component "Comentarios y Moderacion\n(comentarios, reportar_comentario,\nmoderar_usuario, apelar_lector)" as CCOM
+  component "Publicidad y Metricas\n(guardar_publicidad, spot_view,\nspot_click, sumarvistas)" as CPUB
+  component "Mailing\n(enviarCorreoMultiple,\nsuscribirse, crearCorreoPub)" as CMAIL
+  component "CMS y Media\n(pagina, logo_subir,\nredes_guardar, avatar_*)"    as CCMS
+  component "Vacantes\n(vacantes_guardar,\npostular_vacante)"                as CVAC
+}
+
+package "5. Servicios Compartidos (views/helpers/)" as P5 {
+  component "acl.php"                          as HACL
+  component "moderacion.php +\nfiltrohelper.php" as HMOD
+  component "emailhelper.php"                  as HMAIL
+  component "urlhelper.php + img.php"          as HURL
+  component "publicidadhelper.php"             as HPUB
+  component "sidebarhelper.php +\nsocialhelper.php" as HSIDE
+  component "videoEmbed.php +\nsocialEmbed.php" as HEMB
+  component "activity_log.php"                 as HLOG
+}
+
+package "6. Capa de Datos (data/)" as P6 {
+  component "conexion.php\n(mysqli + auto-migracion)" as CONEX
+  component "env.php\n(lector de .env)"               as ENVC
+  artifact  "migrations/001..014.sql"                 as MIGR
+
+  CONEX --> ENVC
+}
+
+package "7. Bibliotecas" as P7 {
+  component "PHPMailer"       as MAILER
+  component "CKEditor 5"      as CKED
+  component "SortableJS +\nCropperJS" as SORT
+  component "Bootstrap Icons" as BOOT
+}
+
+database "MariaDB 11.8\nu780114275_cat_ink\n36 tablas InnoDB" as DB
+folder   "uploads/ - img/ - logs/"                            as FS
+
+cloud "Hostinger SMTP"            as SMTP
+cloud "YouTube Data API v3"       as YT
+cloud "CDN jsDelivr /\nGoogle Fonts" as CDN
+cloud "Geolocalizacion IP"        as GEO
+
+interface "IConexion"        as ICONEX
+interface "IPermisos"        as IPERM
+interface "IPlantillaCorreo" as IMAILT
+interface "IEnvioSMTP"       as ISMTP
+
+CONEX  -up- ICONEX
+HACL   -up- IPERM
+HMAIL  -up- IMAILT
+MAILER -up- ISMTP
+
+' --- Flujo principal entre capas ---
+TURBO --> HTAC : HTTP
+SW    ..> HTAC : intercepta fetch
+HTAC  --> P3
+HTAC  --> P4
+JS    --> APISRCH : JSON
+
+P3 --> P5 : usa servicios
+P4 --> P5 : usa servicios
+VMAIL --> IMAILT
+
+' --- Dependencias hacia datos ---
+P5      --> ICONEX
+P4      --> ICONEX
+APISRCH --> ICONEX
+CONEX   --> DB   : mysqli TCP 3306
+MIGR    ..> DB   : aplica
+
+' --- Dependencias puntuales relevantes ---
+VADM  --> IPERM
+CNOT  --> IPERM
+CCOM  --> HMOD
+CPUB  --> HPUB
+CMAIL --> IMAILT
+CAUTH --> ISMTP
+CVAC  --> ISMTP
+CPUB  --> HLOG
+VPUB  --> HSIDE
+HSIDE --> HURL
+
+' --- Recursos externos ---
+MAILER --> SMTP : SMTP + STARTTLS 587
+MAILER --> ENVC
+CCMS   --> FS   : file I/O
+CVAC   --> FS
+HURL   --> FS
+HEMB   --> YT
+CCMS   --> YT
+CPUB   --> GEO
+VADM   --> CKED
+VADM   --> SORT
+LAY    --> BOOT
+BOOT   --> CDN
+
+@enduml

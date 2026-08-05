@@ -1,0 +1,228 @@
+@startuml CatInk_Clases_Modulos
+title Diagrama de Clases - CatInk (Publicidad, Mailing, CMS y Vacantes)
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam shadowing false
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #EF3363
+  ArrowColor #334155
+}
+hide empty members
+
+package "Curaduria de portada" {
+  class Recomendado {
+    + id : int
+    + noticia_id : int
+    + orden : int
+    + titulo_custom : string
+    + imagen : string
+    + url : string
+    --
+    + reordenar(nuevoOrden) : bool
+  }
+
+  class Esperado {
+    + id : int
+    + noticia_id : int
+    + orden : int
+    + titulo_custom : string
+    + imagen : string
+    + url : string
+    --
+    + reordenar(nuevoOrden) : bool
+  }
+}
+
+package "Publicidad" {
+  class Publicidad {
+    + id_pub : int
+    + titulo : string
+    + imagen : string
+    + tipo : tinyint
+    + url : string
+    + activo : bool
+    + fecha_inicio : datetime
+    + fecha_fin : datetime
+    + creado : timestamp
+    --
+    + activar() : bool
+    + desactivar() : bool
+    + estaVigente() : bool
+    + ctr() : float
+  }
+
+  class PublicidadPosicion {
+    + id : int
+    + publicidad_id : int
+    + posicion : string
+    + orden : int
+  }
+
+  class PublicidadClick {
+    + id_click : int
+    + publicidad_id : int
+    + ip : string
+    + pais : string
+    + estado : string
+    + fecha : timestamp
+  }
+
+  class PublicidadView {
+    + id_view : int
+    + publicidad_id : int
+    + ip : string
+    + tiempo_segundos : int
+    + pais : string
+    + fecha : timestamp
+  }
+}
+
+package "Mailing y suscripciones" {
+  class Suscripcion {
+    + id_sub : int
+    + nombre_completo : string
+    + correo : string
+    + sexo : string
+    + ip : string
+    + pais : string
+    + estado : string
+    + fecha : timestamp
+    --
+    + alta() : bool
+    + baja() : bool
+  }
+
+  class CorreoPublicitario {
+    + id_correo : int
+    + titulo : string
+    + contenido : longtext
+    + imagen : string
+    + url_c : string
+    + envio : datetime
+    + enviado : bool
+    + fecha_enviado : datetime
+    --
+    + programarEnvio(fecha) : bool
+    + enviarMasivo() : int
+  }
+
+  class ProgramacionCorreo {
+    + id_programacion : int
+    + hora : time
+    + estado : enum
+    + ultima_ejecucion : datetime
+    --
+    + ejecutarBoletinDiario() : bool
+  }
+}
+
+package "CMS y contenido editable" {
+  class Pagina {
+    + id_pag : int
+    + nombre_pag : string
+    + contenido_pag : longtext
+    + meta_json : json
+    + created_at : timestamp
+    + updated_at : timestamp
+    --
+    + obtenerMeta(clave) : mixed
+    + guardarMeta(clave, valor) : bool
+  }
+
+  class Seccion {
+    + id_s : int
+    + nombre : string
+    + estado : tinyint
+    + valor : string
+    --
+    + alternarEstado() : bool
+  }
+
+  class LogoMarca {
+    + id_logo : int
+    + imagen : string
+    + nombre : string
+    + activo : bool
+    + fecha_expiracion : date
+    + orden : int
+  }
+
+  class RedSocial {
+    + id_red : int
+    + nombre : string
+    + url : string
+    + icono : string
+    + icono_img : string
+    + color : string
+    + orden : int
+    + activo : bool
+  }
+
+  class Video {
+    + id_v : int
+    + url_v : string
+    + activo : bool
+    + orden : int
+  }
+}
+
+package "Bolsa de trabajo" {
+  class VacanteEquipo {
+    + id : int
+    + orden : int
+    + tag : string
+    + titulo : string
+    + subtitulo_italic : string
+    + descripcion : text
+    + modalidad : string
+    + imagen : string
+    + estado : tinyint
+    + creado_en : datetime
+    --
+    + publicar() : bool
+    + reordenar(nuevoOrden) : bool
+  }
+
+  class SolicitudVacante {
+    + id : int
+    + vacante_id : int
+    + nombre : string
+    + email : string
+    + telefono : string
+    + razon : text
+    + cv_archivo : string
+    + estado : enum
+    + fecha_solicitud : datetime
+    --
+    + cambiarEstado(nuevo) : bool
+    + notificarPorCorreo() : bool
+  }
+}
+
+class Noticia {
+  + id : int
+  + titulo : string
+}
+
+class Categoria {
+  + id_c : int
+  + nombre : string
+}
+
+Noticia "1" o-- "0..1" Recomendado : curada en
+Noticia "1" o-- "0..1" Esperado : curada en
+
+Publicidad "1" *-- "0..*" PublicidadClick : registra
+Publicidad "1" *-- "0..*" PublicidadView : registra
+Publicidad "1" *-- "0..*" PublicidadPosicion : ocupa
+Publicidad "0..*" -- "0..*" Categoria : publicidad_categoria
+
+VacanteEquipo "1" --> "0..*" SolicitudVacante : recibe
+ProgramacionCorreo "1" --> "0..*" CorreoPublicitario : dispara
+CorreoPublicitario "0..*" --> "0..*" Suscripcion : destinatarios
+Pagina "1" o-- "0..*" LogoMarca : muestra en Nosotros
+Pagina "1" o-- "0..*" RedSocial : enlaza en footer
+
+@enduml

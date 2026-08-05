@@ -1,0 +1,130 @@
+@startuml CatInk_Secuencia_Postular_Vacante
+title Diagrama de Secuencia - Postulacion a una vacante (CatInk)
+
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #475569
+  LifeLineBorderColor #94A3B8
+  ParticipantBorderColor #EF3363
+  ParticipantBackgroundColor #FFFFFF
+  ActorBorderColor #EF3363
+}
+autonumber "<b>[0]"
+
+actor "Aspirante" as U
+participant "views/unete.php\n(modal + AJAX)" as VIEW
+participant "postular_vacante.php" as CTRL
+participant "conexion.php ($con)" as CONEX
+database "MariaDB" as DB
+collections "uploads/cv/" as FS
+participant "views/email/solicitud.php" as TPL
+participant "PHPMailer" as PM
+boundary "SMTP Hostinger" as SMTP
+actor "Editor\n(panel admin)" as EDI
+
+U -> VIEW : clic en "Postularme" de una vacante
+activate VIEW
+VIEW -> VIEW : abrir modal y precargar vacante_id
+U -> VIEW : arrastra el CV a la dropzone
+VIEW -> VIEW : previsualiza nombre y peso en MB
+U -> VIEW : enviar formulario
+
+VIEW -> VIEW : validacion manual en JS\n(sin validacion HTML5 nativa)
+VIEW -> VIEW : boton pasa a "Guardando..."
+
+VIEW -> CTRL : POST multipart\n(nombre, email, telefono, razon,\ncv, vacante_id)
+deactivate VIEW
+activate CTRL
+
+CTRL -> CTRL : session_start()\nheader Content-Type: application/json
+
+group Validacion de campos
+  CTRL -> CTRL : trim() + FILTER_VALIDATE_EMAIL
+  alt falta nombre, email o razon
+    CTRL --> VIEW : json {error: "Completa todos los campos"}
+    note right of CTRL : return inmediato
+  end
+end
+
+group Validacion del archivo
+  CTRL -> CTRL : verifica $_FILES['cv']['error']
+  alt no hay archivo
+    CTRL --> VIEW : json {error: "Adjunta tu CV"}
+  end
+  CTRL -> CTRL : pathinfo() extension
+  alt extension no permitida
+    CTRL --> VIEW : json {error: "Formato no permitido"}
+    note right of CTRL
+      Permitidos: pdf, doc, docx,
+      png, jpg, jpeg, webp, gif
+    end note
+  end
+end
+
+CTRL -> FS : mkdir(uploads/cv/, 0755) si no existe
+activate FS
+CTRL -> CTRL : nombre seguro\ncv_<timestamp>_<sanitizado>
+CTRL -> FS : move_uploaded_file()
+alt fallo al mover
+  FS --> CTRL : false
+  CTRL --> VIEW : json {error: "No se pudo guardar el CV"}
+else exito
+  FS --> CTRL : true
+end
+deactivate FS
+
+CTRL -> CONEX : prepare(SELECT titulo, tag\nFROM vacantes_equipo WHERE id = ?)
+activate CONEX
+CONEX -> DB : execute
+DB --> CONEX : titulo + tag
+CONEX --> CTRL : "DEVELOPER (05 - DESARROLLO WEB)"
+deactivate CONEX
+
+CTRL -> CONEX : prepare(INSERT INTO solicitudes_vacantes\n(vacante_id, nombre, email, telefono,\nrazon, cv_archivo, fecha_solicitud))
+activate CONEX
+CONEX -> DB : execute
+DB --> CONEX : id de solicitud
+CONEX --> CTRL : ok
+deactivate CONEX
+note right of DB
+  estado por defecto = 'pendiente'
+  FK ON DELETE SET NULL: si se borra
+  la vacante, la solicitud se conserva
+end note
+
+group Notificacion por correo
+  CTRL -> TPL : componer cuerpo con datos\ny titulo de la vacante
+  activate TPL
+  TPL --> CTRL : HTML
+  deactivate TPL
+
+  CTRL -> PM : setFrom(SMTP_AUTH_FROM_EMAIL)\naddAddress(buzon de CatInk)\naddAttachment(uploads/cv/...)
+  activate PM
+  PM -> SMTP : SMTP + STARTTLS 587
+  activate SMTP
+  SMTP --> PM : 250 OK
+  deactivate SMTP
+  PM --> CTRL : send()
+  deactivate PM
+  note right of PM
+    Remitente "CatInk Vacantes" con
+    credenciales SMTP_AUTH (no-reply@)
+    para no caer en spam
+  end note
+end
+
+CTRL --> VIEW : json {ok: true}
+deactivate CTRL
+
+activate VIEW
+VIEW -> VIEW : cerrar modal y limpiar dropzone
+VIEW --> U : Toast "Postulacion enviada"
+deactivate VIEW
+
+... mas tarde ...
+
+EDI -> DB : abre views/vacantes.php,\npestana Solicitudes
+DB --> EDI : listado con CV descargable
+EDI -> DB : solicitud_estado.php\nUPDATE estado = 'revisado'
+
+@enduml

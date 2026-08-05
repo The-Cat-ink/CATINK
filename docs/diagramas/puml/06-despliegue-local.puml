@@ -1,0 +1,54 @@
+@startuml CatInk_Despliegue_Local
+title Diagrama de Despliegue - CatInk (Entorno de Desarrollo Local)
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam node {
+  BackgroundColor #FFFFFF
+  BorderColor #EF3363
+}
+
+node "Equipo de Desarrollo\n(Windows 11 Pro)" <<device>> as PC {
+
+  node "XAMPP" <<execution environment>> as XAMPP {
+    component "Apache 2.4\nlocalhost:80"  as APACHEL
+    component "PHP 8.x"                   as PHPL
+    database  "MariaDB\nlocalhost:3306"   as MYSQLL
+  }
+
+  folder "c:\\xampp\\htdocs\\CATINK\n(working tree)" as CODE
+  component "VS Code + Claude Code"       as VSC
+  component "Navegador local\n(Service Worker inactivo en HTTP)" as BROWL
+  component "phpMyAdmin local"            as PMA
+}
+
+node "GitHub\nThe-Cat-ink/CATINK" <<device>> as REMOTE {
+  artifact "rama main"  as BMAIN
+  artifact "rama juan"  as BJUAN
+}
+
+node "Hostinger\n(Produccion)" <<device>> as PROD {
+  artifact "CatInk App desplegada" as APPPROD
+  database "MariaDB produccion"    as DBPROD
+}
+
+VSC     --> CODE      : edita
+CODE    --> APACHEL   : DocumentRoot
+APACHEL --> PHPL
+PHPL    --> MYSQLL    : mysqli
+BROWL   --> APACHEL   : HTTP puerto 80
+PMA     --> MYSQLL
+
+CODE    --> BJUAN     : git push
+BJUAN   --> BMAIN     : merge / pull request
+BMAIN   ..> APPPROD   : deploy automatico
+PMA     ..> DBPROD    : migrations/*.sql aplicadas a mano\nen phpMyAdmin de Hostinger
+
+note bottom of PROD
+  data/conexion.php ejecuta auto-migraciones
+  defensivas con asegurarColumna(), por lo que
+  algunas columnas nuevas se crean solas al
+  primer request en produccion.
+end note
+
+@enduml

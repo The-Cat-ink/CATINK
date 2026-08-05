@@ -1,0 +1,79 @@
+@startuml CatInk_Casos_Uso_General
+title Diagrama de Casos de Uso - CatInk (vision general del alcance)
+
+left to right direction
+skinparam shadowing false
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #EF3363
+  ArrowColor #475569
+}
+
+actor "Visitante"          as VIS
+actor "Lector\nregistrado" as LEC
+actor "Aspirante\na vacante" as ASP
+actor "Redactor"           as RED
+actor "Editor"             as EDI
+actor "Super Admin"        as ADM
+
+actor "SMTP Hostinger"     as SMTP <<system>>
+actor "YouTube Data API"   as YT   <<system>>
+actor "Geolocalizacion IP" as GEO  <<system>>
+actor "Cron del hosting"   as CRON <<system>>
+
+VIS <|-- LEC
+RED <|-- EDI
+EDI <|-- ADM
+
+rectangle "Sistema CatInk" {
+  usecase "Consultar contenido publico"       as G1
+  usecase "Gestionar cuenta de lector"        as G2
+  usecase "Participar\n(comentarios y likes)" as G3
+  usecase "Leer sin conexion (PWA)"           as G4
+  usecase "Redactar y publicar contenido"     as G5
+  usecase "Curar portada y CMS"               as G6
+  usecase "Gestionar publicidad"              as G7
+  usecase "Gestionar mailing\ny suscriptores" as G8
+  usecase "Gestionar bolsa de trabajo"        as G9
+  usecase "Moderar comunidad"                 as G10
+  usecase "Administrar usuarios\ny permisos"  as G11
+  usecase "Consultar metricas\ny bitacora"    as G12
+}
+
+VIS --> G1
+VIS --> G2
+VIS --> G4
+LEC --> G3
+ASP --> G9
+RED --> G5
+RED --> G12
+EDI --> G6
+EDI --> G7
+EDI --> G8
+EDI --> G9
+EDI --> G10
+ADM --> G11
+
+G2 --> SMTP
+G8 --> SMTP
+G9 --> SMTP
+G6 --> YT
+G1 --> GEO
+G7 --> GEO
+G8 <-- CRON
+G5 <-- CRON
+
+note bottom
+  Detalle por subsistema en:
+    09-casos-uso-publico.puml (Visitante, Lector, Aspirante)
+    10-casos-uso-admin.puml   (Redactor, Editor, Super Admin)
+
+  Redactor, Editor y Super Admin no son roles fijos en la BD:
+  se derivan de los 14 campos perm_* de la tabla usuarios.
+  Cada campo es una mascara de bits: 1 = crear, 2 = leer,
+  4 = editar, 8 = eliminar (15 = las cuatro acciones),
+  evaluada por mapearPermisos() en views/helpers/helper.php.
+end note
+
+@enduml
