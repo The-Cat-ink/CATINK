@@ -1752,10 +1752,13 @@ document.getElementById('pvTabs')?.addEventListener('click', e => {
   color: var(--text, #1e293b);
   border-radius: 16px;
   border: 1px solid var(--border, #e2e8f0);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
   padding: 24px;
   max-width: 800px;
   width: 92%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .historial-modal-card {
@@ -1835,9 +1838,19 @@ document.getElementById('pvTabs')?.addEventListener('click', e => {
 .diff-box-container {
   display: none;
   margin-top: 14px;
-  display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+#historialList::-webkit-scrollbar {
+  width: 6px;
+}
+#historialList::-webkit-scrollbar-track {
+  background: transparent;
+}
+#historialList::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 4px;
 }
 
 .diff-card-saved {
@@ -1962,7 +1975,7 @@ document.getElementById('pvTabs')?.addEventListener('click', e => {
       <button type="button" id="closeHistorialModal" style="background: none; border: none; color: var(--muted, #64748b); font-size: 1.6rem; cursor: pointer; line-height: 1;">&times;</button>
     </div>
     
-    <div id="historialList" style="max-height: 520px; overflow-y: auto; padding-right: 6px;">
+    <div id="historialList" style="flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px;">
       <div style="text-align: center; color: var(--muted, #64748b); padding: 40px 0; font-weight: 600;">
         <i class="bi bi-arrow-repeat spin" style="font-size: 1.5rem; display: block; margin-bottom: 8px;"></i> Cargando revisiones...
       </div>
@@ -2078,11 +2091,6 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="diff-card-title">${escapeHtml(newerVer.titulo || ver.titulo)}</div>
                   <div class="diff-card-desc">${escapeHtml(newerVer.descripcion || ver.descripcion)}</div>
                 </div>
-
-                <div class="diff-code-box">
-                  <div class="diff-code-title"><i class="bi bi-code-slash"></i> Contenido formateado guardado:</div>
-                  <div class="diff-code-pre">${escapeHtml(ver.contenido)}</div>
-                </div>
               </div>
             </div>
           `;
@@ -2131,12 +2139,13 @@ document.addEventListener('DOMContentLoaded', () => {
 function toggleDiffBox(btn) {
   const container = btn.nextElementSibling;
   const chevron = btn.querySelector('.diff-chevron');
-  if (container.style.display === 'flex' || container.style.display === 'block') {
-    container.style.display = 'none';
-    if (chevron) chevron.style.transform = 'rotate(0deg)';
-  } else {
+  const isHidden = window.getComputedStyle(container).display === 'none';
+  if (isHidden) {
     container.style.display = 'flex';
     if (chevron) chevron.style.transform = 'rotate(180deg)';
+  } else {
+    container.style.display = 'none';
+    if (chevron) chevron.style.transform = 'rotate(0deg)';
   }
 }
 
