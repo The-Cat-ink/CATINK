@@ -223,9 +223,16 @@
     const carousel = document.getElementById('carouselExampleCaptions');
     if (carousel) {
       const items = Array.from(carousel.querySelectorAll('.carousel-item'));
+      const indicatorBtns = Array.from(document.querySelectorAll('.custom-indicators button'));
       let current = items.findIndex(i => i.classList.contains('active'));
       if (current < 0) current = 0;
-      const interval = parseInt(carousel.getAttribute('data-bs-interval')) || 10000;
+      const interval = parseInt(carousel.getAttribute('data-bs-interval')) || 7000;
+
+      function updateIndicators(index) {
+        indicatorBtns.forEach((btn, idx) => {
+          btn.classList.toggle('active', idx === index);
+        });
+      }
 
       function showSlide(index) {
         if (index < 0) index = items.length - 1;
@@ -234,6 +241,7 @@
           it.classList.toggle('active', idx === index);
         });
         current = index;
+        updateIndicators(index);
         const ev = new CustomEvent('slide.bs.carousel', { detail: { to: index } });
         carousel.dispatchEvent(ev);
       }
@@ -250,12 +258,37 @@
         }
       }
 
-      document.querySelectorAll('.custom-indicators button').forEach((btn, idx) => {
-        btn.addEventListener('click', () => {
+      indicatorBtns.forEach((btn, idx) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
           showSlide(idx);
           startAuto();
         });
       });
+
+      // Gestos de deslizamiento táctil (Swipe) en móviles
+      let touchStartX = 0;
+      let touchEndX = 0;
+      carousel.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches[0]) {
+          touchStartX = e.touches[0].clientX;
+        }
+      }, { passive: true });
+
+      carousel.addEventListener('touchend', (e) => {
+        if (e.changedTouches && e.changedTouches[0]) {
+          touchEndX = e.changedTouches[0].clientX;
+          const diff = touchEndX - touchStartX;
+          if (Math.abs(diff) > 35) {
+            if (diff < 0) {
+              showSlide(current + 1);
+            } else {
+              showSlide(current - 1);
+            }
+            startAuto();
+          }
+        }
+      }, { passive: true });
 
       showSlide(current);
       startAuto();
