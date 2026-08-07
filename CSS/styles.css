@@ -6123,20 +6123,27 @@ body, .nav-link, .btn, .card, .site-main {
 /* ── HORIZONTAL SCROLL EN MÓVIL PARA RECOMENDACIONES Y LO QUE MÁS ESPERAMOS ── */
 @media (max-width: 768px) {
   .sidebar-reviews-section {
-    margin-bottom: 24px;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 14px 14px 6px 14px !important;
+    margin-bottom: 20px !important;
   }
   .sidebar-ranking-list-container {
+    height: auto !important;
+    min-height: 0 !important;
     overflow: visible !important;
   }
   .sidebar-ranking-list {
+    height: auto !important;
+    min-height: 0 !important;
     flex-direction: row !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     max-height: none !important;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
-    padding: 6px 4px 14px 4px !important;
-    gap: 14px !important;
+    padding: 4px 2px 8px 2px !important;
+    gap: 12px !important;
     scrollbar-width: none !important;
   }
   .sidebar-ranking-list::-webkit-scrollbar {
@@ -6144,10 +6151,10 @@ body, .nav-link, .btn, .card, .site-main {
   }
   .sidebar-ranking-list .ranking-item-hero,
   .sidebar-ranking-list .ranking-item-sub {
-    width: 250px !important;
-    min-width: 250px !important;
-    max-width: 250px !important;
-    height: 145px !important;
+    width: 275px !important;
+    min-width: 275px !important;
+    max-width: 275px !important;
+    height: 140px !important;
     flex-shrink: 0 !important;
     scroll-snap-align: start;
   }
