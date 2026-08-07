@@ -12,6 +12,7 @@ if(!isset($_SESSION['usuario'])){
 $usuario = $_SESSION['usuario'];
 $tipo = $_SESSION['tipo'] ?? 'lector';
 $nombre_usuario = trim($_POST['nombre_usuario'] ?? '');
+$nombre_real = trim($_POST['nombre'] ?? '');
 $correo = trim($_POST['correo'] ?? '');
 $pass_actual = $_POST['pass_actual'] ?? '';
 $pass_nueva = $_POST['pass_nueva'] ?? '';
@@ -200,9 +201,9 @@ if($tipo === 'admin' && isset($_FILES['foto_personal']) && $_FILES['foto_persona
 
 if($tipo === 'admin'){
     // Admin → tabla usuarios
-    $campos = "correo=?, sexo=?, fecha_nacimiento=?, entidad=?, biografia=?, link_twitter=?, link_instagram=?, usuario=?";
-    $tipos = "ssssssss";
-    $valores = [$correo, $sexo ?: null, $nacimiento ?: null, $entidad ?: null, $biografia ?: null, $link_twitter ?: null, $link_instagram ?: null, $nombre_usuario];
+    $campos = "nombre=?, correo=?, sexo=?, fecha_nacimiento=?, entidad=?, biografia=?, link_twitter=?, link_instagram=?, usuario=?";
+    $tipos = "sssssssss";
+    $valores = [$nombre_real, $correo, $sexo ?: null, $nacimiento ?: null, $entidad ?: null, $biografia ?: null, $link_twitter ?: null, $link_instagram ?: null, $nombre_usuario];
     if($foto_personal){
         $campos .= ", foto_personal=?";
         $tipos .= "s";
@@ -218,9 +219,9 @@ if($tipo === 'admin'){
     $stmt = $con->prepare("UPDATE usuarios SET $campos WHERE usuario=?");
 } else {
     // Lector → tabla lectores
-    $campos = "correo=?, sexo=?, fecha_nacimiento=?, entidad=?, usuario=?";
-    $tipos = "sssss";
-    $valores = [$correo, $sexo ?: null, $nacimiento ?: null, $entidad ?: null, $nombre_usuario];
+    $campos = "nombre=?, correo=?, sexo=?, fecha_nacimiento=?, entidad=?, usuario=?";
+    $tipos = "ssssss";
+    $valores = [$nombre_real, $correo, $sexo ?: null, $nacimiento ?: null, $entidad ?: null, $nombre_usuario];
     if(!empty($pass_nueva) && !empty($pass_actual)){
         $campos .= ", password_hash=?";
         $tipos .= "s";

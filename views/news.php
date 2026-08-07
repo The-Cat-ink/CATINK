@@ -39,10 +39,11 @@ if(isset($_GET['slug'])){
 // Obtener noticia con autor y categorías
 // ==============================
 $sql = "
-    SELECT n.*, n.slug, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto,
+    SELECT n.*, n.slug, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto, a.imagen AS autor_avatar,
            GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
     FROM noticias n
     LEFT JOIN usuarios u ON n.autor = u.id_u
+    LEFT JOIN avatares_perfil a ON u.avatar_id = a.id_avatar
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
     WHERE $where_clause AND n.eliminado_en IS NULL $condicionFecha
@@ -61,10 +62,11 @@ if (!$noticia && isset($_GET['slug'])) {
         $where_clause = "n.id = ?";
         $param = $decodedId;
         $sql = "
-            SELECT n.*, n.slug, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto,
+            SELECT n.*, n.slug, u.nombre AS autor_nombre, u.id_u AS autor_id, u.foto_personal AS autor_foto, a.imagen AS autor_avatar,
                    GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
             FROM noticias n
             LEFT JOIN usuarios u ON n.autor = u.id_u
+            LEFT JOIN avatares_perfil a ON u.avatar_id = a.id_avatar
             LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
             LEFT JOIN categorias c ON nc.categoria_id = c.id_c
             WHERE $where_clause AND n.eliminado_en IS NULL $condicionFecha
@@ -379,7 +381,7 @@ $lastEdit = $stmtLastEdit->get_result()->fetch_assoc();
             <p class="descripcion"><?= nl2br(htmlspecialchars($noticia['descripcion'])) ?></p>
             <div class="meta-autor">
               <?php
-                $autorFoto = $noticia['autor_foto'] ?? null;
+                $autorFoto = $noticia['autor_foto'] ?? $noticia['autor_avatar'] ?? null;
                 $autorNombre = $noticia['autor_nombre'] ?? 'Desconocido';
                 $autorIniciales = strtoupper(substr($autorNombre, 0, 1));
               ?>

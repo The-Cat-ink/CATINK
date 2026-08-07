@@ -31,9 +31,10 @@ if ($totalNoticias <= 2) {
 // Obtener feed general de noticias (recientes paginadas)
 $stmtFeed = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion AS fecha,
-           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
+           n.likes, n.vistas, u.nombre AS nombre_u, u.foto_personal AS autor_foto, a.imagen AS autor_avatar, GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
     FROM noticias n
     INNER JOIN usuarios u ON n.autor = u.id_u
+    LEFT JOIN avatares_perfil a ON u.avatar_id = a.id_avatar
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
     LEFT JOIN categorias c ON nc.categoria_id = c.id_c
     WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()

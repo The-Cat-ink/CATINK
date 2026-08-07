@@ -148,6 +148,14 @@ if ($notifUserId > 0) {
         </div>
         <div class="perfil-fields">
           <div class="perfil-field-group">
+            <label for="nombre">Nombre a Mostrar</label>
+            <div class="perfil-input-prefix">
+              <span class="prefix"><i class="bi bi-person"></i></span>
+              <input type="text" id="nombre" name="nombre" class="input" value="<?= htmlspecialchars($user['nombre'] ?? '') ?>" required>
+            </div>
+            <small>Este es tu nombre público o nombre de autor.</small>
+          </div>
+          <div class="perfil-field-group">
             <label for="nombre_usuario">Nombre de Usuario</label>
             <div class="perfil-input-prefix">
               <span class="prefix">@</span>

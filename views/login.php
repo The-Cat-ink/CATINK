@@ -4,7 +4,11 @@ if(session_status() === PHP_SESSION_NONE){
     session_start();
 }
 if (isset($_SESSION['usuario'])) {
-    header('Location: ' . basePath() . '/views/admin.php');
+    if (($_SESSION['tipo'] ?? '') === 'admin') {
+        header('Location: ' . basePath() . '/views/admin.php');
+    } else {
+        header('Location: ' . basePath() . '/');
+    }
     exit();
 }
 $showRegistro = isset($_GET['modo']) && $_GET['modo'] === 'registro';
