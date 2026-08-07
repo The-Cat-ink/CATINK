@@ -83,8 +83,8 @@ try {
     $mail->SMTPSecure = env('SMTP_SECURE', 'ssl');
     $mail->Port       = env('SMTP_PORT', 465);
 
-    $fromEmail = env('SMTP_FROM_EMAIL', env('SMTP_AUTH_FROM_EMAIL', 'no-reply@catink.com.mx'));
-    $fromName  = env('SMTP_FROM_NAME', env('SMTP_AUTH_FROM_NAME', 'CatInk'));
+    $fromEmail = env('SMTP_NOREPLY_FROM_EMAIL', env('SMTP_AUTH_FROM_EMAIL', 'noreply@catink.com.mx'));
+    $fromName  = env('SMTP_NOREPLY_FROM_NAME', env('SMTP_AUTH_FROM_NAME', 'CatInk Seguridad'));
     $mail->setFrom($fromEmail, $fromName);
     $mail->addAddress($email, $usuario['nombre']);
 
