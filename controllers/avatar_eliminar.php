@@ -1,6 +1,6 @@
 <?php
 include(__DIR__ . "/aclcontroller.php");
-proteger('usuarios', 'eliminar');
+proteger('avatares', 'eliminar');
 include(__DIR__ . "/../data/conexion.php");
 header('Content-Type: application/json');
 
