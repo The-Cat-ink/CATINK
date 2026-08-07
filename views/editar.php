@@ -2182,7 +2182,20 @@ function toggleFocusMode() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => applyEditorZoom(currentEditorZoom), 600);
+  setTimeout(() => {
+    applyEditorZoom(currentEditorZoom);
+    
+    const editableContainer = document.querySelector('.document-editor__editable-container');
+    if (editableContainer) {
+      editableContainer.addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          const delta = e.deltaY < 0 ? 5 : -5;
+          applyEditorZoom(currentEditorZoom + delta);
+        }
+      }, { passive: false });
+    }
+  }, 600);
 });
 </script>
 
