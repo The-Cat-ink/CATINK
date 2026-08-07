@@ -902,32 +902,32 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
           <i class="bi bi-chevron-down cn-section-toggle"></i>
         </div>
         <div class="cn-section-body">
-          <!-- BARRA DE ZOOM ESTILO WORD (DESLIZADOR 50% - 260%) -->
-          <div class="cn-word-zoom-bar d-flex align-items-center justify-content-between px-3 py-2 mb-2" style="background: var(--bg); border: 1px solid var(--border); border-radius: 10px; font-size: 13px;">
-            <div class="d-flex align-items-center gap-2">
-              <span style="font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px;">
-                <i class="bi bi-file-earmark-richtext" style="color: var(--accent); font-size: 1.1rem;"></i> Zoom Hoja de Redacción:
-              </span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0" onclick="adjustEditorZoom(-10)" title="Disminuir zoom">
-                <i class="bi bi-dash-lg"></i>
-              </button>
-              <input type="range" id="wordZoomRange" min="50" max="260" step="5" value="100" style="width: 140px; cursor: pointer; accent-color: var(--accent);" oninput="applyEditorZoom(this.value)">
-              <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0" onclick="adjustEditorZoom(10)" title="Aumentar zoom">
-                <i class="bi bi-plus-lg"></i>
-              </button>
-              <span id="editorZoomBadge" style="font-weight: 800; color: var(--accent); min-width: 45px; text-align: center; font-size: 13px;">100%</span>
-              <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0 ms-1" onclick="resetEditorZoom()" style="font-size: 11px; border-radius: 6px;">
-                100%
-              </button>
-              <button type="button" id="btnFocusMode" class="btn btn-sm btn-outline-danger px-2 py-1 ms-2" onclick="toggleFocusMode()" style="font-weight: 700; font-size: 11px; border-radius: 8px;">
-                <i class="bi bi-fullscreen me-1"></i> Modo Enfoque
-              </button>
-            </div>
-          </div>
-
           <div class="document-editor">
+            <!-- BARRA DE ZOOM Y SALIDA DE MODO ENFOQUE ESTILO WORD -->
+            <div class="cn-word-zoom-bar d-flex align-items-center justify-content-between px-3 py-2" style="background: var(--bg); border-bottom: 1px solid var(--border); font-size: 13px;">
+              <div class="d-flex align-items-center gap-2">
+                <span style="font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px;">
+                  <i class="bi bi-file-earmark-richtext" style="color: var(--accent); font-size: 1.1rem;"></i> Redactor de Noticia:
+                </span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0" onclick="adjustEditorZoom(-10)" title="Disminuir zoom">
+                  <i class="bi bi-dash-lg"></i>
+                </button>
+                <input type="range" id="wordZoomRange" min="50" max="260" step="5" value="100" style="width: 140px; cursor: pointer; accent-color: var(--accent);" oninput="applyEditorZoom(this.value)">
+                <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0" onclick="adjustEditorZoom(10)" title="Aumentar zoom">
+                  <i class="bi bi-plus-lg"></i>
+                </button>
+                <span id="editorZoomBadge" style="font-weight: 800; color: var(--accent); min-width: 45px; text-align: center; font-size: 13px;">100%</span>
+                <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0 ms-1" onclick="resetEditorZoom()" style="font-size: 11px; border-radius: 6px;">
+                  100%
+                </button>
+                <button type="button" id="btnFocusMode" class="btn btn-sm btn-outline-danger px-2 py-1 ms-2" onclick="toggleFocusMode()" style="font-weight: 700; font-size: 11px; border-radius: 8px;">
+                  <i class="bi bi-fullscreen me-1"></i> Modo Enfoque
+                </button>
+              </div>
+            </div>
+
             <div class="document-editor__toolbar"></div>
             <div class="document-editor__editable-container">
               <div id="editor" class="editor-content"><?= preg_replace('/<img(?![^>]*\bloading=)\s/i', '<img loading="lazy" ', $noticia['contenido']) ?></div>
@@ -2177,17 +2177,40 @@ function resetEditorZoom() {
   applyEditorZoom(100);
 }
 
-function toggleFocusMode() {
+function toggleFocusMode(forceState) {
   const docEditor = document.querySelector('.document-editor');
   const btn = document.getElementById('btnFocusMode');
   if (!docEditor) return;
   
-  docEditor.classList.toggle('focus-mode-active');
-  const isFocus = docEditor.classList.contains('focus-mode-active');
+  const isFocus = forceState !== undefined ? forceState : !docEditor.classList.contains('focus-mode-active');
+  
+  if (isFocus) {
+    docEditor.classList.add('focus-mode-active');
+    document.body.style.overflow = 'hidden';
+  } else {
+    docEditor.classList.remove('focus-mode-active');
+    document.body.style.overflow = '';
+  }
+  
   if (btn) {
-    btn.innerHTML = isFocus ? '<i class="bi bi-fullscreen-exit me-1"></i> Salir Enfoque' : '<i class="bi bi-fullscreen me-1"></i> Modo Enfoque';
+    if (isFocus) {
+      btn.className = 'btn btn-sm btn-danger px-3 py-1 ms-2 shadow-sm';
+      btn.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> Salir de Enfoque (ESC)';
+    } else {
+      btn.className = 'btn btn-sm btn-outline-danger px-2 py-1 ms-2';
+      btn.innerHTML = '<i class="bi bi-fullscreen me-1"></i> Modo Enfoque';
+    }
   }
 }
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const docEditor = document.querySelector('.document-editor');
+    if (docEditor && docEditor.classList.contains('focus-mode-active')) {
+      toggleFocusMode(false);
+    }
+  }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {

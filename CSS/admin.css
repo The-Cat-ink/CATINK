@@ -3736,18 +3736,43 @@ img.umod-avatar { display: block; }
 /* Modo Enfoque Sin Distracciones para el Redactor */
 .document-editor.focus-mode-active {
   position: fixed !important;
-  inset: 0 !important;
-  z-index: 99999 !important;
-  background: var(--card-bg, #121927) !important;
-  padding: 30px !important;
-  overflow-y: auto !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 999999 !important;
+  background: var(--bg, #0f172a) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
   display: flex !important;
   flex-direction: column !important;
-  border-radius: 0 !important;
+  box-shadow: none !important;
 }
+
+.document-editor.focus-mode-active .cn-word-zoom-bar {
+  background: var(--card-bg) !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: 10px 20px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+.document-editor.focus-mode-active .document-editor__toolbar {
+  border-bottom: 1px solid var(--border) !important;
+  background: var(--card-bg) !important;
+}
+
 .document-editor.focus-mode-active .document-editor__editable-container {
-  max-width: 900px !important;
-  margin: 0 auto !important;
-  width: 100% !important;
   flex: 1 !important;
+  height: calc(100vh - 110px) !important;
+  overflow-y: auto !important;
+  padding: 40px 20px !important;
+  background: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .document-editor.focus-mode-active .document-editor__editable-container {
+  background: #090d16 !important;
 }
