@@ -1213,7 +1213,7 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   /* Caption adjustments for mobile */
   .carousel-caption {
     display: flex !important;
-    padding: 16px 16px 110px 16px;
+    padding: 16px 16px 54px 16px;
     margin-top: 0;
     background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0) 58%);
     align-items: flex-start;
@@ -1239,24 +1239,44 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   .carousel-caption p {
     font-size: 0.9rem;
   }
-  /* En móvil: indicadores fuera de la imagen, entre carousel y Top Semanal */
+  /* En móvil: indicadores dentro de la imagen en barra Glassmorphism flotante */
   .custom-indicators {
-    position: relative;
-    top: auto;
-    bottom: auto;
-    left: auto;
-    transform: none;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 8px;
-    padding: 6px 0 4px;
-    width: 100%;
-    background: var(--bg);
+    position: absolute !important;
+    bottom: 12px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 6px 16px !important;
+    width: auto !important;
+    background: rgba(15, 23, 42, 0.65) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 30px !important;
+    z-index: 15 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35) !important;
   }
   .indicator-avatar {
-    width: 44px;
-    height: 44px;
+    width: 28px !important;
+    height: 28px !important;
+    transition: transform 0.25s ease;
+  }
+  .indicator-avatar img {
+    border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+  }
+  .custom-indicators button.active .indicator-avatar {
+    transform: scale(1.2);
+  }
+  .custom-indicators button.active .indicator-avatar img {
+    border-color: var(--accent-fuchsia) !important;
+    box-shadow: 0 0 10px var(--accent-fuchsia);
+  }
+  .custom-indicators .indicator-avatar svg {
+    display: none;
   }
 }
 
