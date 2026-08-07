@@ -2029,22 +2029,89 @@ document.addEventListener('DOMContentLoaded', () => {
         let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
 
         data.historial.forEach((ver, index) => {
-          // Determinar versión posterior
+          // El historial viene ORDER BY fecha_edicion DESC:
+          //   index=0 → snapshot más reciente (lo que había justo antes del último cambio)
+          //   La versión "posterior" (lo que quedó después) es historial[index-1] si existe, o actual.
           const newerVer = index > 0 ? data.historial[index - 1] : actual;
           const labelPosterior = index === 0 ? 'Publicación actual' : `Revisión #${data.historial.length - index + 1}`;
 
-          const titleChanged = trim(ver.titulo) !== trim(newerVer.titulo || '');
-          const descChanged = trim(ver.descripcion) !== trim(newerVer.descripcion || '');
-          const contentChanged = trim(ver.contenido) !== trim(newerVer.contenido || '');
+          const titleChanged    = trim(ver.titulo)      !== trim(newerVer.titulo || '');
+          const descChanged     = trim(ver.descripcion) !== trim(newerVer.descripcion || '');
+          const contentChanged  = trim(ver.contenido)   !== trim(newerVer.contenido || '');
+          const imagenesChanged = ver.motivo_cambio && ver.motivo_cambio.includes('Imágenes');
 
           let diffBadges = '';
-          if (titleChanged) diffBadges += '<span class="historial-badge-field" style="color: #16a34a; border: 1px solid #bbf7d0; background: #f0fdf4;"><i class="bi bi-pencil-square"></i> Título</span>';
-          if (descChanged) diffBadges += '<span class="historial-badge-field" style="color: #2563eb; border: 1px solid #bfdbfe; background: #eff6ff;"><i class="bi bi-card-text"></i> Descripción</span>';
+          if (titleChanged)   diffBadges += '<span class="historial-badge-field" style="color: #16a34a; border: 1px solid #bbf7d0; background: #f0fdf4;"><i class="bi bi-pencil-square"></i> Título</span>';
+          if (descChanged)    diffBadges += '<span class="historial-badge-field" style="color: #2563eb; border: 1px solid #bfdbfe; background: #eff6ff;"><i class="bi bi-card-text"></i> Descripción</span>';
           if (contentChanged) diffBadges += '<span class="historial-badge-field" style="color: #d97706; border: 1px solid #fde68a; background: #fffbeb;"><i class="bi bi-file-text"></i> Contenido</span>';
-          if (ver.motivo_cambio && ver.motivo_cambio.includes('Imágenes')) {
-            diffBadges += '<span class="historial-badge-field" style="color: #9333ea; border: 1px solid #e9d5ff; background: #faf5ff;"><i class="bi bi-image"></i> Imágenes</span>';
+          if (imagenesChanged) diffBadges += '<span class="historial-badge-field" style="color: #9333ea; border: 1px solid #e9d5ff; background: #faf5ff;"><i class="bi bi-image"></i> Imágenes</span>';
+          if (!diffBadges)    diffBadges = '<span class="historial-badge-field" style="color: #64748b; background: #f1f5f9; border: 1px solid #e2e8f0;"><i class="bi bi-check-all"></i> Sin diferencias de texto</span>';
+
+          // ── Construir bloque de comparación detallada ──────────────────────
+          let diffContent = '';
+
+          // Título
+          if (titleChanged) {
+            diffContent += `
+              <div style="margin-bottom:10px;">
+                <div style="font-size:0.72rem;font-weight:800;text-transform:uppercase;color:var(--muted,#64748b);letter-spacing:.5px;margin-bottom:4px;">Título</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                  <div style="background:#fff1f2;border:1px solid #fecdd3;border-left:4px solid #f43f5e;padding:10px 12px;border-radius:8px;font-size:.9rem;">
+                    <div style="font-size:.7rem;font-weight:800;color:#e11d48;margin-bottom:4px;"><i class="bi bi-dash-circle-fill"></i> ANTES</div>
+                    <span>${escapeHtml(ver.titulo)}</span>
+                  </div>
+                  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-left:4px solid #22c55e;padding:10px 12px;border-radius:8px;font-size:.9rem;">
+                    <div style="font-size:.7rem;font-weight:800;color:#16a34a;margin-bottom:4px;"><i class="bi bi-plus-circle-fill"></i> DESPUÉS</div>
+                    <span>${escapeHtml(newerVer.titulo || ver.titulo)}</span>
+                  </div>
+                </div>
+              </div>`;
           }
-          if (!diffBadges) diffBadges = '<span class="historial-badge-field" style="color: #64748b; background: #f1f5f9; border: 1px solid #e2e8f0;"><i class="bi bi-check-all"></i> Sin diferencias de texto</span>';
+
+          // Descripción
+          if (descChanged) {
+            diffContent += `
+              <div style="margin-bottom:10px;">
+                <div style="font-size:0.72rem;font-weight:800;text-transform:uppercase;color:var(--muted,#64748b);letter-spacing:.5px;margin-bottom:4px;">Descripción</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                  <div style="background:#fff1f2;border:1px solid #fecdd3;border-left:4px solid #f43f5e;padding:10px 12px;border-radius:8px;font-size:.88rem;line-height:1.5;">
+                    <div style="font-size:.7rem;font-weight:800;color:#e11d48;margin-bottom:4px;"><i class="bi bi-dash-circle-fill"></i> ANTES</div>
+                    <span>${escapeHtml(ver.descripcion)}</span>
+                  </div>
+                  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-left:4px solid #22c55e;padding:10px 12px;border-radius:8px;font-size:.88rem;line-height:1.5;">
+                    <div style="font-size:.7rem;font-weight:800;color:#16a34a;margin-bottom:4px;"><i class="bi bi-plus-circle-fill"></i> DESPUÉS</div>
+                    <span>${escapeHtml(newerVer.descripcion || ver.descripcion)}</span>
+                  </div>
+                </div>
+              </div>`;
+          }
+
+          // Contenido: mostrar texto plano (quitar tags HTML) de ANTES y DESPUÉS
+          if (contentChanged) {
+            const beforeText = stripTags(ver.contenido || '').trim();
+            const afterText  = stripTags((newerVer.contenido || ver.contenido) || '').trim();
+            diffContent += `
+              <div style="margin-bottom:6px;">
+                <div style="font-size:0.72rem;font-weight:800;text-transform:uppercase;color:var(--muted,#64748b);letter-spacing:.5px;margin-bottom:6px;">Contenido (texto plano)</div>
+                <div style="background:#fff1f2;border:1px solid #fecdd3;border-left:4px solid #f43f5e;padding:10px 12px;border-radius:8px;margin-bottom:8px;">
+                  <div style="font-size:.7rem;font-weight:800;color:#e11d48;margin-bottom:6px;"><i class="bi bi-dash-circle-fill"></i> ANTES (${beforeText.length} chars)</div>
+                  <div style="font-size:.82rem;line-height:1.6;color:#374151;max-height:120px;overflow-y:auto;white-space:pre-wrap;">${escapeHtml(beforeText.substring(0,600))}${beforeText.length>600?'…':''}</div>
+                </div>
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-left:4px solid #22c55e;padding:10px 12px;border-radius:8px;">
+                  <div style="font-size:.7rem;font-weight:800;color:#16a34a;margin-bottom:6px;"><i class="bi bi-plus-circle-fill"></i> DESPUÉS (${afterText.length} chars)</div>
+                  <div style="font-size:.82rem;line-height:1.6;color:#374151;max-height:120px;overflow-y:auto;white-space:pre-wrap;">${escapeHtml(afterText.substring(0,600))}${afterText.length>600?'…':''}</div>
+                </div>
+              </div>`;
+          }
+
+          // Si sólo cambiaron imágenes (y no hay diff de texto)
+          if (imagenesChanged && !titleChanged && !descChanged && !contentChanged) {
+            diffContent += `<div style="text-align:center;padding:20px 0;color:var(--muted,#64748b);font-size:.9rem;"><i class="bi bi-images" style="font-size:1.5rem;display:block;margin-bottom:8px;color:#9333ea;"></i>El cambio fue únicamente en las imágenes de portada.</div>`;
+          }
+
+          if (!diffContent) {
+            diffContent = `<div style="text-align:center;padding:20px 0;color:var(--muted,#64748b);font-size:.9rem;"><i class="bi bi-check-circle" style="font-size:1.5rem;display:block;margin-bottom:8px;color:#22c55e;"></i>No se detectaron diferencias de texto en esta revisión.</div>`;
+          }
 
           html += `
             <div class="historial-modal-card">
@@ -2076,21 +2143,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
               <!-- Caja Desplegable Diff -->
               <div class="diff-box-container" style="display: none;">
-                <div class="diff-card-saved">
-                  <div class="diff-card-label-saved">
-                    <i class="bi bi-dash-circle-fill"></i> Versión Archivada (#${data.historial.length - index})
-                  </div>
-                  <div class="diff-card-title">${escapeHtml(ver.titulo)}</div>
-                  <div class="diff-card-desc">${escapeHtml(ver.descripcion)}</div>
-                </div>
-
-                <div class="diff-card-live">
-                  <div class="diff-card-label-live">
-                    <i class="bi bi-plus-circle-fill"></i> Reemplazado por (${labelPosterior})
-                  </div>
-                  <div class="diff-card-title">${escapeHtml(newerVer.titulo || ver.titulo)}</div>
-                  <div class="diff-card-desc">${escapeHtml(newerVer.descripcion || ver.descripcion)}</div>
-                </div>
+                ${diffContent}
               </div>
             </div>
           `;
@@ -2127,6 +2180,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function trim(str) { return str ? str.trim() : ''; }
+
+  function stripTags(html) {
+    if (!html) return '';
+    // Reemplazar tags de bloque con saltos de linea para legibilidad
+    html = html.replace(/<\/?(p|br|div|h[1-6]|li)[^>]*>/gi, '\n');
+    // Quitar el resto de tags HTML
+    html = html.replace(/<[^>]+>/g, '');
+    // Decodificar entidades HTML básicas
+    html = html.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+               .replace(/&quot;/g,'"').replace(/&#039;/g,"'").replace(/&nbsp;/g,' ');
+    // Colapsar múltiples líneas en blanco
+    html = html.replace(/\n{3,}/g, '\n\n');
+    return html.trim();
+  }
 
   function escapeHtml(text) {
     if (!text) return '';
