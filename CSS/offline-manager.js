@@ -314,8 +314,14 @@ window.CatInkOffline = (function() {
   });
 
   function triggerReady() {
-    updateBadgeCounters();
-    window.dispatchEvent(new CustomEvent('catink-offline-ready'));
+    // Usar un microtask/timeout para dar tiempo a que los otros
+    // listeners de DOMContentLoaded (de cada vista) se registren primero.
+    // Así catink-offline-ready siempre llega DESPUÉS de que guardados.php
+    // o news.php hayan registrado su listener.
+    setTimeout(() => {
+      updateBadgeCounters();
+      window.dispatchEvent(new CustomEvent('catink-offline-ready'));
+    }, 0);
   }
 
   if (document.readyState === 'loading') {

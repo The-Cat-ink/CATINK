@@ -365,7 +365,30 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   window.addEventListener('catink-offline-ready', renderLibrary);
-  renderLibrary();
+
+  // Llamada inicial con retry: si CatInkOffline aún no está disponible
+  // (race condition con el script), se reintenta cada 80ms hasta 2 segundos.
+  function initRender() {
+    if (window.CatInkOffline) {
+      renderLibrary();
+    } else {
+      let attempts = 0;
+      const maxAttempts = 25; // 25 * 80ms = 2s
+      const timer = setInterval(() => {
+        attempts++;
+        if (window.CatInkOffline) {
+          clearInterval(timer);
+          renderLibrary();
+        } else if (attempts >= maxAttempts) {
+          clearInterval(timer);
+          // Mostrar estado vacío después de agotar intentos
+          renderLibrary();
+        }
+      }, 80);
+    }
+  }
+
+  initRender();
 });
 </script>
 
