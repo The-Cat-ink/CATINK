@@ -78,13 +78,22 @@ try {
 
     $mail->Host       = env('SMTP_HOST');
     $mail->SMTPAuth   = true;
-    $mail->Username   = env('SMTP_USERNAME', env('SMTP_AUTH_USERNAME'));
-    $mail->Password   = env('SMTP_PASSWORD', env('SMTP_AUTH_PASSWORD'));
-    $mail->SMTPSecure = env('SMTP_SECURE', 'ssl');
-    $mail->Port       = env('SMTP_PORT', 465);
+    $mail->Username   = env('SMTP_AUTH_USERNAME', env('SMTP_USERNAME'));
+    $mail->Password   = env('SMTP_AUTH_PASSWORD', env('SMTP_PASSWORD'));
+    $mail->SMTPSecure = env('SMTP_SECURE', 'tls');
+    $mail->Port       = (int) env('SMTP_PORT', 587);
 
-    $fromEmail = env('SMTP_NOREPLY_FROM_EMAIL', env('SMTP_AUTH_FROM_EMAIL', 'noreply@catink.com.mx'));
-    $fromName  = env('SMTP_NOREPLY_FROM_NAME', env('SMTP_AUTH_FROM_NAME', 'CatInk Seguridad'));
+    // Ignorar errores de certificado SSL en servidor de produccion
+    $mail->SMTPOptions = array(
+        'ssl' => array(
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+            'allow_self_signed' => true
+        )
+    );
+
+    $fromEmail = env('SMTP_AUTH_FROM_EMAIL', env('SMTP_NOREPLY_FROM_EMAIL', 'no-reply@catink.com.mx'));
+    $fromName  = env('SMTP_AUTH_FROM_NAME', env('SMTP_NOREPLY_FROM_NAME', 'CatInk'));
     $mail->setFrom($fromEmail, $fromName);
     $mail->addAddress($email, $usuario['nombre']);
 
