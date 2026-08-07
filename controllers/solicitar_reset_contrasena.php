@@ -125,7 +125,8 @@ try {
 
 } catch (\Throwable $e) {
     error_log("Error enviando correo de reset: " . $e->getMessage());
-    header("Location: ./../views/olvide_contrasena.php?error=Error al enviar el correo. Intenta más tarde");
+    $msg = "Error al enviar correo: " . $e->getMessage();
+    header("Location: ./../views/olvide_contrasena.php?error=" . urlencode($msg));
     exit();
 }
 ?>
