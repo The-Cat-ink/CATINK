@@ -2141,11 +2141,10 @@ function toggleDiffBox(btn) {
 }
 
 /* ── ZOOM EXCLUSIVO Y MODO ENFOQUE PARA EL REDACTOR ── */
-let currentEditorZoom = parseInt(localStorage.getItem('catink_editor_zoom') || '100');
+let currentEditorZoom = 100;
 
 function applyEditorZoom(zoomLevel) {
   currentEditorZoom = Math.min(Math.max(parseInt(zoomLevel), 50), 260);
-  localStorage.setItem('catink_editor_zoom', currentEditorZoom);
   
   const badge = document.getElementById('editorZoomBadge');
   if (badge) badge.textContent = currentEditorZoom + '%';
@@ -2214,7 +2213,7 @@ document.addEventListener('keydown', (e) => {
 
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
-    applyEditorZoom(currentEditorZoom);
+    applyEditorZoom(100);
     
     const editableContainer = document.querySelector('.document-editor__editable-container');
     if (editableContainer) {
