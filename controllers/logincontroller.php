@@ -33,20 +33,8 @@ if ($result && $result->num_rows > 0) {
         $_SESSION['usuario'] = $fila['usuario'];
         $_SESSION['tipo'] = 'admin';
         $_SESSION['ACL'] = mapearPermisos($fila);
-        if(esSuperAdmin($fila)){
-            $_SESSION['superadmin'] = true;
-            header('Location: ' . basePath() . '/views/admin.php');
-            exit();
-        }
-        $modulo = primerModuloLectura($_SESSION['ACL']);
-        if($modulo){
-            $_SESSION['superadmin'] = false;
-            header('Location: ' . basePath() . '/' . $modulo);
-            exit();
-        }
-        // Admin sin módulos asignados
-        $_SESSION['superadmin'] = false;
-        header('Location: ' . basePath() . '/');
+        $_SESSION['superadmin'] = esSuperAdmin($fila);
+        header('Location: ' . basePath() . '/views/admin.php');
         exit();
     } else {
         header('Location: ' . basePath() . '/login?error=2');
