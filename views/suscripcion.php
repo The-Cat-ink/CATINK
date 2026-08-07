@@ -261,7 +261,7 @@ $beneficios = $meta['beneficios'] ?? [
     toast.style.background = 'rgba(16,185,129,0.12)';
     toast.style.color = '#10b981';
     toast.style.border = '1px solid rgba(16,185,129,0.25)';
-    toast.textContent = '✓ ¡Suscripción registrada con éxito! Bienvenido a la comunidad CatInk.';
+    toast.textContent = '✓ ¡Suscripción registrada con éxito! Te damos la bienvenida a la comunidad CatInk.';
     <?php elseif(isset($_GET['error'])): ?>
     toast.style.display = 'block';
     toast.style.background = 'rgba(239,51,99,0.1)';

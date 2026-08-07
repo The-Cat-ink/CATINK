@@ -52,6 +52,19 @@ if (!function_exists('tiempoRelativo')) {
     }
 }
 
+if (!function_exists('obtenerBienvenida')) {
+    function obtenerBienvenida($sexo = '') {
+        $s = strtolower(trim((string)$sexo));
+        if (in_array($s, ['masculino', 'm', 'hombre', 'masc'])) {
+            return 'Bienvenido';
+        } elseif (in_array($s, ['femenino', 'f', 'mujer', 'fem'])) {
+            return 'Bienvenida';
+        } else {
+            return 'Bienvenide';
+        }
+    }
+}
+
 function encodeId($id){
     return rtrim(strtr(base64_encode($id), '+/', '-_'), '=');
 }

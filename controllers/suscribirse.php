@@ -62,9 +62,10 @@ if($stmt->execute()){
         $fromEmail = env('SMTP_NEWS_FROM_EMAIL', env('SMTP_FROM_EMAIL', 'news@catink.com.mx'));
         $fromName  = env('SMTP_NEWS_FROM_NAME', env('SMTP_FROM_NAME', 'CatInk News'));
         $mail->setFrom($fromEmail, $fromName);
+        $bienvenida = obtenerBienvenida($sexo);
         $mail->addAddress($correo, $nombre);
         $mail->isHTML(true);
-        $mail->Subject = "¡Bienvenido a CatInk News, " . htmlspecialchars($nombre) . "! 🐾";
+        $mail->Subject = "¡{$bienvenida} a CatInk News, " . htmlspecialchars($nombre) . "! 🐾";
 
         $unsubscribeUrl = 'https://www.catink.com.mx/views/email/unsubscribe.php?email=' . urlencode($correo);
         $content = "
@@ -76,7 +77,7 @@ if($stmt->execute()){
         ";
 
         $mail->Body = renderCatInkEmail([
-            'title'           => '¡Bienvenido a CatInk News!',
+            'title'           => "¡{$bienvenida} a CatInk News!",
             'badge'           => '🎉 ¡Suscripción Confirmada!',
             'content'         => $content,
             'cta_url'         => 'https://www.catink.com.mx',

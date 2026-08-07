@@ -159,7 +159,7 @@ function formatNumberShort($num){
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
                 <h1 style="font-weight:900; font-size:1.8rem; margin:0; color:var(--text); letter-spacing:-0.02em;">
-                    Bienvenido, <?= htmlspecialchars($fila['usuario']) ?>
+                    <?= obtenerBienvenida($fila['sexo'] ?? '') ?>, <?= htmlspecialchars($fila['nombre'] ?? $fila['usuario']) ?>
                 </h1>
                 <span class="badge" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25); border-radius:20px; padding:4px 10px; font-weight:800; font-size:0.72rem;">
                     <i class="bi bi-circle-fill" style="font-size:0.4rem; vertical-align:middle; margin-right:3px;"></i> Sistema Activo
