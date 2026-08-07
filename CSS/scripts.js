@@ -180,36 +180,31 @@
       });
     });
 
-    // 4. Toggle de tema: interruptor pill-shaped
-    const themeSwitchPill = document.querySelector('.theme-switch-pill');
-    const themeIconSun = document.getElementById('themeIconSun');
-    const themeIconMoon = document.getElementById('themeIconMoon');
-
+    // 4. Toggle de tema con Delegación Global en document
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-bs-theme', theme);
-      if (themeIconSun && themeIconMoon) {
+      const sun = document.getElementById('themeIconSun');
+      const moon = document.getElementById('themeIconMoon');
+      if (sun && moon) {
         if (theme === 'dark') {
-          themeIconSun.classList.remove('active');
-          themeIconMoon.classList.add('active');
+          sun.classList.remove('active');
+          moon.classList.add('active');
         } else {
-          themeIconSun.classList.add('active');
-          themeIconMoon.classList.remove('active');
+          sun.classList.add('active');
+          moon.classList.remove('active');
         }
       }
     }
 
-    if (themeSwitchPill) {
-      const toggleTheme = () => {
-        const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
-        const next = currentTheme === 'dark' ? 'light' : 'dark';
-        applyTheme(next);
-        localStorage.setItem('theme', next);
-      };
-      themeSwitchPill.addEventListener('click', toggleTheme);
-      themeSwitchPill.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          toggleTheme();
+    if (!window.__catinkThemeDelegated) {
+      window.__catinkThemeDelegated = true;
+      document.addEventListener('click', (e) => {
+        const toggleBtn = e.target.closest('.theme-switch-pill, .theme-toggle, #themeToggleBtn, .btn-theme-toggle');
+        if (toggleBtn) {
+          const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+          const next = currentTheme === 'dark' ? 'light' : 'dark';
+          applyTheme(next);
+          localStorage.setItem('theme', next);
         }
       });
     }

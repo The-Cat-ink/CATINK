@@ -3730,3 +3730,22 @@ img.umod-avatar { display: block; }
   .kpi-filter-bar { width: 100%; }
   .kpi-section { padding: 18px; }
 }
+
+/* Modo Enfoque Sin Distracciones para el Redactor */
+.document-editor.focus-mode-active {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  background: var(--card-bg, #121927) !important;
+  padding: 30px !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-radius: 0 !important;
+}
+.document-editor.focus-mode-active .document-editor__editable-container {
+  max-width: 900px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  flex: 1 !important;
+}

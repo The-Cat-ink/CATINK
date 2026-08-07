@@ -902,6 +902,30 @@ textarea.cn-input { resize: vertical; min-height: 80px; }
           <i class="bi bi-chevron-down cn-section-toggle"></i>
         </div>
         <div class="cn-section-body">
+          <!-- BARRA DE ZOOM Y MODO ENFOQUE EXCLUSIVO PARA EL REDACTOR -->
+          <div class="cn-editor-zoom-bar d-flex align-items-center justify-content-between p-2 mb-2" style="background: var(--bg); border: 1px solid var(--border); border-radius: 10px; font-size: 13px;">
+            <div class="d-flex align-items-center gap-2">
+              <span style="font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 4px;">
+                <i class="bi bi-zoom-in" style="color: var(--accent);"></i> Zoom Redactor:
+              </span>
+              <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0" onclick="adjustEditorZoom(-10)" title="Disminuir zoom (A-)">
+                <i class="bi bi-dash-lg"></i>
+              </button>
+              <span id="editorZoomBadge" style="font-weight: 800; color: var(--accent); min-width: 45px; text-align: center;">100%</span>
+              <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0" onclick="adjustEditorZoom(10)" title="Aumentar zoom (A+)">
+                <i class="bi bi-plus-lg"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-link text-muted p-0 ms-1" onclick="resetEditorZoom()" style="font-size: 11px; text-decoration: underline;">
+                Restablecer
+              </button>
+            </div>
+            <div>
+              <button type="button" id="btnFocusMode" class="btn btn-sm btn-outline-danger px-2 py-1" onclick="toggleFocusMode()" style="font-weight: 700; font-size: 11px; border-radius: 8px;">
+                <i class="bi bi-fullscreen me-1"></i> Modo Enfoque
+              </button>
+            </div>
+          </div>
+
           <div class="document-editor">
             <div class="document-editor__toolbar"></div>
             <div class="document-editor__editable-container">
@@ -2114,6 +2138,46 @@ function toggleDiffBox(btn) {
     if (chevron) chevron.style.transform = 'rotate(180deg)';
   }
 }
+
+/* ── ZOOM EXCLUSIVO Y MODO ENFOQUE PARA EL REDACTOR ── */
+let currentEditorZoom = parseInt(localStorage.getItem('catink_editor_zoom') || '100');
+
+function applyEditorZoom(zoomLevel) {
+  currentEditorZoom = Math.min(Math.max(zoomLevel, 80), 220);
+  localStorage.setItem('catink_editor_zoom', currentEditorZoom);
+  const badge = document.getElementById('editorZoomBadge');
+  if (badge) badge.textContent = currentEditorZoom + '%';
+  
+  const editorEl = document.querySelector('#editor .ck-editor__editable') || document.querySelector('#editor');
+  if (editorEl) {
+    editorEl.style.fontSize = (currentEditorZoom / 100 * 16) + 'px';
+    editorEl.style.lineHeight = '1.8';
+  }
+}
+
+function adjustEditorZoom(delta) {
+  applyEditorZoom(currentEditorZoom + delta);
+}
+
+function resetEditorZoom() {
+  applyEditorZoom(100);
+}
+
+function toggleFocusMode() {
+  const docEditor = document.querySelector('.document-editor');
+  const btn = document.getElementById('btnFocusMode');
+  if (!docEditor) return;
+  
+  docEditor.classList.toggle('focus-mode-active');
+  const isFocus = docEditor.classList.contains('focus-mode-active');
+  if (btn) {
+    btn.innerHTML = isFocus ? '<i class="bi bi-fullscreen-exit me-1"></i> Salir Enfoque' : '<i class="bi bi-fullscreen me-1"></i> Modo Enfoque';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => applyEditorZoom(currentEditorZoom), 600);
+});
 </script>
 
 <?php include("./../layout/footerAdmin.php"); ?>

@@ -723,8 +723,12 @@ h2 {
     margin-top: 0;
     flex: 1 1 auto;
     min-width: 0;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: visible;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
+  .navbar-collapse::-webkit-scrollbar { display: none; }
   .navbar-nav {
     flex-direction: row;
     margin-top: 0;
@@ -982,20 +986,43 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  align-items: center;
 }
-.social-btn {
+.social-links a, .social-btn {
   width: 42px;
   height: 42px;
-  border-radius: 12px;
+  border-radius: 50%;
   background: var(--bg-subtle, #f1f5f9);
-  color: var(--text, #334155);
+  color: var(--text, #334155) !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
-  text-decoration: none;
+  text-decoration: none !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid var(--border, transparent);
+  border: 1px solid var(--border, rgba(0,0,0,0.08));
+}
+.social-links a i, .social-links a .bi, .social-btn i, .social-btn .bi {
+  color: var(--text) !important;
+  transition: color 0.2s ease;
+}
+[data-bs-theme="dark"] .social-links a, [data-bs-theme="dark"] .social-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0 !important;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+[data-bs-theme="dark"] .social-links a i, [data-bs-theme="dark"] .social-links a .bi {
+  color: #e2e8f0 !important;
+}
+.social-links a:hover, .social-btn:hover {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border-color: var(--accent) !important;
+  transform: translateY(-3px) scale(1.06);
+  box-shadow: 0 8px 20px rgba(239, 51, 99, 0.35);
+}
+.social-links a:hover i, .social-links a:hover .bi, .social-btn:hover i, .social-btn:hover .bi {
+  color: #ffffff !important;
 }
 [data-bs-theme="dark"] .social-btn {
   background: rgba(255, 255, 255, 0.06);
@@ -6057,10 +6084,11 @@ body, .nav-link, .btn, .card, .site-main {
 /* Número superpuesto fucsia sólido */
 .ranking-number-overlay {
   position: absolute;
-  left: 10px;
+  left: 8px;
   top: 40%;
   transform: translateY(-50%);
-  font-size: 6.5rem;
+  font-size: 3.8rem;
+  letter-spacing: -0.05em;
   font-weight: 900;
   font-style: italic;
   font-family: 'Arial Black', Impact, sans-serif;

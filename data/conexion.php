@@ -86,4 +86,14 @@
         `fecha` DATETIME DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY `fav_ficha_lector` (`ficha_id`, `lector_id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+    $con->query("CREATE TABLE IF NOT EXISTS `password_reset_tokens` (
+        `id` INT AUTO_INCREMENT PRIMARY KEY,
+        `email` VARCHAR(255) NOT NULL,
+        `token` VARCHAR(255) NOT NULL,
+        `tipo_usuario` VARCHAR(50) NOT NULL DEFAULT 'lector',
+        `expira` DATETIME NOT NULL,
+        `usado` TINYINT(1) NOT NULL DEFAULT 0,
+        `creado` DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 ?>
