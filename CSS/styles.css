@@ -6120,6 +6120,60 @@ body, .nav-link, .btn, .card, .site-main {
   z-index: 3;
 }
 
+/* ── HORIZONTAL SCROLL EN MÓVIL PARA RECOMENDACIONES Y LO QUE MÁS ESPERAMOS ── */
+@media (max-width: 768px) {
+  .sidebar-reviews-section {
+    margin-bottom: 24px;
+  }
+  .sidebar-ranking-list-container {
+    overflow: visible !important;
+  }
+  .sidebar-ranking-list {
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    max-height: none !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 6px 4px 14px 4px !important;
+    gap: 14px !important;
+    scrollbar-width: none !important;
+  }
+  .sidebar-ranking-list::-webkit-scrollbar {
+    display: none !important;
+  }
+  .sidebar-ranking-list .ranking-item-hero,
+  .sidebar-ranking-list .ranking-item-sub {
+    width: 250px !important;
+    min-width: 250px !important;
+    max-width: 250px !important;
+    height: 145px !important;
+    flex-shrink: 0 !important;
+    scroll-snap-align: start;
+  }
+  .sidebar-news-list {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 12px !important;
+    gap: 14px !important;
+    scrollbar-width: none !important;
+  }
+  .sidebar-news-list::-webkit-scrollbar {
+    display: none !important;
+  }
+  .sidebar-news-list .sidebar-news-item {
+    width: 240px !important;
+    min-width: 240px !important;
+    max-width: 240px !important;
+    flex-shrink: 0 !important;
+    scroll-snap-align: start;
+  }
+}
+
 /* ── REVIEW VERDICT CARD (SISTEMA DE RESEÑAS) ── */
 .review-verdict-card {
   --card-bg: #2F2F2F;
