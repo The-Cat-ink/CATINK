@@ -23,6 +23,35 @@ function siteUrl(){
     return rtrim($url, '/');
 }
 
+if (!function_exists('img')) {
+    function img($fields, $placeholder = 'img/placeholder.svg') {
+        if (!is_array($fields)) $fields = [$fields];
+        foreach ($fields as $f) {
+            if (!empty($f)) {
+                return imageUrl($f);
+            }
+        }
+        return imageUrl($placeholder);
+    }
+}
+
+if (!function_exists('tiempoRelativo')) {
+    function tiempoRelativo($fecha) {
+        $fecha_pub = strtotime($fecha);
+        $ahora = time();
+        $diff = $ahora - $fecha_pub;
+        if ($diff < 3600) {
+            return "Hace " . max(1, floor($diff / 60)) . " min";
+        } elseif ($diff < 86400) {
+            return "Hace " . floor($diff / 3600) . " hrs";
+        } elseif ($diff < 172800) {
+            return "Ayer";
+        } else {
+            return date("d M Y", $fecha_pub);
+        }
+    }
+}
+
 function encodeId($id){
     return rtrim(strtr(base64_encode($id), '+/', '-_'), '=');
 }
