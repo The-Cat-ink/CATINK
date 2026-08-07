@@ -75,18 +75,19 @@ try {
     $mail = new PHPMailer(true);
     $mail->isSMTP();
     $mail->Timeout = 10;
-    $mail->getSMTPInstance()->Timelimit = 10; // sin esto, un SMTP colgado bloquea hasta 300s
 
-    $mail->Host = env('SMTP_HOST');
-    $mail->SMTPAuth = true;
-    $mail->Username = env('SMTP_AUTH_USERNAME', env('SMTP_USERNAME'));
-    $mail->Password = env('SMTP_AUTH_PASSWORD', env('SMTP_PASSWORD'));
+    $mail->Host       = env('SMTP_HOST');
+    $mail->SMTPAuth   = true;
+    $mail->Username   = env('SMTP_USERNAME', env('SMTP_AUTH_USERNAME'));
+    $mail->Password   = env('SMTP_PASSWORD', env('SMTP_AUTH_PASSWORD'));
     $mail->SMTPSecure = env('SMTP_SECURE', 'ssl');
-    $mail->Port = env('SMTP_PORT', 465);
+    $mail->Port       = env('SMTP_PORT', 465);
 
-    $fromEmail = env('SMTP_AUTH_FROM_EMAIL', 'no-reply@catink.com.mx');
-    $fromName = env('SMTP_AUTH_FROM_NAME', 'CatInk');
+    $fromEmail = env('SMTP_FROM_EMAIL', env('SMTP_AUTH_FROM_EMAIL', 'no-reply@catink.com.mx'));
+    $fromName  = env('SMTP_FROM_NAME', env('SMTP_AUTH_FROM_NAME', 'CatInk'));
     $mail->setFrom($fromEmail, $fromName);
+    $mail->addAddress($email, $usuario['nombre']);
+
     require_once(__DIR__ . "/../views/helpers/emailhelper.php");
 
     $resetUrl = siteUrl() . "/reset_contrasena?token=" . urlencode($token);
@@ -96,8 +97,8 @@ try {
 
     $nombreUsuario = htmlspecialchars($usuario['nombre']);
     $content = "
-        <p>Hola <strong style='color:#ffffff;'>{$nombreUsuario}</strong>,</p>
-        <p style='color:#cbd5e0; line-height:1.7;'>Recibimos una solicitud para restablecer la contraseña de tu cuenta en CatInk. Haz clic en el botón a continuación para definir una nueva contraseña:</p>
+        <p>Hola <strong>{$nombreUsuario}</strong>,</p>
+        <p style='color:#334155; line-height:1.7;'>Recibimos una solicitud para restablecer la contraseña de tu cuenta en CatInk. Haz clic en el botón a continuación para definir una nueva contraseña:</p>
         <p style='color:#718096; font-size:12px; margin-top:20px;'>* Este enlace de recuperación expira en 24 horas por razones de seguridad.<br>Si no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
     ";
 
@@ -113,7 +114,7 @@ try {
     header("Location: ./../views/olvide_contrasena.php?mensaje=Se ha enviado un enlace de recuperación a tu correo");
     exit();
 
-} catch (Exception $e) {
+} catch (\Throwable $e) {
     error_log("Error enviando correo de reset: " . $e->getMessage());
     header("Location: ./../views/olvide_contrasena.php?error=Error al enviar el correo. Intenta más tarde");
     exit();
