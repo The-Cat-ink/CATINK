@@ -2148,10 +2148,10 @@ function applyEditorZoom(zoomLevel) {
   const badge = document.getElementById('editorZoomBadge');
   if (badge) badge.textContent = currentEditorZoom + '%';
   
-  const editorEl = document.querySelector('#editor .ck-editor__editable') || document.querySelector('#editor');
-  if (editorEl) {
-    editorEl.style.fontSize = (currentEditorZoom / 100 * 16) + 'px';
-    editorEl.style.lineHeight = '1.8';
+  const containerEl = document.querySelector('.document-editor__editable-container') || document.querySelector('#editor');
+  if (containerEl) {
+    const scale = currentEditorZoom / 100;
+    containerEl.style.zoom = scale;
   }
 }
 
