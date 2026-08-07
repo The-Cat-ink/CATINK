@@ -2725,6 +2725,8 @@ input, select, textarea,
   outline: none !important;
   line-height: 1.6;
   font-family: inherit !important;
+  zoom: var(--editor-zoom, 1) !important;
+  transform-origin: top center;
 }
 
 /* Alinear imágenes y estilo general dentro del editor */

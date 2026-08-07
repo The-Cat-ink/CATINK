@@ -2153,10 +2153,18 @@ function applyEditorZoom(zoomLevel) {
   const range = document.getElementById('wordZoomRange');
   if (range) range.value = currentEditorZoom;
   
+  const scale = currentEditorZoom / 100;
+  
+  const docEditor = document.querySelector('.document-editor');
+  if (docEditor) docEditor.style.setProperty('--editor-zoom', scale);
+  
+  const container = document.querySelector('.document-editor__editable-container');
+  if (container) container.style.setProperty('--editor-zoom', scale);
+  
   const paperSheet = document.querySelector('.document-editor__editable-container .ck-editor__editable') || document.querySelector('#editor');
   if (paperSheet) {
-    const scale = currentEditorZoom / 100;
-    paperSheet.style.zoom = scale;
+    paperSheet.style.setProperty('--editor-zoom', scale);
+    paperSheet.style.setProperty('zoom', scale, 'important');
     paperSheet.style.transformOrigin = 'top center';
   }
 }
