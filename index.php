@@ -18,6 +18,15 @@ if ($pagina === 1) {
     $offset = 2 + ($pagina - 2) * 10;
 }
 
+require_once(__DIR__ . "/views/helpers/cachehelper.php");
+
+$cacheKey = 'index_data_page_' . $pagina;
+$cachedData = get_cache($cacheKey, 180); // 3 minutos
+
+if ($cachedData !== false) {
+    extract($cachedData);
+} else {
+
 // Contar total para paginación
 $totalResult = $con->query("SELECT COUNT(*) as total FROM noticias WHERE eliminado_en IS NULL AND fecha_publicacion <= NOW()");
 $totalNoticias = $totalResult->fetch_assoc()['total'];
@@ -267,6 +276,28 @@ if ($seccionesResult) {
     }
 }
 
+    $cachedData = [
+        'totalNoticias' => $totalNoticias ?? 0,
+        'totalpaginas' => $totalpaginas ?? 1,
+        'feedNoticias' => $feedNoticias ?? [],
+        'noticiasGlobales' => $noticiasGlobales ?? [],
+        'slider' => $slider ?? [],
+        'topSemanal' => $topSemanal ?? [],
+        'reviews' => $reviews ?? [],
+        'recomendamos' => $recomendamos ?? [],
+        'estrenosPelis' => $estrenosPelis ?? null,
+        'estrenosJuegos' => $estrenosJuegos ?? null,
+        'estrenosAnime' => $estrenosAnime ?? null,
+        'esperamos' => $esperamos ?? [],
+        'debatidasLeft' => $debatidasLeft ?? [],
+        'debatidasRight' => $debatidasRight ?? [],
+        'randomNoticias' => $randomNoticias ?? [],
+        'vidVerticales' => $vidVerticales ?? [],
+        'secciones' => $secciones ?? []
+    ];
+    set_cache($cacheKey, $cachedData);
+}
+
 // Helper de imágenes
 function img($fields, $placeholder = 'img/placeholder.svg') {
     foreach ($fields as $f) {
@@ -396,7 +427,8 @@ function tiempoRelativo($fecha) {
                     <img
                         src="<?= img([$row['crop2'], $row['crop1']]) ?>"
                         class="carousel-img"
-                        alt="<?= htmlspecialchars($row['titulo']) ?>">
+                        alt="<?= htmlspecialchars($row['titulo']) ?>"
+                        <?= $i === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"' ?>>
                 </picture>
                 <div class="carousel-caption caption-md">
                     <?php foreach(array_filter(array_map('trim', explode(',', $row['categorias'] ?? ''))) as $cat): ?>

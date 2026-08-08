@@ -28,26 +28,34 @@ if ($checkIconoImgCol && $checkIconoImgCol->num_rows === 0) {
 
 require_once(__DIR__ . "/../views/helpers/urlhelper.php");
 require_once(__DIR__ . "/../views/helpers/publicidadhelper.php");
+require_once(__DIR__ . "/../views/helpers/cachehelper.php");
+
 // =========================
-// Obtener categorías únicas
+// Obtener categorías únicas (Caché: 15 min)
 // =========================
-// Solo las marcadas como visibles: el admin puede ocultar una categoría del menú
-// desde views/cats.php sin borrarla. Su página /categoria/x sigue accesible, solo
-// desaparece de la navegación (hamburguesa, desplegable de escritorio y JSON-LD).
-$stmtCats = $con->prepare("SELECT nombre, icono, icono_img, visible_menu FROM categorias WHERE visible_menu = 1 ORDER BY orden ASC, nombre ASC");
-$stmtCats->execute();
-$resultCats = $stmtCats->get_result();
-$categorias = $resultCats->fetch_all(MYSQLI_ASSOC);
-// =========================
-// Obtener estado de secciones
-// =========================
-$stmt = $con->prepare("SELECT * FROM secciones");
-$stmt->execute();
-$result = $stmt->get_result();
-$secciones = [];
-while($row = $result->fetch_assoc()) {
-    $secciones[$row['nombre']] = $row;
+$categorias = get_cache('header_categorias', 900);
+if ($categorias === false) {
+    $stmtCats = $con->prepare("SELECT id_c, nombre, icono, icono_img, visible_menu FROM categorias WHERE visible_menu = 1 ORDER BY orden ASC, nombre ASC");
+    $stmtCats->execute();
+    $categorias = $stmtCats->get_result()->fetch_all(MYSQLI_ASSOC);
+    set_cache('header_categorias', $categorias);
 }
+
+// =========================
+// Obtener estado de secciones (Caché: 15 min)
+// =========================
+$secciones = get_cache('header_secciones', 900);
+if ($secciones === false) {
+    $stmt = $con->prepare("SELECT * FROM secciones");
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $secciones = [];
+    while($row = $result->fetch_assoc()) {
+        $secciones[$row['nombre']] = $row;
+    }
+    set_cache('header_secciones', $secciones);
+}
+
 // Defaults para secciones no configuradas
 if(!isset($secciones['publicidad'])) $secciones['publicidad'] = ['estado' => 0];
 if(!isset($secciones['videos'])) $secciones['videos'] = ['estado' => 0];
@@ -179,16 +187,21 @@ $menuJson = [
   <script type="application/ld+json">
     <?= json_encode($menuJson, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT) ?>
   </script>
+  <!-- Preloads de Rendimiento -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" as="style">
+  <link rel="preload" href="<?= basePath() ?>/CSS/styles.css?v=<?= filemtime(__DIR__ . '/../CSS/styles.css') ?>" as="style">
+  
   <!-- CSS / JS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= basePath() ?>/CSS/styles.css?v=<?= filemtime(__DIR__ . '/../CSS/styles.css') ?>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Scripts Asíncronos -->
   <script async src="https://www.instagram.com/embed.js"></script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8588111729852920"
-     crossorigin="anonymous"></script>
-  <script src="<?= basePath() ?>/CSS/offline-manager.js?v=<?= filemtime(__DIR__ . '/../CSS/offline-manager.js') ?>"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8588111729852920" crossorigin="anonymous"></script>
+  <script src="<?= basePath() ?>/CSS/offline-manager.js?v=<?= filemtime(__DIR__ . '/../CSS/offline-manager.js') ?>" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js" defer></script>
 </head>
 <body>
