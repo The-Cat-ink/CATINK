@@ -232,6 +232,9 @@ if (!$esBorrador && $draftId > 0 && $draftId !== $noticiaId) {
 // ============================
 // REDIRECCION / AJAX RESPONSE
 // ============================
+require_once(__DIR__ . "/../views/helpers/cachehelper.php");
+clear_cache_by_prefix();
+
 $esBorradorLabel = $esBorrador ? 'borrador' : ($fecha_publicacion > date('Y-m-d H:i:s') ? 'noticia programada' : 'noticia');
 logActivity($con, $esBorrador ? 'borrador' : 'crear', 'noticias', 'Creó ' . $esBorradorLabel . ' «' . mb_substr($titulo, 0, 80) . '» (ID ' . $noticiaId . ')');
 header('Content-Type: application/json');

@@ -258,6 +258,10 @@ if (!empty($categorias)) {
 // REDIRECCION
 // ============================
 logActivity($con, 'editar', 'noticias', 'Actualizó la noticia ID ' . $id . ': «' . mb_substr($titulo ?? '', 0, 80) . '»');
+
+require_once(__DIR__ . "/../views/helpers/cachehelper.php");
+clear_cache_by_prefix();
+
 header("Location: ./../views/editar.php?id=$id&msg=actualizado");
 exit;
 ?>

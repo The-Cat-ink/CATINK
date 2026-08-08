@@ -37,6 +37,10 @@ $stmt->bind_param($types, ...$ids);
 
 if ($stmt->execute() && $stmt->affected_rows > 0) {
     logActivity($con, 'restaurar', 'noticias', 'Restauró ' . count($ids) . ' noticia(s) de la papelera (IDs: ' . implode(', ', $ids) . ')');
+    
+    require_once(__DIR__ . "/../views/helpers/cachehelper.php");
+    clear_cache_by_prefix();
+    
     header("Location: ../views/papelera.php?msg=restaurada");
 } else {
     header("Location: ../views/papelera.php?error=no_restaurada");

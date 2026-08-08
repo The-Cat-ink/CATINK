@@ -56,6 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     if ($ok) {
         logActivity($con, 'eliminar', 'noticias', 'Envió a la papelera noticia ID ' . $id);
     }
+    
+    require_once(__DIR__ . "/../views/helpers/cachehelper.php");
+    clear_cache_by_prefix();
 
     if ($from === 'publica') {
         // El sitio público no tiene banner de avisos: se usa el toast del header.
