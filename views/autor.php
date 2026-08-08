@@ -17,10 +17,12 @@ if ($id <= 0) {
 // Obtener datos del editor
 // ==============================
 $stmt = $con->prepare("
-    SELECT id_u, nombre, usuario, biografia, foto_personal, link_twitter, link_instagram, registro,
-           perm_categorias, perm_noticias, perm_publicidad, perm_suscripciones, perm_usuarios, perm_correos, perm_videos
-    FROM usuarios
-    WHERE id_u = ?
+    SELECT u.id_u, u.nombre, u.usuario, u.biografia, u.foto_personal, u.link_twitter, u.link_instagram, u.registro,
+           u.perm_categorias, u.perm_noticias, u.perm_publicidad, u.perm_suscripciones, u.perm_usuarios, u.perm_correos, u.perm_videos,
+           a.imagen AS avatar_imagen
+    FROM usuarios u
+    LEFT JOIN avatares_perfil a ON u.avatar_id = a.id_avatar
+    WHERE u.id_u = ?
 ");
 $stmt->bind_param("i", $id);
 $stmt->execute();
@@ -72,9 +74,12 @@ $totalArticulos = $stmtCount->get_result()->fetch_assoc()['total'];
 $fechaRegistro = date('d M Y', strtotime($editor['registro']));
 
 // Foto con fallback
-$fotoEditor = !empty($editor['foto_personal'])
-    ? imageUrl($editor['foto_personal'])
-    : null;
+$fotoEditor = null;
+if (!empty($editor['foto_personal'])) {
+    $fotoEditor = imageUrl($editor['foto_personal']);
+} elseif (!empty($editor['avatar_imagen'])) {
+    $fotoEditor = imageUrl($editor['avatar_imagen']);
+}
 
 // Iniciales para fallback
 $palabras = explode(' ', $editor['nombre']);
