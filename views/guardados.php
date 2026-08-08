@@ -220,8 +220,9 @@ include("./../layout/header.php");
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+(function() {
   const container = document.getElementById('offlineArticlesContainer');
+  if (!container) return;
   const readerView = document.getElementById('offlineReaderView');
   const readerContent = document.getElementById('offlineReaderContent');
   const btnCloseReader = document.getElementById('btnCloseReader');
@@ -389,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initRender();
-});
+})();
 </script>
 
 <?php include("./../layout/footer.php"); ?>
