@@ -225,9 +225,16 @@ function imageUrl($path) {
         $host = $_SERVER['HTTP_HOST'] ?? '';
         $isLocal = strpos($host, 'localhost') !== false || strpos($host, 'catink.test') !== false;
         
-        // Comprobar si el archivo físico realmente existe en la carpeta pública (ya sea por symlink o copiado)
-        $publicFilePath = isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] . '/' . $path : '';
-        $existsInPublic = !empty($publicFilePath) && file_exists($publicFilePath) && is_file($publicFilePath);
+        // Comprobar si el archivo físico realmente existe en la carpeta pública
+        $publicFilePath = realpath(__DIR__ . '/../../' . $path) ?: (__DIR__ . '/../../' . $path);
+        $existsInPublic = file_exists($publicFilePath) && is_file($publicFilePath);
+        
+        // Comprobar si existe la versión WebP optimizada
+        $webpPath = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $publicFilePath);
+        if ($webpPath && file_exists($webpPath) && is_file($webpPath)) {
+            $path = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $path);
+            $existsInPublic = true;
+        }
         
         if ($isLocal || $existsInPublic) {
             return basePath() . "/" . $path;

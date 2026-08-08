@@ -1166,7 +1166,15 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
 .indicator-avatar svg { position:absolute; inset:0; transform:rotate(-90deg); }
 .indicator-avatar circle { fill:none; stroke:var(--accent); stroke-width:3; stroke-dasharray:100; stroke-dashoffset:100; transition: stroke-dashoffset linear; }
 /* Carousel visibility control */
-.carousel-img { width:100%; display:block; }
+.carousel-img { 
+    width: 100%; 
+    display: block; 
+    aspect-ratio: 21 / 6;
+    object-fit: cover;
+}
+.carousel-caption { position:absolute; bottom:0; left:0; width:100%; background:linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%); padding:2rem 1rem 1rem; text-align:left; right:auto; }
+.caption-md { padding:4rem 2rem 1.5rem; }
+.carousel-tag { display:inline-block; font-size:0.75rem; font-weight:700; text-transform:uppercase; background:var(--accent); color:#fff; padding:3px 8px; border-radius:4px; margin-bottom:10px; margin-right:5px; text-decoration:none; }
 /* caption show on md+ */
 .caption-md { display: none; }
 @media (min-width: 768px) { .caption-md { display:block; } }
@@ -1181,6 +1189,9 @@ a.btn { display:inline-flex; align-items:center; justify-content:center; text-de
   .carousel {
     height: auto;
     min-height: unset;
+    aspect-ratio: 16 / 9;
+  }
+  .carousel-img {
     aspect-ratio: 16 / 9;
   }
   .carousel-inner, .carousel-item {
