@@ -3880,7 +3880,6 @@ body, .nav-link, .btn, .card, .site-main {
     margin-right: var(--video-bleed-right, 0px);
     margin-bottom: 40px;
     margin-top: -15px;
-.videos-destacados-container {
     padding: 10px 16px 40px;
     display: flex;
     flex-direction: column; /* Apila elementos verticalmente */
@@ -5612,10 +5611,9 @@ body, .nav-link, .btn, .card, .site-main {
   cursor: pointer;
   height: 100%;
   display: flex;
-  transition: transform 0.2s, box-shadow 0.2s, background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
-}
   flex-direction: column;
   flex-grow: 1;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
 .estreno-small-img-wrapper {
   aspect-ratio: 16/9;
