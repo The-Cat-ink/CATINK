@@ -88,6 +88,21 @@
   });
   document.addEventListener('keydown', handleDropdownEscape);
 
+  // ============================================================
+  // Scroll horizontal en la navegación del Header con la rueda del mouse
+  // ============================================================
+  document.addEventListener('wheel', function(e) {
+    const navContainer = e.target.closest('.navbar-nav, .nav-categories, .header-categories, .vertical-videos-grid');
+    if (!navContainer) return;
+
+    if (navContainer.scrollWidth > navContainer.clientWidth) {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        navContainer.scrollLeft += e.deltaY * 1.2;
+      }
+    }
+  }, { passive: false });
+
   // Capturar el ID de la noticia al hacer clic para View Transitions
   document.addEventListener('click', function(e) {
     const card = e.target.closest('[data-article-id]');
