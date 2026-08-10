@@ -138,7 +138,7 @@ $ultimasNoticias = [];
 while($row = $resultNoticias->fetch_assoc()){
     $ultimasNoticias[] = $row;
 }       
-$configResult = $con->query("SELECT * FROM secciones");
+$configResult = $con->query("SELECT * FROM secciones GROUP BY nombre");
 $config = [];
 while($row = $configResult->fetch_assoc()){
     $config[] = $row;

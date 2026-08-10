@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_param("sssssiii", $nombre, $url, $icono, $icono_img, $color, $orden, $activo, $id_red);
         } else {
             $stmt = $con->prepare("UPDATE redes_sociales SET nombre=?, url=?, icono=?, color=?, orden=?, activo=? WHERE id_red=?");
-            $stmt->bind_param("ssssiiii", $nombre, $url, $icono, $color, $orden, $activo, $id_red);
+            $stmt->bind_param("ssssiii", $nombre, $url, $icono, $color, $orden, $activo, $id_red);
         }
         $stmt->execute();
     } else {

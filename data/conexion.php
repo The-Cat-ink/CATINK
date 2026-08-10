@@ -41,7 +41,14 @@
     asegurarColumna($con, 'correos_publicitarios', 'cta_text', "VARCHAR(100) NULL DEFAULT 'Ver promoción' AFTER url_c");
     asegurarColumna($con, 'noticias', 'ficha_id', "INT NULL AFTER id");
 
-    // Auto-creación de tablas de Fichas y Estrenos
+    // Auto-limpieza y restricción UNIQUE para evitar secciones duplicadas (ej. 'comentarios')
+    try {
+        $con->query("DELETE s1 FROM secciones s1 INNER JOIN secciones s2 ON s1.nombre = s2.nombre AND s1.id_s > s2.id_s");
+        $resIdx = $con->query("SHOW INDEX FROM `secciones` WHERE Key_name = 'idx_nombre_unico'");
+        if ($resIdx && $resIdx->num_rows === 0) {
+            $con->query("ALTER TABLE `secciones` ADD UNIQUE KEY `idx_nombre_unico` (`nombre`)");
+        }
+    } catch (\Throwable $e) {}
     $con->query("CREATE TABLE IF NOT EXISTS `fichas` (
         `id` INT AUTO_INCREMENT PRIMARY KEY,
         `titulo` VARCHAR(255) NOT NULL,
