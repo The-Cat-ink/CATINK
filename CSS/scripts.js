@@ -77,13 +77,30 @@
   // cada navegación) y nunca se acumulan listeners → clic siempre responde.
   // ============================================================
   document.addEventListener('click', function(e) {
-    const menu = document.getElementById('userDropdownMenu');
-    if (!menu) return;
-    if (e.target.closest('#userDropdownBtn')) {
+    // 1. Toggle del menú colapsable (Menú hamburguesa)
+    const collapseBtn = e.target.closest('[data-bs-toggle="collapse"]');
+    if (collapseBtn) {
+      e.preventDefault();
       e.stopPropagation();
-      menu.classList.toggle('show');
-    } else if (!e.target.closest('#userDropdownMenu')) {
-      menu.classList.remove('show');
+      const targetSelector = collapseBtn.getAttribute('data-bs-target');
+      if (targetSelector) {
+        const target = document.querySelector(targetSelector);
+        if (target) {
+          target.classList.toggle('show');
+        }
+      }
+      return;
+    }
+
+    // 2. Dropdown de usuario
+    const menu = document.getElementById('userDropdownMenu');
+    if (menu) {
+      if (e.target.closest('#userDropdownBtn')) {
+        e.stopPropagation();
+        menu.classList.toggle('show');
+      } else if (!e.target.closest('#userDropdownMenu')) {
+        menu.classList.remove('show');
+      }
     }
   });
   document.addEventListener('keydown', handleDropdownEscape);
@@ -203,18 +220,7 @@
       });
     });
 
-    // 3. Toggle de colapso: busca botones con data-bs-toggle="collapse" y alterna la clase .show
-    document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        const targetSelector = btn.getAttribute('data-bs-target');
-        if (!targetSelector) return;
-        const target = document.querySelector(targetSelector);
-        if (!target) return;
-        target.classList.toggle('show');
-      });
-    });
-
-    // 4. Toggle de tema con Delegación Global en document y View Transitions / Frame Sync
+    // 3. Toggle de theme con Delegación Global en document y View Transitions / Frame Sync
     function applyTheme(theme) {
       const updateDOM = () => {
         document.documentElement.setAttribute('data-bs-theme', theme);
