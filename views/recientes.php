@@ -124,20 +124,20 @@ $breadcrumbList = [
 
 <div class="container my-5">
   <!-- ENCABEZADO TIPO HERO EN LÍNEA CON EL DISEÑO DE CATINK -->
-  <div class="cat-header-hero mb-4 p-4" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); position: relative; overflow: hidden;">
-    <div style="position: absolute; top: -40px; right: -40px; width: 160px; height: 160px; background: var(--accent-fuchsia); opacity: 0.08; filter: blur(40px); border-radius: 50%; pointer-events: none;"></div>
-    <div class="d-flex align-items-center gap-3">
-      <div style="width: 52px; height: 52px; border-radius: 14px; background: rgba(239,51,99,0.12); color: var(--accent-fuchsia); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; border: 1px solid rgba(239,51,99,0.25);">
+  <div class="cat-header-hero mb-4" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px; padding: 28px 32px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); position: relative; overflow: hidden;">
+    <div style="position: absolute; top: -40px; right: -40px; width: 160px; height: 160px; background: var(--accent); opacity: 0.08; filter: blur(40px); border-radius: 50%; pointer-events: none;"></div>
+    <div class="d-flex align-items-center gap-3 gap-md-4">
+      <div style="width: 60px; height: 60px; border-radius: 16px; background: rgba(239,51,99,0.12); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; border: 1px solid rgba(239,51,99,0.25);">
         <i class="bi bi-clock-history"></i>
       </div>
       <div>
-        <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent-fuchsia); margin-bottom: 2px;">
+        <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 6px;">
           EXPLORAR CONTENIDO
         </div>
-        <h1 style="font-size: 1.75rem; font-weight: 900; color: var(--text); margin: 0; line-height: 1.2;">
+        <h1 style="font-size: 1.85rem; font-weight: 900; color: var(--text); margin: 0 0 6px 0; line-height: 1.25;">
           Lo más nuevo
         </h1>
-        <p style="font-size: 0.88rem; color: var(--muted); margin: 4px 0 0 0;">
+        <p style="font-size: 0.92rem; color: var(--muted); margin: 0; line-height: 1.5;">
           Todo el contenido publicado de manera cronológica en tiempo real.
         </p>
       </div>
