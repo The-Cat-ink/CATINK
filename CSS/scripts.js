@@ -180,19 +180,36 @@
       });
     });
 
-    // 4. Toggle de tema con Delegación Global en document
+    // 4. Toggle de tema con Delegación Global en document y View Transitions / Frame Sync
     function applyTheme(theme) {
-      document.documentElement.setAttribute('data-bs-theme', theme);
-      const sun = document.getElementById('themeIconSun');
-      const moon = document.getElementById('themeIconMoon');
-      if (sun && moon) {
-        if (theme === 'dark') {
-          sun.classList.remove('active');
-          moon.classList.add('active');
-        } else {
-          sun.classList.add('active');
-          moon.classList.remove('active');
+      const updateDOM = () => {
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        const sun = document.getElementById('themeIconSun');
+        const moon = document.getElementById('themeIconMoon');
+        if (sun && moon) {
+          if (theme === 'dark') {
+            sun.classList.remove('active');
+            moon.classList.add('active');
+          } else {
+            sun.classList.add('active');
+            moon.classList.remove('active');
+          }
         }
+      };
+
+      if (document.startViewTransition) {
+        document.startViewTransition(() => {
+          updateDOM();
+        });
+      } else {
+        document.documentElement.classList.add('theme-switching');
+        updateDOM();
+        window.getComputedStyle(document.documentElement).opacity;
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            document.documentElement.classList.remove('theme-switching');
+          });
+        });
       }
     }
 

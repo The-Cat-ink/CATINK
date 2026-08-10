@@ -25,6 +25,14 @@
 [data-no-theme-transition] *,
 video, canvas, img, svg * { transition: none; }
 
+/* Desactivar transiciones desincronizadas durante la alternancia de tema */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
+}
+
 /* Legacy body.dark-mode replaced with unified [data-bs-theme="dark"] */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html,body { min-height: 100%; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color: #111; }
@@ -3872,17 +3880,19 @@ body, .nav-link, .btn, .card, .site-main {
     margin-right: var(--video-bleed-right, 0px);
     margin-bottom: 40px;
     margin-top: -15px;
+.videos-destacados-container {
     padding: 10px 16px 40px;
     display: flex;
     flex-direction: column; /* Apila elementos verticalmente */
     align-items: center;
     z-index: 1; /* Asegura que los videos queden por encima */
-    background: #202124; /* Fondo ahora directo en el contenedor */
+    background: var(--surface-muted-strong, #f1f5f9); /* Fondo dinámico claro */
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Modo oscuro para el contenedor */
 [data-bs-theme="dark"] .videos-destacados-container {
-    background: #0B1220;
+    background: #090e18;
 }
 
 /* 2. El carrusel se centra con límite de ancho */
@@ -3976,15 +3986,16 @@ body, .nav-link, .btn, .card, .site-main {
     width: 100vw;
     margin-left: var(--youtube-bleed-left, 0px);
     margin-right: var(--youtube-bleed-right, 0px);
-    background: #202124; /* Mismo fondo que videos destacados en modo claro */
+    background: var(--surface-muted-strong, #f1f5f9);
     margin-bottom: 40px;
     margin-top: 40px;
     padding: 30px 0 45px 0;
     z-index: 2;
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 [data-bs-theme="dark"] .youtube-section-wrapper {
-    background: #0B1220; /* Mismo fondo que videos destacados en modo oscuro */
+    background: #090e18;
 }
 
 /* Bordes rasgados (Torn Paper Effects) */
@@ -4354,15 +4365,16 @@ body, .nav-link, .btn, .card, .site-main {
     width: 100vw;
     margin-left: var(--debatido-bleed-left, 0px);
     margin-right: var(--debatido-bleed-right, 0px);
-    background: #202124; /* Mismo fondo que videos destacados en modo claro */
+    background: var(--surface-muted-strong, #f1f5f9);
     margin-bottom: 40px;
     margin-top: 40px;
     padding: 40px 0 50px 0;
     z-index: 2;
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 [data-bs-theme="dark"] .debatido-section-wrapper {
-    background: #0B1220; /* Mismo fondo que videos destacados en modo oscuro */
+    background: #090e18;
 }
 
 .debatido-section-container {
