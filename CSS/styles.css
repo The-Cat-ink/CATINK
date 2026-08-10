@@ -25,15 +25,7 @@
 [data-no-theme-transition] *,
 video, canvas, img, svg * { transition: none; }
 
-body.dark-mode {
-    background-color: #121212; /* Un gris hiper oscuro estilo Spotify */
-    color: #e0e0e0;            /* Texto gris claro para no cansar la vista */
-}
-
-body.dark-mode header {
-    background-color: #1f1f1f;
-    border-bottom: 1px solid #333;
-}
+/* Legacy body.dark-mode replaced with unified [data-bs-theme="dark"] */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html,body { min-height: 100%; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color: #111; }
 :root {
@@ -112,7 +104,7 @@ h2 {
   position: sticky;
   top: 0;
   z-index: 9999;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .navbar.nav-hidden {
@@ -846,7 +838,7 @@ h2 {
   - .card, .card-body, .card-title, .card-text
   - Uso: entradas principales y sidebars
 */
-.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 6px 18px rgba(11,11,11,0.04); transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.25s cubic-bezier(0.25, 0.8, 0.25, 1); }
+.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 6px 18px rgba(11,11,11,0.04); transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease; }
 .card[data-url] { cursor: pointer; }
 .card[data-url]:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(11,11,11,0.08); }
 .card-body { padding: 16px; }
@@ -5219,7 +5211,7 @@ body, .nav-link, .btn, .card, .site-main {
   overflow: hidden;
   padding: 0;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
 .horizontal-news-card:hover {
   transform: translateY(-2px);
@@ -5608,6 +5600,8 @@ body, .nav-link, .btn, .card, .site-main {
   cursor: pointer;
   height: 100%;
   display: flex;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
   flex-direction: column;
   flex-grow: 1;
 }
@@ -6623,7 +6617,7 @@ body, .nav-link, .btn, .card, .site-main {
   border-radius: 20px;
   padding: 24px 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.25s ease, color 0.25s ease;
 }
 
 .sidebar-widget-card:hover {
