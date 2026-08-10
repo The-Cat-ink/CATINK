@@ -95,7 +95,17 @@
     const navContainer = e.target.closest('.navbar-nav, .nav-categories, .header-categories, .vertical-videos-grid');
     if (!navContainer) return;
 
+    // Solo aplicar si es horizontal (flex-direction row o no wrap)
+    const style = window.getComputedStyle(navContainer);
+    if (style.flexDirection !== 'row' && style.whiteSpace !== 'nowrap') return;
+
     if (navContainer.scrollWidth > navContainer.clientWidth) {
+      const isScrollableLeft = navContainer.scrollLeft > 0;
+      const isScrollableRight = Math.ceil(navContainer.scrollLeft + navContainer.clientWidth) < navContainer.scrollWidth;
+
+      if (e.deltaY < 0 && !isScrollableLeft) return;
+      if (e.deltaY > 0 && !isScrollableRight) return;
+
       if (e.deltaY !== 0) {
         e.preventDefault();
         navContainer.scrollLeft += e.deltaY * 1.2;
