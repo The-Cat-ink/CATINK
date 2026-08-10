@@ -5022,8 +5022,13 @@ body, .nav-link, .btn, .card, .site-main {
 .section-separator-pill {
   display: flex;
   align-items: center;
-  margin: 40px 0 20px 0;
+  margin: 16px 0 12px 0;
   width: 100%;
+}
+@media (max-width: 768px) {
+  .section-separator-pill {
+    margin: 10px 0 8px 0 !important;
+  }
 }
 .pill-label, a.pill-label {
   background: var(--accent-fuchsia);
@@ -5660,7 +5665,7 @@ body, .nav-link, .btn, .card, .site-main {
 .full-width-dark-section {
   background-color: var(--bg-dark-section);
   color: #fff;
-  padding: 50px 0;
+  padding: 28px 0;
   position: relative;
   width: 100vw;
   left: var(--bleed-left, 0);
@@ -5668,6 +5673,20 @@ body, .nav-link, .btn, .card, .site-main {
   margin-left: var(--bleed-left, 0);
   margin-right: var(--bleed-right, 0);
   box-sizing: border-box;
+}
+@media (max-width: 768px) {
+  .full-width-dark-section {
+    padding: 16px 0 !important;
+  }
+  .mt-5 {
+    margin-top: 1.15rem !important;
+  }
+  .mt-4 {
+    margin-top: 0.65rem !important;
+  }
+  .mb-4 {
+    margin-bottom: 0.65rem !important;
+  }
 }
 .vertical-videos-grid {
   display: grid;
