@@ -571,7 +571,7 @@ function tiempoRelativo($fecha) {
                         <div class="h-card-body">
                             <div class="h-card-tags">
                                 <?php foreach ($cats as $c): ?>
-                                    <span class="category-pill-solid"><?= htmlspecialchars($c) ?></span>
+                                    <a href="<?= categoryUrl($c) ?>" class="category-pill-solid" onclick="event.stopPropagation();"><?= htmlspecialchars($c) ?></a>
                                 <?php endforeach; ?>
                             </div>
                             <h3 class="h-card-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>
@@ -696,7 +696,7 @@ function tiempoRelativo($fecha) {
                                 <div class="estreno-small-body">
                                     <div class="estreno-tags">
                                         <?php foreach ($cats as $c): ?>
-                                            <span class="category-pill-solid-micro"><?= htmlspecialchars($c) ?></span>
+                                            <a href="<?= categoryUrl($c) ?>" class="category-pill-solid-micro" onclick="event.stopPropagation();"><?= htmlspecialchars($c) ?></a>
                                         <?php endforeach; ?>
                                     </div>
                                     <h3 class="estreno-small-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>
@@ -726,7 +726,7 @@ function tiempoRelativo($fecha) {
                                 <div class="estreno-small-body">
                                     <div class="estreno-tags">
                                         <?php foreach ($cats as $c): ?>
-                                            <span class="category-pill-solid-micro"><?= htmlspecialchars($c) ?></span>
+                                            <a href="<?= categoryUrl($c) ?>" class="category-pill-solid-micro" onclick="event.stopPropagation();"><?= htmlspecialchars($c) ?></a>
                                         <?php endforeach; ?>
                                     </div>
                                     <h3 class="estreno-small-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>
@@ -978,7 +978,7 @@ function tiempoRelativo($fecha) {
                         <div class="h-card-body">
                             <div class="h-card-tags">
                                 <?php foreach ($cats as $c): ?>
-                                    <span class="category-pill-solid"><?= htmlspecialchars($c) ?></span>
+                                    <a href="<?= categoryUrl($c) ?>" class="category-pill-solid" onclick="event.stopPropagation();"><?= htmlspecialchars($c) ?></a>
                                 <?php endforeach; ?>
                             </div>
                             <h3 class="h-card-title"><a href="<?= $url ?>"><?= htmlspecialchars($r['titulo']) ?></a></h3>

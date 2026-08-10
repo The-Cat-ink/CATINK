@@ -5234,7 +5234,7 @@ body, .nav-link, .btn, .card, .site-main {
   gap: 6px;
   margin-bottom: 8px;
 }
-.category-pill-solid {
+.category-pill-solid, a.category-pill-solid {
   background: var(--accent-fuchsia);
   color: #fff;
   font-size: 0.65rem;
@@ -5242,8 +5242,17 @@ body, .nav-link, .btn, .card, .site-main {
   text-transform: uppercase;
   padding: 3px 8px;
   border-radius: 4px;
+  text-decoration: none;
+  display: inline-block;
+  transition: opacity 0.2s, transform 0.2s;
 }
-.category-pill-solid-micro {
+.category-pill-solid:hover, a.category-pill-solid:hover {
+  color: #fff;
+  opacity: 0.9;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+.category-pill-solid-micro, a.category-pill-solid-micro {
   background: var(--accent-fuchsia);
   color: #fff;
   font-size: 0.6rem;
@@ -5251,6 +5260,14 @@ body, .nav-link, .btn, .card, .site-main {
   text-transform: uppercase;
   padding: 2px 6px;
   border-radius: 3px;
+  text-decoration: none;
+  display: inline-block;
+  transition: opacity 0.2s;
+}
+.category-pill-solid-micro:hover, a.category-pill-solid-micro:hover {
+  color: #fff;
+  opacity: 0.9;
+  text-decoration: none;
 }
 .h-card-title {
   font-size: 1.15rem;
