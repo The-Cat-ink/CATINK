@@ -462,7 +462,7 @@ function tiempoRelativo($fecha) {
 <!-- ============================================= -->
 <div class="container mt-5">
     <div class="section-separator-pill">
-        <span class="pill-label"><i class="bi bi-fire"></i> Top Semanal</span>
+        <a href="<?= topUrl() ?>" class="pill-label"><i class="bi bi-fire"></i> Top Semanal</a>
         <div class="pill-separator-line"></div>
     </div>
 
@@ -548,7 +548,7 @@ function tiempoRelativo($fecha) {
 <!-- ============================================= -->
 <div class="container mt-5">
     <div class="section-separator-pill">
-        <span class="pill-label"><i class="bi bi-star-fill"></i> Nuestras Reviews</span>
+        <a href="<?= categoryUrl('Reviews') ?>" class="pill-label"><i class="bi bi-star-fill"></i> Nuestras Reviews</a>
         <div class="pill-separator-line"></div>
     </div>
 
@@ -639,7 +639,7 @@ function tiempoRelativo($fecha) {
 <!-- ============================================= -->
 <div class="container mt-5">
     <div class="section-separator-pill">
-        <span class="pill-label"><i class="bi bi-play-circle-fill"></i> Próximos Estrenos</span>
+        <a href="<?= categoryUrl('Estrenos') ?>" class="pill-label"><i class="bi bi-play-circle-fill"></i> Próximos Estrenos</a>
         <div class="pill-separator-line"></div>
     </div>
 
@@ -815,7 +815,7 @@ function tiempoRelativo($fecha) {
 <div class="full-width-dark-section bleed-section" id="lo-mas-debatido-section">
     <div class="container">
         <div class="section-separator-pill dark-theme-pill">
-            <span class="pill-label"><i class="bi bi-chat-left-text-fill"></i> Lo más debatido</span>
+            <a href="<?= topUrl() ?>" class="pill-label"><i class="bi bi-chat-left-text-fill"></i> Lo más debatido</a>
             <div class="pill-separator-line"></div>
         </div>
         
@@ -884,7 +884,7 @@ function tiempoRelativo($fecha) {
 <!-- ============================================= -->
 <div class="container mt-5">
     <div class="section-separator-pill">
-        <span class="pill-label"><i class="bi bi-shuffle"></i> Lo más Random</span>
+        <a href="<?= categoryUrl('Random') ?>" class="pill-label"><i class="bi bi-shuffle"></i> Lo más Random</a>
         <div class="pill-separator-line"></div>
     </div>
 
@@ -959,7 +959,7 @@ function tiempoRelativo($fecha) {
 <!-- ============================================= -->
 <div class="container mt-5">
     <div class="section-separator-pill">
-        <span class="pill-label"><i class="bi bi-lightning-fill"></i> Noticias recientes</span>
+        <a href="<?= recientesUrl() ?>" class="pill-label"><i class="bi bi-lightning-fill"></i> Noticias recientes</a>
         <div class="pill-separator-line"></div>
     </div>
 

@@ -5025,7 +5025,7 @@ body, .nav-link, .btn, .card, .site-main {
   margin: 40px 0 20px 0;
   width: 100%;
 }
-.pill-label {
+.pill-label, a.pill-label {
   background: var(--accent-fuchsia);
   color: #ffffff;
   padding: 6px 18px;
@@ -5039,6 +5039,15 @@ body, .nav-link, .btn, .card, .site-main {
   gap: 8px;
   white-space: nowrap;
   box-shadow: 0 4px 10px rgba(239, 51, 99, 0.25);
+  text-decoration: none;
+  transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
+}
+.pill-label:hover, a.pill-label:hover {
+  color: #ffffff;
+  text-decoration: none;
+  opacity: 0.92;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(239, 51, 99, 0.35);
 }
 .pill-separator-line {
   flex-grow: 1;
