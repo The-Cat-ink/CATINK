@@ -176,7 +176,7 @@ $breadcrumbList = [
                 </h2>
                 <p class="h-card-desc"><?= htmlspecialchars($row['descripcion']) ?></p>
                 <div class="h-card-meta">
-                  <span><i class="bi bi-calendar3"></i> <?= date('d M Y', strtotime($row['fecha_publicacion'])) ?></span>
+                  <span><i class="bi bi-clock"></i> <?= date('d/M/y', strtotime($row['fecha_publicacion'])) ?></span>
                   <?php if (isset($_SESSION['usuario']) && (isset($_SESSION['perm_noticias']) && $_SESSION['perm_noticias'] == 1)): ?>
                     <a href="<?= basePath() ?>/editar/<?= $row['id'] ?>" class="ms-auto btn btn-sm btn-outline-primary py-0" style="font-size: 0.75rem;" onclick="event.stopPropagation();">
                       <i class="bi bi-pencil"></i> Editar

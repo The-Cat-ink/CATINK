@@ -438,60 +438,44 @@ if ($q !== '') {
           <p>No se encontraron resultados.</p>
         <?php endif; ?>
 
-        <?php while ($row = $result->fetch_assoc()): ?>
-          <?php
-            $cats = !empty($row['categorias']) ? explode(",", $row['categorias']) : [];
-            $cats = array_map('trim', $cats);
-
-            if ($categoria !== '' && in_array($categoria, $cats)) {
-                $cats = array_diff($cats, [$categoria]);
-                array_unshift($cats, $categoria);
-            }
-
-            $img = imageUrl($row['crop3']);
-          ?>
-
-          <div class="card mb-3" data-url="<?= newsUrlFromRow($row) ?>" data-article-id="<?= $row['id'] ?>">
-            <div class="row row-no-gap">
-
-              <div class="col-md-4">
-                <img src="<?= $img ?>" class="card-img-left" loading="lazy" decoding="async">
+        <div class="horizontal-cards-list">
+          <?php while ($row = $result->fetch_assoc()): ?>
+            <?php
+              $cats = !empty($row['categorias']) ? explode(",", $row['categorias']) : [];
+              $cats = array_map('trim', $cats);
+              if ($categoria !== '' && in_array($categoria, $cats)) {
+                  $cats = array_diff($cats, [$categoria]);
+                  array_unshift($cats, $categoria);
+              }
+              $img = imageUrl($row['crop3'] ?? $row['crop2'] ?? $row['crop1']);
+              $newsUrl = newsUrlFromRow($row);
+            ?>
+            <article class="horizontal-news-card" onclick="window.location.href='<?= $newsUrl ?>'" data-url="<?= $newsUrl ?>" data-article-id="<?= $row['id'] ?>">
+              <div class="h-card-img-wrapper">
+                <img src="<?= $img ?>" alt="<?= htmlspecialchars($row['titulo']) ?>" loading="lazy" decoding="async">
               </div>
-
-              <div class="col-md-8">
-                <div class="card-body">
-
+              <div class="h-card-body">
+                <div class="h-card-tags">
                   <?php foreach ($cats as $cat): ?>
-                    <a href="<?= categoryUrl($cat) ?>" class="news-tag"><?= htmlspecialchars($cat) ?></a>
+                    <a href="<?= categoryUrl($cat) ?>" class="category-pill-solid" onclick="event.stopPropagation();"><?= htmlspecialchars($cat) ?></a>
                   <?php endforeach; ?>
-
-                  <h5 class="card-title">
-                    <a href="<?= newsUrlFromRow($row) ?>" class="news-link">
-                      <?= htmlspecialchars($row['titulo']) ?>
+                </div>
+                <h2 class="h-card-title">
+                  <a href="<?= $newsUrl ?>"><?= htmlspecialchars($row['titulo']) ?></a>
+                </h2>
+                <p class="h-card-desc"><?= htmlspecialchars($row['descripcion']) ?></p>
+                <div class="h-card-meta">
+                  <span><i class="bi bi-clock"></i> <?= date('d/M/y', strtotime($row['fecha_publicacion'])) ?></span>
+                  <?php if (isset($_SESSION['usuario']) && (isset($_SESSION['perm_noticias']) && $_SESSION['perm_noticias'] == 1)): ?>
+                    <a href="<?= basePath() ?>/editar/<?= $row['id'] ?>" class="ms-auto btn btn-sm btn-outline-primary py-0" style="font-size: 0.75rem;" onclick="event.stopPropagation();">
+                      <i class="bi bi-pencil"></i> Editar
                     </a>
-                  </h5>
-
-                  <p><?= htmlspecialchars($row['descripcion']) ?></p>
-
-                  <small><?= date('d M Y', strtotime($row['fecha_publicacion'])) ?></small>
-
-                  <?php 
-                    // Mostrar botón de editar si es editor/admin
-                    if (isset($_SESSION['usuario']) && (isset($_SESSION['perm_noticias']) && $_SESSION['perm_noticias'] == 1)): 
-                  ?>
-                    <div style="margin-top: 10px;">
-                      <a href="<?= basePath() ?>/editar/<?= $row['id'] ?>" class="btn btn-sm btn-primary" style="font-size: 0.85rem;">
-                        <i class="bi bi-pencil"></i> Editar
-                      </a>
-                    </div>
                   <?php endif; ?>
-
                 </div>
               </div>
-
-            </div>
-          </div>
-        <?php endwhile; ?>
+            </article>
+          <?php endwhile; ?>
+        </div>
 
         <!-- PAGINACIÓN -->
         <div class="pagination-wrapper">
