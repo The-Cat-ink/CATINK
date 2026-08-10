@@ -524,6 +524,15 @@ h2 {
   height: 18px;
   justify-self: center;
 }
+.hero-cat-icon.nav-cat-icon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+.hero-cat-icon {
+  font-size: 1.8rem;
+  color: var(--accent);
+}
 /* Escritorio (barra horizontal): solo si el panel lo activo. */
 @media (min-width: 1025px) {
   .navbar-nav.cat-icons-escritorio .nav-link {
