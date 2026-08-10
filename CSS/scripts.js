@@ -91,7 +91,16 @@
   // ============================================================
   // Scroll horizontal en la navegación del Header con la rueda del mouse
   // ============================================================
+  let isTrackpadDetected = false;
   document.addEventListener('wheel', function(e) {
+    // Detectamos si es un trackpad (movimiento en X, o deltas Y muy pequeños/fraccionales)
+    if (e.deltaX !== 0 || (e.deltaMode === 0 && Math.abs(e.deltaY) < 40 && e.deltaY !== 0)) {
+      isTrackpadDetected = true;
+    }
+    
+    // Si es trackpad o mouse 2D, dejamos que el sistema operativo y el navegador manejen el scroll maravillosamente
+    if (isTrackpadDetected) return;
+
     const navContainer = e.target.closest('.navbar-nav, .nav-categories, .header-categories, .vertical-videos-grid');
     if (!navContainer) return;
 
@@ -108,7 +117,7 @@
 
       if (e.deltaY !== 0) {
         e.preventDefault();
-        navContainer.scrollLeft += e.deltaY * 1.2;
+        navContainer.scrollBy({ left: e.deltaY > 0 ? 200 : -200, behavior: 'smooth' });
       }
     }
   }, { passive: false });
