@@ -466,7 +466,7 @@ if ($q !== '') {
               $img = imageUrl($row['crop3'] ?? $row['crop2'] ?? $row['crop1']);
               $newsUrl = newsUrlFromRow($row);
             ?>
-            <article class="horizontal-news-card" onclick="window.location.href='<?= $newsUrl ?>'" data-url="<?= $newsUrl ?>" data-article-id="<?= $row['id'] ?>">
+            <article class="horizontal-news-card" data-url="<?= $newsUrl ?>" data-article-id="<?= $row['id'] ?>">
               <div class="h-card-img-wrapper">
                 <img src="<?= $img ?>" alt="<?= htmlspecialchars($row['titulo']) ?>" loading="lazy" decoding="async">
               </div>

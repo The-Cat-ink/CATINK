@@ -140,6 +140,8 @@
   }, { passive: false });
 
   // Capturar el ID de la noticia al hacer clic para View Transitions
+  // Usamos { capture: true } para asegurar que esto se ejecute ANTES de que
+  // Turbo.visit() o el comportamiento de los enlaces <a> inicien la navegación
   document.addEventListener('click', function(e) {
     const card = e.target.closest('[data-article-id]');
     if (card) {
@@ -155,7 +157,7 @@
         sessionStorage.setItem('transitionActiveId', articleId);
       }
     }
-  });
+  }, { capture: true });
 
   // Habilitar View Transitions API nativa en navegación Turbo Drive
   document.addEventListener('turbo:before-render', (event) => {
