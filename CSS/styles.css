@@ -5621,9 +5621,26 @@ body, .nav-link, .btn, .card, .site-main {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-@media (max-width: 576px) {
+@media (max-width: 768px) {
   .vertical-videos-grid {
-    grid-template-columns: 1fr;
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 14px !important;
+    padding-bottom: 12px !important;
+    scrollbar-width: none;
+  }
+  .vertical-videos-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .vertical-videos-grid > * {
+    flex: 0 0 68vw !important;
+    max-width: 260px !important;
+    min-width: 200px !important;
+    scroll-snap-align: start !important;
   }
 }
 
