@@ -280,6 +280,7 @@ if ($seccionesResult) {
         'estrenosJuegos' => $estrenosJuegos ?? null,
         'estrenosAnime' => $estrenosAnime ?? null,
         'esperamos' => $esperamos ?? [],
+        'debatidas' => $debatidas ?? [],
         'debatidasLeft' => $debatidasLeft ?? [],
         'debatidasRight' => $debatidasRight ?? [],
         'randomNoticias' => $randomNoticias ?? [],
@@ -802,7 +803,7 @@ function tiempoRelativo($fecha) {
 <!-- ============================================= -->
 <!-- 7. LO MÁS DEBATIDO -->
 <!-- ============================================= -->
-<?php if (!empty($debatidas)): ?>
+<?php if (!empty($debatidas) || !empty($debatidasLeft) || !empty($debatidasRight)): ?>
 <div class="full-width-dark-section bleed-section" id="lo-mas-debatido-section">
     <div class="container">
         <div class="section-separator-pill dark-theme-pill">
