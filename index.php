@@ -195,17 +195,25 @@ if ($stmtEsp) {
     }
 }
 
-// 7. Lo más debatido
 $stmtCom = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.crop4, n.fecha_publicacion AS fecha,
-           u.nombre AS nombre_u, GROUP_CONCAT(c2.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias, COUNT(c.id_comentario) as total_comentarios
+           u.nombre AS nombre_u,
+           (
+               SELECT GROUP_CONCAT(c2.nombre ORDER BY nc.orden ASC SEPARATOR ',')
+               FROM noticia_categoria nc
+               JOIN categorias c2 ON nc.categoria_id = c2.id_c
+               WHERE nc.noticia_id = n.id
+           ) AS categorias,
+           (
+               SELECT COUNT(*)
+               FROM comentarios c
+               LEFT JOIN lectores l ON c.lector_id = l.id
+               LEFT JOIN usuarios u2 ON c.usuario_id = u2.id_u
+               WHERE c.noticia_id = n.id AND c.estado = 'activo' AND (l.id IS NOT NULL OR u2.id_u IS NOT NULL)
+           ) AS total_comentarios
     FROM noticias n
     INNER JOIN usuarios u ON n.autor = u.id_u
-    LEFT JOIN comentarios c ON c.noticia_id = n.id AND c.estado = 'activo'
-    LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
-    LEFT JOIN categorias c2 ON nc.categoria_id = c2.id_c
     WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
-    GROUP BY n.id
     ORDER BY total_comentarios DESC, n.fecha_publicacion DESC
     LIMIT 8
 ");
