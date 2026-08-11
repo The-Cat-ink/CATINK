@@ -102,7 +102,7 @@ $stmtReviews = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3,
            n.fecha_publicacion AS fecha, n.likes, n.vistas, n.tipo_publicacion,
            n.calificacion, u.nombre AS nombre_u,
-           GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+           GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
     FROM noticias n
     INNER JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
@@ -127,7 +127,7 @@ $stmtRec = $con->prepare("
            COALESCE(r.imagen, n.crop3) AS crop3,
            COALESCE(r.imagen, n.crop4) AS crop4,
            n.fecha_publicacion AS fecha,
-           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias,
+           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias,
            n.calificacion
     FROM recomendados r
     LEFT JOIN noticias n ON r.noticia_id = n.id
@@ -176,7 +176,7 @@ $stmtEsp = $con->prepare("
            COALESCE(e.imagen, n.crop3) AS crop3,
            COALESCE(e.imagen, n.crop4) AS crop4,
            n.fecha_publicacion AS fecha,
-           n.likes, n.vistas, n.calificacion, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre SEPARATOR ',') AS categorias
+           n.likes, n.vistas, n.calificacion, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
     FROM esperamos e
     LEFT JOIN noticias n ON e.noticia_id = n.id
     LEFT JOIN usuarios u ON n.autor = u.id_u

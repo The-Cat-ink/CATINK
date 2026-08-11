@@ -30,6 +30,7 @@ if($stmt->execute()){
             @unlink($ruta);
         }
     }
+    delete_cache('header_categorias');
     logActivity($con, 'eliminar', 'categorias', 'Eliminó categoría ID ' . $id_c);
     echo json_encode(['success'=>true]);
 }else{

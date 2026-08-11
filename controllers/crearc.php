@@ -29,6 +29,7 @@ if($res->num_rows > 0){
 $stmt = $con->prepare("INSERT INTO categorias(nombre, icono, icono_img) VALUES(?,?,?)");
 $stmt->bind_param("sss",$nombre,$icono,$iconoImg);
 if($stmt->execute()){
+    delete_cache('header_categorias');
     logActivity($con, 'crear', 'categorias', 'Creó categoría «' . $nombre . '» con icono ' . ($iconoImg ?: $icono));
     echo json_encode(['success'=>true]);
 }else{

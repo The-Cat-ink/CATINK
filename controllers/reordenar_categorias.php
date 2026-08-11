@@ -40,6 +40,9 @@ try {
     }
 
     require_once(__DIR__ . "/../views/helpers/activity_log.php");
+    // Limpiar la caché del header
+    delete_cache('header_categorias');
+
     logActivity($con, 'editar', 'categorias', 'Reordenó las categorías');
 
     echo json_encode(['success' => true, 'message' => 'Orden actualizado']);

@@ -33,6 +33,8 @@ if (!$update->execute()) {
     exit;
 }
 
+delete_cache('header_categorias');
+
 logActivity(
     $con,
     'editar',

@@ -48,6 +48,7 @@ if($stmt->execute()){
             @unlink($rutaVieja);
         }
     }
+    delete_cache('header_categorias');
     logActivity($con, 'editar', 'categorias', 'Actualizó categoría ID ' . $id_c . ': «' . $nombre . '» / icono ' . ($iconoImg ?: $icono));
     echo json_encode(['success'=>true]);
 }else{
