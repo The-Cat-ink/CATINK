@@ -849,6 +849,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoMsg      = document.getElementById('logoMsg');
     const logosGrid    = document.getElementById('logosGrid');
 
+    // Drag & drop logos grid reordering
+    if (logosGrid && typeof Sortable !== 'undefined') {
+        new Sortable(logosGrid, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            dragClass: 'sortable-drag',
+            onEnd: async function () {
+                logosGrid.querySelectorAll('.logo-card').forEach((card, index) => {
+                    const numEl = card.querySelector('.logo-num');
+                    if (numEl) numEl.textContent = index + 1;
+                });
+
+                const newOrder = Array.from(logosGrid.querySelectorAll('.logo-card')).map(card => card.dataset.id);
+
+                try {
+                    const res = await fetch(BASE_PATH + '/controllers/logo_reordenar.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newOrder)
+                    });
+                    const data = await res.json();
+                    if (!data.ok) {
+                        alert(data.error || 'Error al guardar el nuevo orden');
+                    }
+                } catch (e) {
+                    console.error('Error al guardar el nuevo orden de marcas:', e);
+                }
+            }
+        });
+    }
+
     logoFile.addEventListener('change', () => {
         const f = logoFile.files[0];
         if (!f) return;
