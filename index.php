@@ -40,14 +40,12 @@ if ($totalNoticias <= 2) {
 // Obtener feed general de noticias (recientes paginadas)
 $stmtFeed = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.fecha_publicacion AS fecha,
-           n.likes, n.vistas, u.nombre AS nombre_u, u.foto_personal AS autor_foto, a.imagen AS autor_avatar, GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
+           n.likes, n.vistas, u.nombre AS nombre_u, u.foto_personal AS autor_foto, a.imagen AS autor_avatar,
+           (SELECT GROUP_CONCAT(c2.nombre ORDER BY nc2.orden ASC SEPARATOR ',') FROM noticia_categoria nc2 JOIN categorias c2 ON nc2.categoria_id = c2.id_c WHERE nc2.noticia_id = n.id) AS categorias
     FROM noticias n
-    INNER JOIN usuarios u ON n.autor = u.id_u
+    LEFT JOIN usuarios u ON n.autor = u.id_u
     LEFT JOIN avatares_perfil a ON u.avatar_id = a.id_avatar
-    LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
-    LEFT JOIN categorias c ON nc.categoria_id = c.id_c
     WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
-    GROUP BY n.id
     ORDER BY n.fecha_publicacion DESC
     LIMIT ? OFFSET ?;
 ");
@@ -61,14 +59,11 @@ $feedNoticias = $stmtFeed->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmtGlobal = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.crop4, n.fecha_publicacion AS fecha,
            n.likes, n.vistas, n.tipo_publicacion, n.calificacion, u.nombre AS nombre_u,
-           GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias,
+           (SELECT GROUP_CONCAT(c2.nombre ORDER BY nc2.orden ASC SEPARATOR ',') FROM noticia_categoria nc2 JOIN categorias c2 ON nc2.categoria_id = c2.id_c WHERE nc2.noticia_id = n.id) AS categorias,
            n.es_estreno, n.seccion_estreno
     FROM noticias n
-    INNER JOIN usuarios u ON n.autor = u.id_u
-    LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
-    LEFT JOIN categorias c ON nc.categoria_id = c.id_c
+    LEFT JOIN usuarios u ON n.autor = u.id_u
     WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
-    GROUP BY n.id
     ORDER BY n.fecha_publicacion DESC
     LIMIT 50;
 ");
@@ -102,14 +97,11 @@ $stmtReviews = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3,
            n.fecha_publicacion AS fecha, n.likes, n.vistas, n.tipo_publicacion,
            n.calificacion, u.nombre AS nombre_u,
-           GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
+           (SELECT GROUP_CONCAT(c2.nombre ORDER BY nc2.orden ASC SEPARATOR ',') FROM noticia_categoria nc2 JOIN categorias c2 ON nc2.categoria_id = c2.id_c WHERE nc2.noticia_id = n.id) AS categorias
     FROM noticias n
-    INNER JOIN usuarios u ON n.autor = u.id_u
-    LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
-    LEFT JOIN categorias c ON nc.categoria_id = c.id_c
+    LEFT JOIN usuarios u ON n.autor = u.id_u
     WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
       AND n.tipo_publicacion = 'review'
-    GROUP BY n.id
     ORDER BY n.fecha_publicacion DESC
     LIMIT 4;
 ");
@@ -127,15 +119,13 @@ $stmtRec = $con->prepare("
            COALESCE(r.imagen, n.crop3) AS crop3,
            COALESCE(r.imagen, n.crop4) AS crop4,
            n.fecha_publicacion AS fecha,
-           n.likes, n.vistas, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias,
+           n.likes, n.vistas, u.nombre AS nombre_u,
+           (SELECT GROUP_CONCAT(c2.nombre ORDER BY nc2.orden ASC SEPARATOR ',') FROM noticia_categoria nc2 JOIN categorias c2 ON nc2.categoria_id = c2.id_c WHERE nc2.noticia_id = n.id) AS categorias,
            n.calificacion
     FROM recomendados r
     LEFT JOIN noticias n ON r.noticia_id = n.id
     LEFT JOIN usuarios u ON n.autor = u.id_u
-    LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
-    LEFT JOIN categorias c ON nc.categoria_id = c.id_c
     WHERE (r.noticia_id IS NULL OR (n.fecha_publicacion <= NOW() AND n.eliminado_en IS NULL))
-    GROUP BY r.id
     ORDER BY r.orden ASC
     LIMIT 10;
 ");
@@ -176,14 +166,12 @@ $stmtEsp = $con->prepare("
            COALESCE(e.imagen, n.crop3) AS crop3,
            COALESCE(e.imagen, n.crop4) AS crop4,
            n.fecha_publicacion AS fecha,
-           n.likes, n.vistas, n.calificacion, u.nombre AS nombre_u, GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias
+           n.likes, n.vistas, n.calificacion, u.nombre AS nombre_u,
+           (SELECT GROUP_CONCAT(c2.nombre ORDER BY nc2.orden ASC SEPARATOR ',') FROM noticia_categoria nc2 JOIN categorias c2 ON nc2.categoria_id = c2.id_c WHERE nc2.noticia_id = n.id) AS categorias
     FROM esperamos e
     LEFT JOIN noticias n ON e.noticia_id = n.id
     LEFT JOIN usuarios u ON n.autor = u.id_u
-    LEFT JOIN noticia_categoria nc ON n.id = nc.noticia_id
-    LEFT JOIN categorias c ON nc.categoria_id = c.id_c
     WHERE (e.noticia_id IS NULL OR (n.fecha_publicacion <= NOW() AND n.eliminado_en IS NULL))
-    GROUP BY e.id
     ORDER BY e.orden ASC
     LIMIT 10;
 ");
@@ -199,20 +187,18 @@ $stmtCom = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.crop4, n.fecha_publicacion AS fecha,
            u.nombre AS nombre_u,
            (
-               SELECT GROUP_CONCAT(c2.nombre ORDER BY nc.orden ASC SEPARATOR ',')
-               FROM noticia_categoria nc
-               JOIN categorias c2 ON nc.categoria_id = c2.id_c
-               WHERE nc.noticia_id = n.id
+               SELECT GROUP_CONCAT(c2.nombre ORDER BY nc2.orden ASC SEPARATOR ',')
+               FROM noticia_categoria nc2
+               JOIN categorias c2 ON nc2.categoria_id = c2.id_c
+               WHERE nc2.noticia_id = n.id
            ) AS categorias,
            (
                SELECT COUNT(*)
                FROM comentarios c
-               LEFT JOIN lectores l ON c.lector_id = l.id
-               LEFT JOIN usuarios u2 ON c.usuario_id = u2.id_u
-               WHERE c.noticia_id = n.id AND c.estado = 'activo' AND (l.id IS NOT NULL OR u2.id_u IS NOT NULL)
+               WHERE c.noticia_id = n.id AND c.estado = 'activo'
            ) AS total_comentarios
     FROM noticias n
-    INNER JOIN usuarios u ON n.autor = u.id_u
+    LEFT JOIN usuarios u ON n.autor = u.id_u
     WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW()
     ORDER BY total_comentarios DESC, n.fecha_publicacion DESC
     LIMIT 8
@@ -226,19 +212,16 @@ $debatidasRight = array_slice($debatidas, 3, 5);
 $stmtRandom = $con->prepare("
     SELECT n.id, n.slug, n.titulo, n.descripcion, n.crop1, n.crop2, n.crop3, n.crop4, n.fecha_publicacion AS fecha,
            n.likes, n.vistas, n.tipo_publicacion, n.calificacion, u.nombre AS nombre_u,
-           GROUP_CONCAT(c.nombre ORDER BY nc.orden ASC SEPARATOR ',') AS categorias,
+           (SELECT GROUP_CONCAT(c2.nombre ORDER BY nc2.orden ASC SEPARATOR ',') FROM noticia_categoria nc2 JOIN categorias c2 ON nc2.categoria_id = c2.id_c WHERE nc2.noticia_id = n.id) AS categorias,
            n.es_estreno, n.seccion_estreno
     FROM noticias n
-    INNER JOIN usuarios u ON n.autor = u.id_u
-    INNER JOIN noticia_categoria nc ON n.id = nc.noticia_id
-    INNER JOIN categorias c ON nc.categoria_id = c.id_c
+    LEFT JOIN usuarios u ON n.autor = u.id_u
     WHERE n.eliminado_en IS NULL AND n.fecha_publicacion <= NOW() AND n.id IN (
         SELECT sub_nc.noticia_id 
         FROM noticia_categoria sub_nc 
         INNER JOIN categorias sub_c ON sub_nc.categoria_id = sub_c.id_c
         WHERE sub_c.nombre = 'Random'
     )
-    GROUP BY n.id
     ORDER BY RAND()
     LIMIT 4;
 ");
