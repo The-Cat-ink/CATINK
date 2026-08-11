@@ -12,6 +12,10 @@ if (!$id) {
     exit;
 }
 
+$stmtComm = $con->prepare("UPDATE comentarios SET estado = 'eliminado' WHERE usuario_id = ?");
+$stmtComm->bind_param("i", $id);
+$stmtComm->execute();
+
 $stmt = $con->prepare("DELETE FROM usuarios WHERE id_u = ?");
 $stmt->bind_param("i", $id);
 

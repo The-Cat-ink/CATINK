@@ -71,8 +71,8 @@ if($tipo === 'lector'){
     $stmtRp->bind_param("i", $id);
     $stmtRp->execute();
 
-    // Comentarios (poner en eliminado para preservar hilo si hay respuestas, o borrar directamente)
-    $stmtCom = $con->prepare("DELETE FROM comentarios WHERE lector_id = ?");
+    // Comentarios (poner en estado eliminado)
+    $stmtCom = $con->prepare("UPDATE comentarios SET estado = 'eliminado' WHERE lector_id = ?");
     $stmtCom->bind_param("i", $id);
     $stmtCom->execute();
 

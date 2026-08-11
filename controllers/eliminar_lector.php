@@ -24,13 +24,13 @@ if (!$lector) {
 
 $con->begin_transaction();
 try {
-    // 1. Desvincular comentarios (establecer lector_id en NULL)
+    // 1. Marcar comentarios del lector como eliminados
     try {
-        $updComm = $con->prepare("UPDATE comentarios SET lector_id = NULL WHERE lector_id = ?");
+        $updComm = $con->prepare("UPDATE comentarios SET estado = 'eliminado' WHERE lector_id = ?");
         $updComm->bind_param("i", $id);
         $updComm->execute();
     } catch (\Throwable $e) {
-        error_log("No se pudieron desvincular comentarios del lector: " . $e->getMessage());
+        error_log("No se pudieron eliminar comentarios del lector: " . $e->getMessage());
     }
 
     // 2. Eliminar likes y reportes
