@@ -214,7 +214,7 @@ $stmtComentarios = $con->prepare("
     LEFT JOIN avatares_perfil la ON l.avatar_id = la.id_avatar
     LEFT JOIN usuarios u ON c.usuario_id = u.id_u
     LEFT JOIN avatares_perfil ua ON u.avatar_id = ua.id_avatar
-    WHERE c.noticia_id = ? AND c.estado = 'activo'
+    WHERE c.noticia_id = ? AND c.estado = 'activo' AND (l.id IS NOT NULL OR u.id_u IS NOT NULL)
     ORDER BY c.fecha_publicacion DESC
 ");
 $stmtComentarios->bind_param("i", $id);
