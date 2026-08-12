@@ -215,6 +215,10 @@ const chartDefaults = {
     }
 };
 
+const INITIAL_TOTAL_VIEWS = <?= (int)$row['vistas'] ?>;
+const INITIAL_TOTAL_LIKES = <?= (int)$row['likes'] ?>;
+const INITIAL_TOTAL_TIME  = <?= (int)$row['tiempo_total'] ?>;
+
 document.addEventListener('DOMContentLoaded', () => { loadGlobalStats(); loadLikesStats(); });
 
 function loadGlobalStats() {
@@ -224,8 +228,10 @@ function loadGlobalStats() {
         .then(d => {
             buildLine('chartVistas', d.labels, d.vistas, 'Vistas', colorPalette.views);
             buildLine('chartTiempo', d.labels, d.tiempoPromedio, 'Seg promedio', colorPalette.time);
-            const tv = d.vistas.reduce((a,b)=>a+b,0);
-            const tt = d.vistas.reduce((a,v,i)=>a+(v*d.tiempoPromedio[i]),0);
+            const rangeViews = d.vistas.reduce((a,b)=>a+b,0);
+            const tv = Math.max(rangeViews, INITIAL_TOTAL_VIEWS);
+            const rangeTime = d.vistas.reduce((a,v,i)=>a+(v*d.tiempoPromedio[i]),0);
+            const tt = Math.max(rangeTime, INITIAL_TOTAL_TIME);
             setKPI('kpi-views', tv.toLocaleString());
             setKPI('kpi-time-total', fmtSec(tt));
             setKPI('kpi-time-avg', (tv>0?(tt/tv).toFixed(1):0)+' seg');
@@ -240,7 +246,9 @@ function loadLikesStats() {
         .then(d => {
             buildLine('chartLikes', d.labels, d.likes, 'Likes', colorPalette.likes);
             buildBar('chartLikesRegion', d.geo.paises.labels, d.geo.paises.values, 'Likes', colorPalette.geo);
-            setKPI('kpi-likes', d.likes.reduce((a,b)=>a+b,0).toLocaleString());
+            const rangeLikes = d.likes.reduce((a,b)=>a+b,0);
+            const tl = Math.max(rangeLikes, INITIAL_TOTAL_LIKES);
+            setKPI('kpi-likes', tl.toLocaleString());
         })
         .catch(()=>{ showFallback('chartLikes'); showFallback('chartLikesRegion'); });
 }
