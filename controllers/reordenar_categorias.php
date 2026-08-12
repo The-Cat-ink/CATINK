@@ -12,9 +12,10 @@ if (!isset($_SESSION['usuario'])) {
     exit();
 }
 
-// Verificar permisos
+// Verificar permisos (SuperAdmin o permiso de editar categorías)
+$esSuperAdmin = !empty($_SESSION['superadmin']);
 $ACL = cargarACL('categorias');
-if (!$ACL['editar']) {
+if (!$esSuperAdmin && empty($ACL['editar'])) {
     http_response_code(403);
     echo json_encode(['success' => false, 'error' => 'Sin permisos']);
     exit();

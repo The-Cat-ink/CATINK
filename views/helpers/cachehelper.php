@@ -38,6 +38,18 @@ function set_cache($key, $data) {
     }
 }
 
+function delete_cache($key = '') {
+    if (empty($key)) {
+        clear_cache_by_prefix();
+        return;
+    }
+    $cache_dir = __DIR__ . '/../../data/cache/';
+    $file = $cache_dir . md5($key) . '.cache';
+    if (file_exists($file)) {
+        @unlink($file);
+    }
+}
+
 function clear_cache_by_prefix($prefix = '') {
     $cache_dir = __DIR__ . '/../../data/cache/';
     if (!is_dir($cache_dir)) return;
