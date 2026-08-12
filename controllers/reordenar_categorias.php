@@ -3,6 +3,7 @@ session_start();
 include(__DIR__ . "/../data/conexion.php");
 include(__DIR__ . "/../views/helpers/helper.php");
 include(__DIR__ . "/../views/helpers/acl.php");
+require_once(__DIR__ . "/../views/helpers/cachehelper.php");
 
 // Verificar que el usuario está autenticado
 if (!isset($_SESSION['usuario'])) {
@@ -46,7 +47,7 @@ try {
     logActivity($con, 'editar', 'categorias', 'Reordenó las categorías');
 
     echo json_encode(['success' => true, 'message' => 'Orden actualizado']);
-} catch (Exception $e) {
+} catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }

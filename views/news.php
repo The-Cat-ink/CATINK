@@ -407,6 +407,11 @@ $lastEdit = $stmtLastEdit->get_result()->fetch_assoc();
               <button id="btnOfflineSave" class="like-btn btn-offline-save" data-id="<?= $id ?>" data-title="<?= htmlspecialchars($noticia['titulo']) ?>" data-slug="<?= htmlspecialchars($noticia['slug'] ?? '') ?>" data-img="<?= htmlspecialchars($img) ?>" data-author="<?= htmlspecialchars($autorNombre) ?>" data-date="<?= date("d/m/Y · H:i", strtotime($noticia['fecha_publicacion'])) ?>" style="background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;">
                 <i class="bi bi-bookmark-plus"></i> <span id="offlineSaveText">Guardar sin conexión</span>
               </button>
+              <?php if ($esAutor || $esAdmin || !empty($_SESSION['ACL']['noticias']['leer']) || !empty($_SESSION['superadmin'])): ?>
+                <a href="<?= basePath() ?>/views/see.php?id=<?= $id ?>" class="like-btn" style="background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                  <i class="bi bi-graph-up"></i> Métricas
+                </a>
+              <?php endif; ?>
               <?php if ($esAutor || $esAdmin): ?>
                 <a href="<?= basePath() ?>/views/editar.php?id=<?= $id ?>" class="like-btn" style="background: var(--accent); color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                   <i class="bi bi-pencil-square"></i> Editar
@@ -1048,22 +1053,28 @@ $lastEdit = $stmtLastEdit->get_result()->fetch_assoc();
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") enviarTiempo();
   });
-  // Botón de Like
-  document.getElementById('likeBtn').addEventListener('click', async function() {
-    const id = this.dataset.id;
-    const res = await fetch('<?= basePath() ?>/controllers/like.php', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: `noticia_id=${id}`
-    });
-    const data = await res.json();
-    if (data.ok) {
-      const count = document.getElementById('likeCount');
-      count.textContent = parseInt(count.textContent) + 1;
-      this.disabled = true;
-    } else {
-      showToast(data.msg, 'error');
-      this.disabled = true;
+  // Botón de Like (delegación de eventos para soporte Turbo)
+  document.addEventListener('click', async function(e) {
+    const btn = e.target.closest('#likeBtn');
+    if (!btn || btn.disabled) return;
+    const id = btn.dataset.id;
+    btn.disabled = true;
+    try {
+      const res = await fetch('<?= basePath() ?>/controllers/like.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `noticia_id=${id}`
+      });
+      const data = await res.json();
+      if (data.ok) {
+        const count = document.getElementById('likeCount');
+        if (count) count.textContent = parseInt(count.textContent || 0) + 1;
+      } else {
+        showToast(data.msg, 'error');
+      }
+    } catch(err) {
+      console.error('Error al procesar like:', err);
+      btn.disabled = false;
     }
   });
 

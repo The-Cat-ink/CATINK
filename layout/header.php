@@ -798,6 +798,35 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </nav>
+<script>
+(function() {
+  function initHeaderScrollLock() {
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+
+    if (navbar._wheelHandler) {
+      navbar.removeEventListener('wheel', navbar._wheelHandler);
+    }
+
+    navbar._wheelHandler = function(e) {
+      const navNav = navbar.querySelector('.navbar-nav');
+      if (navNav && navNav.scrollWidth > navNav.clientWidth) {
+        navNav.scrollLeft += (e.deltaY || e.deltaX);
+      }
+      e.preventDefault();
+    };
+
+    navbar.addEventListener('wheel', navbar._wheelHandler, { passive: false });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHeaderScrollLock);
+  } else {
+    initHeaderScrollLock();
+  }
+  document.addEventListener('turbo:load', initHeaderScrollLock);
+})();
+</script>
 <?php endif; ?>
 <?php if (!empty($_SESSION['flash'])):
   $flash = $_SESSION['flash'];
