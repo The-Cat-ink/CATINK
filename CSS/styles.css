@@ -486,8 +486,9 @@ h2 {
   background: rgba(0,0,0,0.05);
   color: var(--accent);
 }
-.nav-item{
-  margin-top: 15px;
+.navbar-nav .nav-item {
+  margin: 0 !important;
+  padding: 0 !important;
 }
 /* Menu hamburguesa: activo de 0 a 1024px (el nav horizontal entra en 1025px).
    La separacion entre categorias sumaba 33px porque se acumulaban tres fuentes:
