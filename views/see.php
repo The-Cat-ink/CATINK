@@ -11,8 +11,8 @@ if ($id <= 0) { header("Location: ./../views/contenidos.php"); exit; }
 
 $stmt = $con->prepare("
     SELECT n.*,
-        (SELECT COUNT(*) FROM noticias_stats WHERE noticia_id = n.id) AS vistas,
-        (SELECT COUNT(*) FROM noticia_likes WHERE noticia_id = n.id) AS likes,
+        GREATEST(COALESCE(n.vistas, 0), (SELECT COUNT(*) FROM noticias_stats WHERE noticia_id = n.id)) AS vistas,
+        GREATEST(COALESCE(n.likes, 0), (SELECT COUNT(*) FROM noticia_likes WHERE noticia_id = n.id)) AS likes,
         (SELECT COALESCE(SUM(tiempo_segundos),0) FROM noticias_stats WHERE noticia_id = n.id) AS tiempo_total
     FROM noticias n WHERE n.id = ?
 ");
