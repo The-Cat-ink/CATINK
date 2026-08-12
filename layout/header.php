@@ -801,22 +801,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script>
 (function() {
   function initHeaderScrollLock() {
-    const navbar = document.querySelector('.navbar');
-    if (!navbar) return;
+    const navNav = document.querySelector('.navbar-nav');
+    if (!navNav) return;
 
-    if (navbar._wheelHandler) {
-      navbar.removeEventListener('wheel', navbar._wheelHandler);
+    if (navNav._wheelHandler) {
+      navNav.removeEventListener('wheel', navNav._wheelHandler);
     }
 
-    navbar._wheelHandler = function(e) {
-      const navNav = navbar.querySelector('.navbar-nav');
-      if (navNav && navNav.scrollWidth > navNav.clientWidth) {
-        navNav.scrollLeft += (e.deltaY || e.deltaX);
+    navNav._wheelHandler = function(e) {
+      if (navNav.scrollWidth > navNav.clientWidth) {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          const isAtLeft = navNav.scrollLeft <= 0 && e.deltaY < 0;
+          const isAtRight = (navNav.scrollLeft + navNav.clientWidth >= navNav.scrollWidth - 1) && e.deltaY > 0;
+          if (!isAtLeft && !isAtRight) {
+            navNav.scrollLeft += e.deltaY;
+            e.preventDefault();
+          }
+        }
       }
-      e.preventDefault();
     };
 
-    navbar.addEventListener('wheel', navbar._wheelHandler, { passive: false });
+    navNav.addEventListener('wheel', navNav._wheelHandler, { passive: false });
   }
 
   if (document.readyState === 'loading') {
