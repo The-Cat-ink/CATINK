@@ -144,9 +144,9 @@ $breadcrumbList = [
     </div>
   </div>
 
-  <div class="row g-4">
+  <div class="row">
     <!-- SECCIÓN PRINCIPAL DE NOTICIAS -->
-    <div class="col-lg-9 col-md-8 col-12">
+    <div class="col-md-9">
       <?php if ($result->num_rows === 0): ?>
         <div class="p-5 text-center" style="background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border);">
           <i class="bi bi-journal-x" style="font-size: 3rem; color: var(--muted);"></i>
@@ -217,7 +217,7 @@ $breadcrumbList = [
     </div>
 
     <!-- SIDEBAR DE NOTICIAS & PUBLICIDAD -->
-    <div class="col-lg-3 col-md-4 col-12">
+    <div class="col-md-3">
       <?php renderSidebarNewsWidget($ultimas, $populares, $publicidadCuadro ?? null, $secciones ?? null); ?>
     </div>
   </div>
